@@ -2143,6 +2143,10 @@ export default function FeedTest() {
     });
   };
 
+  const handlePostClick = (postId: string) => {
+    navigate(`/home/post/${postId}`);
+  };
+
   const toggleTopAuthorFollow = (handle: string) => {
     setTopAuthorsFollowing(prev => {
       const newSet = new Set(prev);
