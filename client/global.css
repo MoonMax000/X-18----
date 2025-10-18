@@ -606,3 +606,41 @@ textarea::-webkit-scrollbar-track {
 .newsletter-subscribe-btn:hover .newsletter-arrow {
   transform: translateX(0.5rem);
 }
+
+/* Post hover glow effect - soft highlight for top and bottom borders */
+.post-hover-glow {
+  position: relative;
+}
+
+.post-hover-glow::before,
+.post-hover-glow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(160, 106, 255, 0) 10%,
+    rgba(160, 106, 255, 0.6) 50%,
+    rgba(160, 106, 255, 0) 90%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.post-hover-glow::before {
+  top: 0;
+}
+
+.post-hover-glow::after {
+  bottom: 0;
+}
+
+.post-hover-glow:hover::before,
+.post-hover-glow:hover::after {
+  opacity: 1;
+}
