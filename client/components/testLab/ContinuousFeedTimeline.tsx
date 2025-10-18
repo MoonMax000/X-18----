@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Crown, Lock, TrendingUp, TrendingDown } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import UserHoverCard from "@/components/PostCard/UserHoverCard";
 
 interface Post {
   id: string;
