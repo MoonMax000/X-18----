@@ -194,7 +194,7 @@ const Footer: FC = () => {
               <p>
                 Copyright © Tyrian Trade. Все права защищены. Tyrian Trade является торговой маркой.
               </p>
-              <p>Москва, Россия</p>
+              <p>Dubai, UAE</p>
               <p className="text-[10px] leading-relaxed">
                 ⚠️ Торговля криптовалютами связана с рисками. Инвестируйте ответственно.
               </p>
