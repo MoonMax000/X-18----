@@ -14,6 +14,31 @@ import { LAB_CATEGORY_CONFIG, LAB_CATEGORY_LABELS, type LabCategory } from "@/co
 import { cn } from "@/lib/utils";
 
 export type ViewMode = "normal" | "compact";
+type MonetizationFilter = "all" | "free" | "premium";
+
+const QUICK_FILTERS: { title: string; description: string; categories: LabCategory[] }[] = [
+  {
+    title: "Фокус на сигналах",
+    description: "Показывать только свежие точки входа",
+    categories: ["signals", "analytics"],
+  },
+  {
+    title: "Обучение",
+    description: "Материалы для прокачки навыков",
+    categories: ["education", "analytics", "code"],
+  },
+  {
+    title: "Мультимедиа",
+    description: "Видеоразборы и графики",
+    categories: ["media", "news"],
+  },
+];
+
+const monetizationFilterLabels: Record<MonetizationFilter, string> = {
+  all: "Все форматы",
+  free: "Только бесплатные",
+  premium: "Только платные",
+};
 
 interface Props {
   isOwn?: boolean;
@@ -22,6 +47,19 @@ interface Props {
 const HomeScreen: FC<Props> = ({ isOwn = true }) => {
   const [, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
+  const [activeCategory, setActiveCategory] = useState<LabCategory | "all">("all");
+  const [savedCategories, setSavedCategories] = useState<LabCategory[]>([]);
+  const [monetizationFilter, setMonetizationFilter] = useState<MonetizationFilter>("all");
+
+  const effectiveCategories = useMemo<LabCategory[]>(() => {
+    if (savedCategories.length > 0) {
+      return savedCategories;
+    }
+    if (activeCategory === "all") {
+      return [];
+    }
+    return [activeCategory];
+  }, [activeCategory, savedCategories]);
 
   const handlePageChange = (val: number) => {
     setCurrentPage(val);
@@ -29,6 +67,23 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
 
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === "normal" ? "compact" : "normal"));
+  };
+
+  const handleSaveCurrentFilter = () => {
+    if (activeCategory === "all") {
+      setSavedCategories([]);
+      return;
+    }
+    setSavedCategories([activeCategory]);
+  };
+
+  const handleApplyQuickFilter = (categories: LabCategory[]) => {
+    setSavedCategories(categories);
+    setActiveCategory("all");
+  };
+
+  const handleResetSaved = () => {
+    setSavedCategories([]);
   };
 
   return (
