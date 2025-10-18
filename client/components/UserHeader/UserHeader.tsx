@@ -5,9 +5,10 @@ import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 interface Props {
   isOwn?: boolean;
   className?: string;
+  onEditProfile?: () => void;
 }
 
-const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
+const UserHeader: FC<Props> = ({ isOwn = true, className, onEditProfile }) => {
   const iconButtonClass =
     "group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-[#F7F9F9] shadow-[0_8px_20px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black active:translate-y-0 before:absolute before:inset-x-3 before:-top-1 before:h-1 before:rounded-full before:bg-white/40 before:opacity-0 before:transition-opacity before:duration-200 group-hover:before:opacity-70";
 
