@@ -101,7 +101,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
             <UserAvatar src={post.author.avatar} alt={post.author.name} size={48} accent={false} />
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center gap-1.5 text-base font-semibold leading-tight text-white">
-                <span>{post.author.name}</span>
+                <span className="hover:underline hover:underline-offset-2 transition-all">{post.author.name}</span>
                 {post.author.verified ? <VerifiedBadge size={16} /> : null}
                 {post.author.handle ? (
                   <span className="text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
