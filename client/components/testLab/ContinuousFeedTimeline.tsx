@@ -403,7 +403,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                   </div>
 
                   {/* Button - horizontal wide with gradient */}
-                  <button className="flex items-center justify-center px-8 sm:px-12 md:px-14 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-sm sm:text-[15px] font-bold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 whitespace-nowrap">
+                  <button className="flex items-center justify-center rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-8 sm:px-12 md:px-14 py-3 text-sm sm:text-[15px] font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset whitespace-nowrap">
                     Get Access
                   </button>
                 </div>
