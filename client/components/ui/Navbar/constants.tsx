@@ -43,7 +43,7 @@ export const navElements: NavElementProps[] = [
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "Ч��жой профиль",
+        title: "Чужой профиль",
         route: "/other-profile",
       },
       {
