@@ -2462,28 +2462,67 @@ export default function FeedTest() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-semibold text-white">{post.author.name}</span>
-                {post.author.verified && (
-                  <Badge className="h-5 bg-blue-500/20 px-1.5 text-[10px] text-blue-400 rounded-md flex items-center gap-0.5">
-                    <Check className="h-3 w-3" />
-                  </Badge>
+                {post.author.verified && <VerifiedBadge size={16} />}
+                {post.author.handle ? (
+                  <span className="text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
+                ) : null}
+                <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
+              </div>
+              {/* Badges row */}
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-[#B0B0B0]">
+                {/* Category badge */}
+                {post.type && (() => {
+                  const categoryKey = post.type === 'signal' ? 'signals' :
+                                    post.type === 'news' ? 'news' :
+                                    post.type === 'education' ? 'education' :
+                                    post.type === 'analysis' ? 'analytics' :
+                                    post.type === 'code' ? 'code' :
+                                    post.type === 'video' ? 'media' : null;
+
+                  if (categoryKey && CATEGORY_CONFIG_MAP[categoryKey]) {
+                    const config = CATEGORY_CONFIG_MAP[categoryKey];
+                    const IconComponent = config.icon;
+                    return (
+                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]", config.badgeClassName)}>
+                        <IconComponent className="h-3.5 w-3.5" />
+                        {config.label}
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* Monetization badge */}
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
+                  isPaidLocked
+                    ? "bg-[#2A1C3F] text-[#CDBAFF] border border-[#A06AFF]/50"
+                    : post.price !== "free"
+                      ? "bg-[#1F1630] text-[#CDBAFF] border border-[#6F4BD3]/40"
+                      : "bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40"
+                )}>
+                  {post.price !== "free" ? <DollarSign className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
+                  {post.price !== "free" ? (isPaidLocked ? "Premium · закрыто" : "Premium · открыт") : "Free доступ"}
+                </span>
+
+                {/* Lock badge when post is locked */}
+                {isPaidLocked && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#FFA800]/15 px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] text-[#FFA800]">
+                    <LockKeyhole className="h-3 w-3" />
+                    Закрыто
+                  </span>
                 )}
-                {post.isEditorPick && (
-                  <Badge className="h-5 bg-yellow-500/20 px-1.5 text-[10px] text-yellow-400 rounded-md flex items-center gap-0.5 font-semibold">
-                    <Star className="h-3 w-3" />
-                  </Badge>
+
+                {/* Following badge */}
+                {isFollowing && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#2EBD85]/15 px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] text-[#2EBD85]">
+                    Подписаны
+                  </span>
                 )}
-                <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">·</span>
-                <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {post.price !== "free" && (
-              <Badge className="bg-purple-500/20 px-1.5 text-[10px] text-purple-400 rounded-md flex items-center gap-0.5">
-                <Lock className="h-3 w-3" />
-              </Badge>
-            )}
             <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
             </Button>
@@ -2503,45 +2542,6 @@ export default function FeedTest() {
             </div>
           )}
           <p className={cn("mb-3 text-[15px] text-[#E5E7EB]", isPaidLocked && "blur-sm")}>{post.text}</p>
-        </div>
-
-        {/* Category and Monetization Badges */}
-        <div className="mb-3 flex flex-wrap gap-2 items-center">
-          {post.type && (() => {
-            const categoryLabel = post.type === 'signal' ? 'Signal' :
-                                post.type === 'news' ? 'News' :
-                                post.type === 'education' ? 'Education' :
-                                post.type === 'analysis' ? 'Analysis' :
-                                post.type === 'macro' ? 'Macro' :
-                                post.type === 'onchain' ? 'On-chain' :
-                                post.type === 'code' ? 'Code' :
-                                post.type === 'video' ? 'Video' : null;
-
-            if (categoryLabel && CATEGORY_CONFIG_MAP[categoryLabel]) {
-              const config = CATEGORY_CONFIG_MAP[categoryLabel];
-              const IconComponent = config.icon;
-              return (
-                <Badge className={cn("h-6 px-2 text-[10px] font-semibold rounded-full flex items-center gap-1", config.badgeClassName)}>
-                  <IconComponent className="h-3 w-3" />
-                  {categoryLabel}
-                </Badge>
-              );
-            }
-            return null;
-          })()}
-
-          {post.price === "pay-per-post" && (
-            <Badge className="h-6 bg-purple-500/20 px-2 text-[10px] font-semibold text-purple-400 rounded-full flex items-center gap-1">
-              <DollarSign className="h-3 w-3" />
-              Pay-per-post
-            </Badge>
-          )}
-          {post.price === "subscribers-only" && (
-            <Badge className="h-6 bg-purple-500/20 px-2 text-[10px] font-semibold text-purple-400 rounded-full flex items-center gap-1">
-              <Crown className="h-3 w-3" />
-              Subscribers Only
-            </Badge>
-          )}
         </div>
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer transition">{tag}</span>)}</div>}
