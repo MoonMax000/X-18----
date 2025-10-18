@@ -1,5 +1,4 @@
 import { FC, FormEvent, useState } from 'react';
-import { Send } from 'lucide-react';
 
 const Newsletter: FC = () => {
   const [email, setEmail] = useState('');
@@ -168,21 +167,35 @@ const Newsletter: FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || !email}
-                    className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 font-medium text-white transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group relative flex w-fit items-center gap-1 overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:border-white hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:text-white hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {/* Animated shine effect */}
                     <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    <span className="relative z-10 flex items-center gap-2">
-                      {isSubmitting ? (
-                        <span>Subscribing...</span>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4" />
+
+                    {isSubmitting ? (
+                      <span className="relative z-10 whitespace-nowrap">Subscribing...</span>
+                    ) : (
+                      <>
+                        <span className="relative z-10 whitespace-nowrap">
                           <span className="hidden sm:inline">Subscribe to newsletter</span>
                           <span className="sm:hidden">Subscribe</span>
-                        </>
-                      )}
-                    </span>
+                        </span>
+                        <span className="relative z-10 transition-all duration-300 group-hover:translate-x-2 group-hover:transform">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 48 48"
+                            fill="none"
+                            strokeWidth="4.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="stroke-current"
+                          >
+                            <path d="M38 24H10M38 24L28 34M38 24L28 14" />
+                          </svg>
+                        </span>
+                      </>
+                    )}
                   </button>
                 </div>
 
