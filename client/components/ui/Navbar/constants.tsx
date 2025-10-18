@@ -54,11 +54,6 @@ export const navElements: NavElementProps[] = [
         title: "Messages",
         route: "/social/messages",
       },
-      {
-        icon: <BoxIcon className="h-5 w-5" />,
-        title: "Post Preview",
-        route: "/social/post/preview",
-      },
     ],
   },
   {

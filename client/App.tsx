@@ -21,7 +21,6 @@ import SocialExplore from "./pages/SocialExplore";
 import SocialMessages from "./pages/SocialMessages";
 import SocialNotifications from "./pages/SocialNotifications";
 import SocialPostDetail from "./pages/SocialPostDetail";
-import SocialPostPreview from "./pages/SocialPostPreview";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
 import Updates from "./pages/Updates";
@@ -64,10 +63,6 @@ const App = () => (
                     <Route
                       path="/social/messages"
                       element={<SocialMessages />}
-                    />
-                    <Route
-                      path="/social/post/preview"
-                      element={<SocialPostPreview />}
                     />
                     <Route
                       path="/social/post/:postId"
