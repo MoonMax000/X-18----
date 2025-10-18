@@ -185,14 +185,28 @@ const Newsletter: FC = () => {
                     <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                     {isSubmitting ? (
-                      <span className="newsletter-button-text relative z-10 whitespace-nowrap">Subscribing...</span>
+                      <span
+                        className="relative z-10 whitespace-nowrap transition-colors duration-300"
+                        style={{ color: isButtonHovered ? '#ffffff' : '#E5E7EB' }}
+                      >
+                        Subscribing...
+                      </span>
                     ) : (
                       <>
-                        <span className="newsletter-button-text relative z-10 whitespace-nowrap">
+                        <span
+                          className="relative z-10 whitespace-nowrap transition-colors duration-300"
+                          style={{ color: isButtonHovered ? '#ffffff' : '#E5E7EB' }}
+                        >
                           <span className="hidden sm:inline">Subscribe to newsletter</span>
                           <span className="sm:hidden">Subscribe</span>
                         </span>
-                        <span className="newsletter-button-icon relative z-10 transition-all duration-300 group-hover:translate-x-2 group-hover:transform">
+                        <span
+                          className="relative z-10 transition-all duration-300"
+                          style={{
+                            color: isButtonHovered ? '#ffffff' : '#E5E7EB',
+                            transform: isButtonHovered ? 'translateX(8px)' : 'translateX(0)'
+                          }}
+                        >
                           <svg
                             width="20"
                             height="20"
