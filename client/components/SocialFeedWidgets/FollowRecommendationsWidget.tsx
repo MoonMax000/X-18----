@@ -47,7 +47,7 @@ const FollowRecommendationsWidget: FC<FollowRecommendationsWidgetProps> = ({
               </Avatar>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white">
-                  <span className="truncate">{profile.name}</span>
+                  <span className="truncate hover:underline hover:underline-offset-2 transition-all">{profile.name}</span>
                   {profile.isVerified && (
                     <VerifiedBadge size={16} />
                   )}

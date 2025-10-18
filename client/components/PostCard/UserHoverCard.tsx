@@ -81,7 +81,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
   return (
     <HoverCard openDelay={150} closeDelay={200}>
       <HoverCardTrigger asChild>
-        <div className="inline-block cursor-pointer hover:underline hover:underline-offset-2 transition-all" onClick={handleProfileClick}>
+        <div className="inline-block cursor-pointer" onClick={handleProfileClick}>
           {children}
         </div>
       </HoverCardTrigger>

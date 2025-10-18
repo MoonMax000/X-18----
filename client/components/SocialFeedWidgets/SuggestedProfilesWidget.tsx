@@ -71,8 +71,8 @@ const SuggestedProfilesWidget: FC<SuggestedProfilesWidgetProps> = ({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white hover:underline hover:underline-offset-2 transition-all">
-                      <span>{profile.name}</span>
+                    <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white">
+                      <span className="hover:underline hover:underline-offset-2 transition-all">{profile.name}</span>
                       {profile.verified && (
                         <VerifiedBadge size={16} />
                       )}
