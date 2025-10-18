@@ -22,14 +22,14 @@ const Newsletter: FC = () => {
 
   return (
     <section className="relative overflow-hidden bg-[#000000] py-16">
-      {/* Top gradient line - more visible */}
-      <div className="absolute left-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[#3D3D3D] to-transparent" />
-
       {/* Middle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#171717] to-[#000000]" />
 
+      {/* Top gradient line - more visible */}
+      <div className="absolute left-0 top-0 z-10 h-[2px] w-full bg-gradient-to-r from-transparent via-[#3D3D3D] to-transparent" />
+
       {/* Bottom gradient line */}
-      <div className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[#3D3D3D] to-transparent" />
+      <div className="absolute bottom-0 left-0 z-10 h-[2px] w-full bg-gradient-to-r from-transparent via-[#3D3D3D] to-transparent" />
 
       <div className="relative z-10 mx-auto max-w-[1400px] px-4 md:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2">
