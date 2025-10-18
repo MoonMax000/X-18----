@@ -2482,6 +2482,45 @@ export default function FeedTest() {
           <p className={cn("mb-3 text-[15px] text-[#E5E7EB]", isPaidLocked && "blur-sm")}>{post.text}</p>
         </div>
 
+        {/* Category and Monetization Badges */}
+        <div className="mb-3 flex flex-wrap gap-2 items-center">
+          {post.type && (() => {
+            const categoryLabel = post.type === 'signal' ? 'Signal' :
+                                post.type === 'news' ? 'News' :
+                                post.type === 'education' ? 'Education' :
+                                post.type === 'analysis' ? 'Analysis' :
+                                post.type === 'macro' ? 'Macro' :
+                                post.type === 'onchain' ? 'On-chain' :
+                                post.type === 'code' ? 'Code' :
+                                post.type === 'video' ? 'Video' : null;
+
+            if (categoryLabel && CATEGORY_CONFIG_MAP[categoryLabel]) {
+              const config = CATEGORY_CONFIG_MAP[categoryLabel];
+              const IconComponent = config.icon;
+              return (
+                <Badge className={cn("h-6 px-2 text-[10px] font-semibold rounded-full flex items-center gap-1", config.badgeClassName)}>
+                  <IconComponent className="h-3 w-3" />
+                  {categoryLabel}
+                </Badge>
+              );
+            }
+            return null;
+          })()}
+
+          {post.price === "pay-per-post" && (
+            <Badge className="h-6 bg-purple-500/20 px-2 text-[10px] font-semibold text-purple-400 rounded-full flex items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              Pay-per-post
+            </Badge>
+          )}
+          {post.price === "subscribers-only" && (
+            <Badge className="h-6 bg-purple-500/20 px-2 text-[10px] font-semibold text-purple-400 rounded-full flex items-center gap-1">
+              <Crown className="h-3 w-3" />
+              Subscribers Only
+            </Badge>
+          )}
+        </div>
+
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer transition">{tag}</span>)}</div>}
 
         <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
