@@ -89,7 +89,7 @@ const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassN
   'forecasts': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]', label: 'Прогнозы' },
   'news': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]', label: 'Новости' },
   'education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]', label: 'Обучение' },
-  'analytics': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Ан��литика' },
+  'analytics': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Ан���литика' },
   'code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]', label: 'Код' },
   'media': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]', label: 'Мультимедиа' },
 };
@@ -2371,24 +2371,21 @@ export default function FeedTest() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-semibold text-white">{post.author.name}</span>
-                {post.author.verified && (
-                  <Badge className="h-5 bg-blue-500/20 px-1.5 text-[10px] text-blue-400 rounded-md flex items-center gap-0.5">
-                    <Check className="h-3 w-3" />
-                  </Badge>
-                )}
-                {post.author.isPremium && (
-                  <Badge className="h-5 bg-purple-500/20 px-1.5 text-[10px] text-purple-400 rounded-md flex items-center gap-0.5 font-semibold">
-                    <Crown className="h-3 w-3" />
-                  </Badge>
-                )}
-                <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">•</span>
-                <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
+                {post.author.verified && <VerifiedBadge size={16} />}
+                {post.author.handle ? (
+                  <span className="text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
+                ) : null}
+                <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
               </div>
+              <PostBadges
+                postType="code"
+                price={post.price || "free"}
+                isPaidLocked={isPaidLocked}
+                isFollowing={isFollowing}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge className="bg-orange-500/20 text-[11px] font-semibold text-orange-400 rounded-full">CODE</Badge>
             <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
             </Button>
@@ -2401,18 +2398,6 @@ export default function FeedTest() {
           <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.market}</Badge>
           <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.language}</Badge>
           <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">Algo Trading</Badge>
-          {post.price === "pay-per-post" && (
-            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
-              <DollarSign className="h-3 w-3" />
-              Pay-per-post
-            </Badge>
-          )}
-          {post.price === "subscribers-only" && (
-            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
-              <Crown className="h-3 w-3" />
-              Subscribers Only
-            </Badge>
-          )}
         </div>
 
         <div className="mb-3 rounded-xl border border-[#0F131A] bg-[#000000] p-4">
