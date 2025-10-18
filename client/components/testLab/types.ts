@@ -30,6 +30,6 @@ export interface LabPost {
   subscriptionPrice?: number;
   unlocked?: boolean;
   stickyTag?: string;
-  audience: LabAudience;
-  assets: string[];
+  audience?: LabAudience;
+  assets?: string[];
 }
