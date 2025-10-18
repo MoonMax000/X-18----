@@ -4,7 +4,8 @@ import {
   Search, TrendingUp, TrendingDown, Sparkles, DollarSign, Users, BarChart3, Activity, Code, Image, Video, FileText,
   MessageCircle, Heart, Repeat2, Bookmark, Share2, Eye, ChevronDown, Filter, Send, UserPlus, UserCheck, Flame, Star,
   Zap, Lock, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
-  ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb
+  ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb, Newspaper, GraduationCap,
+  Brain, Code2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
