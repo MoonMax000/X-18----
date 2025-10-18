@@ -31,7 +31,7 @@ export const navElements: NavElementProps[] = [
     children: [
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "Мой п��офиль",
+        title: "Мой профиль",
         route: "/profile-page",
       },
       {
