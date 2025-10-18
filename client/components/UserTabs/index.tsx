@@ -1,10 +1,14 @@
 import { FC, useMemo, useState } from "react";
+import { DollarSign, LockKeyhole, Sparkles } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import type { ViewMode } from "@/screens/home/Home";
+import type { LabCategory } from "@/components/testLab/categoryConfig";
+import { LAB_CATEGORY_MAP } from "@/components/testLab/categoryConfig";
 
 import FeedPost, { type FeedPostProps } from "../PostCard/VideoPost";
 import CompactPostCard from "../PostCard/CompactPostCard";
+import { cn } from "@/lib/utils";
 
 interface Tab {
   id: TabId;
@@ -20,9 +24,13 @@ type TabId =
   | "videos"
   | "liked";
 
+type MonetizationFilter = "all" | "free" | "premium";
+
 interface Props {
   isOwn?: boolean;
   viewMode?: ViewMode;
+  effectiveCategories?: LabCategory[];
+  monetizationFilter?: MonetizationFilter;
 }
 
 const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
