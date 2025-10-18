@@ -44,9 +44,10 @@ interface Post {
 interface ContinuousFeedTimelineProps {
   posts: Post[];
   onFollowToggle?: (handle: string, isFollowing: boolean) => void;
+  onPostClick?: (postId: string) => void;
 }
 
-const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFollowToggle }) => {
+const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFollowToggle, onPostClick }) => {
   const [followingState, setFollowingState] = useState<Map<string, boolean>>(new Map());
 
   const handleFollowToggle = (handle: string, isFollowing: boolean) => {
@@ -78,8 +79,9 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
         return (
           <article
             key={post.id}
+            onClick={() => onPostClick?.(post.id)}
             className={cn(
-              "post-hover-glow flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative",
+              "post-hover-glow flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer",
               index === 0 && "before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[#181B22] before:to-transparent"
             )}
             style={{
