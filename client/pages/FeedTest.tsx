@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Search, TrendingUp, TrendingDown, Sparkles, DollarSign, Users, BarChart3, Activity, Code, Image, Video, FileText,
   MessageCircle, Heart, Repeat2, Bookmark, Share2, Eye, ChevronDown, Filter, Send, UserPlus, UserCheck, Flame, Star,
@@ -3017,7 +3018,7 @@ export default function FeedTest() {
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
-              Вы ещё не сохранили предпочтения. Выберите категории в фильтрах и сохраните их.
+              Вы ещё не сохранили предпочтения. Выб��рите категории в фильтрах и сохраните их.
             </p>
           ) : (
             <div className="mt-4 flex flex-col gap-2">
