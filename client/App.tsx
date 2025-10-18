@@ -21,6 +21,7 @@ import SocialExplore from "./pages/SocialExplore";
 import SocialMessages from "./pages/SocialMessages";
 import SocialNotifications from "./pages/SocialNotifications";
 import SocialPostDetail from "./pages/SocialPostDetail";
+import HomePostDetail from "./pages/HomePostDetail";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
 import Updates from "./pages/Updates";
