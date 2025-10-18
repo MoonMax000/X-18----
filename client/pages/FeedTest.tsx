@@ -2667,7 +2667,7 @@ export default function FeedTest() {
                 {activeConfig?.visible?.includes('category') && (
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                      Категория
+                      ��атегория
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -2725,7 +2725,7 @@ export default function FeedTest() {
               {activeConfig?.visible?.includes('symbol') && (
                 <div className="flex flex-col gap-1">
                   <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                    Па����а/Актив
+                    Пара/Актив
                   </label>
                   <input
                     type="text"
