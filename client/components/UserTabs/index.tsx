@@ -469,7 +469,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
                 scrollbarColor: "#2F3240 transparent",
               }}
             >
-              {activePosts.map((post, index) => (
+              {activePosts.filter((post) => shouldShowCategoryBadges(post.category) && shouldShowMonetizationBadges(false)).map((post, index) => (
                 <CompactPostCard
                   key={`${activeTab}-compact-${index}-${post.title}`}
                   author={post.author}
@@ -489,13 +489,10 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          {activePosts.length > 0
-            ? activePosts.map((post, index) => (
-                <FeedPost
-                  key={`${activeTab}-${index}-${post.title}`}
-                  {...post}
-                />
-              ))
+          {activePosts.filter((post) => shouldShowCategoryBadges(post.category) && shouldShowMonetizationBadges(false)).length > 0
+            ? activePosts
+                .filter((post) => shouldShowCategoryBadges(post.category) && shouldShowMonetizationBadges(false))
+                .map((post, index) => renderPostWithBadges(post, index))
             : renderEmptyState(activeTab)}
         </div>
       )}
