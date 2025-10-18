@@ -597,3 +597,8 @@ textarea::-webkit-scrollbar-track {
     animation: shine-move 2.2s linear infinite;
   }
 }
+
+/* Newsletter button hover - ensure proper color and animation */
+button.group:hover span {
+  color: #ffffff;
+}
