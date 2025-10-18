@@ -45,11 +45,6 @@ export const navElements: NavElementProps[] = [
         route: "/other-profile",
       },
       {
-        icon: <BoxIcon className="h-5 w-5" />,
-        title: "My page",
-        route: "/profile",
-      },
-      {
         icon: <ExploreIcon className="h-5 w-5" />,
         title: "Explore",
         route: "/social/explore",
