@@ -68,7 +68,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className, onEditProfile }) => {
             <img
               src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=320"
               alt="Profile"
-              className="h-full w-full object-cover object-center"
+              className="h-full w-full object-fill"
             />
             <button
               type="button"
