@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import {
   Search, TrendingUp, TrendingDown, Sparkles, DollarSign, Users, BarChart3, Activity, Code, Image, Video, FileText,
   MessageCircle, Heart, Repeat2, Bookmark, Share2, Eye, ChevronDown, Filter, Send, UserPlus, UserCheck, Flame, Star,
-  Zap, Lock, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
+  Zap, Lock, LockKeyhole, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
   ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb, Newspaper, GraduationCap,
   Brain, Code2
 } from "lucide-react";
@@ -3058,7 +3058,7 @@ export default function FeedTest() {
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только свежие точки входа</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только свежие точки вхо��а</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
