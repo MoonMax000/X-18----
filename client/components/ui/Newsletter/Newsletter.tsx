@@ -31,7 +31,7 @@ const Newsletter: FC = () => {
       {/* Bottom gradient line */}
       <div className="absolute bottom-0 left-0 z-10 h-[2px] w-full bg-gradient-to-r from-transparent via-[#3D3D3D] to-transparent" />
 
-      <div className="relative z-10 mx-auto max-w-[1400px] px-4 md:px-6 lg:px-8">
+      <div className="relative z-20 mx-auto max-w-[1400px] px-4 md:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2">
           {/* Left Column: Stay in Touch */}
           <div>
