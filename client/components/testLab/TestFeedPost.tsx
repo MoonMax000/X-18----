@@ -197,7 +197,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
         </div>
       </header>
 
-      {post.assets.length > 0 ? (
+      {post.assets && post.assets.length > 0 ? (
         <div className="ml-14 flex flex-wrap items-center gap-1.5 text-xs text-[#8E92A0]">
           {post.assets.map((asset) => {
             const assetConfig = LAB_ASSET_MAP[asset];
