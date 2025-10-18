@@ -18,7 +18,7 @@ const HomePostDetail: FC = () => {
       return postFromState;
     }
     if (postId) {
-      return LAB_POSTS_DATA.find((p) => p.id === postId);
+      return TEST_LAB_POSTS.find((p) => p.id === postId);
     }
     return undefined;
   }, [postFromState, postId]);
