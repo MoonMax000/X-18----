@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 import VerifiedBadge from "./VerifiedBadge";
 import UserHoverCard from "./UserHoverCard";
+import { PostBadges } from "./PostBadges";
 
 export interface FeedPostProps {
   author: {
@@ -29,7 +30,9 @@ export interface FeedPostProps {
   isFollowing?: boolean;
   hashtags?: string[];
   category?: string;
-  type?: "video" | "article" | string;
+  type?: "video" | "article" | "signal" | "news" | "education" | "analysis" | "code" | string;
+  price?: "free" | "pay-per-post" | "subscribers-only";
+  isPaidLocked?: boolean;
   truncate?: boolean;
   onOpen?: () => void;
   className?: string;
