@@ -226,6 +226,15 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
 
       <section className="ml-14 flex flex-col gap-2 text-sm leading-relaxed text-white/90">
         <p>{displayedContent}</p>
+        {post.hashtags && post.hashtags.length > 0 && !showLock ? (
+          <p className="text-sm leading-relaxed mt-1">
+            {post.hashtags.map((tag) => (
+              <span key={tag} className="text-[#4D7CFF] font-normal">
+                {tag.startsWith('#') ? tag : `#${tag}`}
+              </span>
+            )).reduce((prev, curr) => [prev, ' ', curr] as any)}
+          </p>
+        ) : null}
         {showLock ? (
           <div className="rounded-2xl border border-dashed border-[#A06AFF]/40 bg-[#A06AFF]/5 p-4 text-sm text-[#CDBAFF]">
             Этот пост доступен после оплаты. Оформите подписку или разблокируйте единично.
