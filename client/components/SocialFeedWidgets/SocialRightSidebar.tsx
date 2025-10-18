@@ -8,7 +8,6 @@ import FollowRecommendationsWidget from "./FollowRecommendationsWidget";
 import NewsWidget, { type NewsItem } from "./TrendingTopicsWidget";
 import {
   DEFAULT_SUGGESTED_PROFILES,
-  DEFAULT_FOLLOW_RECOMMENDATIONS,
   DEFAULT_NEWS_ITEMS,
 } from "./sidebarData";
 
