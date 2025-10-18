@@ -2061,6 +2061,7 @@ export default function FeedTest() {
   const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(new Set(["@cryptowhale", "@marketnews"]));
   const [topAuthorsFollowing, setTopAuthorsFollowing] = useState<Set<string>>(new Set(["@cryptowhale"]));
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set(["1", "3", "5"]));
+  const [savedCategories, setSavedCategories] = useState<string[]>([]);
 
   // Composer state
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
@@ -2154,6 +2155,16 @@ export default function FeedTest() {
   const applyPreset = (preset: typeof SIGNAL_PRESETS[0]) => {
     setFilters(prev => ({ ...prev, ...preset.config }));
     setActivePreset(preset.key);
+  };
+
+  const saveCurrentCategory = () => {
+    if (filters.category && !savedCategories.includes(filters.category)) {
+      setSavedCategories(prev => [...prev, filters.category]);
+    }
+  };
+
+  const removeSavedCategory = (category: string) => {
+    setSavedCategories(prev => prev.filter(c => c !== category));
   };
 
   const handleExpandComposer = useCallback((data: Partial<ComposerData>) => {
