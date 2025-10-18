@@ -50,11 +50,6 @@ export const navElements: NavElementProps[] = [
         route: "/profile",
       },
       {
-        icon: <ComposeIcon className="h-5 w-5" />,
-        title: "Tweet Composer",
-        route: "/social/compose-classic",
-      },
-      {
         icon: <ExploreIcon className="h-5 w-5" />,
         title: "Explore",
         route: "/social/explore",

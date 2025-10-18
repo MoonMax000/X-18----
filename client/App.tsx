@@ -22,7 +22,6 @@ import SocialMessages from "./pages/SocialMessages";
 import SocialNotifications from "./pages/SocialNotifications";
 import SocialPostDetail from "./pages/SocialPostDetail";
 import SocialPostPreview from "./pages/SocialPostPreview";
-import SocialTweetComposer from "./pages/SocialTweetComposer";
 import HomePage from "./pages/Home";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
@@ -67,10 +66,6 @@ const App = () => (
                     <Route
                       path="/social/messages"
                       element={<SocialMessages />}
-                    />
-                    <Route
-                      path="/social/compose-classic"
-                      element={<SocialTweetComposer />}
                     />
                     <Route
                       path="/social/post/preview"

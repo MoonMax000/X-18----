@@ -17,7 +17,7 @@ const SocialPostPreview: FC = () => {
 
   useEffect(() => {
     if (!post) {
-      navigate("/social/compose-classic", { replace: true });
+      navigate("/social/home", { replace: true });
     }
   }, [post, navigate]);
 
@@ -57,7 +57,7 @@ const SocialPostPreview: FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => navigate("/social/compose-classic")}
+            onClick={() => navigate("/social/home")}
             className="inline-flex items-center justify-center gap-2 rounded-full border border-[#181B22] px-6 py-2 text-sm font-semibold text-[#E3D8FF] transition hover:border-[#A06AFF]/40 hover:text-white"
           >
             Создать ещё пост
