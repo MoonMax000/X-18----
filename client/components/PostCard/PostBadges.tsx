@@ -15,12 +15,16 @@ interface PostBadgesProps {
 
 const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassName: string; label: string }> = {
   'signal': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]', label: 'Сигналы' },
+  'signals': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]', label: 'Сигналы' },
   'news': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]', label: 'Новости' },
   'education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]', label: 'Обучение' },
   'analysis': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Аналитика' },
+  'analytics': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Аналитика' },
   'macro': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]', label: 'Прогнозы' },
   'code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]', label: 'Код' },
   'video': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]', label: 'Мультимедиа' },
+  'media': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]', label: 'Мультимедиа' },
+  'article': { icon: Sparkles, badgeClassName: 'bg-[#8E92A0]/20 text-[#8E92A0]', label: 'Статья' },
   'general': { icon: Sparkles, badgeClassName: 'bg-[#8E92A0]/20 text-[#8E92A0]', label: 'Общее' },
 };
 
