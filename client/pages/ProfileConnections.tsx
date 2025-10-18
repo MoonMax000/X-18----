@@ -271,7 +271,7 @@ const ProfileConnections: FC = () => {
       </div>
       </div>
 
-      <aside className="sticky top-4 hidden h-fit w-[340px] flex-col gap-4 lg:flex">
+      <aside className="hidden h-fit w-[340px] flex-col gap-4 lg:flex">
         <SuggestedProfilesWidget
           title="Who to follow"
           profiles={DEFAULT_FOLLOW_RECOMMENDATIONS}
