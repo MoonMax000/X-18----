@@ -2397,10 +2397,22 @@ export default function FeedTest() {
 
         <p className="mb-3 text-[15px] text-[#E5E7EB]">{post.text}</p>
 
-        <div className="mb-3 flex gap-2">
+        <div className="mb-3 flex flex-wrap gap-2">
           <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.market}</Badge>
           <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.language}</Badge>
           <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">Algo Trading</Badge>
+          {post.price === "pay-per-post" && (
+            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
+              <DollarSign className="h-3 w-3" />
+              Pay-per-post
+            </Badge>
+          )}
+          {post.price === "subscribers-only" && (
+            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
+              <Crown className="h-3 w-3" />
+              Subscribers Only
+            </Badge>
+          )}
         </div>
 
         <div className="mb-3 rounded-xl border border-[#0F131A] bg-[#000000] p-4">
