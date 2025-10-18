@@ -3,6 +3,8 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
+import { DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import { cn } from "@/lib/utils";
 
 const MOCK_FOLLOWERS = [
