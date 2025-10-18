@@ -1,6 +1,7 @@
 import { type FC, useState } from "react";
 
 import type { SocialProfileData } from "@/data/socialProfile";
+import EditProfileModal from "./EditProfileModal";
 
 interface ProfileHeroProps {
   profile: SocialProfileData;
@@ -16,9 +17,14 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   isOwnProfile = true,
 }) => {
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleFollowClick = () => {
     setIsFollowing(!isFollowing);
+  };
+
+  const handleEditClick = () => {
+    setIsEditModalOpen(true);
   };
 
   const iconButtonClass =
@@ -73,7 +79,7 @@ const ProfileHero: FC<ProfileHeroProps> = ({
 
             <button
               type="button"
-              onClick={isOwnProfile ? onEdit : handleFollowClick}
+              onClick={isOwnProfile ? handleEditClick : handleFollowClick}
               className={primaryActionButtonClass}
             >
               <span className="relative z-10 text-center font-semibold leading-5">
@@ -87,6 +93,17 @@ const ProfileHero: FC<ProfileHeroProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        profile={profile}
+        onSave={(updatedProfile) => {
+          console.log("Profile updated:", updatedProfile);
+          onEdit?.();
+        }}
+      />
     </section>
   );
 };
