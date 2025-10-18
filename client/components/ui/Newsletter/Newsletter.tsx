@@ -177,6 +177,8 @@ const Newsletter: FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || !email}
+                    onMouseEnter={() => setIsButtonHovered(true)}
+                    onMouseLeave={() => setIsButtonHovered(false)}
                     className="group relative flex w-fit items-center gap-1 overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {/* Animated shine effect */}
