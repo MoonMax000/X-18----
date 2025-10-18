@@ -1,5 +1,7 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { SocialPost } from "@/data/socialPosts";
-import FeedPost from "@/components/PostCard/VideoPost";
+import ContinuousFeedTimeline from "@/components/testLab/ContinuousFeedTimeline";
 
 interface ProfileTweetsClassicProps {
   posts: SocialPost[];
@@ -8,36 +10,41 @@ interface ProfileTweetsClassicProps {
 export default function ProfileTweetsClassic({
   posts,
 }: ProfileTweetsClassicProps) {
+  const navigate = useNavigate();
+  const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(new Set());
+
+  const toggleFollow = (handle: string) => {
+    setFollowingAuthors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(handle)) {
+        newSet.delete(handle);
+      } else {
+        newSet.add(handle);
+      }
+      return newSet;
+    });
+  };
+
+  const handlePostClick = (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    navigate(`/social/post/${postId}`, { state: post });
+  };
+
   if (!posts || posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-[#888]">
-        <p className="text-lg">No tweets yet</p>
+        <p className="text-lg">No posts yet</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex flex-col items-center gap-8 pt-6">
-        {posts.map((post) => (
-          <FeedPost
-            key={post.id}
-            author={post.author}
-            timestamp={post.timestamp}
-            title={post.title}
-            content={post.body ?? post.preview}
-            mediaUrl={post.videoUrl ?? post.mediaUrl ?? null}
-            sentiment={post.sentiment}
-            likes={post.likes}
-            comments={post.comments}
-            views={post.views}
-            isFollowing={post.isFollowing}
-            hashtags={post.hashtags}
-            category={post.category}
-            type={post.type}
-          />
-        ))}
-      </div>
+    <div className="pt-6">
+      <ContinuousFeedTimeline
+        posts={posts}
+        onFollowToggle={(handle) => toggleFollow(handle)}
+        onPostClick={handlePostClick}
+      />
     </div>
   );
 }
