@@ -21,7 +21,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
           alt="Profile cover"
-          className="h-[200px] w-full object-cover"
+          className="h-[120px] sm:h-[160px] md:h-[200px] w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
         <button
