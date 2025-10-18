@@ -63,32 +63,6 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
         <div className="flex min-w-0 flex-col gap-6">
           <UserInfoCards />
           <SubscribeBlock isOwn={isOwn} />
-
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-[#A3A6B4]">
-            <span className="rounded-full border border-[#181B22] bg-white/5 px-3 py-1 text-white/80">
-              Активные рубрики: {activeCategoryLabels.length === 0 ? "Все" : activeCategoryLabels.join(", ")}
-            </span>
-            <span className="rounded-full border border-[#181B22] bg-white/5 px-3 py-1 text-white/80">
-              Формат: {monetizationFilterLabels[monetizationFilter]}
-            </span>
-            <button
-              type="button"
-              className="rounded-full border border-[#A06AFF]/40 px-3 py-1 text-xs font-semibold text-[#A06AFF] transition hover:bg-[#A06AFF]/10"
-              onClick={handleSaveCurrentFilter}
-            >
-              Сохранить текущий фильтр
-            </button>
-            {savedCategories.length > 0 ? (
-              <span className="inline-flex flex-wrap items-center gap-1 text-[#CDBAFF]">
-                {savedCategories.map((category) => (
-                  <span key={category} className="rounded-full bg-[#482090]/20 px-2 py-0.5">
-                    {LAB_CATEGORY_LABELS[category]}
-                  </span>
-                ))}
-              </span>
-            ) : null}
-          </div>
-
           <CreatePostBox onToggleView={toggleViewMode} viewMode={viewMode} />
           <UserTabs isOwn={isOwn} viewMode={viewMode} />
           <Pagination
@@ -178,7 +152,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
               <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
                 <span className="text-white">Подписка на автора</span>
                 <p className="mt-1 text-xs text-[#8E92A0]">
-                  Доступ ко всем закрытым постам автора и мгновенные уведомления.
+                  Доступ ко всем закрытым постам автора и мгновенные уведомле��ия.
                 </p>
               </li>
               <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
