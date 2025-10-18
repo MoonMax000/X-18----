@@ -39,12 +39,12 @@ export const navElements: NavElementProps[] = [
       {
         icon: <BoxIcon className="h-5 w-5" />,
         title: "Мой профиль",
-        route: "/profile-page",
+        route: "/profile/tyrian_trade",
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "Чужой профиль",
-        route: "/other-profile",
+        title: "Примеры профилей",
+        route: "/profile/crypto_analyst",
       },
       {
         icon: <ExploreIcon className="h-5 w-5" />,
