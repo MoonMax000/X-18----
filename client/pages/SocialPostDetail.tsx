@@ -26,7 +26,7 @@ const SocialPostDetail: FC = () => {
     if (location.key !== "default") {
       navigate(-1);
     } else {
-      navigate("/social/home");
+      navigate("/social/explore");
     }
   };
 
@@ -36,7 +36,7 @@ const SocialPostDetail: FC = () => {
         <div className="text-3xl font-semibold">Post not found</div>
         <button
           type="button"
-          onClick={() => navigate("/social/home")}
+          onClick={() => navigate("/social/explore")}
           className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-3 text-sm font-semibold text-white"
         >
           Back to feed
