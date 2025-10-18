@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import ActivityCard from "@/components/ActivityCard/ActivityCard";
 import PortfolioCard from "@/components/PortfolioCard/PortfolioCard";
@@ -10,6 +10,8 @@ import CreatePostBox from "@/components/CreatePostBox/CreatePostBox";
 import Pagination from "@/components/ui/Pagination/Pagination";
 import UserInfoCards from "@/components/UserInfoCards/UserInfoCards";
 import UserMarketsCard from "@/components/UserMarketsCard/UserMarketsCard";
+import { LAB_CATEGORY_CONFIG, LAB_CATEGORY_LABELS, type LabCategory } from "@/components/testLab/categoryConfig";
+import { cn } from "@/lib/utils";
 
 export type ViewMode = "normal" | "compact";
 
