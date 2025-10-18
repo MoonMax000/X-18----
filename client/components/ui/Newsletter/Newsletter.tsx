@@ -189,7 +189,7 @@ const Newsletter: FC = () => {
                           <span className="hidden sm:inline">Subscribe to newsletter</span>
                           <span className="sm:hidden">Subscribe</span>
                         </span>
-                        <span className="relative z-10 transition-all duration-300 group-hover:translate-x-2 group-hover:transform">
+                        <span className="relative z-10 text-[#E5E7EB] transition-all duration-300 group-hover:translate-x-2 group-hover:transform group-hover:text-white">
                           <svg
                             width="20"
                             height="20"
