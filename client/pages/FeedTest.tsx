@@ -2144,7 +2144,8 @@ export default function FeedTest() {
   };
 
   const handlePostClick = (postId: string) => {
-    navigate(`/home/post/${postId}`);
+    const post = displayedPosts.find(p => p.id === postId);
+    navigate(`/home/post/${postId}`, { state: post });
   };
 
   const toggleTopAuthorFollow = (handle: string) => {
