@@ -50,6 +50,8 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/home" element={<FeedTest />} />
+                    <Route path="/marketplace/test-home" element={<Index />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
                     <Route
                       path="/other-profile"
@@ -75,7 +77,6 @@ const App = () => (
                     <Route path="/updates" element={<Updates />} />
                     <Route path="/referrals" element={<Referrals />} />
                     <Route path="/testovaya" element={<TestovayaPage />} />
-                    <Route path="/feedtest" element={<FeedTest />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/language" element={<Settings />} />
                     <Route
