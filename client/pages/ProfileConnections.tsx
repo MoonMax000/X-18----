@@ -157,8 +157,9 @@ const ProfileConnections: FC = () => {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[600px]">
-      <div className="sticky top-0 z-10 border-b border-[#181B22] bg-black/95 backdrop-blur-md">
+    <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
+      <div className="flex-1 w-full sm:max-w-[720px]">
+        <div className="sticky top-0 z-10 border-b border-[#181B22] bg-black/95 backdrop-blur-md">
         <div className="flex items-center gap-4 px-4 py-3">
           <button
             type="button"
@@ -268,6 +269,14 @@ const ProfileConnections: FC = () => {
           ))
         )}
       </div>
+      </div>
+
+      <aside className="sticky top-4 hidden h-fit w-[340px] flex-col gap-4 lg:flex">
+        <SuggestedProfilesWidget
+          title="Who to follow"
+          profiles={DEFAULT_FOLLOW_RECOMMENDATIONS}
+        />
+      </aside>
     </div>
   );
 };
