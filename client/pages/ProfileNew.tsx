@@ -1059,7 +1059,7 @@ const ProfileNew: FC = () => {
       {/* User Header */}
       <div className="flex justify-center">
         <div className="w-full max-w-[720px]">
-          <UserHeader isOwn={true} />
+          <UserHeader isOwn={true} onEditProfile={() => setActiveTab("profile")} />
         </div>
       </div>
 

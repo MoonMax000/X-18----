@@ -119,7 +119,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className, onEditProfile }) => {
         {/* Action buttons panel */}
         <div className="flex items-start justify-end gap-2 sm:gap-3 py-3">
           {isOwn ? (
-            <button type="button" className={primaryActionButtonClass}>
+            <button type="button" className={primaryActionButtonClass} onClick={onEditProfile}>
               <span className="relative z-10 text-center font-semibold leading-5">
                 Edit profile
               </span>
