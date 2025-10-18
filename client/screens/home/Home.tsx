@@ -135,7 +135,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           <ActivityCard />
           <ProductsCard />
 
-          <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
+          <aside className="w-full max-w-[320px] flex-col gap-5 flex">
             <div className="sticky top-24 flex flex-col gap-5">
               <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
                 <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
