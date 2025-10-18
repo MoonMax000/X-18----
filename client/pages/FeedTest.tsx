@@ -2870,6 +2870,7 @@ export default function FeedTest() {
         <ContinuousFeedTimeline
           posts={filteredPosts}
           onFollowToggle={(handle, isFollowing) => toggleFollow(handle)}
+          onPostClick={handlePostClick}
         />
       </div>
 
@@ -3009,7 +3010,7 @@ export default function FeedTest() {
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Материалы для прокачки навыков</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Материалы для прокачки навы��ов</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Мультимедиа</span>
