@@ -24,6 +24,8 @@ import SocialPostDetail from "./pages/SocialPostDetail";
 import HomePostDetail from "./pages/HomePostDetail";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
+import ProfileFollowers from "./pages/ProfileFollowers";
+import ProfileFollowing from "./pages/ProfileFollowing";
 import Updates from "./pages/Updates";
 import Referrals from "./pages/Referrals";
 import TestovayaPage from "./pages/Testovaya";
@@ -84,6 +86,14 @@ const App = () => (
                     <Route
                       path="/social/profile/:handle"
                       element={<OtherProfilePage />}
+                    />
+                    <Route
+                      path="/social/profile/:handle/followers"
+                      element={<ProfileFollowers />}
+                    />
+                    <Route
+                      path="/social/profile/:handle/following"
+                      element={<ProfileFollowing />}
                     />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
