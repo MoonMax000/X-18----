@@ -70,12 +70,12 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
 
   const handleFollowersClick = (e: MouseEvent) => {
     e.stopPropagation();
-    navigate(`${getProfilePath()}/followers`);
+    navigate(`${getProfilePath()}/connections?tab=followers`);
   };
 
   const handleFollowingClick = (e: MouseEvent) => {
     e.stopPropagation();
-    navigate(`${getProfilePath()}/following`);
+    navigate(`${getProfilePath()}/connections?tab=following`);
   };
 
   return (
