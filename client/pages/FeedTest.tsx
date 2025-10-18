@@ -2245,7 +2245,7 @@ export default function FeedTest() {
                 )}
               </div>
                 <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">��</span>
+                <span className="text-xs text-[#6C7280]">•</span>
                 <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
             </div>
           </div>
@@ -2347,7 +2347,7 @@ export default function FeedTest() {
                   </Badge>
                 )}
                 <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">��</span>
+                <span className="text-xs text-[#6C7280]">•</span>
                 <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
               </div>
             </div>
