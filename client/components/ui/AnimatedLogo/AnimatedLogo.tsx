@@ -33,7 +33,7 @@ export const AnimatedLogo: FC = () => {
         </defs>
       </svg>
 
-      <span className="hidden md:block text-2xl font-bold text-white transition-colors duration-300">
+      <span className="hidden md:block text-2xl font-bold text-[#FFFFFF] transition-colors duration-300">
         Tyrian Trade
       </span>
     </Link>
