@@ -82,23 +82,22 @@ interface ComposerData {
   commentsEnabled: boolean;
 }
 
-// Filter Configuration
-const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassName: string }> = {
-  'News': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]' },
-  'Education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]' },
-  'Analysis': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]' },
-  'Macro': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]' },
-  'On-chain': { icon: Sparkles, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]' },
-  'Code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]' },
-  'Video': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]' },
-  'Signal': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]' },
+// Filter Configuration (matching /testovaya style)
+const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassName: string; label: string }> = {
+  'signals': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]', label: 'Сигналы' },
+  'forecasts': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]', label: 'Прогнозы' },
+  'news': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]', label: 'Новости' },
+  'education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]', label: 'Обучение' },
+  'analytics': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Ан��литика' },
+  'code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]', label: 'Код' },
+  'media': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]', label: 'Мультимедиа' },
 };
 
 const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select', opts: ['All', 'Free', 'Paid', 'Subscription'] },
   period: { type: 'select', opts: ['All time', 'Today', '7d', '30d', 'YTD', 'Custom'] },
-  category: { type: 'chips', opts: ['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'] },
+  category: { type: 'chips', opts: ['Сигналы', 'Прогнозы', 'Новости', 'Обучение', 'Аналитика', 'Код', 'Мультимедиа'] },
   sort: { type: 'select', opts: ['Popular', 'New', 'Top 24h', 'Top 7d', 'Recent'] },
   sentiment: { type: 'chips', opts: ['Bullish', 'Bearish', 'Neutral'] },
   strategy: { type: 'chips', opts: ['TA', 'Quant', 'News', 'Options', 'On-chain'] },
