@@ -610,34 +610,41 @@ textarea::-webkit-scrollbar-track {
 /* Post hover glow effect - soft highlight for top and bottom borders */
 .post-hover-glow {
   position: relative;
+  isolation: isolate;
 }
 
 .post-hover-glow::before,
 .post-hover-glow::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
+  left: 5%;
+  right: 5%;
+  height: 2px;
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(160, 106, 255, 0) 10%,
-    rgba(160, 106, 255, 0.6) 50%,
-    rgba(160, 106, 255, 0) 90%,
+    rgba(160, 106, 255, 0) 5%,
+    rgba(160, 106, 255, 0.4) 25%,
+    rgba(160, 106, 255, 0.7) 50%,
+    rgba(160, 106, 255, 0.4) 75%,
+    rgba(160, 106, 255, 0) 95%,
     transparent 100%
   );
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease-in-out;
   pointer-events: none;
+  filter: blur(1px);
+  z-index: 1;
 }
 
 .post-hover-glow::before {
-  top: 0;
+  top: -1px;
+  box-shadow: 0 0 8px rgba(160, 106, 255, 0.3);
 }
 
 .post-hover-glow::after {
-  bottom: 0;
+  bottom: -1px;
+  box-shadow: 0 0 8px rgba(160, 106, 255, 0.3);
 }
 
 .post-hover-glow:hover::before,
