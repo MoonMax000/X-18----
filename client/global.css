@@ -598,7 +598,11 @@ textarea::-webkit-scrollbar-track {
   }
 }
 
-/* Newsletter button hover - ensure proper color and animation */
-button.group:hover span {
-  color: #ffffff;
+/* Newsletter subscribe button - ensure hover works properly */
+.newsletter-subscribe-btn:hover span {
+  color: #ffffff !important;
+}
+
+.newsletter-subscribe-btn:hover .newsletter-arrow {
+  transform: translateX(0.5rem);
 }
