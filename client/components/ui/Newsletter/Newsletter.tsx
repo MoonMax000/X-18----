@@ -161,7 +161,7 @@ const Newsletter: FC = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="Enter your email"
-                      className="w-full rounded-lg border border-[#181B22] bg-[#0A0D12] px-4 py-3 text-white placeholder-[#6C7280] transition-colors focus:border-[#A06AFF] focus:outline-none focus:ring-1 focus:ring-[#A06AFF]"
+                      className="w-full rounded-full border border-[#525252] bg-[#0A0D12] px-6 py-3 text-white placeholder-[#6C7280] transition-all duration-300 hover:border-white focus:border-[#A06AFF] focus:outline-none focus:ring-1 focus:ring-[#A06AFF]"
                     />
                   </div>
                   <button
@@ -173,10 +173,10 @@ const Newsletter: FC = () => {
                     <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                     {isSubmitting ? (
-                      <span className="relative z-10 whitespace-nowrap">Subscribing...</span>
+                      <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:text-white">Subscribing...</span>
                     ) : (
                       <>
-                        <span className="relative z-10 whitespace-nowrap">
+                        <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:text-white">
                           <span className="hidden sm:inline">Subscribe to newsletter</span>
                           <span className="sm:hidden">Subscribe</span>
                         </span>
