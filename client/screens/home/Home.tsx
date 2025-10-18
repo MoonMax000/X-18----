@@ -47,19 +47,6 @@ interface Props {
 const HomeScreen: FC<Props> = ({ isOwn = true }) => {
   const [, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
-  const [activeCategory, setActiveCategory] = useState<LabCategory | "all">("all");
-  const [savedCategories, setSavedCategories] = useState<LabCategory[]>([]);
-  const [monetizationFilter, setMonetizationFilter] = useState<MonetizationFilter>("all");
-
-  const effectiveCategories = useMemo<LabCategory[]>(() => {
-    if (savedCategories.length > 0) {
-      return savedCategories;
-    }
-    if (activeCategory === "all") {
-      return [];
-    }
-    return [activeCategory];
-  }, [activeCategory, savedCategories]);
 
   const handlePageChange = (val: number) => {
     setCurrentPage(val);
@@ -68,25 +55,6 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === "normal" ? "compact" : "normal"));
   };
-
-  const handleSaveCurrentFilter = () => {
-    if (activeCategory === "all") {
-      setSavedCategories([]);
-      return;
-    }
-    setSavedCategories([activeCategory]);
-  };
-
-  const handleApplyQuickFilter = (categories: LabCategory[]) => {
-    setSavedCategories(categories);
-    setActiveCategory("all");
-  };
-
-  const handleResetSaved = () => {
-    setSavedCategories([]);
-  };
-
-  const activeCategoryLabels = effectiveCategories.map((category) => LAB_CATEGORY_LABELS[category]);
 
   return (
     <div id="root-content" className="flex min-w-0 flex-col gap-6">
@@ -138,7 +106,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
             <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
             <p className="mt-1 text-sm text-[#A3A6B4]">
-              Сохранённые пр��сеты помогают быстро переключаться между сценариями просмотра.
+              Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
             </p>
             <ul className="mt-4 flex flex-col gap-3">
               {QUICK_FILTERS.map((preset) => (
