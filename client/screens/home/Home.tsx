@@ -136,44 +136,44 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           <ProductsCard />
 
           <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-                <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
-                <p className="mt-1 text-sm text-[#A3A6B4]">
-                  Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
-                </p>
-                <ul className="mt-4 flex flex-col gap-3">
-                  {QUICK_FILTERS.map((preset) => (
-                    <li key={preset.title}>
-                      <button
-                        type="button"
-                        className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10"
-                        onClick={() => handleApplyQuickFilter(preset.categories)}
-                      >
-                        <span className="text-sm font-semibold text-white">{preset.title}</span>
-                        <span className="mt-1 block text-xs text-[#8E92A0]">{preset.description}</span>
-                        <span className="mt-2 flex flex-wrap gap-1 text-[11px] uppercase tracking-[0.12em] text-[#CDBAFF]">
-                          {preset.categories.map((category) => {
-                            const categoryConfig = LAB_CATEGORY_CONFIG.find((item) => item.value === category);
-                            if (!categoryConfig) return null;
-                            const Icon = categoryConfig.icon;
-                            return (
-                              <span
-                                key={category}
-                                className="inline-flex items-center gap-1 rounded-full bg-[#482090]/20 px-2 py-0.5"
-                              >
-                                <Icon className="h-3 w-3" />
-                                {categoryConfig.label}
-                              </span>
-                            );
-                          })}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+            <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
+            <p className="mt-1 text-sm text-[#A3A6B4]">
+              Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
+            </p>
+            <ul className="mt-4 flex flex-col gap-3">
+              {QUICK_FILTERS.map((preset) => (
+                <li key={preset.title}>
+                  <button
+                    type="button"
+                    className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10"
+                    onClick={() => handleApplyQuickFilter(preset.categories)}
+                  >
+                    <span className="text-sm font-semibold text-white">{preset.title}</span>
+                    <span className="mt-1 block text-xs text-[#8E92A0]">{preset.description}</span>
+                    <span className="mt-2 flex flex-wrap gap-1 text-[11px] uppercase tracking-[0.12em] text-[#CDBAFF]">
+                      {preset.categories.map((category) => {
+                        const categoryConfig = LAB_CATEGORY_CONFIG.find((item) => item.value === category);
+                        if (!categoryConfig) return null;
+                        const Icon = categoryConfig.icon;
+                        return (
+                          <span
+                            key={category}
+                            className="inline-flex items-center gap-1 rounded-full bg-[#482090]/20 px-2 py-0.5"
+                          >
+                            <Icon className="h-3 w-3" />
+                            {categoryConfig.label}
+                          </span>
+                        );
+                      })}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-            <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
+            <h3 className="text-lg font-semibold text-white">Мои рубри��и</h3>
             {savedCategories.length === 0 ? (
               <p className="mt-2 text-sm text-[#A3A6B4]">
                 Вы ещё не сохранили предпочтения. Выберите категории в фильтрах и сохраните их.
