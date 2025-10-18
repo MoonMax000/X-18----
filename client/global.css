@@ -597,3 +597,15 @@ textarea::-webkit-scrollbar-track {
     animation: shine-move 2.2s linear infinite;
   }
 }
+
+/* Newsletter button hover fix */
+.newsletter-button-text,
+.newsletter-button-icon {
+  color: #E5E7EB;
+  transition: color 0.3s ease;
+}
+
+.group:hover .newsletter-button-text,
+.group:hover .newsletter-button-icon {
+  color: #ffffff !important;
+}
