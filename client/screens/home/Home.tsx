@@ -122,7 +122,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           </div>
 
           <CreatePostBox onToggleView={toggleViewMode} viewMode={viewMode} />
-          <UserTabs isOwn={isOwn} viewMode={viewMode} effectiveCategories={effectiveCategories} monetizationFilter={monetizationFilter} />
+          <UserTabs isOwn={isOwn} viewMode={viewMode} />
           <Pagination
             totalPages={4}
             currentPage={1}
@@ -138,7 +138,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
             <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
             <p className="mt-1 text-sm text-[#A3A6B4]">
-              Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
+              Сохранённые пр��сеты помогают быстро переключаться между сценариями просмотра.
             </p>
             <ul className="mt-4 flex flex-col gap-3">
               {QUICK_FILTERS.map((preset) => (
@@ -173,7 +173,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           </section>
 
           <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-            <h3 className="text-lg font-semibold text-white">Мои рубри��и</h3>
+            <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
             {savedCategories.length === 0 ? (
               <p className="mt-2 text-sm text-[#A3A6B4]">
                 Вы ещё не сохранили предпочтения. Выберите категории в фильтрах и сохраните их.
