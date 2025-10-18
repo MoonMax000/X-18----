@@ -2932,7 +2932,7 @@ export default function FeedTest() {
         {/* Social Widgets from x_Home */}
         <SuggestedProfilesWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
         <NewsWidget items={DEFAULT_NEWS_ITEMS as NewsItem[]} />
-        <FollowRecommendationsWidget profiles={DEFAULT_FOLLOW_RECOMMENDATIONS} />
+        <FollowRecommendationsWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
 
         {/* Top Authors */}
         <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
@@ -3002,7 +3002,7 @@ export default function FeedTest() {
         <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
           <p className="mt-1 text-sm text-[#A3A6B4]">
-            Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
+            Сохранённые пресеты помогают быс��ро переключаться между сценариями просмотра.
           </p>
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
@@ -3014,7 +3014,7 @@ export default function FeedTest() {
               <span className="mt-1 block text-xs text-[#8E92A0]">Материалы для прокачки навы��ов</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
-              <span className="text-sm font-semibold text-white">Мультимедиа</span>
+              <span className="text-sm font-semibold text-white">Мультимеди��</span>
               <span className="mt-1 block text-xs text-[#8E92A0]">Видеоразборы и графики</span>
             </button>
           </div>

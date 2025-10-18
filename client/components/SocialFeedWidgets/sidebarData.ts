@@ -4,8 +4,9 @@ export interface SuggestedProfile {
   id: string;
   name: string;
   handle: string;
-  avatar: string;
+  avatar?: string;
   isVerified?: boolean;
+  verified?: boolean;
 }
 
 export interface NewsItem {
