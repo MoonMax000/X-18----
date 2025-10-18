@@ -42,10 +42,10 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
     return `${formattedContent.slice(0, 240)}${formattedContent.length > 240 ? "…" : ""}`;
   }, [expanded, formattedContent, post.isPremium, post.preview, post.unlocked, shouldShowToggle]);
 
-  const categoryConfig = LAB_CATEGORY_MAP[post.category];
+  const categoryConfig = LAB_CATEGORY_MAP[post.category] ?? LAB_CATEGORY_MAP['other'];
   const CategoryIcon = categoryConfig.icon;
   const showLock = Boolean(post.isPremium && !post.unlocked);
-  const audienceConfig = LAB_AUDIENCE_MAP[post.audience];
+  const audienceConfig = post.audience ? LAB_AUDIENCE_MAP[post.audience] : undefined;
   const monetizationBadgeClassName = post.isPremium
     ? showLock
       ? "bg-[#2A1C3F] text-[#CDBAFF] border border-[#A06AFF]/50"
