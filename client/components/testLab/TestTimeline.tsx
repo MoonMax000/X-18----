@@ -1,5 +1,3 @@
-import { type FC } from "react";
-
 import type { FC } from "react";
 
 import TestFeedPost from "./TestFeedPost";

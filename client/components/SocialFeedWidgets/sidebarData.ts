@@ -12,8 +12,9 @@ export interface NewsItem {
   id: string;
   category: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   stats?: string;
+  publishedAgo: string;
 }
 
 // Get random users excluding current user
@@ -36,6 +37,7 @@ export const DEFAULT_NEWS_ITEMS: NewsItem[] = [
     title: "Bitcoin",
     subtitle: "BTC hits new all-time high",
     stats: "125K posts",
+    publishedAgo: "2h ago",
   },
   {
     id: "2",
@@ -43,6 +45,7 @@ export const DEFAULT_NEWS_ITEMS: NewsItem[] = [
     title: "AI Revolution",
     subtitle: "New GPT-5 rumors surface",
     stats: "89K posts",
+    publishedAgo: "4h ago",
   },
   {
     id: "3",
@@ -50,6 +53,7 @@ export const DEFAULT_NEWS_ITEMS: NewsItem[] = [
     title: "DeFi Growth",
     subtitle: "Total Value Locked reaches $100B",
     stats: "45K posts",
+    publishedAgo: "6h ago",
   },
   {
     id: "4",
@@ -57,6 +61,7 @@ export const DEFAULT_NEWS_ITEMS: NewsItem[] = [
     title: "Stock Rally",
     subtitle: "Tech stocks surge on earnings",
     stats: "67K posts",
+    publishedAgo: "1h ago",
   },
 ];
 

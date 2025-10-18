@@ -1,5 +1,3 @@
-import { type FC } from "react";
-
 import type { FC } from "react";
 
 import { LAB_CATEGORY_CONFIG, LAB_CATEGORY_LABELS, type LabCategory } from "./categoryConfig";
