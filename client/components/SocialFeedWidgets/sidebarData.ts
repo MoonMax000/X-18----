@@ -1,86 +1,73 @@
-import type { SuggestedProfile } from "./SuggestedProfilesWidget";
-import type { NewsItem } from "./TrendingTopicsWidget";
+import { getRandomUsers, CURRENT_USER_ID } from "@/data/users";
 
-export const DEFAULT_SUGGESTED_PROFILES: SuggestedProfile[] = [
-  {
-    id: "lark-davis",
-    name: "Lark Davis",
-    handle: "@TheCryptoLark",
-    avatar: "https://i.pravatar.cc/120?img=12",
-    verified: true,
-  },
-  {
-    id: "xbox",
-    name: "Xbox",
-    handle: "@Xbox",
-    avatar: "https://i.pravatar.cc/120?img=25",
-    verified: true,
-  },
-  {
-    id: "si-paling-masker",
-    name: "Si Paling Masker",
-    handle: "@TipeDarah",
-    avatar: "https://i.pravatar.cc/120?img=47",
-    verified: true,
-  },
-];
+export interface SuggestedProfile {
+  id: string;
+  name: string;
+  handle: string;
+  avatar: string;
+  isVerified?: boolean;
+}
 
-export const DEFAULT_FOLLOW_RECOMMENDATIONS: SuggestedProfile[] = [
-  {
-    id: "ilona-zuieva",
-    name: "Ilona Zuieva",
-    handle: "@Ilona5Ilonaa",
-    avatar: "https://i.pravatar.cc/120?img=21",
-    verified: true,
-  },
-  {
-    id: "doctor-profit",
-    name: "Doctor Profit",
-    handle: "@DrProfitCrypto",
-    avatar: "https://i.pravatar.cc/120?img=57",
-    verified: true,
-  },
-  {
-    id: "b24",
-    name: "B24",
-    handle: "@B24PT",
-    avatar: "https://i.pravatar.cc/120?img=11",
-    verified: true,
-  },
-];
+export interface NewsItem {
+  id: string;
+  category: string;
+  title: string;
+  subtitle: string;
+  stats?: string;
+}
+
+// Get random users excluding current user
+const randomUsers = getRandomUsers(5, CURRENT_USER_ID);
+
+export const DEFAULT_SUGGESTED_PROFILES: SuggestedProfile[] = randomUsers.map(
+  (user) => ({
+    id: user.id,
+    name: user.name,
+    handle: user.username,
+    avatar: user.avatar,
+    isVerified: user.isVerified,
+  })
+);
 
 export const DEFAULT_NEWS_ITEMS: NewsItem[] = [
   {
-    id: "alpha-drive",
-    title: "ALPHA DRIVE ONE Unveils Official Member Profiles and Debut Behind-the-Scenes…",
-    category: "Entertainment",
-    publishedAgo: "1 day ago",
-    engagement: "186.9K posts",
-    commentCount: 428,
+    id: "1",
+    category: "Crypto · Trending",
+    title: "Bitcoin",
+    subtitle: "BTC hits new all-time high",
+    stats: "125K posts",
   },
   {
-    id: "crypto-market",
-    title: "Crypto Market Wipes Out $19 Billion in Liquidations; BNB Holds Steady",
-    category: "News",
-    publishedAgo: "22 hours ago",
-    engagement: "8,746 posts",
-    commentCount: 287,
-    avatars: [
-      "https://i.pravatar.cc/120?img=32",
-      "https://i.pravatar.cc/120?img=44",
-      "https://i.pravatar.cc/120?img=52",
-    ],
+    id: "2",
+    category: "Technology · Trending",
+    title: "AI Revolution",
+    subtitle: "New GPT-5 rumors surface",
+    stats: "89K posts",
   },
   {
-    id: "zara-larsson",
-    title: "Zara Larsson's Strictly Come Dancing Medley Goes Viral on X",
-    category: "Entertainment",
-    publishedAgo: "2 days ago",
-    engagement: "13.7K posts",
-    commentCount: 64,
-    avatars: [
-      "https://i.pravatar.cc/120?img=14",
-      "https://i.pravatar.cc/120?img=35",
-    ],
+    id: "3",
+    category: "Business · Trending",
+    title: "DeFi Growth",
+    subtitle: "Total Value Locked reaches $100B",
+    stats: "45K posts",
+  },
+  {
+    id: "4",
+    category: "Markets · Trending",
+    title: "Stock Rally",
+    subtitle: "Tech stocks surge on earnings",
+    stats: "67K posts",
   },
 ];
+
+// Function to get fresh random users (useful for testing)
+export const getNewSuggestedProfiles = (count: number = 5): SuggestedProfile[] => {
+  const users = getRandomUsers(count, CURRENT_USER_ID);
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    handle: user.username,
+    avatar: user.avatar,
+    isVerified: user.isVerified,
+  }));
+};
