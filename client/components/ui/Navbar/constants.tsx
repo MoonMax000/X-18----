@@ -55,11 +55,6 @@ export const navElements: NavElementProps[] = [
         route: "/social/compose-classic",
       },
       {
-        icon: <BoxIcon className="h-5 w-5" />,
-        title: "🎨 Composer Showcase",
-        route: "/composer-showcase",
-      },
-      {
         icon: <ExploreIcon className="h-5 w-5" />,
         title: "Explore",
         route: "/social/explore",
