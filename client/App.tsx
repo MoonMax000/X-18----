@@ -52,6 +52,7 @@ const App = () => (
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/home" element={<FeedTest />} />
+                    <Route path="/home/post/:postId" element={<HomePostDetail />} />
                     <Route path="/marketplace/test-home" element={<Index />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
                     <Route
