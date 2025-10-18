@@ -1,11 +1,12 @@
-import { type FC } from "react";
+import { type FC, useState } from "react";
 
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import FollowButton from "../PostCard/FollowButton";
 import VerifiedBadge from "../PostCard/VerifiedBadge";
+import UserHoverCard from "../PostCard/UserHoverCard";
 
 export interface SuggestedProfile {
   id: string;
@@ -24,6 +25,9 @@ const SuggestedProfilesWidget: FC<SuggestedProfilesWidgetProps> = ({
   title = "You might like",
   profiles,
 }) => {
+  const navigate = useNavigate();
+  const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
+
   return (
     <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
       <div className="flex items-center justify-between gap-3">
@@ -32,43 +36,59 @@ const SuggestedProfilesWidget: FC<SuggestedProfilesWidgetProps> = ({
       <ul className="mt-4 flex flex-col gap-4">
         {profiles.map((profile) => {
           const profileSlug = profile.handle ? profile.handle.replace(/^@/, "") : profile.id;
-          const profileHref = `/social/profile/${profileSlug}`;
+          const isFollowing = followingState[profile.id] ?? false;
 
           return (
             <li
               key={profile.id}
               className="flex items-center justify-between gap-4"
             >
-              <Link
-                to={profileHref}
-                className="flex items-center gap-3 group/link"
-                aria-label={`Open profile ${profile.name}`}
+              <UserHoverCard
+                author={{
+                  name: profile.name,
+                  handle: profile.handle,
+                  avatar: profile.avatar || "",
+                  verified: profile.verified,
+                  followers: Math.floor(Math.random() * 50000) + 1000,
+                  following: Math.floor(Math.random() * 2000) + 100,
+                  bio: "Crypto enthusiast and blockchain developer",
+                }}
+                isFollowing={isFollowing}
+                onFollowToggle={(nextState) => setFollowingState(prev => ({ ...prev, [profile.id]: nextState }))}
+                showFollowButton={true}
               >
-                <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)]">
-                  {profile.avatar ? (
-                    <AvatarImage src={profile.avatar} alt={profile.name} />
-                  ) : null}
-                  <AvatarFallback className="text-sm font-semibold text-white">
-                    {profile.name
-                      .split(" ")
-                      .map((chunk) => chunk[0])
-                      .slice(0, 2)
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white group-hover/link:text-[#E3D8FF]">
-                    <span>{profile.name}</span>
-                    {profile.verified && (
-                      <VerifiedBadge size={16} />
-                    )}
+                <div className="flex items-center gap-3 cursor-pointer">
+                  <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)]">
+                    {profile.avatar ? (
+                      <AvatarImage src={profile.avatar} alt={profile.name} />
+                    ) : null}
+                    <AvatarFallback className="text-sm font-semibold text-white">
+                      {profile.name
+                        .split(" ")
+                        .map((chunk) => chunk[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white hover:underline hover:underline-offset-2 transition-all">
+                      <span>{profile.name}</span>
+                      {profile.verified && (
+                        <VerifiedBadge size={16} />
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-[#8E8E94]">
+                      {profile.handle}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-[#8E8E94] group-hover/link:text-[#C6C6CB]">
-                    {profile.handle}
-                  </span>
                 </div>
-              </Link>
-              <FollowButton profileId={profile.id} size="compact" />
+              </UserHoverCard>
+              <FollowButton
+                profileId={profile.id}
+                size="compact"
+                isFollowing={isFollowing}
+                onToggle={(nextState) => setFollowingState(prev => ({ ...prev, [profile.id]: nextState }))}
+              />
             </li>
           );
         })}
