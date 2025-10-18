@@ -87,7 +87,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
       { label: 'Условия использования', href: '/terms' },
       { label: 'Политика конфиденциальности', href: '/privacy' },
       { label: 'Cookie Policy', href: '/cookies' },
-      { label: 'Дисклеймеры', href: '/disclaimers' },
+      { label: 'Дискле��меры', href: '/disclaimers' },
     ],
   },
 ];
@@ -117,13 +117,39 @@ const Footer: FC = () => {
           {/* Left Column: Logo, Language Selector, Copyright */}
           <div className="lg:max-w-[300px]">
             {/* Logo */}
-            <Link to="/" className="mb-6 inline-block">
-              <div className="flex items-center gap-2">
-                <div className="text-2xl font-bold">
-                  <span className="bg-gradient-to-r from-[#A06AFF] to-[#2EBD85] bg-clip-text text-transparent">
-                    Tyrian Trade
-                  </span>
-                </div>
+            <Link to="/" className="mb-6 inline-flex items-center gap-2">
+              <svg
+                className="w-[18px] h-[22px] shrink-0"
+                width="18"
+                height="23"
+                viewBox="0 0 18 23"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M0 11.4935L0.000836009 11.5607C1.99496 11.1253 3.99971 10.6706 6.00816 10.215L6.01186 21.0231L12.7689 22.5C12.7689 20.1266 12.7479 13.4405 12.77 11.0677L8.04193 10.0343L7.41266 9.89685C10.9481 9.0969 14.49 8.30751 18 7.62785L17.9988 0.5C12.0625 1.79714 5.95525 3.33041 0 4.43313L0 11.4935Z"
+                  fill="url(#paint0_linear_footer)"
+                />
+                <defs>
+                  <linearGradient
+                    id="paint0_linear_footer"
+                    x1="4.37143"
+                    y1="24.15"
+                    x2="13.044"
+                    y2="2.25457"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stopColor="#A06AFF"/>
+                    <stop offset="1" stopColor="#7F57FF"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="text-2xl font-bold">
+                <span className="text-[#FFFFFF]">
+                  Tyrian Trade
+                </span>
               </div>
             </Link>
 
@@ -132,18 +158,18 @@ const Footer: FC = () => {
               <button
                 type="button"
                 onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                className="flex w-full items-center justify-between rounded-lg border border-[#181B22] bg-[#0A0D12] px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#A06AFF]/50 hover:bg-[#0F131A]"
+                className="flex w-full items-center justify-between rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
               >
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-[#A06AFF]" />
-                  <span>{selectedLanguage.label}</span>
-                  <span className="text-[#8E92A0]">{selectedLanguage.name}</span>
+                  <span className="text-white">{selectedLanguage.label}</span>
+                  <span className="text-[#A3A3A3]">{selectedLanguage.name}</span>
                 </div>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isLanguageOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isLanguageOpen && (
-                <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-lg border border-[#181B22] bg-[#0A0D12] shadow-lg">
+                <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-2xl border border-[#525252] bg-[#0A0D12] shadow-lg">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
@@ -152,8 +178,8 @@ const Footer: FC = () => {
                         setCurrentLanguage(lang.code);
                         setIsLanguageOpen(false);
                       }}
-                      className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[#0F131A] ${
-                        currentLanguage === lang.code ? 'bg-[#A06AFF]/20 text-[#A06AFF]' : 'text-white'
+                      className={`flex w-full items-center gap-2 px-6 py-3 text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent ${
+                        currentLanguage === lang.code ? 'bg-gradient-to-r from-[#A06AFF]/20 via-[#A06AFF]/10 to-transparent text-white' : 'text-[#E5E7EB]'
                       }`}
                     >
                       {lang.name}
