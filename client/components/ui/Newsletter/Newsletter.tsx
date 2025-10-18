@@ -168,10 +168,10 @@ const Newsletter: FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || !email}
-                    className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg border border-[#A06AFF] bg-transparent px-6 py-3 font-medium text-white transition-all hover:bg-[#A06AFF] hover:shadow-lg hover:shadow-[#A06AFF]/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 font-medium text-white transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {/* Animated shine effect */}
-                    <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <span className="relative z-10 flex items-center gap-2">
                       {isSubmitting ? (
                         <span>Subscribing...</span>
