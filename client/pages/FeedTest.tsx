@@ -30,7 +30,7 @@ import { CommunitySentimentWidget } from "@/components/testLab/CommunitySentimen
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import NewsWidget, { type NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
-import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
+import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS } from "@/components/SocialFeedWidgets/sidebarData";
 import InlineComposer from "@/components/socialComposer/InlineComposer";
 import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { ComposerBlockState, MediaItem } from "@/components/CreatePostBox/types";

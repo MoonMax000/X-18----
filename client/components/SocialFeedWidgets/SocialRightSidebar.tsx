@@ -21,7 +21,7 @@ interface SocialRightSidebarProps {
 
 const SocialRightSidebar: FC<SocialRightSidebarProps> = ({
   profiles = DEFAULT_SUGGESTED_PROFILES,
-  followRecommendations = DEFAULT_FOLLOW_RECOMMENDATIONS,
+  followRecommendations = DEFAULT_SUGGESTED_PROFILES,
   newsItems = DEFAULT_NEWS_ITEMS,
   showSearch = true,
   className,
