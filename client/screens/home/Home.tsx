@@ -172,8 +172,8 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
                 </ul>
               </section>
 
-              <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-                <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
+          <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+            <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
                 {savedCategories.length === 0 ? (
                   <p className="mt-2 text-sm text-[#A3A6B4]">
                     Вы ещё не сохранили предпочтения. Выберите категории в фильтрах и сохраните их.
