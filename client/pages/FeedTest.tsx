@@ -2043,6 +2043,7 @@ function AdvancedComposer({
 }
 
 export default function FeedTest() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FeedTab>("all");
   const [feedMode, setFeedMode] = useState<'recent' | 'hot'>('hot');
   const [filters, setFilters] = useState<Record<string, any>>({
@@ -2694,7 +2695,7 @@ export default function FeedTest() {
                 {activeConfig?.visible?.includes('category') && (
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                      Категория
+                      Кат��гория
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -3000,7 +3001,7 @@ export default function FeedTest() {
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только св��жие точки вх����а</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Показыват�� только св��жие точки вх����а</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
