@@ -1,0 +1,96 @@
+import { ReactNode } from "react";
+import {
+  Home as HomeIcon,
+  UsersRound as SocialIcon,
+  BadgeCheck as MarketIcon,
+  CreditCard as BoxIcon,
+  Compass as ExploreIcon,
+  MessageSpark as MessageIcon,
+  NotificationBell as NotificationIcon,
+  QuillPen as ComposeIcon,
+  Activity as ActivityIcon,
+} from "./icons";
+import DashboardNavIcon from "./DashboardNavIcon";
+
+export interface NavElementProps {
+  icon: ReactNode;
+  title: string;
+  route?: string;
+  children?: NavElementProps[];
+}
+
+export const navElements: NavElementProps[] = [
+  { icon: <DashboardNavIcon />, title: "Dashboard", route: "/dashboard" },
+  { icon: <HomeIcon className="h-5 w-5" />, title: "Home", route: "/" },
+  { icon: <ExploreIcon className="h-5 w-5" />, title: "Тестовая", route: "/testovaya" },
+  { icon: <ActivityIcon className="h-5 w-5" />, title: "Market Stream", route: "/feedtest" },
+  {
+    icon: <SocialIcon className="h-5 w-5" />,
+    title: "Social Network",
+    route: "/social",
+    children: [
+      {
+        icon: <HomeIcon className="h-5 w-5" />,
+        title: "x_Home",
+        route: "/home",
+      },
+      {
+        icon: <BoxIcon className="h-5 w-5" />,
+        title: "x_Profile",
+        route: "/profile-page",
+      },
+      {
+        icon: <BoxIcon className="h-5 w-5" />,
+        title: "Чужой профиль",
+        route: "/other-profile",
+      },
+      {
+        icon: <BoxIcon className="h-5 w-5" />,
+        title: "My page",
+        route: "/profile",
+      },
+      {
+        icon: <ComposeIcon className="h-5 w-5" />,
+        title: "Tweet Composer",
+        route: "/social/compose-classic",
+      },
+      {
+        icon: <BoxIcon className="h-5 w-5" />,
+        title: "🎨 Composer Showcase",
+        route: "/composer-showcase",
+      },
+      {
+        icon: <ExploreIcon className="h-5 w-5" />,
+        title: "Explore",
+        route: "/social/explore",
+      },
+      {
+        icon: <NotificationIcon className="h-5 w-5" />,
+        title: "Notifications",
+        route: "/social/notifications",
+      },
+      {
+        icon: <MessageIcon className="h-5 w-5" />,
+        title: "Messages",
+        route: "/social/messages",
+      },
+      {
+        icon: <BoxIcon className="h-5 w-5" />,
+        title: "Post Preview",
+        route: "/social/post/preview",
+      },
+    ],
+  },
+  {
+    icon: <MarketIcon className="h-5 w-5" />,
+    title: "Marketplace",
+    children: [
+      {
+        icon: <BoxIcon className="h-5 w-5" />,
+        title: "My Products",
+        route: "#",
+      },
+      { icon: <BoxIcon className="h-5 w-5" />, title: "Cart", route: "#" },
+    ],
+  },
+];
