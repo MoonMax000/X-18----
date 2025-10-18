@@ -135,9 +135,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
           <ActivityCard />
           <ProductsCard />
 
-          <aside className="w-full max-w-[320px] flex-col gap-5 flex">
-            <div className="sticky top-24 flex flex-col gap-5">
-              <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+          <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
                 <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
                 <p className="mt-1 text-sm text-[#A3A6B4]">
                   Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
@@ -222,9 +220,7 @@ const HomeScreen: FC<Props> = ({ isOwn = true }) => {
                     </p>
                   </li>
                 </ul>
-              </section>
-            </div>
-          </aside>
+          </section>
         </div>
       </div>
     </div>
