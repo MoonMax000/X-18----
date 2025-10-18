@@ -52,6 +52,8 @@ const FeedPost: FC<FeedPostProps> = ({
   hashtags,
   category,
   type = "article",
+  price = "free",
+  isPaidLocked = false,
   truncate = false,
   onOpen,
   className,
