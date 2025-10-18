@@ -21,13 +21,21 @@ export interface NavElementProps {
 
 export const navElements: NavElementProps[] = [
   { icon: <DashboardNavIcon />, title: "Dashboard", route: "/dashboard" },
-  { icon: <HomeIcon className="h-5 w-5" />, title: "Home", route: "/home" },
-  { icon: <ExploreIcon className="h-5 w-5" />, title: "Тестовая", route: "/testovaya" },
   {
     icon: <SocialIcon className="h-5 w-5" />,
     title: "Social Network",
     route: "/social",
     children: [
+      {
+        icon: <HomeIcon className="h-5 w-5" />,
+        title: "Home",
+        route: "/home",
+      },
+      {
+        icon: <ExploreIcon className="h-5 w-5" />,
+        title: "Тестовая",
+        route: "/testovaya",
+      },
       {
         icon: <BoxIcon className="h-5 w-5" />,
         title: "Мой профиль",
@@ -35,7 +43,7 @@ export const navElements: NavElementProps[] = [
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "Чужой профиль",
+        title: "Ч��жой профиль",
         route: "/other-profile",
       },
       {
