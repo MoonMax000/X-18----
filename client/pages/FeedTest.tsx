@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import { PostBadges } from "@/components/PostCard/PostBadges";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -3058,7 +3059,7 @@ export default function FeedTest() {
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только свежие точки вхо��а</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только св��жие точки вхо��а</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
