@@ -2469,58 +2469,12 @@ export default function FeedTest() {
                 ) : null}
                 <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
               </div>
-              {/* Badges row */}
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-[#B0B0B0]">
-                {/* Category badge */}
-                {post.type && (() => {
-                  const categoryKey = post.type === 'signal' ? 'signals' :
-                                    post.type === 'news' ? 'news' :
-                                    post.type === 'education' ? 'education' :
-                                    post.type === 'analysis' ? 'analytics' :
-                                    post.type === 'code' ? 'code' :
-                                    post.type === 'video' ? 'media' : null;
-
-                  if (categoryKey && CATEGORY_CONFIG_MAP[categoryKey]) {
-                    const config = CATEGORY_CONFIG_MAP[categoryKey];
-                    const IconComponent = config.icon;
-                    return (
-                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]", config.badgeClassName)}>
-                        <IconComponent className="h-3.5 w-3.5" />
-                        {config.label}
-                      </span>
-                    );
-                  }
-                  return null;
-                })()}
-
-                {/* Monetization badge */}
-                <span className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
-                  isPaidLocked
-                    ? "bg-[#2A1C3F] text-[#CDBAFF] border border-[#A06AFF]/50"
-                    : post.price !== "free"
-                      ? "bg-[#1F1630] text-[#CDBAFF] border border-[#6F4BD3]/40"
-                      : "bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40"
-                )}>
-                  {post.price !== "free" ? <DollarSign className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
-                  {post.price !== "free" ? (isPaidLocked ? "Premium · закрыто" : "Premium · открыт") : "Free доступ"}
-                </span>
-
-                {/* Lock badge when post is locked */}
-                {isPaidLocked && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#FFA800]/15 px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] text-[#FFA800]">
-                    <LockKeyhole className="h-3 w-3" />
-                    Закрыто
-                  </span>
-                )}
-
-                {/* Following badge */}
-                {isFollowing && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#2EBD85]/15 px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] text-[#2EBD85]">
-                    Подписаны
-                  </span>
-                )}
-              </div>
+              <PostBadges
+                postType={post.type as any}
+                price={post.price || "free"}
+                isPaidLocked={isPaidLocked}
+                isFollowing={isFollowing}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -3059,7 +3013,7 @@ export default function FeedTest() {
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только св��жие точки вхо��а</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только св��жие точки вх����а</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
