@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800;900&subset=cyrillic,cyrillic-ext&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&subset=cyrillic,cyrillic-ext,latin&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -323,7 +323,7 @@ body {
   background: var(--background);
   overflow-y: scroll;
   font-family:
-    "Nunito Sans",
+    "Inter",
     ui-sans-serif,
     system-ui,
     -apple-system,
