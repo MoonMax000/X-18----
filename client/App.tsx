@@ -41,10 +41,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <Provider store={store}>
       <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-        <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+          <BrowserRouter>
           <Routes>
             {/* Standard pages with ClientLayout */}
             <Route
@@ -99,9 +100,10 @@ const App = () => (
                 </ClientLayout>
               }
             />
-          </Routes>
-        </BrowserRouter>
-        </TooltipProvider>
+            </Routes>
+          </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </Provider>
   </QueryClientProvider>

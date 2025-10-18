@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { defaultProfile, getProfileTimeline } from "@/data/socialProfile";
 import type { SocialProfileData } from "@/data/socialProfile";
 import type { SocialPost } from "@/data/socialPosts";
+import type { User } from "@/data/users";
 import ProfileHero from "./ProfileHero";
 import ProfileBioClassic from "./ProfileBioClassic";
 import TabListClassic from "./TabListClassic";
@@ -10,10 +11,12 @@ import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 
 interface ProfileContentClassicProps {
+  profile?: User | SocialProfileData;
   isOwnProfile?: boolean;
 }
 
 export default function ProfileContentClassic({
+  profile: profileProp,
   isOwnProfile = true,
 }: ProfileContentClassicProps) {
   const navigate = useNavigate();
@@ -29,17 +32,16 @@ export default function ProfileContentClassic({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // For now, always use defaultProfile
-      // In real app, fetch profile by handle or user_id
-      // console.log('Loading profile for handle:', handle);
-      setProfile(defaultProfile);
-      setPosts(getProfileTimeline(defaultProfile));
+      // Use provided profile or default profile
+      const profileToUse = profileProp || defaultProfile;
+      setProfile(profileToUse);
+      setPosts(getProfileTimeline(profileToUse));
 
       setIsLoading(false);
     };
 
     loadProfile();
-  }, [handle, user_id]);
+  }, [handle, user_id, profileProp]);
 
   if (isLoading) {
     return (
