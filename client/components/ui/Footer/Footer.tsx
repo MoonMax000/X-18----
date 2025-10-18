@@ -169,7 +169,7 @@ const Footer: FC = () => {
               </button>
 
               {isLanguageOpen && (
-                <div className="absolute bottom-full left-0 mb-2 w-full overflow-hidden rounded-2xl border border-[#525252] bg-[#0A0D12] shadow-lg">
+                <div className="absolute bottom-full left-0 z-[9999] mb-2 w-full overflow-hidden rounded-2xl border border-[#525252] bg-[#0A0D12] shadow-lg">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
