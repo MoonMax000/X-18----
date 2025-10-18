@@ -2291,6 +2291,18 @@ export default function FeedTest() {
           <Badge className={cn("px-2.5 py-1 rounded-full font-semibold", post.risk === "high" ? "bg-red-500/20 text-red-400" : post.risk === "medium" ? "bg-yellow-500/20 text-yellow-400" : "bg-green-500/20 text-green-400")}>
             {post.risk?.toUpperCase()} RISK
           </Badge>
+          {post.price === "pay-per-post" && (
+            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
+              <DollarSign className="h-3 w-3" />
+              Pay-per-post
+            </Badge>
+          )}
+          {post.price === "subscribers-only" && (
+            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
+              <Crown className="h-3 w-3" />
+              Subscribers Only
+            </Badge>
+          )}
         </div>
 
         <div className="mb-3 flex items-center gap-4 rounded-xl border border-[#0F131A] bg-[#000000] p-3">
