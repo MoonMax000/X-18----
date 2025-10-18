@@ -1,10 +1,11 @@
 import { type FC } from "react";
+import { Link } from "react-router-dom";
 
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import type { SuggestedProfile } from "./SuggestedProfilesWidget";
+import type { SuggestedProfile } from "./sidebarData";
 
 interface FollowRecommendationsWidgetProps {
   title?: string;
@@ -28,8 +29,11 @@ const FollowRecommendationsWidget: FC<FollowRecommendationsWidgetProps> = ({
             key={profile.id}
             className="flex items-center justify-between gap-4"
           >
-            <div className="flex items-center gap-3">
-              <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)]">
+            <Link
+              to={`/profile/${profile.handle}`}
+              className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)] flex-shrink-0">
                 {profile.avatar ? (
                   <AvatarImage src={profile.avatar} alt={profile.name} />
                 ) : null}
@@ -41,18 +45,18 @@ const FollowRecommendationsWidget: FC<FollowRecommendationsWidgetProps> = ({
                     .join("")}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white">
-                  <span>{profile.name}</span>
-                  {profile.verified && (
+                  <span className="truncate">{profile.name}</span>
+                  {profile.isVerified && (
                     <VerifiedBadge size={16} />
                   )}
                 </div>
-                <span className="text-sm font-medium text-[#8E8E94]">
-                  {profile.handle}
+                <span className="text-sm font-medium text-[#8E8E94] truncate">
+                  @{profile.handle}
                 </span>
               </div>
-            </div>
+            </Link>
             <FollowButton profileId={profile.id} size="compact" />
           </li>
         ))}
