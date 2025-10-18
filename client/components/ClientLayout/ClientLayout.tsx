@@ -4,6 +4,7 @@ import { AppBackground } from "../ui/AppBackground/AppBackground";
 import { Header } from "../ui/Header/Header";
 import ContentWrapper from "../ui/ContentWrapper/ContentWrapper";
 import Footer from "../ui/Footer/Footer";
+import Newsletter from "../ui/Newsletter/Newsletter";
 import { LayoutVariant } from "../ui/AppBackground/AppBackground";
 import NewNavBar from "../ui/Navbar/NewNavBar";
 import { RightMenu } from "../ui/RightMenu/RightMenu";
@@ -77,6 +78,7 @@ export const ClientLayout: FC<Props> = ({
         onClose={() => setIsPostComposerOpen(false)}
       />
 
+      <Newsletter />
       <Footer />
     </AppBackground>
   );
