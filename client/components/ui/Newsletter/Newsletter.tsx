@@ -176,22 +176,22 @@ const Newsletter: FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || !email}
-                    className="group relative flex w-fit items-center gap-1 overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
+                    className="newsletter-subscribe-btn group relative flex w-fit items-center gap-1 overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {/* Animated shine effect */}
                     <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                     {isSubmitting ? (
-                      <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:text-white">
+                      <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300">
                         Subscribing...
                       </span>
                     ) : (
                       <>
-                        <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:text-white">
+                        <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300">
                           <span className="hidden sm:inline">Subscribe to newsletter</span>
                           <span className="sm:hidden">Subscribe</span>
                         </span>
-                        <span className="relative z-10 text-[#E5E7EB] transition-all duration-300 group-hover:translate-x-2 group-hover:text-white">
+                        <span className="newsletter-arrow relative z-10 text-[#E5E7EB] transition-all duration-300">
                           <svg
                             width="20"
                             height="20"
