@@ -1055,10 +1055,13 @@ const ProfileNew: FC = () => {
     useState<StreamingSubTab>("profile");
 
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-[720px] flex flex-col gap-6">
-        {/* User Header */}
-        <UserHeader isOwn={true} />
+    <div className="flex flex-col gap-6">
+      {/* User Header */}
+      <div className="flex justify-center">
+        <div className="w-full max-w-[720px]">
+          <UserHeader isOwn={true} />
+        </div>
+      </div>
 
       {/* Navigation Tabs */}
       <div className="flex flex-col items-center gap-4">
@@ -2656,7 +2659,6 @@ const ProfileNew: FC = () => {
             </p>
           </div>
         )}
-      </div>
       </div>
     </div>
   );
