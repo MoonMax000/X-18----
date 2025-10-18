@@ -17,7 +17,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
   return (
     <div className={cn("flex w-full flex-col gap-4", className)}>
       {/* Cover/Banner image */}
-      <div className="relative w-full overflow-hidden rounded-3xl border border-[#181B22] bg-[#16181C]">
+      <div className="group relative w-full overflow-hidden rounded-3xl border border-[#181B22] bg-[#16181C]">
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
           alt="Profile cover"
@@ -26,7 +26,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
         <button
           type="button"
-          className="group absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          className="group/btn absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black opacity-0 group-hover:opacity-100"
         >
           <svg
             className="h-5 w-5 text-[#D6DAE2]"
