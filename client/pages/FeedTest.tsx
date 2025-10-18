@@ -83,6 +83,17 @@ interface ComposerData {
 }
 
 // Filter Configuration
+const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassName: string }> = {
+  'News': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]' },
+  'Education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]' },
+  'Analysis': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]' },
+  'Macro': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]' },
+  'On-chain': { icon: Sparkles, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]' },
+  'Code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]' },
+  'Video': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]' },
+  'Signal': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]' },
+};
+
 const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select', opts: ['All', 'Free', 'Paid', 'Subscription'] },
