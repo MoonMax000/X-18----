@@ -33,9 +33,23 @@ interface Props {
   monetizationFilter?: MonetizationFilter;
 }
 
-const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
+const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCategories = [], monetizationFilter = "all" }) => {
   const [activeTab, setActiveTab] = useState<TabId>("ideas");
   const { toast } = useToast();
+
+  const shouldShowMonetizationBadges = (isPremium: boolean) => {
+    if (monetizationFilter === "all") return true;
+    if (monetizationFilter === "free") return !isPremium;
+    if (monetizationFilter === "premium") return isPremium;
+    return true;
+  };
+
+  const shouldShowCategoryBadges = (categoryLabel: string) => {
+    if (effectiveCategories.length === 0) return true;
+    return effectiveCategories.some(
+      (cat) => LAB_CATEGORY_MAP[cat]?.label === categoryLabel
+    );
+  };
 
   const postsByTab = useMemo<Record<TabId, FeedPostProps[]>>(
     () => ({
