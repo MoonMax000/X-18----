@@ -2963,6 +2963,61 @@ export default function FeedTest() {
             </div>
           </div>
         </div>
+
+        {/* Быстрые фильтры */}
+        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+          <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
+          <p className="mt-1 text-sm text-[#A3A6B4]">
+            Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
+          </p>
+          <div className="mt-4 flex flex-col gap-3">
+            <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
+              <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Показывать только свежие точки входа</span>
+            </button>
+            <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
+              <span className="text-sm font-semibold text-white">Обучение</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Материалы для прокачки навыков</span>
+            </button>
+            <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
+              <span className="text-sm font-semibold text-white">Мультимедиа</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Видеоразборы и графики</span>
+            </button>
+          </div>
+        </section>
+
+        {/* Мои рубрики */}
+        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+          <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
+          <p className="mt-2 text-sm text-[#A3A6B4]">
+            Вы ещё не сохранили предпочтения. Выбери��е категории в фильтрах и сохраните их.
+          </p>
+        </section>
+
+        {/* Монетизация */}
+        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+          <h3 className="text-lg font-semibold text-white">Монетизация</h3>
+          <ul className="mt-3 space-y-3 text-sm text-[#C5C9D3]">
+            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
+              <span className="text-white">Pay-per-post</span>
+              <p className="mt-1 text-xs text-[#8E92A0]">
+                Разблокировка отдельного сигнала или аналитики за разовую оплату.
+              </p>
+            </li>
+            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
+              <span className="text-white">Подписка на автора</span>
+              <p className="mt-1 text-xs text-[#8E92A0]">
+                Доступ ко всем закрытым постам автора и мгновенные уведомления.
+              </p>
+            </li>
+            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
+              <span className="text-white">Комбинированная модель</span>
+              <p className="mt-1 text-xs text-[#8E92A0]">
+                Авторы сами выбирают: платный сигнал, подписочная аналитика или бесплатные идеи.
+              </p>
+            </li>
+          </ul>
+        </section>
       </div>
     </div>
   );
