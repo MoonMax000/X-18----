@@ -22,7 +22,6 @@ import SocialMessages from "./pages/SocialMessages";
 import SocialNotifications from "./pages/SocialNotifications";
 import SocialPostDetail from "./pages/SocialPostDetail";
 import SocialPostPreview from "./pages/SocialPostPreview";
-import HomePage from "./pages/Home";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
 import Updates from "./pages/Updates";
@@ -52,7 +51,6 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/home" element={<HomePage />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
                     <Route
                       path="/other-profile"
