@@ -2707,25 +2707,40 @@ export default function FeedTest() {
                                 : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70",
                             )}
                           >
+                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2F3336]/60 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/70">
+                              Все
+                            </span>
                             <span className="truncate">All</span>
                             {!filters.category ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
                           </button>
-                          {FILTERS_CONFIG.category.opts.map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => updateFilter('category', opt)}
-                              className={cn(
-                                "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
-                                filters.category === opt
-                                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                                  : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70",
-                              )}
-                            >
-                              <span className="truncate">{opt}</span>
-                              {filters.category === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
-                            </button>
-                          ))}
+                          {FILTERS_CONFIG.category.opts.map((opt) => {
+                            const config = CATEGORY_CONFIG_MAP[opt];
+                            const IconComponent = config?.icon || Sparkles;
+                            return (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => updateFilter('category', opt)}
+                                className={cn(
+                                  "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
+                                  filters.category === opt
+                                    ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                                    : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70",
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "flex h-6 w-6 items-center justify-center rounded-lg flex-shrink-0",
+                                    config?.badgeClassName ?? "bg-[#2F3336] text-white/70",
+                                  )}
+                                >
+                                  <IconComponent className="h-3.5 w-3.5" />
+                                </span>
+                                <span className="truncate">{opt}</span>
+                                {filters.category === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                              </button>
+                            );
+                          })}
                         </div>
                       </PopoverContent>
                     </Popover>
