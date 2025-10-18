@@ -182,14 +182,14 @@ const Newsletter: FC = () => {
                     <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                     {isSubmitting ? (
-                      <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:text-white">Subscribing...</span>
+                      <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:!text-white">Subscribing...</span>
                     ) : (
                       <>
-                        <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:text-white">
+                        <span className="relative z-10 whitespace-nowrap text-[#E5E7EB] transition-colors duration-300 group-hover:!text-white">
                           <span className="hidden sm:inline">Subscribe to newsletter</span>
                           <span className="sm:hidden">Subscribe</span>
                         </span>
-                        <span className="relative z-10 text-[#E5E7EB] transition-all duration-300 group-hover:translate-x-2 group-hover:transform group-hover:text-white">
+                        <span className="relative z-10 text-[#E5E7EB] transition-all duration-300 group-hover:translate-x-2 group-hover:transform group-hover:!text-white">
                           <svg
                             width="20"
                             height="20"
