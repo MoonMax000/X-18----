@@ -21,8 +21,17 @@ const Newsletter: FC = () => {
   };
 
   return (
-    <section className="border-t border-[#181B22] bg-gradient-to-b from-[#0A0D12] to-[#000000] py-16">
-      <div className="mx-auto max-w-[1400px] px-4 md:px-6 lg:px-8">
+    <section className="relative overflow-hidden bg-[#000000] py-16">
+      {/* Top gradient line */}
+      <div className="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A]" />
+
+      {/* Middle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#171717] to-[#000000]" />
+
+      {/* Bottom gradient line */}
+      <div className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A]" />
+
+      <div className="relative z-10 mx-auto max-w-[1400px] px-4 md:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2">
           {/* Left Column: Stay in Touch */}
           <div>
