@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
@@ -24,6 +25,7 @@ import SocialPostDetail from "./pages/SocialPostDetail";
 import HomePostDetail from "./pages/HomePostDetail";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
+import ProfileDynamic from "./pages/ProfileDynamic";
 import ProfileConnections from "./pages/ProfileConnections";
 import Updates from "./pages/Updates";
 import Referrals from "./pages/Referrals";
@@ -55,6 +57,7 @@ const App = () => (
                     <Route path="/home" element={<FeedTest />} />
                     <Route path="/home/post/:postId" element={<HomePostDetail />} />
                     <Route path="/marketplace/test-home" element={<Index />} />
+                    <Route path="/profile/:username" element={<ProfileDynamic />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
                     <Route
                       path="/other-profile"
