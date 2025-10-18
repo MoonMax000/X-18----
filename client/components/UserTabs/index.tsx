@@ -354,6 +354,85 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
     </div>
   );
 
+  const renderPostWithBadges = (post: FeedPostProps, index: number) => {
+    const isPremium = false;
+    const categoryConfig = Object.values(LAB_CATEGORY_MAP).find(
+      (config) => config.label === post.category
+    );
+    const CategoryIcon = categoryConfig?.icon;
+
+    return (
+      <article
+        key={`${activeTab}-${index}-${post.title}`}
+        className="mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#181B22] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60"
+      >
+        <header className="flex w-full items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <img
+              src={post.author.avatar}
+              alt={post.author.name}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 text-base font-semibold leading-tight text-white">
+                <span>{post.author.name}</span>
+                <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-[#B0B0B0]">
+                {CategoryIcon ? (
+                  <span className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
+                    categoryConfig?.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                  )}>
+                    <CategoryIcon className="h-3.5 w-3.5" />
+                    {post.category}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#2F3336] text-white/70">
+                    {post.category}
+                  </span>
+                )}
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
+                  isPremium
+                    ? "bg-[#1F1630] text-[#CDBAFF] border border-[#6F4BD3]/40"
+                    : "bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40"
+                )}>
+                  {isPremium ? <DollarSign className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
+                  {isPremium ? "Premium · открыт" : "Free доступ"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {post.mediaUrl && (
+          <div className="relative aspect-video overflow-hidden rounded-2xl">
+            <img
+              src={post.mediaUrl}
+              alt={post.title}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2">
+          <h3 className="text-base font-semibold text-white">{post.title}</h3>
+          {post.content && (
+            <p className="text-sm text-[#C5C9D3]">{post.content}</p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-[#181B22] pt-3 text-xs text-[#8E92A0]">
+          <div className="flex gap-4">
+            <span>❤️ {post.likes}</span>
+            <span>💬 {post.comments}</span>
+          </div>
+        </div>
+      </article>
+    );
+  };
+
   const activePosts = postsByTab[activeTab];
 
   return (
