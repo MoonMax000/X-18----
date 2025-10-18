@@ -57,20 +57,34 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
     shouldRenderFollowButton ? "justify-between" : "justify-start",
   );
 
+  const getProfilePath = () => {
+    return author.handle
+      ? `/social/profile/${author.handle.replace('@', '')}`
+      : `/social/profile/${author.name.replace(/\s+/g, '-').toLowerCase()}`;
+  };
+
   const handleProfileClick = (e: MouseEvent) => {
-    // На мобильных устройствах (без hover) сразу переходим в профиль
-    if (window.innerWidth < 768) {
-      e.stopPropagation();
-      const profilePath = author.handle
-        ? `/social/profile/${author.handle.replace('@', '')}`
-        : `/social/profile/${author.name.replace(/\s+/g, '-').toLowerCase()}`;
-      navigate(profilePath);
-    }
+    e.stopPropagation();
+    navigate(getProfilePath());
+  };
+
+  const handleFollowersClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    navigate(`${getProfilePath()}/followers`);
+  };
+
+  const handleFollowingClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    navigate(`${getProfilePath()}/following`);
   };
 
   return (
     <HoverCard openDelay={150} closeDelay={200}>
-      <HoverCardTrigger asChild onClick={handleProfileClick}>{children}</HoverCardTrigger>
+      <HoverCardTrigger asChild>
+        <div className="inline-block cursor-pointer hover:underline hover:underline-offset-2 transition-all" onClick={handleProfileClick}>
+          {children}
+        </div>
+      </HoverCardTrigger>
       <HoverCardContent
         align="start"
         sideOffset={16}
@@ -80,13 +94,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
         <div className={headerClasses}>
           <div
             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={(e) => {
-              e.stopPropagation();
-              const profilePath = author.handle
-                ? `/social/profile/${author.handle.replace('@', '')}`
-                : `/social/profile/${author.name.replace(/\s+/g, '-').toLowerCase()}`;
-              navigate(profilePath);
-            }}
+            onClick={handleProfileClick}
           >
             <UserAvatar
               src={author.avatar}
@@ -95,7 +103,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
               accent={false}
             />
             <div className="flex flex-col">
-              <div className="flex items-center gap-1.5 text-base font-semibold leading-tight text-white">
+              <div className="flex items-center gap-1.5 text-base font-semibold leading-tight text-white hover:underline hover:underline-offset-2 transition-all">
                 <span>{author.name}</span>
                 {author.verified ? <VerifiedBadge size={16} /> : null}
               </div>
@@ -125,22 +133,30 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
         ) : null}
 
         {followersLabel || followingLabel ? (
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#8E92A0]">
+          <div className="mt-4 flex flex-wrap gap-4 text-sm">
             {followingLabel ? (
-              <span>
+              <button
+                type="button"
+                onClick={handleFollowingClick}
+                className="text-[#8E92A0] hover:text-white hover:underline hover:underline-offset-2 transition-all cursor-pointer"
+              >
                 <span className="font-semibold text-white">
                   {followingLabel}
                 </span>{" "}
                 Following
-              </span>
+              </button>
             ) : null}
             {followersLabel ? (
-              <span>
+              <button
+                type="button"
+                onClick={handleFollowersClick}
+                className="text-[#8E92A0] hover:text-white hover:underline hover:underline-offset-2 transition-all cursor-pointer"
+              >
                 <span className="font-semibold text-white">
                   {followersLabel}
                 </span>{" "}
                 Followers
-              </span>
+              </button>
             ) : null}
           </div>
         ) : null}
