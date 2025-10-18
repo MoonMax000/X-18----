@@ -106,7 +106,7 @@ const FILTERS_CONFIG = {
   direction: { type: 'select', opts: ['Long', 'Short'] },
   timeframe: { type: 'select', opts: ['15m', '1h', '4h', '1d', '1w'] },
   risk: { type: 'select', opts: ['Low', 'Medium', 'High'] },
-  accuracy: { type: 'buckets', opts: ['≥60%', '≥70%', '≥80%'] },
+  accuracy: { type: 'buckets', opts: ['≥60%', '≥70%', '��80%'] },
   minSamples: { type: 'select', opts: ['≥30', '≥50', '≥100'] },
   verified: { type: 'toggle' }
 } as const;
@@ -2792,6 +2792,18 @@ export default function FeedTest() {
                 </button>
               )}
 
+              {/* Save Filter Button */}
+              {filters.category && !savedCategories.includes(filters.category) && (
+                <button
+                  type="button"
+                  onClick={saveCurrentCategory}
+                  className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#2EBD85]/50 bg-[#2EBD85]/10 px-3 text-[11px] font-semibold text-[#2EBD85] transition-colors hover:border-[#2EBD85] hover:bg-[#2EBD85]/20"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  Сохранить фильтр
+                </button>
+              )}
+
             </div>
 
             {/* Feed Mode Toggle - positioned on the right */}
@@ -3001,7 +3013,7 @@ export default function FeedTest() {
         <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           <p className="mt-2 text-sm text-[#A3A6B4]">
-            Вы ещё не сохранили предпочтения. Выбери��е категории в фильтрах и сохраните их.
+            Вы ещё не сохранили предпочтения. Выбери��е к��тегории в фильтрах и сохраните их.
           </p>
         </section>
 
