@@ -5,7 +5,7 @@ import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedPro
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
 import TestFeedPost from "@/components/testLab/TestFeedPost";
 import type { LabPost } from "@/components/testLab/types";
-import { LAB_POSTS_DATA } from "@/data/testLabPosts";
+import { TEST_LAB_POSTS } from "@/data/testLabPosts";
 
 const HomePostDetail: FC = () => {
   const navigate = useNavigate();
