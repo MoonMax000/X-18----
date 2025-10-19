@@ -189,25 +189,36 @@ const ProfileConnections: FC = () => {
           </div>
         </div>
 
-        <div className="flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                "relative flex-1 px-4 py-4 text-[15px] font-medium transition-colors",
-                activeTab === tab.id
-                  ? "text-white"
-                  : "text-[#8E92A0] hover:bg-[#0A0A0A] hover:text-white"
-              )}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 rounded-full bg-[#A06AFF]" />
-              )}
-            </button>
-          ))}
+        <div className="px-4 py-3">
+          <div className="flex items-center overflow-x-auto rounded-full border border-[#5E5E5E] bg-[#000000] p-0.5 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)]">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={cn(
+                    "flex-1 min-w-[120px] px-3 py-2 text-sm font-semibold transition-all duration-300 relative group",
+                    isActive
+                      ? "rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,1),inset_0_0_12px_rgba(0,0,0,0.3)]"
+                      : "rounded-full text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20 hover:shadow-[0_8px_20px_-12px_rgba(160,106,255,0.5)]"
+                  )}
+                >
+                  {tab.label}
+                  {!isActive && (
+                    <div
+                      className="absolute bottom-0 left-1/2 h-0.5 w-0 rounded-full transform -translate-x-1/2 group-hover:w-3/4 transition-all duration-300"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 0%, #A06AFF 50%, transparent 100%)'
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
