@@ -289,11 +289,40 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     [ensureActiveBlock, addMedia],
   );
 
+  const handleToolbarDocumentPick = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files || files.length === 0) {
+        return;
+      }
+
+      const targetId = ensureActiveBlock();
+      if (!targetId) {
+        event.target.value = "";
+        return;
+      }
+
+      addMedia(targetId, files);
+      event.target.value = "";
+    },
+    [ensureActiveBlock, addMedia],
+  );
+
   const handleToolbarEmojiToggle = useCallback(() => {
     const targetId = ensureActiveBlock();
     if (!targetId) return;
     setIsEmojiPickerOpen((prev) => !prev);
   }, [ensureActiveBlock]);
+
+  const handleBoldToggle = useCallback(() => {
+    const targetId = activeBlockId || ensureActiveBlock();
+    if (!targetId) return;
+
+    const block = blocks.find(b => b.id === targetId);
+    if (!block) return;
+
+    setIsBoldActive(!isBoldActive);
+  }, [activeBlockId, ensureActiveBlock, blocks, isBoldActive]);
 
   const handleCodeBlockInsert = useCallback(
     (code: string, language: string) => {
