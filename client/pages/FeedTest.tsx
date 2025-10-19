@@ -852,7 +852,10 @@ function QuickComposer({
   };
 
   const handleMediaSave = (updatedMedia: MediaItem) => {
-    // The MediaEditor is integrated with the hook, so we just close it
+    const blockId = activeBlockId || blocks[0]?.id;
+    if (blockId) {
+      replaceMedia(blockId, updatedMedia);
+    }
     setEditingMedia(null);
   };
 
