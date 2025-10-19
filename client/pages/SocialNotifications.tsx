@@ -1,5 +1,13 @@
 import type { FC } from "react";
 import { useCallback, useMemo, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 
 interface NotificationItem {
   id: string;
@@ -98,6 +106,24 @@ const notifications: NotificationItem[] = [
 const SocialNotifications: FC = () => {
   const [activeFilter, setActiveFilter] = useState<NotificationFilterId>("all");
   const [readNotifications, setReadNotifications] = useState<Set<string>>(new Set());
+  const [attentionDialogOpen, setAttentionDialogOpen] = useState(false);
+  
+  // Attention control settings
+  const [attentionSettings, setAttentionSettings] = useState({
+    showLikes: true,
+    showReposts: true,
+    showFollows: true,
+    showMentions: true,
+    emailDigest: false,
+    weeklyDigest: true,
+  });
+  
+  // Newsletter settings
+  const [newsletterSettings, setNewsletterSettings] = useState({
+    pushInApp: true,
+    emailDigest: false,
+    telegramBot: true,
+  });
 
   const filteredNotifications = useMemo(() => {
     if (activeFilter === "mentions") {
@@ -151,7 +177,7 @@ const SocialNotifications: FC = () => {
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold text-white">Уведомления</h1>
                 <p className="text-sm text-[#6C7080]">
-                  Отслеживайте реакции на ваши идеи, новые подписки и упоминания.
+                  Отслеживайте реакци�� на ваши идеи, новые подписки и упоминания.
                 </p>
               </div>
               <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
@@ -199,11 +225,12 @@ const SocialNotifications: FC = () => {
           <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
             <h3 className="text-lg font-semibold text-white">Контроль внимания</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
-              Выберите, какие уведомления показывать: отключите реакции на ��епосты или включите email-дайджесты.
+              Выберите, какие уведомления показывать: отключите реакции на репосты или включите email-дайджесты.
             </p>
             <button
               type="button"
-              className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+              onClick={() => setAttentionDialogOpen(true)}
+              className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:shadow-[0_0_20px_rgba(160,106,255,0.4)]"
             >
               Настроить фильтры
             </button>
@@ -213,23 +240,119 @@ const SocialNotifications: FC = () => {
             <p className="mt-2 text-sm text-[#B0B0B0]">
               Получайте дайджесты в Telegram или на почту. Комбинируйте упоминания, подписки и сигналы.
             </p>
-            <div className="mt-4 flex flex-col gap-2">
-              <label className="inline-flex items-center gap-2 text-sm text-white">
-                <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-[#181B22] bg-transparent text-[#A06AFF]" />
-                Push в приложении
+            <div className="mt-4 flex flex-col gap-3">
+              <label className="flex cursor-pointer items-center justify-between text-sm text-white">
+                <span>Push в приложении</span>
+                <Switch
+                  checked={newsletterSettings.pushInApp}
+                  onCheckedChange={(checked) =>
+                    setNewsletterSettings((prev) => ({ ...prev, pushInApp: checked }))
+                  }
+                />
               </label>
-              <label className="inline-flex items-center gap-2 text-sm text-white">
-                <input type="checkbox" className="h-4 w-4 rounded border-[#181B22] bg-transparent text-[#A06AFF]" />
-                Email дайджест
+              <label className="flex cursor-pointer items-center justify-between text-sm text-white">
+                <span>Email дайджест</span>
+                <Switch
+                  checked={newsletterSettings.emailDigest}
+                  onCheckedChange={(checked) =>
+                    setNewsletterSettings((prev) => ({ ...prev, emailDigest: checked }))
+                  }
+                />
               </label>
-              <label className="inline-flex items-center gap-2 text-sm text-white">
-                <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-[#181B22] bg-transparent text-[#A06AFF]" />
-                Telegram бот
+              <label className="flex cursor-pointer items-center justify-between text-sm text-white">
+                <span>Telegram бот</span>
+                <Switch
+                  checked={newsletterSettings.telegramBot}
+                  onCheckedChange={(checked) =>
+                    setNewsletterSettings((prev) => ({ ...prev, telegramBot: checked }))
+                  }
+                />
               </label>
             </div>
           </div>
         </aside>
       </div>
+
+      {/* Attention Control Dialog */}
+      <Dialog open={attentionDialogOpen} onOpenChange={setAttentionDialogOpen}>
+        <DialogContent className="border-[#181B22] bg-[#0A0D12] sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white">Контроль внимания</DialogTitle>
+            <DialogDescription className="text-[#B0B0B0]">
+              Настройте, какие типы уведомлений вы хотите получать
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-white">Типы уведомлений</h4>
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+                <span>Лайки</span>
+                <Switch
+                  checked={attentionSettings.showLikes}
+                  onCheckedChange={(checked) =>
+                    setAttentionSettings((prev) => ({ ...prev, showLikes: checked }))
+                  }
+                />
+              </label>
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+                <span>Репосты</span>
+                <Switch
+                  checked={attentionSettings.showReposts}
+                  onCheckedChange={(checked) =>
+                    setAttentionSettings((prev) => ({ ...prev, showReposts: checked }))
+                  }
+                />
+              </label>
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+                <span>Новые подписчики</span>
+                <Switch
+                  checked={attentionSettings.showFollows}
+                  onCheckedChange={(checked) =>
+                    setAttentionSettings((prev) => ({ ...prev, showFollows: checked }))
+                  }
+                />
+              </label>
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+                <span>Упоминания</span>
+                <Switch
+                  checked={attentionSettings.showMentions}
+                  onCheckedChange={(checked) =>
+                    setAttentionSettings((prev) => ({ ...prev, showMentions: checked }))
+                  }
+                />
+              </label>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-white">Дайджесты</h4>
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+                <span>Email дайджест</span>
+                <Switch
+                  checked={attentionSettings.emailDigest}
+                  onCheckedChange={(checked) =>
+                    setAttentionSettings((prev) => ({ ...prev, emailDigest: checked }))
+                  }
+                />
+              </label>
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+                <span>Еженедельный отчет</span>
+                <Switch
+                  checked={attentionSettings.weeklyDigest}
+                  onCheckedChange={(checked) =>
+                    setAttentionSettings((prev) => ({ ...prev, weeklyDigest: checked }))
+                  }
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAttentionDialogOpen(false)}
+              className="w-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-[0_0_20px_rgba(160,106,255,0.4)]"
+            >
+              Сохранить настройки
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -355,7 +478,7 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <h3 className="text-lg font-semibold text-white">Нет уведомлений</h3>
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
-        ? "Упоминаний пока нет. Поде��итесь новой идеей — и коллеги обязательно отметят вас."
+        ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно отметят вас."
         : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
     </p>
   </div>
