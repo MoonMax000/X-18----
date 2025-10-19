@@ -34,8 +34,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: 'Ресурсы',
     links: [
       { label: 'Центр поддержки', href: '/support' },
-      { label: 'Обучающие материалы', href: '/academy' },
-      { label: 'Торговые стратег��и', href: '/strategies' },
+      { label: 'Дорожная карта', href: '/roadmap' },
       { label: 'Блог сообщества', href: '/blog' },
     ],
   },
@@ -47,12 +46,11 @@ const FOOTER_SECTIONS: FooterSection[] = [
     ],
   },
   {
-    title: 'Правовая информация',
+    title: 'Правовая ��нформация',
     links: [
       { label: 'Пользовательское соглашение', href: '/terms' },
       { label: 'Политика конфиденциальности', href: '/privacy' },
       { label: 'Правила сообщества', href: '/community-guidelines' },
-      { label: 'Уведомление о рисках', href: '/risk-disclosure' },
     ],
   },
 ];
