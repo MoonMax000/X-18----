@@ -6,7 +6,7 @@ import CommentCard from "./CommentCard";
 import { getCommentsByPostId } from "@/data/socialComments";
 import type { SocialPost } from "@/data/socialPosts";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MessageCircle, Heart, Repeat2, Eye } from "lucide-react";
+import { MessageCircle, Heart, Repeat2 } from "lucide-react";
 
 interface UnifiedPostDetailProps {
   post: SocialPost;
@@ -250,7 +250,17 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
         </button>
         
         <div className="flex items-center gap-2 text-[#8B98A5]" aria-label="Views">
-          <Eye className="h-5 w-5" />
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9.04257 20.3539V3.15479H10.9536V20.3539H9.04257ZM17.881 20.3539V8.41008H19.792V20.3539H17.881ZM4.50391 20.3539L4.50773 10.7988H6.41874L6.41492 20.3539H4.50391ZM13.3404 20.3539V13.6654H15.2515V20.3539H13.3404Z"
+              fill="currentColor"
+            />
+          </svg>
           {typeof post.views === "number" ? (
             <span className="text-sm">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}K` : post.views}</span>
           ) : null}
