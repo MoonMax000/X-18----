@@ -268,30 +268,38 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Verify 2FA code (mock)
-  const verify2FACode = () => {
+  // Verify 2FA code with real API
+  const verify2FACode = async () => {
     if (isBlocked2FA || isCodeExpired) return;
 
     const code = twoFactorCode.join('');
     console.log('Verifying 2FA code:', code);
 
-    if (code === '123456') {
-      console.log('2FA verification successful!');
-      setTwoFactorError('');
-    } else {
-      const newAttempts = failedAttempts + 1;
-      setFailedAttempts(newAttempts);
+    try {
+      const result = await verify2FA(userId, code);
 
-      if (newAttempts >= 3) {
-        setIsBlocked2FA(true);
-        setTwoFactorError('Too many failed attempts. Try again later.');
+      if (result.success) {
+        console.log('2FA verification successful!');
+        setTwoFactorError('');
+        onClose();
       } else {
-        setTwoFactorError('Invalid code. Please try again.');
-        setTimeout(() => {
-          setTwoFactorCode(['', '', '', '', '', '']);
-          inputRefs[0].current?.focus();
-        }, 1000);
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
+
+        if (newAttempts >= 3) {
+          setIsBlocked2FA(true);
+          setTwoFactorError('Too many failed attempts. Try again later.');
+        } else {
+          setTwoFactorError(result.error || 'Invalid code. Please try again.');
+          setTimeout(() => {
+            setTwoFactorCode(['', '', '', '', '', '']);
+            inputRefs[0].current?.focus();
+          }, 1000);
+        }
       }
+    } catch (error: any) {
+      console.error('2FA verification error:', error);
+      setTwoFactorError('Verification failed. Please try again.');
     }
   };
 
@@ -355,8 +363,8 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle login - simulates different error scenarios
-  const handleLogin = () => {
+  // Handle login with real AuthContext
+  const handleLogin = async () => {
     setAuthError('');
     setAttemptsRemaining(null);
 
@@ -376,35 +384,26 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    console.log('Login attempt:', { authMethod, phoneNumber, email, password });
+    try {
+      const emailOrPhone = authMethod === 'email' ? email : phoneNumber;
+      const result = await login(emailOrPhone, password);
 
-    // Mock login validation - simulate different scenarios
-    // For demo: password 'wrongpassword' triggers attempt counter
-    if (password === 'wrongpassword') {
-      const newFailedAttempts = failedAttempts + 1;
-      setFailedAttempts(newFailedAttempts);
-
-      if (newFailedAttempts >= 10) {
-        setIsBlocked(true);
-        setAuthError('Too many failed attempts. Account locked for 30 minutes.');
-        return;
-      } else if (newFailedAttempts >= 5) {
-        setAuthError('Too many failed attempts. IP blocked for 15 minutes.');
-        setIsBlocked(true);
-        return;
+      if (result.requires2FA) {
+        // Show 2FA screen
+        setUserId(result.userId || '');
+        const masked = result.maskedContact || emailOrPhone.replace(/(.{1})(.*)(@.*)/, '$1***$3');
+        setMaskedEmail(masked);
+        setCurrentScreen('2fa');
+      } else if (result.success) {
+        // Login successful, close modal
+        onClose();
       } else {
-        const remaining = 10 - newFailedAttempts;
-        setAttemptsRemaining(remaining);
-        setAuthError('Invalid login or password.');
-        return;
+        setAuthError(result.error || 'Invalid login or password.');
       }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setAuthError(error.message || 'Login failed. Please try again.');
     }
-
-    // Mock: Show 2FA screen on successful login
-    const userEmail = authMethod === 'email' ? email : 'example@gmail.com';
-    const masked = userEmail.replace(/(.{1})(.*)(@.*)/, '$1***$3');
-    setMaskedEmail(masked);
-    setCurrentScreen('2fa');
   };
 
   useEffect(() => {
