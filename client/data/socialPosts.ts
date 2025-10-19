@@ -100,7 +100,7 @@ export const socialPosts: SocialPost[] = [
       "Hedge funds don’t just beat the market by luck, they use proven strategies. Here’s how you can apply their tactics.",
     body: "Hedge funds don’t just beat the market by luck, they use proven strategies. Here’s how you can apply their tactics:\n\n• Focus on asymmetric risk/reward — Only take trades where potential upside >> downside. Hedge funds target 3:1 or better.\n• Be contrarian — The biggest profits come when you go against the crowd. Buy fear, sell greed.\n• Use leverage wisely — Hedge funds amplify gains with controlled risk. Never over-leverage.\n• Stay disciplined — Stick to your strategy. Emotional trading kills returns.\n• Diversify beyond stocks — Explore options, futures, arbitrage, and macro trends.\n\nMost traders fail because they chase hype. Winners think like institutions. Write in the comments what investment strategy you follow.",
     mediaUrl:
-      "https://cdn.builder.io/api/v1/image/assets%2F7ee0e08331ad4de59dd7fa404556ca59%2F26e47da892d74e88bcb53dbb23d89ed5?format=webp&width=800",
+      "https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2F2d47b79163b7401296001f606a7f0aef",
     sentiment: "bullish",
     likes: 1500,
     comments: 563,
