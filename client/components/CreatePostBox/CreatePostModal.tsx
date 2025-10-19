@@ -692,8 +692,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                 className={cn(
                   "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                   sentiment === "bullish"
-                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A]"
-                    : "bg-transparent"
+                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A] hover:shadow-[0_4px_12px_rgba(46,189,133,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#2EBD85]/15"
                 )}
                 disabled={isPosting}
               >
@@ -729,8 +729,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                 className={cn(
                   "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                   sentiment === "bearish"
-                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414]"
-                    : "bg-transparent"
+                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414] hover:shadow-[0_4px_12px_rgba(255,38,38,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#EF454A]/15"
                 )}
                 disabled={isPosting}
               >
