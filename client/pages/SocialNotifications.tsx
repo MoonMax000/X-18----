@@ -103,7 +103,7 @@ const notifications: NotificationItem[] = [
       handle: "@gamma_io",
       avatar: "https://i.pravatar.cc/120?img=15",
     },
-    message: "отметил вас в аналитике по волатил��ности опционов",
+    message: "отметил вас в аналитике по волатильности опционов",
     timestamp: "5 ч назад",
     meta: "+42 перехода",
   },
@@ -202,7 +202,7 @@ const SocialNotifications: FC = () => {
             </button>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-white">Уведомления</h1>
-              <p className="text-sm text-[#8E92A0]">{unreadTotal} непрочитанных</p>
+              <p className="text-sm text-[#8E92A0]">{unreadTotal} непр��читанных</p>
             </div>
             <button
               type="button"
@@ -305,6 +305,7 @@ const SocialNotifications: FC = () => {
             </label>
           </div>
         </div>
+        <FollowRecommendationsWidget title="Who to follow" profiles={DEFAULT_SUGGESTED_PROFILES} />
       </aside>
 
       {/* Attention Control Dialog */}
