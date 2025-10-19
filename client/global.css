@@ -668,3 +668,8 @@ textarea::-webkit-scrollbar-track {
 .post-hover-glow:hover::after {
   opacity: 1;
 }
+
+/* Hide the divider of the next post when hovering on current post */
+.post-hover-glow:hover + .post-hover-glow .post-divider {
+  opacity: 0;
+}
