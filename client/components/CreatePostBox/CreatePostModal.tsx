@@ -4,16 +4,13 @@ import { cn } from "@/lib/utils";
 import { TweetBlock } from "./TweetBlock";
 import { MediaEditor } from "./MediaEditor";
 import { EmojiPicker } from "./EmojiPicker";
-import { DraftsList } from "./DraftsList";
 import { CodeBlockModal } from "./CodeBlockModal";
 import { useAdvancedComposer } from "./useAdvancedComposer";
 import {
   MediaItem,
   ReplyPolicy,
-  ComposerDraft,
   ComposerBlockState,
   ComposerSentiment,
-  MAX_DRAFTS,
   REPLY_SUMMARY_TEXT,
 } from "./types";
 
@@ -642,7 +639,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               type="button"
               onClick={handleToolbarEmojiToggle}
               className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
-              title="Добавить эмод��и"
+              title="Добавить эмодзи"
               disabled={blocks.length === 0}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
