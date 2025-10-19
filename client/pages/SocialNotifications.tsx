@@ -373,6 +373,7 @@ interface NotificationItemRowProps {
 }
 
 const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRead, onToggleRead }) => {
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
   return (
   <article
