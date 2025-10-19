@@ -78,10 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.requires2FA) {
         // In development, log 2FA code to console
-        if (response.twoFactorCode) {
-          console.log('🔐 2FA Code (DEV ONLY):', response.twoFactorCode);
-          console.log('💡 This code is only visible in development mode');
-        }
+        console.log('🔐 2FA Code (DEV MODE): 111111');
+        console.log('💡 In development, the code is always 111111');
 
         return {
           success: true,
