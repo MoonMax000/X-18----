@@ -1406,7 +1406,7 @@ function QuickComposer({
           {isReplyMenuOpen && replyMenuPosition &&
             createPortal(
               <div
-                className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3"
+                className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#5E5E5E] bg-black shadow-2xl backdrop-blur-[100px] p-3"
                 style={{
                   top: `${replyMenuPosition.top - 200}px`,
                   left: `${replyMenuPosition.left}px`,
@@ -1459,7 +1459,7 @@ function QuickComposer({
           createPortal(
             <div
               ref={emojiPickerRef}
-              className="fixed z-[2300] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]"
+              className="fixed z-[2300] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#5E5E5E] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]"
               style={{
                 top: `${emojiPickerPosition.top}px`,
                 left: `${emojiPickerPosition.left}px`,
@@ -2253,7 +2253,7 @@ export default function FeedTest() {
     const isPaidLocked = post.price !== "free";
 
     return (
-      <div key={post.id} className="border-b border-[#0F131A] bg-[#000000] p-4 transition-colors hover:bg-[#0A0D12]">
+      <div key={post.id} className="border-b border-[#5E5E5E] bg-[#000000] p-4 transition-colors hover:bg-[#0A0D12]">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex gap-3 flex-1 pt-0.5">
             <Avatar className="h-10 w-10 flex-shrink-0">
@@ -2282,7 +2282,7 @@ export default function FeedTest() {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Badge className="bg-green-500/20 text-[11px] font-semibold text-green-400 rounded-full">SIGNAL</Badge>
-            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
+            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#5E5E5E] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
               {isFollowing ? "Following" : "Follow"}
             </Button>
@@ -2313,7 +2313,7 @@ export default function FeedTest() {
           )}
         </div>
 
-        <div className="mb-3 flex items-center gap-4 rounded-xl border border-[#0F131A] bg-[#000000] p-3">
+        <div className="mb-3 flex items-center gap-4 rounded-xl border border-[#5E5E5E] bg-[#000000] p-3">
           <div className="flex items-center gap-1.5">
             <Shield className="h-4 w-4 text-green-400" />
             <span className="text-sm font-semibold text-green-400">Accuracy {post.accuracy}%</span>
@@ -2346,7 +2346,7 @@ export default function FeedTest() {
             </div>
           </div>
         ) : (
-          <div className="mb-3 flex gap-4 rounded-xl border border-[#0F131A] bg-[#000000] p-3">
+          <div className="mb-3 flex gap-4 rounded-xl border border-[#5E5E5E] bg-[#000000] p-3">
             <div><span className="text-xs text-[#6C7280]">Entry</span> <span className="font-semibold text-white block">{post.entry}</span></div>
             <div><span className="text-xs text-[#6C7280]">Stop</span> <span className="font-semibold text-red-400 block">{post.stopLoss}</span></div>
             <div><span className="text-xs text-[#6C7280]">TP</span> <span className="font-semibold text-green-400 block">{post.takeProfit}</span></div>
@@ -2355,7 +2355,7 @@ export default function FeedTest() {
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="cursor-pointer text-sm text-blue-400 hover:text-blue-300 transition">{tag}</span>)}</div>}
 
-        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
+        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#5E5E5E] pt-3 mt-3">
           <button className="flex items-center gap-1.5 transition hover:text-red-400 hover:scale-105"><Heart className="h-5 w-5" /><span className="text-sm font-medium">{post.likes}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-blue-400 hover:scale-105"><MessageCircle className="h-5 w-5" /><span className="text-sm font-medium">{post.comments}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-green-400 hover:scale-105"><Repeat2 className="h-5 w-5" /><span className="text-sm font-medium">{post.reposts}</span></button>
@@ -2372,7 +2372,7 @@ export default function FeedTest() {
     const isPaidLocked = post.price !== "free";
 
     return (
-      <div key={post.id} className="border-b border-[#0F131A] bg-[#000000] p-4">
+      <div key={post.id} className="border-b border-[#5E5E5E] bg-[#000000] p-4">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex gap-3 flex-1 pt-0.5">
             <Avatar className="h-10 w-10 flex-shrink-0"><AvatarImage src={post.author.avatar} /><AvatarFallback>{post.author.name[0]}</AvatarFallback></Avatar>
@@ -2394,7 +2394,7 @@ export default function FeedTest() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
+            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#5E5E5E] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
             </Button>
           </div>
@@ -2403,12 +2403,12 @@ export default function FeedTest() {
         <p className="mb-3 text-[15px] text-[#E5E7EB]">{post.text}</p>
 
         <div className="mb-3 flex flex-wrap gap-2">
-          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.market}</Badge>
-          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.language}</Badge>
-          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">Algo Trading</Badge>
+          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#5E5E5E] rounded-full">{post.market}</Badge>
+          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#5E5E5E] rounded-full">{post.language}</Badge>
+          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#5E5E5E] rounded-full">Algo Trading</Badge>
         </div>
 
-        <div className="mb-3 rounded-xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="mb-3 rounded-xl border border-[#5E5E5E] bg-[#000000] p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Code className="h-4 w-4 text-orange-400" />
@@ -2433,7 +2433,7 @@ export default function FeedTest() {
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer transition">{tag}</span>)}</div>}
 
-        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
+        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#5E5E5E] pt-3 mt-3">
           <button className="flex items-center gap-1.5 transition hover:text-red-400 hover:scale-105"><Heart className="h-5 w-5" /><span className="text-sm font-medium">{post.likes}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-blue-400 hover:scale-105"><MessageCircle className="h-5 w-5" /><span className="text-sm font-medium">{post.comments}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-green-400 hover:scale-105"><Repeat2 className="h-5 w-5" /><span className="text-sm font-medium">{post.reposts}</span></button>
@@ -2449,7 +2449,7 @@ export default function FeedTest() {
     const isPaidLocked = post.price !== "free";
 
     return (
-      <div key={post.id} className="border-b border-[#0F131A] bg-[#000000] p-4">
+      <div key={post.id} className="border-b border-[#5E5E5E] bg-[#000000] p-4">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex gap-3 flex-1 pt-0.5">
             <Avatar className="h-10 w-10 flex-shrink-0"><AvatarImage src={post.author.avatar} /><AvatarFallback>{post.author.name[0]}</AvatarFallback></Avatar>
@@ -2471,7 +2471,7 @@ export default function FeedTest() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
+            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#5E5E5E] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
             </Button>
           </div>
@@ -2494,7 +2494,7 @@ export default function FeedTest() {
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer transition">{tag}</span>)}</div>}
 
-        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
+        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#5E5E5E] pt-3 mt-3">
           <button className="flex items-center gap-1.5 transition hover:text-red-400 hover:scale-105"><Heart className="h-5 w-5" /><span className="text-sm font-medium">{post.likes}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-blue-400 hover:scale-105"><MessageCircle className="h-5 w-5" /><span className="text-sm font-medium">{post.comments}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-green-400 hover:scale-105"><Repeat2 className="h-5 w-5" /><span className="text-sm font-medium">{post.reposts}</span></button>
@@ -2509,7 +2509,7 @@ export default function FeedTest() {
     <div className="flex min-h-screen w-full gap-6">
       <div className="flex-1 max-w-[720px]">
         {/* Quick Composer */}
-        <div className="mb-4 rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="mb-4 rounded-2xl border border-[#5E5E5E] bg-[#000000] p-4">
           <QuickComposer onExpand={handleExpandComposer} />
         </div>
 
@@ -2524,7 +2524,7 @@ export default function FeedTest() {
           }}
         >
           {/* Tabs */}
-          <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#181B22] bg-[#000000] p-0.5">
+          <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#5E5E5E] bg-[#000000] p-0.5">
             {FEED_TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
@@ -2572,7 +2572,7 @@ export default function FeedTest() {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                       >
                         <span className="truncate">{filters.market || 'All'}</span>
                         <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2616,7 +2616,7 @@ export default function FeedTest() {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                       >
                         <span className="truncate">{filters.price || 'All'}</span>
                         <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2662,7 +2662,7 @@ export default function FeedTest() {
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.period || 'All time'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2706,7 +2706,7 @@ export default function FeedTest() {
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.category || 'All'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2780,7 +2780,7 @@ export default function FeedTest() {
                     placeholder="BTC, AAPL..."
                     value={filters.symbol || ''}
                     onChange={(e) => updateFilter('symbol', e.target.value)}
-                    className="h-[26px] w-[140px] rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] text-[#D5D8E1] placeholder-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF]/70 focus:outline-none focus:bg-[#1C1430]"
+                    className="h-[26px] w-[140px] rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] text-[#D5D8E1] placeholder-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF]/70 focus:outline-none focus:bg-[#1C1430]"
                   />
                 </div>
               )}
@@ -2794,7 +2794,7 @@ export default function FeedTest() {
                     "inline-flex h-[26px] items-center gap-2 rounded-[24px] border px-3 text-[11px] font-semibold transition-colors",
                     filters.verified
                       ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                      : "border-[#181B22] bg-[#0C1014]/55 text-[#D5D8E1] backdrop-blur-[36px] hover:border-[#A06AFF]/50 hover:bg-[#120F1D]/60"
+                      : "border-[#5E5E5E] bg-[#0C1014]/55 text-[#D5D8E1] backdrop-blur-[36px] hover:border-[#A06AFF]/50 hover:bg-[#120F1D]/60"
                   )}
                 >
                   <VerifiedBadge size={14} />
@@ -2817,7 +2817,7 @@ export default function FeedTest() {
             </div>
 
             {/* Feed Mode Toggle - positioned on the right */}
-            <div className="inline-flex items-center rounded-full border border-[#0F131A] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] p-0.5 mb-0.5">
+            <div className="inline-flex items-center rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] p-0.5 mb-0.5">
               <button
                 type="button"
                 onClick={() => setFeedMode('recent')}
@@ -2884,7 +2884,7 @@ export default function FeedTest() {
         <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
 
         {/* Trending Tickers */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-4">
           <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
             <Activity className="h-5 w-5 text-blue-400" />
             Trending Tickers
@@ -2935,7 +2935,7 @@ export default function FeedTest() {
         <FollowRecommendationsWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
 
         {/* Top Authors */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-4">
           <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
             <Users className="h-5 w-5 text-purple-400" />
             Top Authors
@@ -2975,7 +2975,7 @@ export default function FeedTest() {
         </div>
 
         {/* Market Sentiment */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-4">
           <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
             <Sparkles className="h-5 w-5 text-yellow-400" />
             Market Sentiment
@@ -2999,21 +2999,21 @@ export default function FeedTest() {
         </div>
 
         {/* Быстрые фильтры */}
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
           <p className="mt-1 text-sm text-[#A3A6B4]">
             Сохранённые пресеты помогают быс��ро переключаться между сценариями просмотра.
           </p>
           <div className="mt-4 flex flex-col gap-3">
-            <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
+            <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
               <span className="mt-1 block text-xs text-[#8E92A0]">Показыват�� только св��жие точки вх����а</span>
             </button>
-            <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
+            <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
               <span className="mt-1 block text-xs text-[#8E92A0]">Материалы для прокачки навы��ов</span>
             </button>
-            <button type="button" className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
+            <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Мультимеди��</span>
               <span className="mt-1 block text-xs text-[#8E92A0]">Видеоразборы и графики</span>
             </button>
@@ -3021,7 +3021,7 @@ export default function FeedTest() {
         </section>
 
         {/* Мои рубрики */}
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
@@ -3038,7 +3038,7 @@ export default function FeedTest() {
                     type="button"
                     onClick={() => updateFilter('category', category)}
                     className={cn(
-                      "group flex items-center justify-between rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10",
+                      "group flex items-center justify-between rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10",
                       filters.category === category && "border-[#A06AFF]/70 bg-[#A06AFF]/20"
                     )}
                   >
@@ -3070,22 +3070,22 @@ export default function FeedTest() {
         </section>
 
         {/* Монетизация */}
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Монетизация</h3>
           <ul className="mt-3 space-y-3 text-sm text-[#C5C9D3]">
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
+            <li className="rounded-2xl border border-[#5E5E5E] bg-white/5 p-3">
               <span className="text-white">Pay-per-post</span>
               <p className="mt-1 text-xs text-[#8E92A0]">
                 Разблокировка отдельного сигнала или аналитики за разовую оплату.
               </p>
             </li>
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
+            <li className="rounded-2xl border border-[#5E5E5E] bg-white/5 p-3">
               <span className="text-white">Подписка на автора</span>
               <p className="mt-1 text-xs text-[#8E92A0]">
                 Доступ ко всем закрытым постам автора и мгновенные уведомления.
               </p>
             </li>
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
+            <li className="rounded-2xl border border-[#5E5E5E] bg-white/5 p-3">
               <span className="text-white">Комбинированная модель</span>
               <p className="mt-1 text-xs text-[#8E92A0]">
                 Авторы сами выбирают: платный сигнал, подписочная аналитика или бесплатные идеи.
