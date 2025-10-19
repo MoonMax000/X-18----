@@ -281,7 +281,14 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           </h3>
           <div className="flex flex-col gap-4">
             {localComments.map((comment) => (
-              <CommentCard key={comment.id} comment={comment} />
+              <CommentCard
+                key={comment.id}
+                comment={comment}
+                onReply={(commentId, text) => {
+                  // Handle reply logic here - in real app would add to database
+                  console.log(`Reply to ${commentId}:`, text);
+                }}
+              />
             ))}
           </div>
         </section>
