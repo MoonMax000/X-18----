@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from "react";
+import { type FC, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import VerifiedBadge from "./VerifiedBadge";
@@ -45,6 +45,11 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
     
     setLocalComments([newComment, ...localComments]);
     setCommentText("");
+
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
   };
 
   const handleLike = () => {
@@ -251,17 +256,35 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           </Avatar>
           <div className="flex-1">
             <textarea
+              ref={textareaRef}
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.length <= MAX_COMMENT_LENGTH) {
+                  setCommentText(newValue);
+                  // Auto-resize textarea
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+                  }
+                }
+              }}
               placeholder="Post your reply..."
-              className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[32px]"
+              className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[32px] max-h-[200px] overflow-y-auto"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   handleSubmitComment();
                 }
               }}
             />
-            <div className="mt-3 flex items-center justify-end">
+            <div className="mt-2 flex items-center justify-between">
+              <span className={`text-xs transition-colors ${
+                commentText.length > MAX_COMMENT_LENGTH * 0.9
+                  ? 'text-[#F91880]'
+                  : 'text-[#6C7080]'
+              }`}>
+                {commentText.length}/{MAX_COMMENT_LENGTH}
+              </span>
               <button
                 type="button"
                 onClick={handleSubmitComment}
