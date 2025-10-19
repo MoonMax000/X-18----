@@ -24,7 +24,7 @@ export default function TabListClassic({ onTabChange }: TabListClassicProps) {
 
   return (
     <div className="sticky top-0 z-20 -mx-6 px-6 bg-background/95 backdrop-blur-md">
-      <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#525252]/40 bg-[#000000] p-0.5 transition-all duration-300 hover:border-[#A06AFF]/60 hover:shadow-[0_0_20px_rgba(160,106,255,0.2)]">
+      <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#5E5E5E]/40 bg-[#000000] p-0.5 transition-all duration-300 hover:border-[#B87AFF]/60 hover:shadow-[0_0_20px_rgba(184,122,255,0.2)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
