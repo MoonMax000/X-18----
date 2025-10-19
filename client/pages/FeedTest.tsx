@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import { PostBadges } from "@/components/PostCard/PostBadges";
 import { SignalPostCard } from "@/components/PostCard/SignalPostCard";
 import { Badge } from "@/components/ui/badge";
