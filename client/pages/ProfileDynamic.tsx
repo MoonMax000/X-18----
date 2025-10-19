@@ -28,16 +28,25 @@ export default function ProfileDynamic() {
       // Try Supabase first
       try {
         const supabaseUser = await getSupabaseUserByUsername(username);
+        console.log('Fetched Supabase user:', supabaseUser);
+
         if (supabaseUser) {
           // Transform Supabase user to match expected profile format
+          const firstName = supabaseUser.first_name || '';
+          const lastName = supabaseUser.last_name || '';
+          const fullName = `${firstName} ${lastName}`.trim();
+
           const transformedUser = {
             id: supabaseUser.id,
-            name: `${supabaseUser.first_name} ${supabaseUser.last_name}`.trim() || supabaseUser.username,
+            name: fullName || supabaseUser.username,
             username: supabaseUser.username,
-            bio: supabaseUser.bio || '',
+            bio: supabaseUser.bio || 'No bio yet',
             location: '',
-            joined: new Date(supabaseUser.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long' }),
-            avatar: supabaseUser.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + supabaseUser.username,
+            website: null,
+            joined: supabaseUser.joined_date
+              ? new Date(supabaseUser.joined_date).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long' })
+              : new Date(supabaseUser.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long' }),
+            avatar: supabaseUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${supabaseUser.username}`,
             cover: '',
             stats: {
               tweets: supabaseUser.posts_count || 0,
@@ -45,14 +54,16 @@ export default function ProfileDynamic() {
               followers: supabaseUser.followers_count || 0,
               likes: 0,
             },
-            isVerified: supabaseUser.verified,
-            isPremium: supabaseUser.premium,
+            isVerified: supabaseUser.verified || false,
+            isPremium: supabaseUser.premium || false,
             tradingStyle: supabaseUser.trading_style,
             specialization: supabaseUser.specialization,
             accuracyRate: supabaseUser.accuracy_rate,
             winRate: supabaseUser.win_rate,
             totalTrades: supabaseUser.total_trades,
           };
+
+          console.log('Transformed user:', transformedUser);
           setProfileUser(transformedUser);
           setNotFound(false);
         } else {
