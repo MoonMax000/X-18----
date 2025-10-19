@@ -123,6 +123,7 @@ const ProfileConnections: FC = () => {
   
   const initialTab = (searchParams.get("tab") as TabType) || "followers";
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+  const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
 
   const handleBack = () => {
     navigate(-1);
