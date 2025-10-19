@@ -7,11 +7,14 @@ import VerifiedBadge from "./VerifiedBadge";
 
 interface CommentCardProps {
   comment: SocialComment;
+  hasReplies?: boolean;
+  showReplyLine?: boolean;
 }
 
-const CommentCard: FC<CommentCardProps> = ({ comment }) => {
+const CommentCard: FC<CommentCardProps> = ({ comment, hasReplies = false, showReplyLine = false }) => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
+  const [showReplies, setShowReplies] = useState(false);
 
   const handleLike = () => {
     if (liked) {
@@ -23,101 +26,155 @@ const CommentCard: FC<CommentCardProps> = ({ comment }) => {
   };
 
   return (
-    <article className="flex gap-3 border-b border-[#181B22] py-4">
-      <UserAvatar
-        src={comment.author.avatar}
-        alt={comment.author.name}
-        size={40}
-        accent={false}
-      />
-      <div className="flex flex-1 flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[15px] font-semibold leading-tight text-white">
-            <span>{comment.author.name}</span>
-            {comment.author.verified ? <VerifiedBadge size={14} /> : null}
-          </div>
-          <span className="text-sm text-[#8E92A0]">
-            {comment.author.handle}
-          </span>
-          <span className="text-sm text-[#6C7080]">·</span>
-          <span className="text-sm text-[#6C7080]">{comment.timestamp}</span>
+    <>
+      <article className="flex gap-3 border-b border-[#181B22] py-4 relative">
+        <div className="relative flex flex-col items-center">
+          <UserAvatar
+            src={comment.author.avatar}
+            alt={comment.author.name}
+            size={40}
+            accent={false}
+          />
+          {showReplyLine && (
+            <div className="absolute top-[48px] bottom-0 w-[2px] bg-[#2F3336]" />
+          )}
         </div>
+        <div className="flex flex-1 flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-[15px] font-semibold leading-tight text-white">
+              <span>{comment.author.name}</span>
+              {comment.author.verified ? <VerifiedBadge size={14} /> : null}
+            </div>
+            <span className="text-sm text-[#8E92A0]">
+              {comment.author.handle}
+            </span>
+            <span className="text-sm text-[#6C7080]">·</span>
+            <span className="text-sm text-[#6C7080]">{comment.timestamp}</span>
+          </div>
 
-        <p className="whitespace-pre-line text-[15px] leading-relaxed text-white/90">
-          {comment.text}
-        </p>
+          <p className="whitespace-pre-line text-[15px] leading-relaxed text-white/90">
+            {comment.text}
+          </p>
 
-        <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
-          <button
-            type="button"
-            onClick={handleLike}
-            className={`group flex items-center gap-1.5 transition-colors ${
-              liked ? "text-[#F91880]" : "hover:text-[#F91880]"
-            }`}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="transition-colors"
-            >
-              <path
-                d="M16.498 5.54308C15.3303 5.48575 13.9382 6.03039 12.7811 7.60698L12.0119 8.64848L11.2417 7.60698C10.0837 6.03039 8.69053 5.48575 7.5229 5.54308C6.3352 5.60997 5.27841 6.28838 4.74237 7.3681C4.21493 8.43827 4.13753 10.0244 5.20006 11.9736C6.22627 13.856 8.31214 16.0537 12.0119 18.2895C15.7097 16.0537 17.7946 13.856 18.8208 11.9736C19.8824 10.0244 19.805 8.43827 19.2766 7.3681C18.7406 6.28838 17.6847 5.60997 16.498 5.54308ZM20.4987 12.8909C19.2078 15.2606 16.6757 17.7831 12.4925 20.2197L12.0119 20.5063L11.5303 20.2197C7.34613 17.7831 4.81403 15.2606 3.52123 12.8909C2.22174 10.5022 2.17397 8.24717 3.0301 6.5177C3.87764 4.80734 5.55933 3.73717 7.42639 3.64162C9.00393 3.55562 10.6445 4.1767 12.0109 5.56219C13.3763 4.1767 15.0169 3.55562 16.5935 3.64162C18.4606 3.73717 20.1423 4.80734 20.9898 6.5177C21.846 8.24717 21.7982 10.5022 20.4987 12.8909Z"
-                fill={liked ? "currentColor" : "currentColor"}
-              />
-            </svg>
-            <span className="text-sm font-medium">{likeCount}</span>
-          </button>
-
-          {typeof comment.replies === "number" && comment.replies > 0 ? (
+          <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
             <button
               type="button"
-              className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
+              className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
+              aria-label="Reply"
             >
               <svg
                 width="18"
                 height="18"
-                viewBox="0 0 20 20"
+                viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M17.5 9.16667C17.5 13.0326 14.1421 16.25 10 16.25C8.80208 16.25 7.67708 16 6.66667 15.5417L2.5 16.25L3.75 12.9167C3.125 11.8646 2.5 10.5729 2.5 9.16667C2.5 5.30076 5.85786 2.08333 10 2.08333C14.1421 2.08333 17.5 5.30076 17.5 9.16667Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"
+                  fill="currentColor"
                 />
               </svg>
-              <span className="text-sm font-medium">{comment.replies}</span>
+              {typeof comment.replies === "number" && comment.replies > 0 ? (
+                <span className="text-sm font-medium">{comment.replies}</span>
+              ) : null}
             </button>
-          ) : null}
 
-          <button
-            type="button"
-            className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <button
+              type="button"
+              className="group flex items-center gap-1.5 transition-colors hover:text-[#00BA7C]"
+              aria-label="Repost"
             >
-              <path
-                d="M15.8333 10L10 15.8333M10 15.8333L4.16667 10M10 15.8333V4.16667"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLike}
+              className={`group flex items-center gap-1.5 transition-colors ${
+                liked ? "text-[#F91880]" : "hover:text-[#F91880]"
+              }`}
+              aria-label="Like"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M16.498 5.54308C15.3303 5.48575 13.9382 6.03039 12.7811 7.60698L12.0119 8.64848L11.2417 7.60698C10.0837 6.03039 8.69053 5.48575 7.5229 5.54308C6.3352 5.60997 5.27841 6.28838 4.74237 7.3681C4.21493 8.43827 4.13753 10.0244 5.20006 11.9736C6.22627 13.856 8.31214 16.0537 12.0119 18.2895C15.7097 16.0537 17.7946 13.856 18.8208 11.9736C19.8824 10.0244 19.805 8.43827 19.2766 7.3681C18.7406 6.28838 17.6847 5.60997 16.498 5.54308ZM20.4987 12.8909C19.2078 15.2606 16.6757 17.7831 12.4925 20.2197L12.0119 20.5063L11.5303 20.2197C7.34613 17.7831 4.81403 15.2606 3.52123 12.8909C2.22174 10.5022 2.17397 8.24717 3.0301 6.5177C3.87764 4.80734 5.55933 3.73717 7.42639 3.64162C9.00393 3.55562 10.6445 4.1767 12.0109 5.56219C13.3763 4.1767 15.0169 3.55562 16.5935 3.64162C18.4606 3.73717 20.1423 4.80734 20.9898 6.5177C21.846 8.24717 21.7982 10.5022 20.4987 12.8909Z"
+                  fill={liked ? "currentColor" : "currentColor"}
+                />
+              </svg>
+              {likeCount > 0 ? (
+                <span className="text-sm font-medium">{likeCount}</span>
+              ) : null}
+            </button>
+
+            <button
+              type="button"
+              className="group flex items-center gap-1.5 transition-colors hover:text-[#4D7CFF]"
+              aria-label="Views"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
+              aria-label="Share"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {hasReplies && !showReplies && (
+            <button
+              type="button"
+              onClick={() => setShowReplies(true)}
+              className="mt-2 flex items-center gap-2 text-sm text-[#1D9BF0] hover:underline"
+            >
+              <div className="h-px w-8 bg-[#2F3336]" />
+              <span>Show replies</span>
+            </button>
+          )}
         </div>
-      </div>
-    </article>
+      </article>
+    </>
   );
 };
 
