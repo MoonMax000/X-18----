@@ -98,9 +98,9 @@ export const PaidPostModal = ({
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-[#A06AFF]">
-                {selectedCurrency?.symbol}
-                {price}
+                ${price}
               </span>
+              <span className="text-sm text-[#808283]">USD</span>
             </div>
             <p className="mt-2 text-xs text-[#808283]">
               One-time payment to unlock this post
