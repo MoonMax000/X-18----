@@ -252,7 +252,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Post your reply..."
-              className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[60px]"
+              className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[40px]"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   handleSubmitComment();
