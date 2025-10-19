@@ -6,6 +6,7 @@ import { navElements, NavElementProps } from './constants';
 import { ChevronDown, DoubleArrow, QuillPen } from './icons';
 import CreatePostModal from '@/components/CreatePostBox/CreatePostModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Props {
   variant?: LayoutVariant;
@@ -62,37 +63,52 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
   const renderElement = (el: NavElementProps, isMobile: boolean = false) => {
     if (el.children && el.children.length > 0) {
       const isGroupOpen = openGroup === el.title;
+      const buttonContent = (
+        <button
+          onClick={() => toggleGroup(el.title)}
+          className={cn(
+            'flex items-center justify-between w-full px-3 py-[14px] rounded-lg transition',
+            isMobile && 'py-3'
+          )}
+          aria-expanded={isGroupOpen}
+          aria-controls={`${el.title}-submenu`}
+        >
+          <div
+            className={cn('group flex items-center gap-2 pl-2 hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
+              'text-white border-l-[2px] border-purple': isGroupOpen,
+              'text-[#B0B0B0]': !isGroupOpen,
+              'ml-[5px]': isCollapsed && !isMobile,
+            })}
+            data-active={isGroupOpen ? 'true' : undefined}
+          >
+            <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
+            <span
+              className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
+                'opacity-0 w-0': isCollapsed && !isMobile,
+                'opacity-100 w-auto': !isCollapsed || isMobile,
+              })}
+            >
+              {el.title}
+            </span>
+          </div>
+          {(!isCollapsed || isMobile) && <ChevronDown className={cn('h-4 w-4 transition-transform flex-shrink-0', isGroupOpen && 'rotate-180')} />}
+        </button>
+      );
+
       return (
         <div key={el.title}>
-          <button
-            onClick={() => toggleGroup(el.title)}
-            className={cn(
-              'flex items-center justify-between w-full px-3 py-[14px] rounded-lg transition',
-              isMobile && 'py-3'
-            )}
-            aria-expanded={isGroupOpen}
-            aria-controls={`${el.title}-submenu`}
-          >
-            <div
-              className={cn('group flex items-center gap-2 pl-2 hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
-                'text-white border-l-[2px] border-purple': isGroupOpen,
-                'text-[#B0B0B0]': !isGroupOpen,
-                'ml-[5px]': isCollapsed && !isMobile,
-              })}
-              data-active={isGroupOpen ? 'true' : undefined}
-            >
-              <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
-              <span
-                className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                  'opacity-0 w-0': isCollapsed && !isMobile,
-                  'opacity-100 w-auto': !isCollapsed || isMobile,
-                })}
-              >
-                {el.title}
-              </span>
-            </div>
-            {(!isCollapsed || isMobile) && <ChevronDown className={cn('h-4 w-4 transition-transform flex-shrink-0', isGroupOpen && 'rotate-180')} />}
-          </button>
+          {isCollapsed && !isMobile ? (
+            <Tooltip delayDuration={200}>
+              <TooltipTrigger asChild>
+                {buttonContent}
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+                <p>{el.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            buttonContent
+          )}
           {isGroupOpen && (
             <div id={`${el.title}-submenu`} className={cn('flex flex-col gap-1', isCollapsed && !isMobile ? 'ml-0 items-center' : 'ml-6')}>
               {el.children.map((child) => {
@@ -139,7 +155,7 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
       const currentFullPath = location.pathname + location.search;
       const isActiveRoute = el.route === currentFullPath || el.route === location.pathname;
 
-      return (
+      const navLink = (
         <NavLink
           key={el.title}
           to={el.route}
@@ -170,6 +186,17 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
           }}
         </NavLink>
       );
+
+      return isCollapsed && !isMobile ? (
+        <Tooltip key={el.title} delayDuration={200}>
+          <TooltipTrigger asChild>
+            {navLink}
+          </TooltipTrigger>
+          <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+            <p>{el.title}</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : navLink;
     }
 
     return (
@@ -236,22 +263,40 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               isCollapsed ? 'w-[72px]' : 'w-[222px]'
             )}
           >
-            <button
-              type='button'
-              onClick={() => setIsPostComposerOpen(true)}
-              className={cn(
-                'relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
-                isCollapsed ? 'h-12 w-12' : 'h-12 w-full px-3'
+            <Tooltip delayDuration={200}>
+              <TooltipTrigger asChild>
+                <button
+                  type='button'
+                  onClick={() => setIsPostComposerOpen(true)}
+                  className={cn(
+                    'group relative flex items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
+                    'hover:scale-105 active:scale-95',
+                    isCollapsed ? 'h-12 w-12 bg-gradient-to-r from-[#A06AFF] to-[#482090]' : 'h-12 w-full px-4 bg-gradient-to-r from-[#A06AFF] to-[#482090]'
+                  )}
+                >
+                  {/* Animated glow effect */}
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+
+                  <span className={cn('relative flex items-center gap-3 text-sm font-semibold text-white z-10', isCollapsed ? 'justify-center' : 'justify-center')}>
+                    {isCollapsed ? (
+                      <QuillPen className='h-5 w-5 animate-pulse' />
+                    ) : (
+                      <>
+                        <span className='flex h-9 w-9 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm'>
+                          <QuillPen className='h-4 w-4' />
+                        </span>
+                        <span className="font-bold">Tweet</span>
+                      </>
+                    )}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+                  <p>Create Tweet</p>
+                </TooltipContent>
               )}
-              title="Open advanced Post composer"
-            >
-              <span className={cn('flex items-center gap-3 text-sm font-semibold text-white', isCollapsed ? 'justify-center' : 'justify-center')}>
-                <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)]'>
-                  <QuillPen className='h-4 w-4' />
-                </span>
-                {!isCollapsed && <span>Tweet</span>}
-              </span>
-            </button>
+            </Tooltip>
           </div>
         </div>
       </div>
