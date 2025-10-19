@@ -202,30 +202,30 @@ export default function ProfileContentClassic({
 
             {/* Following/Followers counts */}
             <div className="flex flex-wrap items-baseline gap-3">
-              <button
-                type="button"
-                onClick={() => navigate(`/social/profile/${profile.handle}/connections?tab=following`)}
-                className="flex items-baseline gap-1 transition-colors hover:underline"
-              >
+              <div className="flex items-baseline gap-1">
                 <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
                   {profile.stats.following}
                 </span>
-                <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/social/profile/${profile.handle}/connections?tab=following`)}
+                  className="text-[15px] font-normal leading-5 text-[#8B98A5] transition-colors hover:underline"
+                >
                   Following
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(`/social/profile/${profile.handle}/connections?tab=followers`)}
-                className="flex items-baseline gap-1 transition-colors hover:underline"
-              >
+                </button>
+              </div>
+              <div className="flex items-baseline gap-1">
                 <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
                   {profile.stats.followers}
                 </span>
-                <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/social/profile/${profile.handle}/connections?tab=followers`)}
+                  className="text-[15px] font-normal leading-5 text-[#8B98A5] transition-colors hover:underline"
+                >
                   Followers
-                </span>
-              </button>
+                </button>
+              </div>
             </div>
           </div>
 
