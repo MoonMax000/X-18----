@@ -56,7 +56,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   };
 
   return (
-    <article className="mx-auto flex w-full sm:max-w-[680px] flex-col gap-4 sm:gap-6 rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-4 sm:p-6 text-white shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)]">
+    <article className="mx-auto flex w-full sm:max-w-[680px] flex-col gap-4 sm:gap-6 bg-black p-4 sm:p-6 text-white">
       {/* Header */}
       <header className="flex items-start justify-between gap-4">
         <div 
