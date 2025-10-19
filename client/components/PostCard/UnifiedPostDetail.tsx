@@ -284,6 +284,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
               <CommentCard
                 key={comment.id}
                 comment={comment}
+                depth={0}
                 onReply={(commentId, text) => {
                   if (!text.trim()) return;
 
@@ -301,8 +302,9 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
                     likes: 0,
                   };
 
-                  setLocalComments((prevComments) =>
-                    prevComments.map((c) => {
+                  // Recursive function to add reply at any level
+                  const addReplyToComment = (comments: typeof localComments): typeof localComments => {
+                    return comments.map((c) => {
                       if (c.id === commentId) {
                         return {
                           ...c,
@@ -310,9 +312,20 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
                           replyCount: (c.replyCount || 0) + 1,
                         };
                       }
+
+                      // Recursively search in nested replies
+                      if (c.replies && c.replies.length > 0) {
+                        const updatedReplies = addReplyToComment(c.replies);
+                        if (updatedReplies !== c.replies) {
+                          return { ...c, replies: updatedReplies };
+                        }
+                      }
+
                       return c;
-                    })
-                  );
+                    });
+                  };
+
+                  setLocalComments((prevComments) => addReplyToComment(prevComments));
                 }}
               />
             ))}

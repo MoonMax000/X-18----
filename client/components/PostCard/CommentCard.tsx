@@ -7,11 +7,11 @@ import VerifiedBadge from "./VerifiedBadge";
 
 interface CommentCardProps {
   comment: SocialComment;
-  isNested?: boolean;
+  depth?: number;
   onReply?: (commentId: string, text: string) => void;
 }
 
-const CommentCard: FC<CommentCardProps> = ({ comment, isNested = false, onReply }) => {
+const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, onReply }) => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [showReplies, setShowReplies] = useState(false);
@@ -59,12 +59,13 @@ const CommentCard: FC<CommentCardProps> = ({ comment, isNested = false, onReply 
           </p>
 
           <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
-            <button
-              type="button"
-              onClick={() => setShowReplyForm(!showReplyForm)}
-              className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
-              aria-label="Reply"
-            >
+            {depth < 3 && (
+              <button
+                type="button"
+                onClick={() => setShowReplyForm(!showReplyForm)}
+                className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
+                aria-label="Reply"
+              >
               <svg
                 width="18"
                 height="18"
@@ -81,6 +82,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, isNested = false, onReply 
                 <span className="text-sm font-medium">{comment.replyCount}</span>
               ) : null}
             </button>
+            )}
 
             <button
               type="button"
@@ -231,7 +233,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, isNested = false, onReply 
             <CommentCard
               key={reply.id}
               comment={reply}
-              isNested
+              depth={depth + 1}
               onReply={onReply}
             />
           ))}
