@@ -64,8 +64,12 @@ export function verifyRefreshToken(token: string): JWTPayload | null {
 
 /**
  * Generate random verification code (6 digits)
+ * In development, always returns 111111 for easy testing
  */
 export function generateVerificationCode(): string {
+  if (process.env.NODE_ENV === 'development') {
+    return '111111';
+  }
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
