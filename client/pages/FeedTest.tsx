@@ -6,7 +6,7 @@ import {
   MessageCircle, Heart, Repeat2, Bookmark, Share2, Eye, ChevronDown, Filter, Send, UserPlus, UserCheck, Flame, Star,
   Zap, Lock, LockKeyhole, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
   ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb, Newspaper, GraduationCap,
-  Brain, Code2, VideoIcon
+  Brain, Code2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select', opts: ['All', 'Free', 'Paid', 'Subscription'] },
   period: { type: 'select', opts: ['All time', 'Today', '7d', '30d', 'YTD', 'Custom'] },
-  category: { type: 'chips', opts: ['Сигналы', 'Прогнозы', 'Новости', 'Обучение', 'Аналитика', 'Код', 'Мультим��диа'] },
+  category: { type: 'chips', opts: ['Сигналы', 'Прогнозы', 'Новости', 'Об��чение', 'Аналитика', 'Код', 'Мультим��диа'] },
   sort: { type: 'select', opts: ['Popular', 'New', 'Top 24h', 'Top 7d', 'Recent'] },
   sentiment: { type: 'chips', opts: ['Bullish', 'Bearish', 'Neutral'] },
   strategy: { type: 'chips', opts: ['TA', 'Quant', 'News', 'Options', 'On-chain'] },
