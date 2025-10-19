@@ -1428,12 +1428,19 @@ function QuickComposer({
 
             <button
               type="button"
-              onClick={() => setIsPaid(!isPaid)}
+              onClick={() => {
+                if (isPaid) {
+                  setIsPaid(false);
+                  setPaidConfig(null);
+                } else {
+                  setIsPaidModalOpen(true);
+                }
+              }}
               className={cn(
                 "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                 isPaid
-                  ? "bg-gradient-to-l from-[#A06AFF] to-[#6B46C1]"
-                  : "bg-transparent border border-[#A06AFF]/40"
+                  ? "bg-gradient-to-l from-[#A06AFF] to-[#6B46C1] hover:shadow-[0_4px_12px_rgba(160,106,255,0.4)] hover:brightness-110"
+                  : "bg-transparent border border-[#A06AFF]/40 hover:bg-[#A06AFF]/15"
               )}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
