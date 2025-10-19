@@ -639,6 +639,32 @@ textarea::-webkit-scrollbar-track {
   z-index: 10;
 }
 
-.post-hover-glow:hover::before {
+/* Bottom glow on hover */
+.post-hover-glow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(160, 106, 255, 0) 5%,
+    rgba(160, 106, 255, 0.4) 25%,
+    rgba(160, 106, 255, 0.7) 50%,
+    rgba(160, 106, 255, 0.4) 75%,
+    rgba(160, 106, 255, 0) 95%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+  filter: blur(0.8px);
+  z-index: 10;
+}
+
+.post-hover-glow:hover::before,
+.post-hover-glow:hover::after {
   opacity: 1;
 }
