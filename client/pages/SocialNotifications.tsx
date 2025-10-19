@@ -171,10 +171,10 @@ const SocialNotifications: FC = () => {
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold text-white">Уведомления</h1>
                 <p className="text-sm text-[#6C7080]">
-                  Отслеживайте реакции на ваши идеи, новые подписки и упо��инания.
+                  Отслеживайте реакции на ваши идеи, новые подписки и упоминания.
                 </p>
               </div>
-              <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
+              <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
                 {unreadTotal}
               </span>
             </div>
@@ -200,7 +200,7 @@ const SocialNotifications: FC = () => {
           />
 
           {filteredNotifications.length > 0 ? (
-            <div className="flex flex-col divide-y divide-[#181B22] overflow-hidden rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)]">
+            <div className="flex flex-col divide-y divide-[#181B22] overflow-hidden rounded-3xl border border-[#5E5E5E] bg-[rgba(12,16,20,0.6)]">
               {filteredNotifications.map((notification) => (
                 <NotificationItemRow
                   key={notification.id}
@@ -216,7 +216,7 @@ const SocialNotifications: FC = () => {
         </section>
 
         <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
-          <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
+          <div className="rounded-3xl border border-[#5E5E5E] bg-[rgba(12,16,20,0.6)] p-5">
             <h3 className="text-lg font-semibold text-white">Контроль внимания</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
               Выберите, какие типы уведомлений вы хотите получать.
@@ -229,7 +229,7 @@ const SocialNotifications: FC = () => {
               Настроить фильтры
             </button>
           </div>
-          <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
+          <div className="rounded-3xl border border-[#5E5E5E] bg-[rgba(12,16,20,0.6)] p-5">
             <h3 className="text-lg font-semibold text-white">Email уведомления</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
               Получайте важные уведомления на вашу электронную почту.
@@ -249,7 +249,7 @@ const SocialNotifications: FC = () => {
 
       {/* Attention Control Dialog */}
       <Dialog open={attentionDialogOpen} onOpenChange={setAttentionDialogOpen}>
-        <DialogContent className="border-[#181B22] bg-[#0A0D12] sm:max-w-[480px]">
+        <DialogContent className="border-[#5E5E5E] bg-[#0A0D12] sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">Контроль внимания</DialogTitle>
             <DialogDescription className="text-[#B0B0B0]">
@@ -259,7 +259,7 @@ const SocialNotifications: FC = () => {
           <div className="mt-4 space-y-4">
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-white">Типы уведомлений</h4>
-              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Лайки</span>
                 <Switch
                   checked={attentionSettings.showLikes}
@@ -268,7 +268,7 @@ const SocialNotifications: FC = () => {
                   }
                 />
               </label>
-              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Репосты</span>
                 <Switch
                   checked={attentionSettings.showReposts}
@@ -277,7 +277,7 @@ const SocialNotifications: FC = () => {
                   }
                 />
               </label>
-              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Новые подписчики</span>
                 <Switch
                   checked={attentionSettings.showFollows}
@@ -286,7 +286,7 @@ const SocialNotifications: FC = () => {
                   }
                 />
               </label>
-              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#181B22] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Упоминания</span>
                 <Switch
                   checked={attentionSettings.showMentions}
@@ -323,7 +323,7 @@ const NotificationFilters: FC<NotificationFiltersProps> = ({
   counts,
   onFilterChange,
 }) => (
-  <div className="inline-flex w-full gap-2 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-1">
+  <div className="inline-flex w-full gap-2 rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] p-1">
     {filters.map((filter) => {
       const isActive = filter.id === activeFilter;
 
@@ -416,7 +416,7 @@ interface EmptyNotificationsStateProps {
 }
 
 const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilter }) => (
-  <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-[#181B22] bg-[rgba(12,16,20,0.4)] p-10 text-center">
+  <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-[#5E5E5E] bg-[rgba(12,16,20,0.4)] p-10 text-center">
     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#A06AFF]/20 text-[#A06AFF]">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
