@@ -18,7 +18,9 @@
     "start": "node dist/server/node-build.mjs",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "seed": "tsx server/seeds/run-seed.ts",
+    "seed:users": "tsx server/seeds/users.seed.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
