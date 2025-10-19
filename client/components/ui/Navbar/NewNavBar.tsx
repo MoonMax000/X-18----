@@ -115,13 +115,12 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                 const currentFullPath = location.pathname + location.search;
                 const isActiveRoute = child.route === currentFullPath || child.route === location.pathname;
 
-                return (
+                const navLink = (
                   <NavLink
                     key={child.title}
                     to={child.route ?? '#'}
                     className={cn(isCollapsed && !isMobile ? 'px-0' : 'px-3')}
                     onClick={handleNavClick}
-                    title={isCollapsed && !isMobile ? child.title : undefined}
                   >
                     {({ isActive }) => {
                       const active = isActiveRoute || isActive;
@@ -144,6 +143,17 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                     }}
                   </NavLink>
                 );
+
+                return isCollapsed && !isMobile ? (
+                  <Tooltip key={child.title} delayDuration={200}>
+                    <TooltipTrigger asChild>
+                      {navLink}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+                      <p>{child.title}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : navLink;
               })}
             </div>
           )}
