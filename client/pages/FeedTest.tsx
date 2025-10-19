@@ -2989,7 +2989,7 @@ export default function FeedTest() {
                                 >
                                   <IconComponent
                                     className="h-3.5 w-3.5"
-                                    style={{ color: filters.category === opt && config?.color ? config.color : undefined }}
+                                    style={{ color: config?.color }}
                                   />
                                 </span>
                                 <span
