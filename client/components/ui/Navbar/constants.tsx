@@ -32,11 +32,6 @@ export const navElements: NavElementProps[] = [
         route: "/home",
       },
       {
-        icon: <ExploreIcon className="h-5 w-5" />,
-        title: "Тестовая",
-        route: "/testovaya",
-      },
-      {
         icon: <BoxIcon className="h-5 w-5" />,
         title: "Мой профиль",
         route: "/profile/tyrian_trade",

@@ -30,7 +30,6 @@ import ProfileDynamic from "./pages/ProfileDynamic";
 import ProfileConnections from "./pages/ProfileConnections";
 import Updates from "./pages/Updates";
 import Referrals from "./pages/Referrals";
-import TestovayaPage from "./pages/Testovaya";
 import FeedTest from "./pages/FeedTest";
 import { ClientLayout } from "./components/ClientLayout/ClientLayout";
 
@@ -84,7 +83,6 @@ const App = () => (
                     <Route path="/billing" element={<Billing />} />
                     <Route path="/updates" element={<Updates />} />
                     <Route path="/referrals" element={<Referrals />} />
-                    <Route path="/testovaya" element={<TestovayaPage />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/language" element={<Settings />} />
                     <Route
