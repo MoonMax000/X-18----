@@ -268,20 +268,6 @@ const ProfileConnections: FC = () => {
                 {user.bio && (
                   <p className="mt-1 text-sm text-white/80">{user.bio}</p>
                 )}
-                <div className="mt-2 flex gap-4 text-sm text-[#8E92A0]">
-                  <span>
-                    <span className="font-semibold text-white">
-                      {user.following.toLocaleString()}
-                    </span>{" "}
-                    Following
-                  </span>
-                  <span>
-                    <span className="font-semibold text-white">
-                      {user.followers.toLocaleString()}
-                    </span>{" "}
-                    Followers
-                  </span>
-                </div>
               </div>
               <FollowButton profileId={user.id} size="compact" />
             </div>
