@@ -24,19 +24,23 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
   // Auto-open group if current page is in its children
   useEffect(() => {
-    const currentPath = location.pathname;
+    const currentPath = location.pathname + location.search;
     for (const el of navElements) {
       if (el.children && el.children.length > 0) {
-        const hasActiveChild = el.children.some(child => child.route === currentPath);
+        const hasActiveChild = el.children.some(child => {
+          if (!child.route) return false;
+          // Check both exact match and pathname-only match
+          return child.route === currentPath || child.route === location.pathname;
+        });
         if (hasActiveChild) {
           setOpenGroup(el.title);
           break;
         }
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
-  // Закрыва��м мобильное меню при навигации
+  // Закрываем мобильное меню при навигации
   const handleNavClick = () => {
     if (onClose) {
       onClose();
