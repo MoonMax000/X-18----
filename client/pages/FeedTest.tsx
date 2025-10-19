@@ -559,6 +559,7 @@ function QuickComposer({
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
 
   const replyButtonRef = useRef<HTMLButtonElement>(null);
+  const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -771,7 +772,7 @@ function QuickComposer({
     setEmojiPickerPosition(null);
   };
 
-  // Handle click outside emoji picker
+  // Handle click outside emoji picker and reply menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isEmojiPickerOpen &&
@@ -781,15 +782,22 @@ function QuickComposer({
           !emojiButtonRef.current.contains(event.target as Node)) {
         handleCloseEmojiPicker();
       }
+      if (isReplyMenuOpen &&
+          replyMenuRef.current &&
+          replyButtonRef.current &&
+          !replyMenuRef.current.contains(event.target as Node) &&
+          !replyButtonRef.current.contains(event.target as Node)) {
+        setIsReplyMenuOpen(false);
+      }
     };
 
-    if (isEmojiPickerOpen) {
+    if (isEmojiPickerOpen || isReplyMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [isEmojiPickerOpen]);
+  }, [isEmojiPickerOpen, isReplyMenuOpen]);
 
   // Update emoji picker position on scroll
   useEffect(() => {
@@ -1382,6 +1390,7 @@ function QuickComposer({
           {isReplyMenuOpen && replyMenuPosition &&
             createPortal(
               <div
+                ref={replyMenuRef}
                 className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#5E5E5E] bg-black shadow-2xl backdrop-blur-[100px] p-3"
                 style={{
                   top: `${replyMenuPosition.top - 200}px`,
@@ -1404,13 +1413,13 @@ function QuickComposer({
                       <svg
                         className="mt-0.5 h-4 w-4 shrink-0"
                         viewBox="0 0 24 24"
-                        fill={replySetting === opt.id ? "#1D9BF0" : "none"}
+                        fill={replySetting === opt.id ? "#A06AFF" : "none"}
                         stroke="currentColor"
                         strokeWidth="2"
                       >
                         <circle cx="12" cy="12" r="10" />
                         {replySetting === opt.id && (
-                          <circle cx="12" cy="12" r="4" fill="#1D9BF0" />
+                          <circle cx="12" cy="12" r="4" fill="#A06AFF" />
                         )}
                       </svg>
                       <div className="flex-1">
