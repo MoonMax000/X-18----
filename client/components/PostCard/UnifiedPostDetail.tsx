@@ -1,0 +1,304 @@
+import { type FC, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import VerifiedBadge from "./VerifiedBadge";
+import CommentCard from "./CommentCard";
+import { getCommentsByPostId } from "@/data/socialComments";
+import type { SocialPost } from "@/data/socialPosts";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { MessageCircle, Heart, Repeat2, Share2, Bookmark } from "lucide-react";
+
+interface UnifiedPostDetailProps {
+  post: SocialPost;
+}
+
+const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
+  const navigate = useNavigate();
+  const comments = useMemo(() => getCommentsByPostId(post.id), [post.id]);
+  const hashtags = post.hashtags ?? [];
+  
+  const [commentText, setCommentText] = useState("");
+  const [localComments, setLocalComments] = useState(comments);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [likes, setLikes] = useState(post.likes);
+
+  const handleSubmitComment = () => {
+    if (!commentText.trim()) return;
+    
+    const newComment = {
+      id: `comment-${Date.now()}`,
+      postId: post.id,
+      author: {
+        name: "You",
+        handle: "@you",
+        avatar: "https://i.pravatar.cc/120?img=1",
+        verified: false,
+      },
+      timestamp: "Just now",
+      text: commentText,
+      likes: 0,
+      replies: 0,
+    };
+    
+    setLocalComments([newComment, ...localComments]);
+    setCommentText("");
+  };
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    setLikes(isLiked ? likes - 1 : likes + 1);
+  };
+
+  const handleProfileClick = () => {
+    const username = post.author.handle?.replace('@', '') || post.author.name.toLowerCase().replace(/\s+/g, '-');
+    navigate(`/profile/${username}`);
+  };
+
+  return (
+    <article className="mx-auto flex w-full sm:max-w-[680px] flex-col gap-4 sm:gap-6 rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-4 sm:p-6 text-white shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)]">
+      {/* Header */}
+      <header className="flex items-start justify-between gap-4">
+        <div 
+          className="flex items-start gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handleProfileClick}
+        >
+          <Avatar className="h-12 w-12 flex-shrink-0">
+            <AvatarImage src={post.author.avatar} alt={post.author.name} />
+            <AvatarFallback className="text-sm font-semibold text-white">
+              {post.author.name.split(" ").map((n) => n[0]).join("")}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <span className="hover:underline hover:underline-offset-2">{post.author.name}</span>
+              {post.author.verified && <VerifiedBadge size={18} />}
+            </div>
+            {post.author.handle ? (
+              <div className="text-sm text-[#8B98A5]">{post.author.handle}</div>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-[#8B98A5]">
+          <button
+            type="button"
+            className="rounded-full p-2 transition hover:bg-white/5"
+            aria-label="More options"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 10.8333C10.4602 10.8333 10.8333 10.4602 10.8333 10C10.8333 9.53977 10.4602 9.16667 10 9.16667C9.53976 9.16667 9.16667 9.53977 9.16667 10C9.16667 10.4602 9.53976 10.8333 10 10.8333Z"
+                fill="currentColor"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M15.8333 10.8333C16.2936 10.8333 16.6667 10.4602 16.6667 10C16.6667 9.53977 16.2936 9.16667 15.8333 9.16667C15.3731 9.16667 15 9.53977 15 10C15 10.4602 15.3731 10.8333 15.8333 10.8333Z"
+                fill="currentColor"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M4.16667 10.8333C4.6269 10.8333 5 10.4602 5 10C5 9.53977 4.6269 9.16667 4.16667 9.16667C3.70643 9.16667 3.33333 9.53977 3.33333 10C3.33333 10.4602 3.70643 10.8333 4.16667 10.8333Z"
+                fill="currentColor"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold leading-tight">{post.title}</h1>
+        {post.body ? (
+          <p className="whitespace-pre-line text-[15px] leading-relaxed text-[#E7E9EA]">
+            {post.body}
+          </p>
+        ) : null}
+        {hashtags.length > 0 ? (
+          <div className="flex flex-wrap gap-2 text-sm font-semibold">
+            {hashtags.map((tag) => (
+              <span key={tag} className="text-[#4D7CFF] hover:underline cursor-pointer">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      {/* Media */}
+      {post.mediaUrl ? (
+        <div className="overflow-hidden rounded-2xl border border-[#181B22]">
+          <img
+            src={post.mediaUrl}
+            alt={post.title}
+            className="w-full object-cover"
+          />
+        </div>
+      ) : null}
+      
+      {post.videoUrl ? (
+        <div className="overflow-hidden rounded-2xl border border-[#181B22]">
+          <video
+            src={post.videoUrl}
+            controls
+            className="w-full"
+          />
+        </div>
+      ) : null}
+
+      {/* Timestamp & Views */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B98A5] border-b border-[#181B22] pb-4">
+        <div>{post.timestamp}</div>
+        {typeof post.views === "number" ? (
+          <div className="flex items-center gap-1">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 3.33337C5.83337 3.33337 2.27504 5.90837 0.833374 9.58337C0.833374 9.58337 2.27504 13.25 6.66671 15C8.33337 15.8334 10 15.8334 10 15.8334C10 15.8334 11.6667 15.8334 13.3334 15C17.725 13.25 19.1667 9.58337 19.1667 9.58337C17.725 5.90837 14.1667 3.33337 10 3.33337Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}K` : post.views} views</span>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-around border-b border-[#181B22] pb-4">
+        <button
+          type="button"
+          className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-[#4D7CFF]"
+          aria-label="Comment"
+        >
+          <MessageCircle className="h-5 w-5" />
+          <span className="text-sm">{localComments.length}</span>
+        </button>
+        
+        <button
+          type="button"
+          className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-[#00BA7C]"
+          aria-label="Repost"
+        >
+          <Repeat2 className="h-5 w-5" />
+          <span className="text-sm">0</span>
+        </button>
+        
+        <button
+          type="button"
+          onClick={handleLike}
+          className={`flex items-center gap-2 transition-colors ${
+            isLiked ? "text-[#F91880]" : "text-[#8B98A5] hover:text-[#F91880]"
+          }`}
+          aria-label="Like"
+        >
+          <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
+          <span className="text-sm">{likes >= 1000 ? `${(likes / 1000).toFixed(1)}K` : likes}</span>
+        </button>
+        
+        <button
+          type="button"
+          onClick={() => setIsBookmarked(!isBookmarked)}
+          className={`flex items-center gap-2 transition-colors ${
+            isBookmarked ? "text-[#4D7CFF]" : "text-[#8B98A5] hover:text-[#4D7CFF]"
+          }`}
+          aria-label="Bookmark"
+        >
+          <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-current" : ""}`} />
+        </button>
+        
+        <button
+          type="button"
+          className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-white"
+          aria-label="Share"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Comment Form */}
+      <div className="rounded-2xl border border-[#181B22] bg-[#0A0A0A] p-4">
+        <div className="flex gap-3">
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarImage src="https://i.pravatar.cc/120?img=1" alt="You" />
+            <AvatarFallback className="text-sm font-semibold text-white">Y</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Post your reply..."
+              className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[60px]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  handleSubmitComment();
+                }
+              }}
+            />
+            <div className="mt-3 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleSubmitComment}
+                disabled={!commentText.trim()}
+                className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Comments Section */}
+      {localComments.length > 0 ? (
+        <section className="flex flex-col border-t border-[#181B22] pt-4">
+          <h3 className="mb-4 text-lg font-semibold text-white">
+            Comments ({localComments.length})
+          </h3>
+          <div className="flex flex-col gap-4">
+            {localComments.map((comment) => (
+              <CommentCard key={comment.id} comment={comment} />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <div className="flex flex-col items-center justify-center border-t border-[#181B22] py-12 text-center text-[#8B98A5]">
+          <MessageCircle className="h-12 w-12 mb-3 opacity-30" />
+          <p className="text-sm font-medium">No comments yet</p>
+          <p className="mt-2 text-xs">Be the first to comment on this post</p>
+        </div>
+      )}
+    </article>
+  );
+};
+
+export default UnifiedPostDetail;
