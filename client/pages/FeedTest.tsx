@@ -6,7 +6,7 @@ import {
   MessageCircle, Heart, Repeat2, Bookmark, Share2, Eye, ChevronDown, Filter, Send, UserPlus, UserCheck, Flame, Star,
   Zap, Lock, LockKeyhole, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
   ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb, Newspaper, GraduationCap,
-  Brain, Code2
+  Brain, Code2, VideoIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -565,6 +565,18 @@ function QuickComposer({
   const [postMarket, setPostMarket] = useState<string>('Crypto');
   const [postCategory, setPostCategory] = useState<string>('Analysis');
   const [postSymbol, setPostSymbol] = useState<string>('');
+
+  // Category configuration with icons and colors
+  const categoryConfig = {
+    'News': { icon: Newspaper, color: '#4D7CFF', bg: 'bg-[#4D7CFF]/15' },
+    'Education': { icon: GraduationCap, color: '#F78DA7', bg: 'bg-[#F78DA7]/15' },
+    'Analysis': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Macro': { icon: Brain, color: '#FFD166', bg: 'bg-[#FFD166]/15' },
+    'On-chain': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Code': { icon: Code2, color: '#64B5F6', bg: 'bg-[#64B5F6]/15' },
+    'Video': { icon: Video, color: '#FF8A65', bg: 'bg-[#FF8A65]/20' },
+    'Signal': { icon: TrendingUp, color: '#2EBD85', bg: 'bg-[#2EBD85]/15' },
+  };
   const [postTimeframe, setPostTimeframe] = useState<string>('');
   const [postRisk, setPostRisk] = useState<string>('');
 
@@ -1115,23 +1127,35 @@ function QuickComposer({
                       <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent align="start" className="w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                  <PopoverContent align="start" className="w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
                     <div className="grid gap-0.5 text-xs">
-                      {['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'].map((category) => (
-                        <button
-                          key={category}
-                          type="button"
-                          onClick={() => setPostCategory(category)}
-                          className={cn(
-                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
-                            postCategory === category
-                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
-                              : "text-[#D5D8E1] hover:bg-white/5"
-                          )}
-                        >
-                          {category}
-                        </button>
-                      ))}
+                      {['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'].map((category) => {
+                        const config = categoryConfig[category as keyof typeof categoryConfig];
+                        const Icon = config.icon;
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => setPostCategory(category)}
+                            className={cn(
+                              "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                              postCategory === category
+                                ? `${config.bg} font-semibold`
+                                : "text-[#D5D8E1] hover:bg-white/5"
+                            )}
+                          >
+                            <span className={cn(
+                              "flex h-5 w-5 shrink-0 items-center justify-center rounded",
+                              postCategory === category ? config.bg : "bg-[#2F3336]"
+                            )}>
+                              <Icon className="h-3 w-3" style={{ color: config.color }} />
+                            </span>
+                            <span style={{ color: postCategory === category ? config.color : undefined }}>
+                              {category}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -3212,7 +3236,7 @@ export default function FeedTest() {
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
-              Вы ещё не сох��анили предпочтения. Выб��рите категории в фильтрах и сохраните их.
+              Вы ещё не сох��анили предпочтения. Выб��рите категории в фильтрах и сохра��ите их.
             </p>
           ) : (
             <div className="mt-4 flex flex-col gap-2">
