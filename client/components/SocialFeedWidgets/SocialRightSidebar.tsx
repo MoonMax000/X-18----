@@ -38,7 +38,7 @@ const SocialRightSidebar: FC<SocialRightSidebarProps> = ({
             <input
               type="search"
               placeholder="Поиск по авторам и темам"
-              className="w-full rounded-full border border-[#181B22] bg-background py-3 pl-11 pr-4 text-sm font-medium text-white placeholder:text-webGray transition focus:border-[#A06AFF] focus:outline-none focus:ring-2 focus:ring-[#A06AFF]/40"
+              className="w-full rounded-full border border-[#525252]/40 bg-background py-3 pl-11 pr-4 text-sm font-medium text-white placeholder:text-webGray transition-all duration-300 hover:border-[#A06AFF]/60 hover:shadow-[0_0_20px_rgba(160,106,255,0.2)] focus:border-[#A06AFF] focus:outline-none focus:ring-2 focus:ring-[#A06AFF]/40"
             />
           </div>
         ) : null}
