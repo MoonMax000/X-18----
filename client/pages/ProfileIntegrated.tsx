@@ -269,9 +269,31 @@ const ProfileIntegrated: FC = () => {
       {/* User Header */}
       <div className="flex justify-center">
         <div className="w-full max-w-[720px]">
-          <UserHeader 
-            isOwn={true} 
+          <UserHeader
+            isOwn={true}
             onEditProfile={() => setIsEditModalOpen(true)}
+            profileData={{
+              name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || profileData.username,
+              username: profileData.username,
+              bio: profileData.bio || '',
+              location: profileData.location || '',
+              website: profileData.website || '',
+              joined: profileData.joined_date
+                ? new Date(profileData.joined_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+                : new Date(profileData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
+              avatar: profileData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileData.username}`,
+              cover: profileData.cover || '',
+              stats: {
+                tweets: profileData.posts_count || 0,
+                following: profileData.following_count || 0,
+                followers: profileData.followers_count || 0,
+              },
+              isVerified: profileData.verified || false,
+              isPremium: profileData.premium || false,
+              tradingStyle: profileData.trading_style,
+            }}
+            onAvatarUpload={handleAvatarUpload}
+            onCoverUpload={handleCoverUpload}
           />
         </div>
       </div>
