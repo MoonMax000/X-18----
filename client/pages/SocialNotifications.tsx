@@ -200,7 +200,7 @@ const SocialNotifications: FC = () => {
           />
 
           {filteredNotifications.length > 0 ? (
-            <div className="flex flex-col divide-y divide-[#181B22] overflow-hidden rounded-3xl border border-[#5E5E5E] bg-[rgba(12,16,20,0.6)]">
+            <div className="flex flex-col divide-y divide-[#5E5E5E] overflow-hidden rounded-2xl border border-[#5E5E5E] bg-[#000000]">
               {filteredNotifications.map((notification) => (
                 <NotificationItemRow
                   key={notification.id}
