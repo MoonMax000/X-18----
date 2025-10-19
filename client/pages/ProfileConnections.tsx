@@ -159,7 +159,7 @@ const ProfileConnections: FC = () => {
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
       <div className="flex-1 w-full sm:max-w-[720px]">
-        <div className="sticky top-0 z-10 border-b border-[#181B22] bg-black/95 backdrop-blur-md">
+        <div className="sticky top-0 z-10 bg-black/95 backdrop-blur-md">
         <div className="flex items-center gap-4 px-4 py-3">
           <button
             type="button"
