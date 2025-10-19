@@ -1,26 +1,105 @@
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import ProfileContentClassic from "@/components/socialProfile/ProfileContentClassic";
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
-import { getUserByUsername } from "@/data/users";
+import { getUserByUsername as getLocalUserByUsername } from "@/data/users";
+import { getUserByUsername as getSupabaseUserByUsername } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import NotFound from "./NotFound";
 
 export default function ProfileDynamic() {
   const { username } = useParams<{ username: string }>();
   const { currentUser } = useAuth();
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!username) {
+  useEffect(() => {
+    async function fetchUser() {
+      if (!username) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      // Try Supabase first
+      try {
+        const supabaseUser = await getSupabaseUserByUsername(username);
+        if (supabaseUser) {
+          // Transform Supabase user to match expected profile format
+          const transformedUser = {
+            id: supabaseUser.id,
+            name: `${supabaseUser.first_name} ${supabaseUser.last_name}`.trim() || supabaseUser.username,
+            username: supabaseUser.username,
+            bio: supabaseUser.bio || '',
+            location: '',
+            joined: new Date(supabaseUser.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long' }),
+            avatar: supabaseUser.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + supabaseUser.username,
+            cover: '',
+            stats: {
+              tweets: supabaseUser.posts_count || 0,
+              following: supabaseUser.following_count || 0,
+              followers: supabaseUser.followers_count || 0,
+              likes: 0,
+            },
+            isVerified: supabaseUser.verified,
+            isPremium: supabaseUser.premium,
+            tradingStyle: supabaseUser.trading_style,
+            specialization: supabaseUser.specialization,
+            accuracyRate: supabaseUser.accuracy_rate,
+            winRate: supabaseUser.win_rate,
+            totalTrades: supabaseUser.total_trades,
+          };
+          setProfileUser(transformedUser);
+          setNotFound(false);
+        } else {
+          // Fallback to local data
+          const localUser = getLocalUserByUsername(username);
+          if (localUser) {
+            setProfileUser(localUser);
+            setNotFound(false);
+          } else {
+            setNotFound(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user from Supabase:', error);
+        // Fallback to local data
+        const localUser = getLocalUserByUsername(username);
+        if (localUser) {
+          setProfileUser(localUser);
+          setNotFound(false);
+        } else {
+          setNotFound(true);
+        }
+      }
+
+      setLoading(false);
+    }
+
+    fetchUser();
+  }, [username]);
+
+  if (!username || notFound) {
     return <NotFound />;
   }
 
-  const profileUser = getUserByUsername(username);
+  if (loading) {
+    return (
+      <div className="flex w-full items-center justify-center min-h-[400px]">
+        <div className="text-muted-foreground">Загрузка профиля...</div>
+      </div>
+    );
+  }
 
   if (!profileUser) {
     return <NotFound />;
   }
 
-  const isOwnProfile = currentUser.username === username;
+  const isOwnProfile = currentUser?.username === username;
 
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
