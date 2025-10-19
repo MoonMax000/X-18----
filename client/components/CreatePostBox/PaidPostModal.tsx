@@ -20,20 +20,16 @@ export const PaidPostModal = ({
   initialConfig,
 }: PaidPostModalProps) => {
   const [price, setPrice] = useState(initialConfig?.price || 5);
-  const [currency, setCurrency] = useState(initialConfig?.currency || "USD");
 
   if (!isOpen) return null;
 
   const handleSave = () => {
     const config: PaidPostConfig = {
       price,
-      currency,
     };
     onSave(config);
     onClose();
   };
-
-  const selectedCurrency = CURRENCIES.find((c) => c.code === currency);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
