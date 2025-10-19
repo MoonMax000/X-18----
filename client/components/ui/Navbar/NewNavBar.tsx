@@ -87,29 +87,30 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
             </div>
             {(!isCollapsed || isMobile) && <ChevronDown className={cn('h-4 w-4 transition-transform flex-shrink-0', isGroupOpen && 'rotate-180')} />}
           </button>
-          {isGroupOpen && (!isCollapsed || isMobile) && (
-            <div id={`${el.title}-submenu`} className='ml-6 flex flex-col gap-1'>
+          {isGroupOpen && (
+            <div id={`${el.title}-submenu`} className={cn('flex flex-col gap-1', isCollapsed && !isMobile ? 'ml-0 items-center' : 'ml-6')}>
               {el.children.map((child) => (
-                <NavLink 
-                  key={child.title} 
-                  to={child.route ?? '#'} 
-                  className={cn('px-3')}
+                <NavLink
+                  key={child.title}
+                  to={child.route ?? '#'}
+                  className={cn(isCollapsed && !isMobile ? 'px-0' : 'px-3')}
                   onClick={handleNavClick}
+                  title={isCollapsed && !isMobile ? child.title : undefined}
                 >
                   {({ isActive }) => (
                     <div
-                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', isActive ? 'text-white' : 'text-[#B0B0B0]')}
+                      className={cn('group flex items-center gap-2 py-2 hover:custom-bg-blur hover:text-white overflow-hidden',
+                        isActive ? 'text-white' : 'text-[#B0B0B0]',
+                        isCollapsed && !isMobile ? 'justify-center' : 'pl-2 hover:border-l-[2px] hover:border-purple'
+                      )}
                       data-active={isActive ? 'true' : undefined}
                     >
                       <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{child.icon}</div>
-                      <span
-                        className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                          'opacity-0 w-0': isCollapsed && !isMobile,
-                          'opacity-100 w-auto': !isCollapsed || isMobile,
-                        })}
-                      >
-                        {child.title}
-                      </span>
+                      {(!isCollapsed || isMobile) && (
+                        <span className='text-[15px] font-semibold whitespace-nowrap'>
+                          {child.title}
+                        </span>
+                      )}
                     </div>
                   )}
                 </NavLink>
