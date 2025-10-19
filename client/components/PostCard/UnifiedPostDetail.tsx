@@ -180,7 +180,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-[#4D7CFF]"
           aria-label="Comment"
         >
-          <MessageCircle className="h-5 w-5" />
+          <MessageCircle className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" />
           <span className="text-sm">{localComments.length}</span>
         </button>
         
@@ -189,7 +189,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-[#00BA7C]"
           aria-label="Repost"
         >
-          <Repeat2 className="h-5 w-5" />
+          <Repeat2 className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" />
           <span className="text-sm">0</span>
         </button>
         
@@ -201,13 +201,13 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           }`}
           aria-label="Like"
         >
-          <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
+          <Heart className={`w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5 ${isLiked ? "fill-current" : ""}`} />
           <span className="text-sm">{likes >= 1000 ? `${(likes / 1000).toFixed(1)}K` : likes}</span>
         </button>
 
         <div className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-[#4D7CFF]" aria-label="Views">
           <svg
-            className="h-5 w-5"
+            className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
