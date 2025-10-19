@@ -279,26 +279,16 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                   type='button'
                   onClick={() => setIsPostComposerOpen(true)}
                   className={cn(
-                    'group relative flex items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
-                    'hover:scale-105 active:scale-95',
-                    isCollapsed ? 'h-12 w-12 bg-gradient-to-r from-[#A06AFF] to-[#482090]' : 'h-12 w-full px-4 bg-gradient-to-r from-[#A06AFF] to-[#482090]'
+                    'relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
+                    isCollapsed ? 'h-12 w-12' : 'h-12 w-full px-3'
                   )}
                   style={{ animation: 'pulse-glow 3s ease-in-out infinite' }}
                 >
-                  {/* Animated glow effect */}
-                  <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
-
-                  <span className={cn('relative flex items-center gap-3 text-sm font-semibold text-white z-10', isCollapsed ? 'justify-center' : 'justify-center')}>
-                    {isCollapsed ? (
-                      <QuillPen className='h-5 w-5' />
-                    ) : (
-                      <>
-                        <span className='flex h-9 w-9 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm group-hover:bg-white/20 transition-colors'>
-                          <QuillPen className='h-4 w-4' />
-                        </span>
-                        <span className="font-bold">Tweet</span>
-                      </>
-                    )}
+                  <span className={cn('flex items-center gap-3 text-sm font-semibold text-white', isCollapsed ? 'justify-center' : 'justify-center')}>
+                    <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)]'>
+                      <QuillPen className='h-4 w-4' />
+                    </span>
+                    {!isCollapsed && <span>Tweet</span>}
                   </span>
                 </button>
               </TooltipTrigger>
