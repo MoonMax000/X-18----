@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 
 interface NotificationItem {
   id: string;
@@ -393,22 +394,7 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
     <div className="flex flex-col gap-2 text-sm text-white">
       <div className="flex flex-wrap items-center gap-2 text-[15px]">
         <span className="font-semibold">{notification.actor.name}</span>
-        {notification.actor.verified && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#4FC3F7]/20 px-2 py-0.5 text-[11px] font-semibold text-[#4FC3F7]">
-            <svg
-              className="h-3 w-3"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M12.1807 6.41383C12.1807 8.13331 11.3342 9.45684 10.0462 10.3278C9.74616 10.5307 9.59616 10.6322 9.52216 10.7475C9.44817 10.8628 9.4229 11.0143 9.37243 11.3172L9.33317 11.5526C9.24448 12.0847 9.20015 12.3507 9.01365 12.5087C8.82715 12.6667 8.55743 12.6667 8.01796 12.6667H6.27696C5.73755 12.6667 5.46782 12.6667 5.28132 12.5087C5.09483 12.3507 5.05049 12.0847 4.9618 11.5526L4.92258 11.3172C4.87226 11.0153 4.8471 10.8644 4.77382 10.7496C4.70053 10.6348 4.55021 10.532 4.24958 10.3265C2.97529 9.45551 2.1807 8.13244 2.1807 6.41383C2.1807 3.60797 4.41928 1.33337 7.1807 1.33337C7.52317 1.33337 7.85757 1.36836 8.1807 1.435" />
-              <path d="M9.514 1.33337L9.68604 1.79806C9.91141 2.40739 10.0242 2.71205 10.2465 2.9343C10.4687 3.15655 10.7734 3.26929 11.3827 3.49476L11.8474 3.66671L11.3827 3.83865C10.7734 4.06413 10.4687 4.17687 10.2465 4.39911C10.0242 4.62136 9.91141 4.92603 9.68604 5.53535L9.514 6.00004L9.34207 5.53535C9.11657 4.92603 9.00386 4.62136 8.78161 4.39911C8.55936 4.17687 8.25469 4.06413 7.64536 3.83865L7.1807 3.66671L7.64536 3.49476C8.25469 3.26929 8.55936 3.15655 8.78161 2.9343C9.00386 2.71205 9.11657 2.40739 9.34207 1.79806L9.514 1.33337Z" />
-              <path d="M8.51367 12.6666V13.3333C8.51367 13.9618 8.51367 14.2761 8.31841 14.4714C8.12314 14.6666 7.80888 14.6666 7.18034 14.6666C6.55181 14.6666 6.23755 14.6666 6.04228 14.4714C5.84702 14.2761 5.84702 13.9618 5.84702 13.3333V12.6666" />
-            </svg>
-            Verified
-          </span>
-        )}
+        {notification.actor.verified && <VerifiedBadge size={16} />}
         <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs text-[#6C7080]">{notification.timestamp}</span>
