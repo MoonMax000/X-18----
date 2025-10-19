@@ -3282,7 +3282,6 @@ export default function FeedTest() {
         </div>
 
         {/* Social Widgets from x_Home */}
-        <SuggestedProfilesWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
         <NewsWidget items={DEFAULT_NEWS_ITEMS as NewsItem[]} />
         <FollowRecommendationsWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
 
