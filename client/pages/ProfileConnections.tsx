@@ -210,7 +210,7 @@ const ProfileConnections: FC = () => {
                     {tab.id === "verified" && (
                       <VerifiedBadge
                         size={16}
-                        variant={isActive ? "gradient" : "white"}
+                        variant={isActive ? "white" : "gradient"}
                       />
                     )}
                     {tab.label}
