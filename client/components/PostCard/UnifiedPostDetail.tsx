@@ -6,7 +6,7 @@ import CommentCard from "./CommentCard";
 import { getCommentsByPostId } from "@/data/socialComments";
 import type { SocialPost } from "@/data/socialPosts";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MessageCircle, Heart, Repeat2, Share2, Bookmark } from "lucide-react";
+import { MessageCircle, Heart, Repeat2, Share2 } from "lucide-react";
 
 interface UnifiedPostDetailProps {
   post: SocialPost;
@@ -233,7 +233,20 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           }`}
           aria-label="Bookmark"
         >
-          <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-current" : ""}`} />
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill={isBookmarked ? "currentColor" : "none"}
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.33301 14.9838V8.08945C3.33301 5.06164 3.33301 3.54774 4.30932 2.60712C5.28563 1.6665 6.85697 1.6665 9.99967 1.6665C13.1423 1.6665 14.7138 1.6665 15.69 2.60712C16.6663 3.54774 16.6663 5.06164 16.6663 8.08945V14.9838C16.6663 16.9054 16.6663 17.8662 16.0223 18.2101C14.7751 18.876 12.4357 16.6542 11.3247 15.9852C10.6803 15.5972 10.3582 15.4032 9.99967 15.4032C9.64117 15.4032 9.31901 15.5972 8.67467 15.9852C7.56367 16.6542 5.22423 18.876 3.97705 18.2101C3.33301 17.8662 3.33301 16.9054 3.33301 14.9838Z"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
         
         <button
