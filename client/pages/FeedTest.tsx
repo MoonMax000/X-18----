@@ -2860,7 +2860,7 @@ export default function FeedTest() {
                 </div>
               </div>
               <span className="font-bold text-white text-xs sm:text-sm group-hover:text-white transition">
-                {newPostsCount} {newPostsCount === 1 ? 'new post' : 'new posts'} available
+                {newPostsCount} new
               </span>
               <ChevronUp className="h-3 w-3 text-white group-hover:text-white group-hover:scale-110 transition-transform" />
             </button>
