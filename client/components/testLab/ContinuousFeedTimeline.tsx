@@ -527,7 +527,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                   )}
                 >
                   <svg
-                    className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5"
+                    className="w-[13px] h-[13px] sm:w-[15px] sm:h-[15px] md:w-[18px] md:h-[18px]"
                     viewBox="0 0 20 20"
                     fill={isBookmarked ? "currentColor" : "none"}
                     xmlns="http://www.w3.org/2000/svg"

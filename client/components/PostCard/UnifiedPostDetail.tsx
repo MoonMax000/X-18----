@@ -234,7 +234,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           aria-label="Bookmark"
         >
           <svg
-            className="h-5 w-5"
+            className="h-[18px] w-[18px]"
             viewBox="0 0 20 20"
             fill={isBookmarked ? "currentColor" : "none"}
             xmlns="http://www.w3.org/2000/svg"
