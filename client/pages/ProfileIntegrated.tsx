@@ -396,6 +396,8 @@ const ProfileIntegrated: FC = () => {
         onClose={() => setIsEditModalOpen(false)}
         profile={socialProfileData}
         onSave={handleSaveProfile}
+        onAvatarUpload={handleAvatarUpload}
+        onCoverUpload={handleCoverUpload}
       />
     </div>
   );
