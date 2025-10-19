@@ -646,6 +646,24 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               </svg>
             </button>
 
+            <button
+              type="button"
+              onClick={handleBoldToggle}
+              className={cn(
+                "flex h-8 items-center justify-center gap-1.5 transition-colors",
+                isBoldActive ? "text-[#A06AFF]" : "text-[#6C7280] hover:text-[#A06AFF]"
+              )}
+              aria-label="Bold"
+              disabled={blocks.length === 0}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M15.636 11.671c2.079-.583 3.093-2.18 3.093-3.929 0-2.307-1.471-4.741-5.983-4.741H5.623V21h7.579c4.411 0 6.008-2.484 6.008-4.994 0-2.383-1.343-3.955-3.574-4.335zm-3.295-6.287c2.535 0 3.27 1.319 3.27 2.662 0 1.242-.583 2.611-3.27 2.611H8.69V5.384h3.651zM8.69 18.617v-5.628h4.208c2.231 0 3.194 1.166 3.194 2.738 0 1.547-.887 2.89-3.397 2.89H8.69z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
             <div className="ml-2 h-6 w-px bg-[#1B1F27]" />
 
             <div className="inline-flex items-center gap-2">
