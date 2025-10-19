@@ -29,7 +29,7 @@ const SuggestedProfilesWidget: FC<SuggestedProfilesWidgetProps> = ({
   const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
 
   return (
-    <section className="rounded-[24px] border border-[#181B22] bg-background p-5 backdrop-blur-[20px]">
+    <section className="rounded-[24px] border border-[#525252]/40 bg-background p-5 backdrop-blur-[20px] transition-all duration-300 hover:border-[#A06AFF]/60 hover:shadow-[0_0_20px_rgba(160,106,255,0.2)]">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
       </div>
