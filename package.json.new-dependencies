@@ -1,0 +1,12 @@
+{
+  "dependencies_to_add": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies_to_add": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.5"
+  },
+  "installation_command": "pnpm add @supabase/supabase-js bcrypt jsonwebtoken && pnpm add -D @types/bcrypt @types/jsonwebtoken"
+}
