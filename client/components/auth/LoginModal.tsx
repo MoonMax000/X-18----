@@ -1,5 +1,6 @@
 import { FC, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginModalProps {
   isOpen: boolean;
