@@ -3286,28 +3286,6 @@ export default function FeedTest() {
         <NewsWidget items={DEFAULT_NEWS_ITEMS as NewsItem[]} />
         <FollowRecommendationsWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
 
-        {/* Быстрые фил��тры */}
-        <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-          <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
-          <p className="mt-1 text-sm text-[#A3A6B4]">
-            Сохранённые пресеты помогают быс��ро перекл��чаться между сценариями просмотра.
-          </p>
-          <div className="mt-4 flex flex-col gap-3">
-            <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
-              <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Пока��ыват�� только св��жие точки вх����а</span>
-            </button>
-            <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
-              <span className="text-sm font-semibold text-white">Обучение</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Материалы для прокачки навы��ов</span>
-            </button>
-            <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
-              <span className="text-sm font-semibold text-white">Мультимеди��</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Видеоразборы и графики</span>
-            </button>
-          </div>
-        </section>
-
       </div>
     </div>
   );
