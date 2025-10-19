@@ -556,17 +556,10 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         </div>
 
         <div className="px-5 py-3">
-          <div
-            className="grid"
-            style={{
-              gridTemplateColumns: "repeat(5, auto) 1fr auto",
-              gap: "0.75rem",
-              alignItems: "center",
-            }}
-          >
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10"
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
               title="Видео или GIF"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -590,24 +583,9 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             </button>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10"
-              title="Опрос"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 12h4v7H3zM10 7h4v12h-4zM17 3h4v16h-4z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
               onClick={openToolbarFilePicker}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10 disabled:text-white/30 disabled:hover:bg-transparent"
-              title="Доб��вить медиа"
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
+              title="Добавить медиа"
               disabled={blocks.length === 0}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -640,41 +618,10 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             />
             <button
               type="button"
-              onClick={handleToolbarEmojiToggle}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10 disabled:text-white/30 disabled:hover:bg-transparent"
-              title="Добавить эмодзи"
-              disabled={blocks.length === 0}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10.0003 18.3333C14.6027 18.3333 18.3337 14.6023 18.3337 9.99996C18.3337 5.39759 14.6027 1.66663 10.0003 1.66663C5.39795 1.66663 1.66699 5.39759 1.66699 9.99996C1.66699 14.6023 5.39795 18.3333 10.0003 18.3333Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M6.66699 12.5C7.42709 13.512 8.63724 14.1667 10.0003 14.1667C11.3634 14.1667 12.5736 13.512 13.3337 12.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M6.67447 7.5H6.66699M13.3337 7.5H13.3262"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
               onClick={() =>
                 handleCodeBlockClick(activeBlockId || blocks[0]?.id)
               }
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10 disabled:text-white/30 disabled:hover:bg-transparent"
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
               title="Блок кода"
               disabled={blocks.length === 0}
             >
@@ -689,68 +636,96 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               </svg>
             </button>
 
-            <div></div>
+            <div className="ml-2 h-6 w-px bg-[#1B1F27]" />
 
-            <div className="flex items-center gap-3 justify-end">
+            <button
+              type="button"
+              onClick={handleToolbarEmojiToggle}
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
+              title="Добавить эмод��и"
+              disabled={blocks.length === 0}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M8 9.5C8 8.119 8.672 7 9.5 7S11 8.119 11 9.5 10.328 12 9.5 12 8 10.881 8 9.5zm6.5 2.5c.828 0 1.5-1.119 1.5-2.5S15.328 7 14.5 7 13 8.119 13 9.5s.672 2.5 1.5 2.5zM12 16c-2.224 0-3.021-2.227-3.051-2.316l-1.897.633c.05.15 1.271 3.684 4.949 3.684s4.898-3.533 4.949-3.684l-1.896-.638c-.033.095-.83 2.322-3.053 2.322zm10.25-4.001c0 5.652-4.598 10.25-10.25 10.25S1.75 17.652 1.75 12 6.348 1.75 12 1.75 22.25 6.348 22.25 12zm-2 0c0-4.549-3.701-8.25-8.25-8.25S3.75 7.451 3.75 12s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <div className="ml-2 h-6 w-px bg-[#1B1F27]" />
+
+            <div className="inline-flex items-center gap-2">
               <button
-                onClick={() => setSentiment("bullish")}
-                className={`rounded inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold transition-colors ${sentiment === "bullish" ? "bg-[#1C3430] text-white" : "bg-white/5 text-white/40 hover:text-white"}`}
+                type="button"
+                onClick={() => setSentiment(sentiment === "bullish" ? null : "bullish")}
+                className={cn(
+                  "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
+                  sentiment === "bullish"
+                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A]"
+                    : "bg-transparent"
+                )}
                 disabled={isPosting}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="shrink-0"
-                >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
-                    d="M13.3333 8.66659V5.33325H10"
-                    stroke="#2EBD85"
+                    d="M13.3333 8.66665V5.33331H10"
+                    stroke={sentiment === "bullish" ? "white" : "#2EBD85"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M13.3334 5.33325L10.0001 8.66659C9.41168 9.25499 9.11755 9.54912 8.75648 9.58165C8.69675 9.58705 8.63675 9.58705 8.57702 9.58165C8.21595 9.54912 7.92181 9.25499 7.33341 8.66659C6.74501 8.07819 6.45085 7.78405 6.08979 7.75152C6.03011 7.74612 5.97005 7.74612 5.91037 7.75152C5.54931 7.78405 5.25512 8.07819 4.66675 8.66659L2.66675 10.6666"
-                    stroke="#2EBD85"
+                    d="M13.3337 5.33331L10.0003 8.66665C9.41193 9.25505 9.11779 9.54918 8.75673 9.58171C8.69699 9.58711 8.63699 9.58711 8.57726 9.58171C8.21619 9.54918 7.92206 9.25505 7.33366 8.66665C6.74526 8.07825 6.45109 7.78411 6.09004 7.75158C6.03035 7.74618 5.9703 7.74618 5.91061 7.75158C5.54956 7.78411 5.25537 8.07825 4.66699 8.66665L2.66699 10.6666"
+                    stroke={sentiment === "bullish" ? "white" : "#2EBD85"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                Bullish
+                <span className={cn(
+                  "text-xs font-bold",
+                  sentiment === "bullish" ? "text-white" : "text-white"
+                )}>
+                  Bullish
+                </span>
               </button>
+
+              <div className="h-5 w-px bg-white" />
+
               <button
-                onClick={() => setSentiment("bearish")}
-                className={`rounded inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold transition-colors ${sentiment === "bearish" ? "bg-[#3A2127] text-white" : "bg-white/5 text-white/40 hover:text-white"}`}
+                type="button"
+                onClick={() => setSentiment(sentiment === "bearish" ? null : "bearish")}
+                className={cn(
+                  "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
+                  sentiment === "bearish"
+                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414]"
+                    : "bg-transparent"
+                )}
                 disabled={isPosting}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="shrink-0"
-                >
+                <span className={cn(
+                  "text-xs font-bold",
+                  sentiment === "bearish" ? "text-white" : "text-white"
+                )}>
+                  Bearish
+                </span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
-                    d="M13.3333 7.3335V10.6668H10"
-                    stroke="#EF454A"
+                    d="M13.3333 7.33331V10.6666H10"
+                    stroke={sentiment === "bearish" ? "white" : "#EF454A"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M13.3334 10.6668L10.0001 7.3335C9.41168 6.7451 9.11755 6.45093 8.75648 6.41841C8.69675 6.41303 8.63675 6.41303 8.57702 6.41841C8.21595 6.45093 7.92181 6.7451 7.33341 7.3335C6.74501 7.9219 6.45085 8.21603 6.08979 8.24856C6.03011 8.25396 5.97005 8.25396 5.91037 8.24856C5.54931 8.21603 5.25512 7.9219 4.66675 7.3335L2.66675 5.3335"
-                    stroke="#EF454A"
+                    d="M13.3337 10.6666L10.0003 7.33331C9.41193 6.74491 9.11779 6.45075 8.75673 6.41823C8.69699 6.41285 8.63699 6.41285 8.57726 6.41823C8.21619 6.45075 7.92206 6.74491 7.33366 7.33331C6.74526 7.92171 6.45109 8.21585 6.09004 8.24838C6.03035 8.25378 5.9703 8.25378 5.91061 8.24838C5.54956 8.21585 5.25537 7.92171 4.66699 7.33331L2.66699 5.33331"
+                    stroke={sentiment === "bearish" ? "white" : "#EF454A"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                Bearish
               </button>
             </div>
           </div>
