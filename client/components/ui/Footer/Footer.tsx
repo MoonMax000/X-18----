@@ -56,7 +56,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: 'Правовая информация',
     links: [
       { label: 'Пользовательское соглашение', href: '/terms' },
-      { label: 'Политика конфиденциальности', href: '/privacy' },
+      { label: 'Пол��тика конфиденциальности', href: '/privacy' },
       { label: 'Правила сообщества', href: '/community-guidelines' },
       { label: 'Уведомление о рисках', href: '/risk-disclosure' },
     ],
@@ -86,7 +86,7 @@ const Footer: FC = () => {
       <div className="mx-auto max-w-[1400px] px-4 py-12 md:px-6 lg:px-8">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
           {/* Left Column: Logo, Language Selector, Copyright */}
-          <div className="lg:max-w-[300px]">
+          <div className="lg:max-w-[240px]">
             {/* Logo */}
             <Link to="/" className="mb-6 inline-flex items-center gap-2">
               <svg
@@ -129,18 +129,17 @@ const Footer: FC = () => {
               <button
                 type="button"
                 onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                className="flex w-full items-center justify-between rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+                className="flex w-[140px] items-center justify-between rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-4 py-2.5 text-sm font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
               >
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-[#A06AFF]" />
                   <span className="text-white">{selectedLanguage.label}</span>
-                  <span className="text-[#A3A3A3]">{selectedLanguage.name}</span>
                 </div>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isLanguageOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isLanguageOpen && (
-                <div className="absolute bottom-full left-0 z-[9999] mb-2 w-full overflow-hidden rounded-2xl border border-[#525252] bg-[#0A0D12] shadow-lg">
+                <div className="absolute bottom-full left-0 z-[9999] mb-2 w-[180px] overflow-hidden rounded-2xl border border-[#525252] bg-[#0A0D12] shadow-lg">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
@@ -149,7 +148,7 @@ const Footer: FC = () => {
                         setCurrentLanguage(lang.code);
                         setIsLanguageOpen(false);
                       }}
-                      className={`flex w-full items-center gap-2 px-6 py-3 text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent ${
+                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent ${
                         currentLanguage === lang.code ? 'bg-gradient-to-r from-[#A06AFF]/20 via-[#A06AFF]/10 to-transparent text-white' : 'text-[#E5E7EB]'
                       }`}
                     >
