@@ -71,40 +71,23 @@ export const PaidPostModal = ({
           {/* Price Input */}
           <div className="mb-6">
             <label className="mb-2 block text-sm font-semibold text-white">
-              Price
+              Price (USD)
             </label>
-            <div className="flex gap-3">
-              {/* Currency Selector */}
-              <div className="relative">
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="h-12 appearance-none rounded-xl border border-[#1B1F27] bg-[#0C1014] pl-4 pr-10 text-white transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
-                >
-                  {CURRENCIES.map((curr) => (
-                    <option key={curr.code} value={curr.code}>
-                      {curr.symbol} {curr.code}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Price Input */}
-              <div className="relative flex-1">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-[#808283]">
-                  {selectedCurrency?.symbol}
-                </span>
-                <input
-                  type="number"
-                  min="1"
-                  max="999"
-                  value={price}
-                  onChange={(e) =>
-                    setPrice(Math.max(1, parseInt(e.target.value) || 1))
-                  }
-                  className="h-12 w-full rounded-xl border border-[#1B1F27] bg-[#0C1014] pl-10 pr-4 text-lg font-semibold text-white transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
-                />
-              </div>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-[#808283]">
+                $
+              </span>
+              <input
+                type="number"
+                min="1"
+                max="999"
+                value={price}
+                onChange={(e) =>
+                  setPrice(Math.max(1, parseInt(e.target.value) || 1))
+                }
+                className="h-14 w-full rounded-xl border border-[#1B1F27] bg-[#0C1014] pl-10 pr-4 text-lg font-semibold text-white transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+                placeholder="5"
+              />
             </div>
           </div>
 
