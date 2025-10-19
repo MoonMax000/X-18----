@@ -198,7 +198,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           <span className="text-sm">{likes >= 1000 ? `${(likes / 1000).toFixed(1)}K` : likes}</span>
         </button>
 
-        <div className="flex items-center gap-2 text-[#8B98A5]" aria-label="Views">
+        <div className="flex items-center gap-2 text-[#8B98A5] transition-colors hover:text-[#4D7CFF]" aria-label="Views">
           <svg
             className="h-5 w-5"
             viewBox="0 0 24 24"
