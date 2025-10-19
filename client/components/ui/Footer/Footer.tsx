@@ -27,38 +27,38 @@ const FOOTER_SECTIONS: FooterSection[] = [
   {
     title: 'Начать',
     links: [
-      { label: 'Регистрация', href: '/signup' },
-      { label: 'Как купить Bitcoin', href: '/buy-bitcoin' },
-      { label: 'Руководства', href: '/guides' },
+      { label: 'Создать аккаунт', href: '/signup' },
+      { label: 'Как начать торговать', href: '/start-trading' },
+      { label: 'Присоединиться к сообществу', href: '/community' },
+      { label: 'Гайд для новичков', href: '/beginner-guide' },
       { label: 'FAQ', href: '/faq' },
     ],
   },
   {
     title: 'Ресурсы',
     links: [
-      { label: 'Поддержка', href: '/support' },
-      { label: 'Академия', href: '/academy' },
-      { label: 'Блог', href: '/blog' },
-      { label: 'Статус системы', href: '/status' },
-      { label: 'Пресс-кит', href: '/press' },
+      { label: 'Центр поддержки', href: '/support' },
+      { label: 'Обучающие материалы', href: '/academy' },
+      { label: 'Торговые стратегии', href: '/strategies' },
+      { label: 'Блог сообщества', href: '/blog' },
+      { label: 'API документация', href: '/api-docs' },
     ],
   },
   {
     title: 'Компания',
     links: [
-      { label: 'О нас', href: '/about' },
+      { label: 'О платформе', href: '/about' },
       { label: 'Команда', href: '/team' },
-      { label: 'Карьера', href: '/careers' },
       { label: 'Контакты', href: '/contact' },
     ],
   },
   {
     title: 'Правовая информация',
     links: [
-      { label: 'Условия использования', href: '/terms' },
+      { label: 'Пользовательское соглашение', href: '/terms' },
       { label: 'Политика конфиденциальности', href: '/privacy' },
-      { label: 'Cookie Policy', href: '/cookies' },
-      { label: 'Дискле��меры', href: '/disclaimers' },
+      { label: 'Правила сообщества', href: '/community-guidelines' },
+      { label: 'Уведомление о рисках', href: '/risk-disclosure' },
     ],
   },
 ];
