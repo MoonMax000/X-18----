@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ProfileNew from "./pages/ProfileNew";
+import ProfileIntegrated from "./pages/ProfileIntegrated";
 import Billing from "./pages/Billing";
 import NotFound from "./pages/NotFound";
 import SocialExplore from "./pages/SocialExplore";
