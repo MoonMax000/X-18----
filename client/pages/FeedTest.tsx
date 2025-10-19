@@ -100,7 +100,7 @@ const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select', opts: ['All', 'Free', 'Paid', 'Subscription'] },
   period: { type: 'select', opts: ['All time', 'Today', '7d', '30d', 'YTD', 'Custom'] },
-  category: { type: 'chips', opts: ['Сигналы', 'Прогнозы', 'Новости', 'Обучение', 'Аналитика', 'Код', 'Мультимедиа'] },
+  category: { type: 'chips', opts: ['Сигналы', 'Прогнозы', 'Новости', 'Обучение', 'Аналитика', 'Код', 'Мультим��диа'] },
   sort: { type: 'select', opts: ['Popular', 'New', 'Top 24h', 'Top 7d', 'Recent'] },
   sentiment: { type: 'chips', opts: ['Bullish', 'Bearish', 'Neutral'] },
   strategy: { type: 'chips', opts: ['TA', 'Quant', 'News', 'Options', 'On-chain'] },
@@ -922,7 +922,7 @@ function QuickComposer({
             }
           }}
           maxLength={MAX_CHARS}
-          className="!min-h-[80px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0"
+          className="!min-h-[60px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0"
         />
 
         {/* Display Media Items */}
@@ -973,7 +973,7 @@ function QuickComposer({
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between">
           <div>
             {text.length > 0 && (
               <button
@@ -1027,7 +1027,7 @@ function QuickComposer({
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
               type="button"
