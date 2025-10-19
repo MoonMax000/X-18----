@@ -3256,7 +3256,7 @@ export default function FeedTest() {
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
-              Вы ещё не сох��анили предпочтения. Выб��рите категории в фильтрах и сохраните их.
+              You haven't saved any preferences yet. Choose categories in the filters and save them.
             </p>
           ) : (
             <div className="mt-4 flex flex-col gap-2">
