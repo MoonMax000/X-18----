@@ -207,7 +207,12 @@ const ProfileConnections: FC = () => {
                   )}
                 >
                   <span className="flex items-center justify-center gap-1.5">
-                    {tab.id === "verified" && <VerifiedBadge size={16} />}
+                    {tab.id === "verified" && (
+                      <VerifiedBadge
+                        size={16}
+                        variant={isActive ? "gradient" : "white"}
+                      />
+                    )}
                     {tab.label}
                   </span>
                   {!isActive && (
