@@ -12,10 +12,12 @@ const tabs = [
 
 interface TabListClassicProps {
   onTabChange?: (tabId: string) => void;
+  isOwnProfile?: boolean;
 }
 
-export default function TabListClassic({ onTabChange }: TabListClassicProps) {
-  const [activeTab, setActiveTab] = useState(tabs[0].id);
+export default function TabListClassic({ onTabChange, isOwnProfile = true }: TabListClassicProps) {
+  const visibleTabs = isOwnProfile ? tabs : tabs.filter(tab => tab.id !== 'liked');
+  const [activeTab, setActiveTab] = useState(visibleTabs[0].id);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -25,7 +27,7 @@ export default function TabListClassic({ onTabChange }: TabListClassicProps) {
   return (
     <div className="sticky top-0 z-20 -mx-6 px-6 bg-background/95 backdrop-blur-md">
       <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#5E5E5E] bg-[#000000] p-0.5 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)]">
-        {tabs.map((tab) => {
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           const isAllTab = tab.id === 'all';
