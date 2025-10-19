@@ -90,7 +90,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
           <article
             key={post.id}
             onClick={() => onPostClick?.(post.id)}
-            className="post-hover-glow group flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer has-[+_article:hover]:opacity-0"
+            className="post-hover-glow group flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer"
           >
             {index !== 0 && (
               <div
