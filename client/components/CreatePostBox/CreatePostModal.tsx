@@ -774,7 +774,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
               setIsReplyMenuOpen((prev) => !prev);
             }}
-            className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-sm font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-sm font-semibold text-[#A06AFF] transition-colors hover:bg-white/10"
             disabled={isPosting}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -821,6 +821,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             replyMenuPosition &&
             createPortal(
               <div
+                ref={replyMenuRef}
                 className="fixed z-[2300] w-80 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] shadow-2xl backdrop-blur-[100px] p-4"
                 style={{
                   top: `${replyMenuPosition.top - 280}px`,
@@ -843,13 +844,13 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                       <svg
                         className="mt-0.5 h-5 w-5 shrink-0"
                         viewBox="0 0 24 24"
-                        fill={replySetting === opt.id ? "#1D9BF0" : "none"}
+                        fill={replySetting === opt.id ? "#A06AFF" : "none"}
                         stroke="currentColor"
                         strokeWidth="2"
                       >
                         <circle cx="12" cy="12" r="10" />
                         {replySetting === opt.id && (
-                          <circle cx="12" cy="12" r="4" fill="#1D9BF0" />
+                          <circle cx="12" cy="12" r="4" fill="#A06AFF" />
                         )}
                       </svg>
                       <div className="flex-1">
