@@ -1,5 +1,6 @@
 import { FC, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import UserHeader from "@/components/UserHeader/UserHeader";
 import EditProfileModal from "@/components/socialProfile/EditProfileModal";
 import NotificationsSettings from "@/components/NotificationsSettings/NotificationsSettings";
@@ -15,8 +16,10 @@ import {
   ProfileUpdateData
 } from "@/lib/supabase-profile";
 import type { SocialProfileData } from "@/data/socialProfile";
+import Dashboard from "./Dashboard";
 
 type ProfileSubTab =
+  | "dashboard"
   | "profile"
   | "security"
   | "notifications"
@@ -26,6 +29,25 @@ type ProfileSubTab =
   | "kyc";
 
 const profileSubTabs = [
+  {
+    id: "dashboard" as ProfileSubTab,
+    label: "Dashboard",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path
+          d="M2.5 7.91699C2.5 5.38921 2.5 4.12532 3.22786 3.31266C3.95573 2.5 5.13968 2.5 7.50758 2.5H12.4924C14.8603 2.5 16.0443 2.5 16.7721 3.31266C17.5 4.12532 17.5 5.38921 17.5 7.91699V12.083C17.5 14.6108 17.5 15.8747 16.7721 16.6873C16.0443 17.5 14.8603 17.5 12.4924 17.5H7.50758C5.13968 17.5 3.95573 17.5 3.22786 16.6873C2.5 15.8747 2.5 14.6108 2.5 12.083V7.91699Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M6.66602 10H8.33268M11.666 10H13.3327M6.66602 13.3333H8.33268M11.666 13.3333H13.3327M6.66602 6.66667H13.3327"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
   {
     id: "profile" as ProfileSubTab,
     label: "Profile",
@@ -138,10 +160,18 @@ const profileSubTabs = [
 
 const ProfileIntegrated: FC = () => {
   const { user, isAuthenticated, updateUser } = useAuth();
-  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>("profile");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = (searchParams.get('tab') as ProfileSubTab) || "profile";
+  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>(tabFromUrl);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Update activeSubTab when URL changes
+  useEffect(() => {
+    const tab = (searchParams.get('tab') as ProfileSubTab) || "profile";
+    setActiveSubTab(tab);
+  }, [searchParams]);
 
   // Load user profile from Supabase
   useEffect(() => {
@@ -230,7 +260,7 @@ const ProfileIntegrated: FC = () => {
   if (loading) {
     return (
       <div className="flex w-full items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">Загрузка профиля...</div>
+        <div className="text-muted-foreground">Загрузка про��иля...</div>
       </div>
     );
   }
@@ -304,7 +334,10 @@ const ProfileIntegrated: FC = () => {
           {profileSubTabs.map((subTab) => (
             <button
               key={subTab.id}
-              onClick={() => setActiveSubTab(subTab.id)}
+              onClick={() => {
+                setActiveSubTab(subTab.id);
+                setSearchParams({ tab: subTab.id });
+              }}
               className={cn(
                 "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                 activeSubTab === subTab.id
@@ -329,6 +362,7 @@ const ProfileIntegrated: FC = () => {
 
       {/* Tab content */}
       <div className="mt-4">
+        {activeSubTab === "dashboard" && <Dashboard />}
         {activeSubTab === "profile" && (
           <div className="flex flex-col gap-6">
             <div className="container-card p-6">
@@ -413,9 +447,21 @@ const ProfileIntegrated: FC = () => {
           </div>
         )}
 
+        {activeSubTab === "security" && (
+          <div className="container-card p-6">
+            <h2 className="text-xl font-semibold text-white">Security Settings</h2>
+            <p className="mt-4 text-sm text-webGray">Security settings coming soon...</p>
+          </div>
+        )}
         {activeSubTab === "notifications" && <NotificationsSettings />}
         {activeSubTab === "billing" && <BillingSettings />}
         {activeSubTab === "referrals" && <ReferralsSettings />}
+        {activeSubTab === "api" && (
+          <div className="container-card p-6">
+            <h2 className="text-xl font-semibold text-white">API Settings</h2>
+            <p className="mt-4 text-sm text-webGray">API settings coming soon...</p>
+          </div>
+        )}
         {activeSubTab === "kyc" && <KycSettings />}
       </div>
 
