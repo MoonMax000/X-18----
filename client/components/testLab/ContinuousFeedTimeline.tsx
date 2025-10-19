@@ -50,12 +50,20 @@ interface ContinuousFeedTimelineProps {
 
 const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFollowToggle, onPostClick }) => {
   const [followingState, setFollowingState] = useState<Map<string, boolean>>(new Map());
+  const [bookmarkedState, setBookmarkedState] = useState<Map<string, boolean>>(new Map());
 
   const handleFollowToggle = (handle: string, isFollowing: boolean) => {
     const newState = new Map(followingState);
     newState.set(handle, !isFollowing);
     setFollowingState(newState);
     onFollowToggle?.(handle, !isFollowing);
+  };
+
+  const handleBookmarkToggle = (postId: string) => {
+    const newState = new Map(bookmarkedState);
+    const currentState = newState.get(postId) ?? false;
+    newState.set(postId, !currentState);
+    setBookmarkedState(newState);
   };
 
   if (!posts || posts.length === 0) {
@@ -71,6 +79,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
     <div className="flex w-full flex-col items-center pt-3 sm:pt-4 md:pt-6">
       {posts.map((post, index) => {
         const isFollowing = followingState.get(post.author.handle) ?? post.author.isFollowing ?? false;
+        const isBookmarked = bookmarkedState.get(post.id) ?? false;
         const isPaidLocked = post.price !== "free";
         const sentimentClasses =
           post.sentiment === "bullish"
@@ -507,14 +516,20 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
 
                 <button
                   type="button"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleBookmarkToggle(post.id);
+                  }}
                   aria-label="Save"
-                  className="relative z-10 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-[#9BA0AF] transition-colors duration-200 hover:bg-[#482090]/10 hover:text-white"
+                  className={cn(
+                    "relative z-10 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full transition-colors duration-200",
+                    isBookmarked ? "text-[#4D7CFF]" : "text-[#9BA0AF] hover:bg-[#482090]/10 hover:text-white"
+                  )}
                 >
                   <svg
                     className="w-[14px] h-[14px] sm:w-[15px] sm:h-[15px]"
                     viewBox="0 0 20 20"
-                    fill="none"
+                    fill={isBookmarked ? "currentColor" : "none"}
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
