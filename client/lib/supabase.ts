@@ -67,6 +67,7 @@ export async function getVerifiedTraders(limit = 20) {
  * Get user by username
  */
 export async function getUserByUsername(username: string) {
+  console.log('[Supabase] Fetching user by username:', username);
   const { data, error } = await supabase
     .from('users')
     .select('*')
@@ -74,9 +75,11 @@ export async function getUserByUsername(username: string) {
     .single();
 
   if (error) {
-    console.error('Error fetching user:', error);
+    console.error('[Supabase] Error fetching user:', error);
     return null;
   }
+
+  console.log('[Supabase] User data received:', data);
 
   return data;
 }

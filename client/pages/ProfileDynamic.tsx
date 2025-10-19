@@ -27,10 +27,12 @@ export default function ProfileDynamic() {
 
       // Try Supabase first
       try {
+        console.log('[ProfileDynamic] Fetching user:', username);
         const supabaseUser = await getSupabaseUserByUsername(username);
-        console.log('Fetched Supabase user:', supabaseUser);
+        console.log('[ProfileDynamic] Supabase response:', supabaseUser);
 
         if (supabaseUser) {
+          console.log('[ProfileDynamic] User found in Supabase');
           // Transform Supabase user to match expected profile format
           const firstName = supabaseUser.first_name || '';
           const lastName = supabaseUser.last_name || '';
