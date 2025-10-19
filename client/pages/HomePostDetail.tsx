@@ -3,10 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
-import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import UnifiedPostDetail from "@/components/PostCard/UnifiedPostDetail";
 import { getSocialPostById, type SocialPost } from "@/data/socialPosts";
-import { getCommentsByPostId } from "@/data/socialComments";
-import CommentCard from "@/components/PostCard/CommentCard";
 
 const HomePostDetail: FC = () => {
   const navigate = useNavigate();
