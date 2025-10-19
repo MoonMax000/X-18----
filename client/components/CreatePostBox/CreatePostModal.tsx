@@ -931,10 +931,15 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         </div>
 
         {isEmojiPickerOpen &&
+          emojiMenuPosition &&
           createPortal(
             <div
               ref={emojiMenuRef}
-              className="fixed bottom-24 left-6 z-[2300] h-96 w-96 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] p-4 shadow-2xl backdrop-blur-[100px]"
+              className="fixed z-[2300] h-96 w-96 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] p-4 shadow-2xl backdrop-blur-[100px]"
+              style={{
+                top: `${emojiMenuPosition.top}px`,
+                left: `${emojiMenuPosition.left}px`,
+              }}
             >
               <EmojiPicker onSelect={handleEmojiSelect} />
             </div>,
