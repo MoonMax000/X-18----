@@ -352,77 +352,20 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     [setActiveBlockId],
   );
 
-  const saveDraft = useCallback(() => {
-    const draft: ComposerDraft = {
-      id: `draft-${Date.now()}`,
-      blocks: blocks.map((b) => ({
-        id: b.id,
-        text: b.text,
-        mediaIds: b.media.map((m) => m.id),
-        media: b.media.map((m) => ({
-          id: m.id,
-          transform: m.transform,
-          alt: m.alt,
-          sensitiveTags: m.sensitiveTags,
-        })),
-        codeBlocks: b.codeBlocks,
-      })),
-      replyPolicy: replySetting,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const saved = localStorage.getItem("composer-drafts");
-    const drafts: ComposerDraft[] = saved ? JSON.parse(saved) : [];
-    drafts.unshift(draft);
-    localStorage.setItem(
-      "composer-drafts",
-      JSON.stringify(drafts.slice(0, MAX_DRAFTS)),
-    );
-  }, [blocks, replySetting]);
-
-  const handleOpenDraft = useCallback(
-    (draft: ComposerDraft) => {
-      const hasMedia = draft.blocks.some(
-        (b) => b.mediaIds && b.mediaIds.length > 0,
-      );
-
-      if (hasMedia) {
-        const confirmed = window.confirm(
-          "This draft contains media that cannot be restored. The text and code blocks will be restored, but you'll need to re-add any media. Continue?",
-        );
-        if (!confirmed) return;
-      }
-
-      const restoredBlocks: ComposerBlockState[] = draft.blocks.map((b) => ({
-        id: b.id,
-        text: b.text,
-        media: [],
-        codeBlocks: b.codeBlocks ?? [],
-      }));
-
-      initialize(restoredBlocks, draft.replyPolicy, sentiment);
-      setIsDraftsOpen(false);
-    },
-    [initialize, sentiment],
-  );
-
   const handleClose = useCallback(() => {
     const hasContent = blocks.some(
       (b) => b.text.trim() || b.media.length > 0 || b.codeBlocks.length > 0,
     );
 
     if (hasContent) {
-      const shouldSave = window.confirm(
-        "You have unsaved changes. Would you like to save this as a draft?\n\nNote: Media files will not be saved in drafts.",
+      const confirmed = window.confirm(
+        "Are you sure you want to close? Your post will not be saved.",
       );
-      if (shouldSave) {
-        saveDraft();
-      }
+      if (!confirmed) return;
     }
 
     onClose(blocks);
-  }, [blocks, onClose, saveDraft]);
+  }, [blocks, onClose]);
 
   const handlePost = useCallback(async () => {
     if (!canPost || isPosting) return;
