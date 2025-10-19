@@ -550,7 +550,7 @@ function QuickComposer({
   const [isPaid, setIsPaid] = useState(false);
   const [replySetting, setReplySetting] = useState<"everyone" | "following" | "verified" | "mentioned">("everyone");
   const [isReplyMenuOpen, setIsReplyMenuOpen] = useState(false);
-  const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number; openBelow?: boolean } | null>(null);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
@@ -604,7 +604,14 @@ function QuickComposer({
 
   const handleReplyButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
+    const menuHeight = 200;
+
+    // Check if there's enough space above
+    const spaceAbove = rect.top;
+    const shouldOpenBelow = spaceAbove < menuHeight;
+
+    const top = shouldOpenBelow ? rect.bottom + 10 : rect.top - 10;
+    setReplyMenuPosition({ top, left: rect.left, openBelow: shouldOpenBelow });
     setIsReplyMenuOpen((prev) => !prev);
   };
 
@@ -1393,7 +1400,7 @@ function QuickComposer({
                 ref={replyMenuRef}
                 className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#5E5E5E] bg-black shadow-2xl backdrop-blur-[100px] p-3"
                 style={{
-                  top: `${replyMenuPosition.top - 200}px`,
+                  top: replyMenuPosition.openBelow ? `${replyMenuPosition.top}px` : `${replyMenuPosition.top - 200}px`,
                   left: `${replyMenuPosition.left}px`,
                 }}
               >
