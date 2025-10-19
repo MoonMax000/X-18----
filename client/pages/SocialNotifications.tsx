@@ -308,7 +308,7 @@ const SocialNotifications: FC = () => {
       <Dialog open={attentionDialogOpen} onOpenChange={setAttentionDialogOpen}>
         <DialogContent className="border-[#5E5E5E] bg-[#0A0D12] sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">Контроль внимания</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-white">Контроль внимани��</DialogTitle>
             <DialogDescription className="text-[#B0B0B0]">
               Настройте, какие типы уведомлений вы хотите получать
             </DialogDescription>
@@ -391,67 +391,67 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
       />
       <NotificationBadge type={notification.type} />
     </div>
-    <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-white">
-      <div className="flex items-start gap-2">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-[15px]">
+    <div className="grid grid-cols-[1fr_auto] gap-2 text-sm text-white">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2 text-[15px]">
           <span className="font-semibold">{notification.actor.name}</span>
           {notification.actor.verified && <VerifiedBadge size={16} />}
           <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropdownOpen(!dropdownOpen);
-              }}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[#8E92A0] transition-colors hover:bg-[#1A1A1A] hover:text-[#A06AFF]"
-              aria-label="More options"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <circle cx="3" cy="8" r="1.5" />
-                <circle cx="8" cy="8" r="1.5" />
-                <circle cx="13" cy="8" r="1.5" />
-              </svg>
-            </button>
-            {dropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setDropdownOpen(false)}
-                />
-                <div
-                  className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-[#5E5E5E] bg-[#000000] shadow-lg"
-                  role="menu"
-                >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      console.log('See less');
-                      setDropdownOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white transition-colors hover:bg-[#1A1A1A]"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9.5 7c.828 0 1.5 1.119 1.5 2.5S10.328 12 9.5 12 8 10.881 8 9.5 8.672 7 9.5 7zm5 0c.828 0 1.5 1.119 1.5 2.5s-.672 2.5-1.5 2.5S13 10.881 13 9.5 13.672 7 14.5 7zM12 22.25C6.348 22.25 1.75 17.652 1.75 12S6.348 1.75 12 1.75 22.25 6.348 22.25 12 17.652 22.25 12 22.25zm0-18.5c-4.549 0-8.25 3.701-8.25 8.25s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25S16.549 3.75 12 3.75zM8.947 17.322l-1.896-.638C7.101 16.534 8.322 13 12 13s4.898 3.533 4.949 3.684l-1.897.633c-.031-.09-.828-2.316-3.051-2.316s-3.021 2.227-3.053 2.322z" />
-                    </svg>
-                    <span>Видеть реже</span>
-                  </button>
-                </div>
-              </>
-            )}
+        <p className="mt-2 text-[15px] text-[#E3D8FF]">{notification.message}</p>
+        {notification.meta && (
+          <div className="mt-2 flex items-center">
+            <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-xs text-white/60">{notification.meta}</span>
           </div>
-          <span className="text-xs text-[#6C7080] whitespace-nowrap">{notification.timestamp}</span>
-        </div>
+        )}
       </div>
-      <p className="text-[15px] text-[#E3D8FF] pr-12">{notification.message}</p>
-      {notification.meta && (
-        <div className="flex items-center">
-          <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-xs text-white/60">{notification.meta}</span>
+      <div className="flex flex-col items-end gap-1 pt-0.5">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDropdownOpen(!dropdownOpen);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[#8E92A0] transition-colors hover:bg-[#1A1A1A] hover:text-[#A06AFF]"
+            aria-label="More options"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="3" cy="8" r="1.5" />
+              <circle cx="8" cy="8" r="1.5" />
+              <circle cx="13" cy="8" r="1.5" />
+            </svg>
+          </button>
+          {dropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setDropdownOpen(false)}
+              />
+              <div
+                className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-[#5E5E5E] bg-[#000000] shadow-lg"
+                role="menu"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    console.log('See less');
+                    setDropdownOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white transition-colors hover:bg-[#1A1A1A]"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.5 7c.828 0 1.5 1.119 1.5 2.5S10.328 12 9.5 12 8 10.881 8 9.5 8.672 7 9.5 7zm5 0c.828 0 1.5 1.119 1.5 2.5s-.672 2.5-1.5 2.5S13 10.881 13 9.5 13.672 7 14.5 7zM12 22.25C6.348 22.25 1.75 17.652 1.75 12S6.348 1.75 12 1.75 22.25 6.348 22.25 12 17.652 22.25 12 22.25zm0-18.5c-4.549 0-8.25 3.701-8.25 8.25s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25S16.549 3.75 12 3.75zM8.947 17.322l-1.896-.638C7.101 16.534 8.322 13 12 13s4.898 3.533 4.949 3.684l-1.897.633c-.031-.09-.828-2.316-3.051-2.316s-3.021 2.227-3.053 2.322z" />
+                  </svg>
+                  <span>Видеть реже</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      )}
+        <span className="text-xs text-[#6C7080] whitespace-nowrap">{notification.timestamp}</span>
+      </div>
     </div>
   </article>
   );
