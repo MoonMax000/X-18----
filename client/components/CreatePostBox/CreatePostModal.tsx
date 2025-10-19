@@ -860,13 +860,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         onClose={() => setIsCodeBlockOpen(false)}
         onInsert={handleCodeBlockInsert}
       />
-
-      <DraftsList
-        isOpen={isDraftsOpen}
-        onClose={() => setIsDraftsOpen(false)}
-        onOpen={handleOpenDraft}
-        onDelete={() => {}}
-      />
     </div>,
     document.body,
   );
