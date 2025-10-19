@@ -989,9 +989,9 @@ function QuickComposer({
                 ref={replyButtonRef}
                 type="button"
                 onClick={handleReplyButtonClick}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#A06AFF] transition-colors hover:bg-white/10"
               >
-                <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#1D9BF0]">
+                <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#A06AFF]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2Z"
