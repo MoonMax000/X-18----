@@ -558,6 +558,13 @@ function QuickComposer({
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
 
+  // Post metadata for filtering
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('Analysis');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
+
   const replyButtonRef = useRef<HTMLButtonElement>(null);
   const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
