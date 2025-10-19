@@ -32,9 +32,16 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
   return (
     <>
       <article className={cn(
-        "post-hover-glow flex gap-3 py-4 relative cursor-pointer transition-colors duration-200",
-        !isFirst && "border-t border-[#181B22]"
+        "post-hover-glow group flex gap-3 py-4 relative cursor-pointer transition-colors duration-200"
       )}>
+        {!isFirst && (
+          <div
+            className="post-divider absolute top-0 left-0 right-0 h-[1px] z-0 transition-opacity duration-300 group-hover:opacity-0"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)'
+            }}
+          />
+        )}
         <div className="relative flex flex-col items-center">
           <UserAvatar
             src={comment.author.avatar}
