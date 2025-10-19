@@ -8,10 +8,11 @@ import VerifiedBadge from "./VerifiedBadge";
 interface CommentCardProps {
   comment: SocialComment;
   depth?: number;
+  isFirst?: boolean;
   onReply?: (commentId: string, text: string) => void;
 }
 
-const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, onReply }) => {
+const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false, onReply }) => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [showReplies, setShowReplies] = useState(false);
@@ -29,7 +30,10 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, onReply }) => {
 
   return (
     <>
-      <article className="post-hover-glow flex gap-3 border-t border-[#181B22] py-4 relative cursor-pointer transition-colors duration-200">
+      <article className={cn(
+        "post-hover-glow flex gap-3 py-4 relative cursor-pointer transition-colors duration-200",
+        !isFirst && "border-t border-[#181B22]"
+      )}>
         <div className="relative flex flex-col items-center">
           <UserAvatar
             src={comment.author.avatar}

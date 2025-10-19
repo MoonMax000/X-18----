@@ -279,12 +279,13 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           <h3 className="mb-4 text-lg font-semibold text-white">
             Comments ({localComments.length})
           </h3>
-          <div className="flex flex-col gap-4">
-            {localComments.map((comment) => (
+          <div className="flex flex-col">
+            {localComments.map((comment, index) => (
               <CommentCard
                 key={comment.id}
                 comment={comment}
                 depth={0}
+                isFirst={index === 0}
                 onReply={(commentId, text) => {
                   if (!text.trim()) return;
 
