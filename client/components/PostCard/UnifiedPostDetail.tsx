@@ -285,8 +285,34 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
                 key={comment.id}
                 comment={comment}
                 onReply={(commentId, text) => {
-                  // Handle reply logic here - in real app would add to database
-                  console.log(`Reply to ${commentId}:`, text);
+                  if (!text.trim()) return;
+
+                  const newReply = {
+                    id: `reply-${Date.now()}`,
+                    postId: post.id,
+                    author: {
+                      name: "You",
+                      handle: "@you",
+                      avatar: "https://i.pravatar.cc/120?img=1",
+                      verified: false,
+                    },
+                    timestamp: "now",
+                    text: text.trim(),
+                    likes: 0,
+                  };
+
+                  setLocalComments((prevComments) =>
+                    prevComments.map((c) => {
+                      if (c.id === commentId) {
+                        return {
+                          ...c,
+                          replies: [...(c.replies || []), newReply],
+                          replyCount: (c.replyCount || 0) + 1,
+                        };
+                      }
+                      return c;
+                    })
+                  );
                 }}
               />
             ))}
