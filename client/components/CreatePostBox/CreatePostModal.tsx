@@ -1,6 +1,8 @@
 import { FC, useEffect, useRef, useState, useCallback, ChangeEvent } from "react";
 import { createPortal } from "react-dom";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TweetBlock } from "./TweetBlock";
 import { MediaEditor } from "./MediaEditor";
 import { EmojiPicker } from "./EmojiPicker";
@@ -107,6 +109,13 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   const [isBoldActive, setIsBoldActive] = useState(false);
+
+  // Post metadata for filtering
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('Analysis');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
 
   useEffect(() => {
     setMounted(true);
