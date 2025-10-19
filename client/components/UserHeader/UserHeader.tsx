@@ -1,14 +1,86 @@
-import { FC } from "react";
+import { FC, useRef } from "react";
 import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+
+interface ProfileData {
+  name: string;
+  username: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  joined: string;
+  avatar: string;
+  cover?: string;
+  stats: {
+    tweets: number;
+    following: number;
+    followers: number;
+  };
+  isVerified?: boolean;
+  isPremium?: boolean;
+  tradingStyle?: string;
+}
 
 interface Props {
   isOwn?: boolean;
   className?: string;
   onEditProfile?: () => void;
+  profileData?: ProfileData;
+  onAvatarUpload?: (file: File) => Promise<void>;
+  onCoverUpload?: (file: File) => Promise<void>;
 }
 
-const UserHeader: FC<Props> = ({ isOwn = true, className, onEditProfile }) => {
+const UserHeader: FC<Props> = ({
+  isOwn = true,
+  className,
+  onEditProfile,
+  profileData,
+  onAvatarUpload,
+  onCoverUpload
+}) => {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    if (isOwn) {
+      avatarInputRef.current?.click();
+    }
+  };
+
+  const handleCoverClick = () => {
+    if (isOwn) {
+      coverInputRef.current?.click();
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAvatarUpload) {
+      await onAvatarUpload(file);
+    }
+  };
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onCoverUpload) {
+      await onCoverUpload(file);
+    }
+  };
+
+  // Default data if not provided
+  const data = profileData || {
+    name: "Jane Doe",
+    username: "beautydoe",
+    bio: "Designing Products that Users Love",
+    location: "United States",
+    website: "https://beautydoe.com",
+    joined: "November 2010",
+    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500",
+    cover: "https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118",
+    stats: { tweets: 0, following: 143, followers: 149 },
+    isVerified: true,
+    isPremium: false,
+  };
   const iconButtonClass =
     "group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-[#F7F9F9] shadow-[0_8px_20px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black active:translate-y-0 before:absolute before:inset-x-3 before:-top-1 before:h-1 before:rounded-full before:bg-white/40 before:opacity-0 before:transition-opacity before:duration-200 group-hover:before:opacity-70";
 
