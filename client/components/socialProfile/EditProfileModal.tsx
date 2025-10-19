@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect } from "react";
+import { type FC, useState, useEffect, useRef } from "react";
 import { X, Camera } from "lucide-react";
 import type { SocialProfileData } from "@/data/socialProfile";
 
@@ -7,6 +7,8 @@ interface EditProfileModalProps {
   onClose: () => void;
   profile: SocialProfileData;
   onSave?: (updatedProfile: Partial<SocialProfileData>) => void;
+  onAvatarUpload?: (file: File) => Promise<void>;
+  onCoverUpload?: (file: File) => Promise<void>;
 }
 
 const EditProfileModal: FC<EditProfileModalProps> = ({
@@ -14,7 +16,13 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
   onClose,
   profile,
   onSave,
+  onAvatarUpload,
+  onCoverUpload,
 }) => {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: profile.name,
     bio: profile.bio,
@@ -43,6 +51,42 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
         : undefined,
     });
     onClose();
+  };
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleCoverClick = () => {
+    coverInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAvatarUpload) {
+      setUploading(true);
+      try {
+        await onAvatarUpload(file);
+      } catch (error) {
+        console.error('Failed to upload avatar:', error);
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onCoverUpload) {
+      setUploading(true);
+      try {
+        await onCoverUpload(file);
+      } catch (error) {
+        console.error('Failed to upload cover:', error);
+      } finally {
+        setUploading(false);
+      }
+    }
   };
 
   if (!isOpen) return null;
@@ -97,15 +141,25 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
                 )}
               </div>
               <div className="absolute inset-0 flex items-center justify-center gap-3">
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverChange}
+                  className="hidden"
+                />
                 <button
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#181B22] bg-black/75 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/90"
+                  onClick={handleCoverClick}
+                  disabled={uploading}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#181B22] bg-black/75 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/90 disabled:opacity-50"
                   aria-label="Add banner photo"
                 >
                   <Camera className="h-5 w-5" />
                 </button>
                 {profile.cover && (
                   <button
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#181B22] bg-black/75 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/90"
+                    disabled={uploading}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#181B22] bg-black/75 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/90 disabled:opacity-50"
                     aria-label="Remove photo"
                   >
                     <X className="h-5 w-5" />
@@ -122,8 +176,17 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
                     <button
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-[#181B22] bg-black/75 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/90"
+                      onClick={handleAvatarClick}
+                      disabled={uploading}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-[#181B22] bg-black/75 text-white backdrop-blur-md transition-all duration-200 hover:bg-black/90 disabled:opacity-50"
                       aria-label="Add avatar photo"
                     >
                       <Camera className="h-5 w-5" />
