@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
 import { cn } from "@/lib/utils";
