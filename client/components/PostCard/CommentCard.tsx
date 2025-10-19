@@ -1,6 +1,7 @@
 import { type FC, useState } from "react";
 
 import UserAvatar from "@/components/ui/Avatar/UserAvatar";
+import { cn } from "@/lib/utils";
 import type { SocialComment } from "@/data/socialComments";
 
 import VerifiedBadge from "./VerifiedBadge";
