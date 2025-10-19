@@ -103,7 +103,7 @@ const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select', opts: ['All', 'Free', 'Paid', 'Subscription'] },
   period: { type: 'select', opts: ['All time', 'Today', '7d', '30d', 'YTD', 'Custom'] },
-  category: { type: 'chips', opts: ['Сигналы', 'Прогнозы', 'Новости', 'Об��чение', 'Аналитика', 'Код', 'Мультим��диа'] },
+  category: { type: 'chips', opts: ['Signal', 'Macro', 'News', 'Education', 'Analysis', 'Code', 'Video', 'On-chain'] },
   sort: { type: 'select', opts: ['Popular', 'New', 'Top 24h', 'Top 7d', 'Recent'] },
   sentiment: { type: 'chips', opts: ['Bullish', 'Bearish', 'Neutral'] },
   strategy: { type: 'chips', opts: ['TA', 'Quant', 'News', 'Options', 'On-chain'] },
