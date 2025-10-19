@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Database configuration
 // For now using environment variables, can be connected via Supabase MCP
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || '';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://htyjjpbqpkgwubgjkwdt.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0eWpqcGJxcGtnd3ViZ2prd2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4Njc1NDAsImV4cCI6MjA3NjQ0MzU0MH0.IS_tRFMXivURNocLJzeLb01_jvubEyoReGJkAOd0zK0';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
