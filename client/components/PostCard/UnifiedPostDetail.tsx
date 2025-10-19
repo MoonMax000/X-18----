@@ -224,7 +224,24 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
           <span className="text-sm">{likes >= 1000 ? `${(likes / 1000).toFixed(1)}K` : likes}</span>
         </button>
-        
+
+        <div className="flex items-center gap-2 text-[#8B98A5]" aria-label="Views">
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9.04257 20.3539V3.15479H10.9536V20.3539H9.04257ZM17.881 20.3539V8.41008H19.792V20.3539H17.881ZM4.50391 20.3539L4.50773 10.7988H6.41874L6.41492 20.3539H4.50391ZM13.3404 20.3539V13.6654H15.2515V20.3539H13.3404Z"
+              fill="currentColor"
+            />
+          </svg>
+          {typeof post.views === "number" ? (
+            <span className="text-sm">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}K` : post.views}</span>
+          ) : null}
+        </div>
+
         <button
           type="button"
           onClick={() => setIsBookmarked(!isBookmarked)}
@@ -248,23 +265,6 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
             />
           </svg>
         </button>
-        
-        <div className="flex items-center gap-2 text-[#8B98A5]" aria-label="Views">
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.04257 20.3539V3.15479H10.9536V20.3539H9.04257ZM17.881 20.3539V8.41008H19.792V20.3539H17.881ZM4.50391 20.3539L4.50773 10.7988H6.41874L6.41492 20.3539H4.50391ZM13.3404 20.3539V13.6654H15.2515V20.3539H13.3404Z"
-              fill="currentColor"
-            />
-          </svg>
-          {typeof post.views === "number" ? (
-            <span className="text-sm">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}K` : post.views}</span>
-          ) : null}
-        </div>
       </div>
 
       {/* Comment Form */}
