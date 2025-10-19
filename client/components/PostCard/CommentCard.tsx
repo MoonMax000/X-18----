@@ -7,14 +7,16 @@ import VerifiedBadge from "./VerifiedBadge";
 
 interface CommentCardProps {
   comment: SocialComment;
-  hasReplies?: boolean;
-  showReplyLine?: boolean;
+  isNested?: boolean;
+  onReply?: (commentId: string, text: string) => void;
 }
 
-const CommentCard: FC<CommentCardProps> = ({ comment, hasReplies = false, showReplyLine = false }) => {
+const CommentCard: FC<CommentCardProps> = ({ comment, isNested = false, onReply }) => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [showReplies, setShowReplies] = useState(false);
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState("");
 
   const handleLike = () => {
     if (liked) {
@@ -35,7 +37,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, hasReplies = false, showRe
             size={40}
             accent={false}
           />
-          {showReplyLine && (
+          {comment.replies && comment.replies.length > 0 && showReplies && (
             <div className="absolute top-[48px] bottom-0 w-[2px] bg-[#2F3336]" />
           )}
         </div>
@@ -59,6 +61,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, hasReplies = false, showRe
           <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
             <button
               type="button"
+              onClick={() => setShowReplyForm(!showReplyForm)}
               className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
               aria-label="Reply"
             >
@@ -74,8 +77,8 @@ const CommentCard: FC<CommentCardProps> = ({ comment, hasReplies = false, showRe
                   fill="currentColor"
                 />
               </svg>
-              {typeof comment.replies === "number" && comment.replies > 0 ? (
-                <span className="text-sm font-medium">{comment.replies}</span>
+              {comment.replyCount ? (
+                <span className="text-sm font-medium">{comment.replyCount}</span>
               ) : null}
             </button>
 
@@ -162,18 +165,77 @@ const CommentCard: FC<CommentCardProps> = ({ comment, hasReplies = false, showRe
             </button>
           </div>
 
-          {hasReplies && !showReplies && (
+          {showReplyForm && (
+            <div className="mt-3 flex gap-2">
+              <UserAvatar
+                src="https://i.pravatar.cc/120?img=45"
+                alt="You"
+                size={32}
+                accent={false}
+              />
+              <div className="flex-1">
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder={`Reply to ${comment.author.name}...`}
+                  className="w-full resize-none rounded-lg border border-[#2F3336] bg-transparent px-3 py-2 text-sm text-white placeholder-[#6C7080] focus:border-[#1D9BF0] focus:outline-none"
+                  rows={2}
+                />
+                <div className="mt-2 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowReplyForm(false);
+                      setReplyText("");
+                    }}
+                    className="rounded-full px-4 py-1.5 text-sm font-semibold text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (replyText.trim() && onReply) {
+                        onReply(comment.id, replyText);
+                        setReplyText("");
+                        setShowReplyForm(false);
+                      }
+                    }}
+                    disabled={!replyText.trim()}
+                    className="rounded-full bg-[#1D9BF0] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#1A8CD8] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Reply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {comment.replies && comment.replies.length > 0 && !showReplies && (
             <button
               type="button"
               onClick={() => setShowReplies(true)}
               className="mt-2 flex items-center gap-2 text-sm text-[#1D9BF0] hover:underline"
             >
               <div className="h-px w-8 bg-[#2F3336]" />
-              <span>Show replies</span>
+              <span>Show {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}</span>
             </button>
           )}
         </div>
       </article>
+
+      {showReplies && comment.replies && comment.replies.length > 0 && (
+        <div className="ml-12">
+          {comment.replies.map((reply, index) => (
+            <CommentCard
+              key={reply.id}
+              comment={reply}
+              isNested
+              onReply={onReply}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 };

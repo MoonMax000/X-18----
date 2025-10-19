@@ -7,7 +7,8 @@ export interface SocialComment {
   timestamp: string;
   text: string;
   likes: number;
-  replies?: number;
+  replies?: SocialComment[];
+  replyCount?: number;
 }
 
 export const mockComments: Record<string, SocialComment[]> = {
@@ -56,7 +57,35 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "Great breakdown! I've been following these strategies for years and they work.",
       likes: 89,
-      replies: 5,
+      replyCount: 2,
+      replies: [
+        {
+          id: "comment-3-1",
+          postId: "ai-article",
+          author: {
+            name: "Sarah Chen",
+            avatar: "https://i.pravatar.cc/120?img=20",
+            handle: "@sarahchen",
+            verified: false,
+          },
+          timestamp: "45m",
+          text: "Which strategy has worked best for you in the current market?",
+          likes: 12,
+        },
+        {
+          id: "comment-3-2",
+          postId: "ai-article",
+          author: {
+            name: "Mike Trading",
+            avatar: "https://i.pravatar.cc/120?img=51",
+            handle: "@miketrading",
+            verified: false,
+          },
+          timestamp: "30m",
+          text: "@sarahchen Contrarian plays have been gold this year. Buy when others panic!",
+          likes: 28,
+        },
+      ],
     },
     {
       id: "comment-4",
@@ -71,7 +100,22 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "The asymmetric risk/reward point is key. Most people overlook this completely.",
       likes: 124,
-      replies: 8,
+      replyCount: 1,
+      replies: [
+        {
+          id: "comment-4-1",
+          postId: "ai-article",
+          author: {
+            name: "Alex Morgan",
+            avatar: "https://i.pravatar.cc/120?img=33",
+            handle: "@alexmorgan",
+            verified: true,
+          },
+          timestamp: "2h",
+          text: "Exactly! I only take trades with at least 3:1 R:R. Game changer.",
+          likes: 45,
+        },
+      ],
     },
     {
       id: "comment-5",
@@ -86,7 +130,6 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "I use a mix of momentum and contrarian strategies. Works great in different market conditions.",
       likes: 56,
-      replies: 2,
     },
   ],
   "personal-highlight": [
