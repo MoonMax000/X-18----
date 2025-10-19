@@ -38,7 +38,7 @@ export const navElements: NavElementProps[] = [
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "Примеры профилей",
+        title: "Other Profiles",
         route: "/profile/crypto_analyst",
       },
       {
