@@ -1123,7 +1123,18 @@ function QuickComposer({
                       type="button"
                       className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                     >
-                      <span className="truncate">{postCategory}</span>
+                      <span className="flex items-center gap-1.5 truncate">
+                        {(() => {
+                          const config = categoryConfig[postCategory as keyof typeof categoryConfig];
+                          const Icon = config.icon;
+                          return (
+                            <>
+                              <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: config.color }} />
+                              <span className="truncate">{postCategory}</span>
+                            </>
+                          );
+                        })()}
+                      </span>
                       <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
                     </button>
                   </PopoverTrigger>
@@ -3236,7 +3247,7 @@ export default function FeedTest() {
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
-              Вы ещё не сох��анили предпочтения. Выб��рите категории в фильтрах и сохра��ите их.
+              Вы ещё не сох��анили предпочтения. Выб��рите категории в фильтрах и сохраните их.
             </p>
           ) : (
             <div className="mt-4 flex flex-col gap-2">
