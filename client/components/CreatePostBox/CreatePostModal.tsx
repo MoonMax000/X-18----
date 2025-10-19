@@ -182,21 +182,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, blocks, replySetting, sentiment]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const autoSave = setInterval(() => {
-      const hasContent = blocks.some(
-        (b) => b.text.trim() || b.media.length > 0 || b.codeBlocks.length > 0,
-      );
-      if (hasContent) {
-        saveDraft();
-      }
-    }, 10000);
-
-    return () => clearInterval(autoSave);
-  }, [isOpen, blocks, replySetting]);
-
 
   // propagate blocks changes to parent if requested (live sync)
   const onBlocksChangeRef = useRef<typeof onBlocksChange | null>(null);
