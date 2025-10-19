@@ -171,7 +171,7 @@ const SocialNotifications: FC = () => {
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold text-white">Уведомления</h1>
                 <p className="text-sm text-[#6C7080]">
-                  Отслеживайте реакции на ваши идеи, нов��е подписки и упоминания.
+                  Отслеживайте реакции на ваши идеи, новые подписки и упоминания.
                 </p>
               </div>
               <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
@@ -416,7 +416,7 @@ interface EmptyNotificationsStateProps {
 }
 
 const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilter }) => (
-  <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-[#5E5E5E] bg-[rgba(12,16,20,0.4)] p-10 text-center">
+  <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[#5E5E5E] bg-[rgba(12,16,20,0.4)] p-10 text-center">
     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#A06AFF]/20 text-[#A06AFF]">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -431,8 +431,8 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <h3 className="text-lg font-semibold text-white">Нет уведомлений</h3>
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
-        ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно от��етят вас."
-        : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
+        ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно отметят вас."
+        : "Вы в курсе всех событий. Новые ув��домления появятся сразу после активности."}
     </p>
   </div>
 );
