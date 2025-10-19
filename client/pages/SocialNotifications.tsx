@@ -399,11 +399,6 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
           <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
         </div>
         <p className="mt-2 text-[15px] text-[#E3D8FF]">{notification.message}</p>
-        {notification.meta && (
-          <div className="mt-2 flex items-center">
-            <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-xs text-white/60">{notification.meta}</span>
-          </div>
-        )}
       </div>
       <div className="flex flex-col items-end gap-1 pt-0.5">
         <div className="relative">
