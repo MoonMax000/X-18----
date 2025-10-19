@@ -248,7 +248,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
       </div>
 
       {/* Comment Form */}
-      <div className="rounded-2xl border border-[#525252]/40 bg-[#0A0A0A] p-3 transition-all duration-300 hover:border-[#A06AFF]/60 hover:shadow-[0_0_20px_rgba(160,106,255,0.15)]">
+      <div className="rounded-2xl border border-[#5E5E5E]/40 bg-[#0A0A0A] p-3 transition-all duration-300 hover:border-[#B87AFF]/60 hover:shadow-[0_0_20px_rgba(184,122,255,0.15)]">
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 flex-shrink-0">
             <AvatarImage src="https://i.pravatar.cc/120?img=1" alt="You" />
