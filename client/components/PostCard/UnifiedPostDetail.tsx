@@ -19,6 +19,8 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   
   const [commentText, setCommentText] = useState("");
   const [localComments, setLocalComments] = useState(comments);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const MAX_COMMENT_LENGTH = 500;
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likes, setLikes] = useState(post.likes);
