@@ -96,7 +96,7 @@ const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassN
   'Analysis': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Analysis', color: '#A06AFF' },
   'Code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]', label: 'Code', color: '#64B5F6' },
   'Video': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]', label: 'Video', color: '#FF8A65' },
-};
+  'On-chain': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'On-chain', color: '#A06AFF' },
 
 const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
