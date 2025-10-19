@@ -71,9 +71,9 @@ export default function ProfileContentClassic({
         <div className="flex items-center gap-9 px-4 py-3">
           <button
             type="button"
-            onClick={() => navigate("/home")}
+            onClick={() => navigate(-1)}
             className="flex h-9 w-9 items-center justify-center rounded-full text-[#F7F9F9] transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-            aria-label="Back to Home"
+            aria-label="Back"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path
