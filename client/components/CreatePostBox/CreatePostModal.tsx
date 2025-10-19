@@ -92,6 +92,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const [replyMenuPosition, setReplyMenuPosition] = useState<{
     top: number;
     left: number;
+    openBelow?: boolean;
   } | null>(null);
   const [emojiMenuPosition, setEmojiMenuPosition] = useState<{
     top: number;
@@ -771,7 +772,14 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             type="button"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
-              setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
+              const menuHeight = 280;
+
+              // Check if there's enough space above
+              const spaceAbove = rect.top;
+              const shouldOpenBelow = spaceAbove < menuHeight;
+
+              const top = shouldOpenBelow ? rect.bottom + 10 : rect.top - 10;
+              setReplyMenuPosition({ top, left: rect.left, openBelow: shouldOpenBelow });
               setIsReplyMenuOpen((prev) => !prev);
             }}
             className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-sm font-semibold text-[#A06AFF] transition-colors hover:bg-white/10"
@@ -824,7 +832,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                 ref={replyMenuRef}
                 className="fixed z-[2300] w-80 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] shadow-2xl backdrop-blur-[100px] p-4"
                 style={{
-                  top: `${replyMenuPosition.top - 280}px`,
+                  top: replyMenuPosition.openBelow ? `${replyMenuPosition.top}px` : `${replyMenuPosition.top - 280}px`,
                   left: `${replyMenuPosition.left}px`,
                 }}
               >
