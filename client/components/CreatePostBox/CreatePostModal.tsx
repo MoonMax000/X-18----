@@ -313,8 +313,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     if (!targetId) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-    const pickerWidth = 720;
-    const pickerHeight = 384; // h-96 in pixels
+    const pickerWidth = 360;
+    const pickerHeight = 350;
 
     let left = rect.left;
     let top = rect.bottom + 8;
@@ -951,7 +951,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
           createPortal(
             <div
               ref={emojiMenuRef}
-              className="fixed z-[2300] h-96 w-full max-w-[720px] rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] p-4 shadow-2xl backdrop-blur-[100px]"
+              className="fixed z-[2300] h-[350px] w-full max-w-[360px] rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] p-4 shadow-2xl backdrop-blur-[100px]"
               style={{
                 top: `${emojiMenuPosition.top}px`,
                 left: `${emojiMenuPosition.left}px`,
