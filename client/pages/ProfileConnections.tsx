@@ -206,7 +206,10 @@ const ProfileConnections: FC = () => {
                       : "rounded-full text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20 hover:shadow-[0_8px_20px_-12px_rgba(160,106,255,0.5)]"
                   )}
                 >
-                  {tab.label}
+                  <span className="flex items-center justify-center gap-1.5">
+                    {tab.id === "verified" && <VerifiedBadge size={16} />}
+                    {tab.label}
+                  </span>
                   {!isActive && (
                     <div
                       className="absolute bottom-0 left-1/2 h-0.5 w-0 rounded-full transform -translate-x-1/2 group-hover:w-3/4 transition-all duration-300"
