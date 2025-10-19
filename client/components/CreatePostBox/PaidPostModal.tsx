@@ -10,15 +10,10 @@ interface PaidPostModalProps {
 }
 
 export interface PaidPostConfig {
-  type: "one-time" | "subscription" | "tiered";
+  type: "one-time" | "subscription";
   price: number;
   currency: string;
   subscriptionPeriod?: "monthly" | "yearly";
-  tiers?: Array<{
-    name: string;
-    price: number;
-    description: string;
-  }>;
 }
 
 const PRICING_TYPES = [
@@ -33,12 +28,6 @@ const PRICING_TYPES = [
     label: "Subscription",
     description: "Recurring payment for continuous access",
     icon: "🔄",
-  },
-  {
-    id: "tiered" as const,
-    label: "Tiered Access",
-    description: "Multiple pricing tiers with different benefits",
-    icon: "📊",
   },
 ];
 
