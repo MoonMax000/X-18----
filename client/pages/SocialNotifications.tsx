@@ -479,48 +479,20 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
   </div>
 );
 
-interface NotificationBadgeProps {
+interface NotificationIconProps {
   type: NotificationItem["type"];
 }
 
-const NotificationBadge: FC<NotificationBadgeProps> = ({ type }) => {
-  const iconProps = {
-    className: "h-5 w-5 text-white",
-    viewBox: "0 0 20 20",
-    fill: "none" as const,
-    stroke: "currentColor",
-    strokeWidth: 1.5,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
+const NotificationIcon: FC<NotificationIconProps> = ({ type }) => {
+  const iconClass = "h-4 w-4 text-[#A06AFF]";
 
   return (
-    <span className="absolute -right-1 -top-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#0B0D12] bg-gradient-to-br from-[#A06AFF] to-[#482090] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
-      {type === "follow" && (
-        <svg {...iconProps}>
-          <path d="M10 11.6667C12.0711 11.6667 13.75 9.98774 13.75 7.91667C13.75 5.8456 12.0711 4.16667 10 4.16667C7.92893 4.16667 6.25 5.8456 6.25 7.91667C6.25 9.98774 7.92893 11.6667 10 11.6667Z" />
-          <path d="M4.16699 15.8334C4.16699 13.238 6.57159 11.25 10.0003 11.25C13.429 11.25 15.8337 13.238 15.8337 15.8334" />
-        </svg>
-      )}
-      {type === "like" && (
-        <svg {...iconProps}>
-          <path d="M13.8934 4.78162C15.2237 6.08398 15.2237 8.19529 13.8934 9.49765L13.2459 10.1329C13.0805 10.2952 12.9978 10.3764 12.9242 10.4686C11.9935 11.6133 10.5717 12.5 9.16432 12.5C7.75695 12.5 6.3352 11.6133 5.40448 10.4686C5.33085 10.3764 5.24822 10.2952 5.08277 10.1329L4.43536 9.49765C3.10508 8.19529 3.10508 6.08398 4.43536 4.78162C5.76564 3.47926 7.89777 3.47926 9.22806 4.78162L9.50015 5.0499L9.77224 4.78162C11.1025 3.47926 13.2346 3.47926 14.5649 4.78162" />
-        </svg>
-      )}
-      {type === "mention" && (
-        <svg {...iconProps}>
-          <path d="M10 15.8333C13.2217 15.8333 15.8333 13.2217 15.8333 10C15.8333 6.77834 13.2217 4.16666 10 4.16666C6.77834 4.16666 4.16666 6.77834 4.16666 10C4.16666 13.2217 6.77834 15.8333 10 15.8333Z" />
-          <path d="M10 13.3333C11.4737 13.3333 12.6667 11.994 12.6667 10.3333C12.6667 8.6727 11.4737 7.33333 10 7.33333C8.52638 7.33333 7.33334 8.6727 7.33334 10.3333C7.33334 11.994 8.52638 13.3333 10 13.3333Z" />
-          <path d="M14.1667 13.3333C15 12.5 15 10.8333 15 10" />
-        </svg>
-      )}
-      {type === "repost" && (
-        <svg {...iconProps}>
-          <path d="M6.66699 11.6667L3.33366 8.33337L6.66699 5.00004" />
-          <path d="M3.33366 8.33337H11.667C14.0532 8.33337 16.0003 10.2805 16.0003 12.6667C16.0003 15.0529 14.0532 17 11.667 17H10.8337" />
-        </svg>
-      )}
-    </span>
+    <>
+      {type === "follow" && <UserPlus className={iconClass} />}
+      {type === "like" && <Heart className={iconClass} />}
+      {type === "mention" && <MessageCircle className={iconClass} />}
+      {type === "repost" && <Repeat2 className={iconClass} />}
+    </>
   );
 };
 
