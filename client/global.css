@@ -620,22 +620,22 @@ textarea::-webkit-scrollbar-track {
   position: absolute;
   left: 0;
   right: 0;
-  top: -1px;
-  height: 2px;
+  top: 0;
+  height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
     rgba(160, 106, 255, 0) 5%,
-    rgba(160, 106, 255, 0.4) 25%,
-    rgba(160, 106, 255, 0.7) 50%,
-    rgba(160, 106, 255, 0.4) 75%,
+    rgba(160, 106, 255, 0.5) 25%,
+    rgba(160, 106, 255, 0.8) 50%,
+    rgba(160, 106, 255, 0.5) 75%,
     rgba(160, 106, 255, 0) 95%,
     transparent 100%
   );
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
   pointer-events: none;
-  filter: blur(0.8px);
+  filter: blur(1px);
   z-index: 20;
 }
 
@@ -645,22 +645,22 @@ textarea::-webkit-scrollbar-track {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -1px;
-  height: 2px;
+  bottom: 0;
+  height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
     rgba(160, 106, 255, 0) 5%,
-    rgba(160, 106, 255, 0.4) 25%,
-    rgba(160, 106, 255, 0.7) 50%,
-    rgba(160, 106, 255, 0.4) 75%,
+    rgba(160, 106, 255, 0.5) 25%,
+    rgba(160, 106, 255, 0.8) 50%,
+    rgba(160, 106, 255, 0.5) 75%,
     rgba(160, 106, 255, 0) 95%,
     transparent 100%
   );
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
   pointer-events: none;
-  filter: blur(0.8px);
+  filter: blur(1px);
   z-index: 20;
 }
 
