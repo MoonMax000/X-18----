@@ -2946,16 +2946,31 @@ export default function FeedTest() {
               const isFollowing = topAuthorsFollowing.has(author.handle);
               return (
                 <div key={idx} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Avatar className="h-10 w-10 flex-shrink-0">
-                      <AvatarImage src={author.avatar} alt={author.name} />
-                      <AvatarFallback>{author.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-white truncate">{author.name}</div>
-                      <div className="text-sm text-[#6C7280] truncate">{author.handle}</div>
+                  <UserHoverCard
+                    author={{
+                      name: author.name,
+                      handle: author.handle,
+                      avatar: author.avatar,
+                      verified: false,
+                      followers: author.followers,
+                      following: Math.floor(Math.random() * 2000) + 100,
+                      bio: "Top cryptocurrency trader and analyst",
+                    }}
+                    isFollowing={isFollowing}
+                    onFollowToggle={() => toggleTopAuthorFollow(author.handle)}
+                    showFollowButton={true}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                      <Avatar className="h-10 w-10 flex-shrink-0">
+                        <AvatarImage src={author.avatar} alt={author.name} />
+                        <AvatarFallback>{author.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white truncate">{author.name}</div>
+                        <div className="text-sm text-[#6C7280] truncate">{author.handle}</div>
+                      </div>
                     </div>
-                  </div>
+                  </UserHoverCard>
                   <FollowButton
                     profileId={author.handle}
                     size="compact"
@@ -2979,7 +2994,7 @@ export default function FeedTest() {
         <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
           <p className="mt-1 text-sm text-[#A3A6B4]">
-            Сохранённые пресеты помогают быс��ро переключаться между сценариями просмотра.
+            Сохранённые пресеты помогают быс��ро перекл��чаться между сценариями просмотра.
           </p>
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
