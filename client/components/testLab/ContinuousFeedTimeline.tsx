@@ -90,11 +90,16 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
           <article
             key={post.id}
             onClick={() => onPostClick?.(post.id)}
-            className={cn(
-              "post-hover-glow flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer",
-              index !== 0 && "border-t border-[#5E5E5E]"
-            )}
+            className="post-hover-glow flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer"
           >
+            {index !== 0 && (
+              <div
+                className="absolute top-0 left-0 right-0 h-[1px]"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)'
+                }}
+              />
+            )}
             {/* Header */}
             <header className="flex w-full items-start justify-between gap-2 sm:gap-3 md:gap-4">
               <UserHoverCard
