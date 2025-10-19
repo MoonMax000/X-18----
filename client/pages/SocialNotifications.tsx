@@ -12,6 +12,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
+import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
 
 interface NotificationItem {
   id: string;
@@ -101,7 +103,7 @@ const notifications: NotificationItem[] = [
       handle: "@gamma_io",
       avatar: "https://i.pravatar.cc/120?img=15",
     },
-    message: "отметил вас в аналитике по волатильности опционов",
+    message: "отметил вас в аналитике по волатил��ности опционов",
     timestamp: "5 ч назад",
     meta: "+42 перехода",
   },
