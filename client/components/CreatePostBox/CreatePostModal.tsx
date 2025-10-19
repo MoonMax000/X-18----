@@ -308,9 +308,12 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     [ensureActiveBlock, addMedia],
   );
 
-  const handleToolbarEmojiToggle = useCallback(() => {
+  const handleToolbarEmojiToggle = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const targetId = ensureActiveBlock();
     if (!targetId) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setEmojiMenuPosition({ top: rect.bottom + 8, left: rect.left });
     setIsEmojiPickerOpen((prev) => !prev);
   }, [ensureActiveBlock]);
 
