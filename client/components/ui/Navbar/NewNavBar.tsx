@@ -128,32 +128,38 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
     }
 
     if (el.route) {
+      const currentFullPath = location.pathname + location.search;
+      const isActiveRoute = el.route === currentFullPath || el.route === location.pathname;
+
       return (
-        <NavLink 
-          key={el.title} 
-          to={el.route} 
-          className={cn('px-3 py-[14px]', { 
+        <NavLink
+          key={el.title}
+          to={el.route}
+          className={cn('px-3 py-[14px]', {
             'ml-[5px]': isCollapsed && !isMobile,
-            'py-3': isMobile 
+            'py-3': isMobile
           })}
           onClick={handleNavClick}
         >
-          {({ isActive }) => (
-            <div
-              className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', isActive ? 'text-white' : 'text-[#B0B0B0]')}
-              data-active={isActive ? 'true' : undefined}
-            >
-              <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
-              <span
-                className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                  'opacity-0 w-0': isCollapsed && !isMobile,
-                  'opacity-100 w-auto': !isCollapsed || isMobile,
-                })}
+          {({ isActive }) => {
+            const active = isActiveRoute || isActive;
+            return (
+              <div
+                className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', active ? 'text-white' : 'text-[#B0B0B0]')}
+                data-active={active ? 'true' : undefined}
               >
-                {el.title}
-              </span>
-            </div>
-          )}
+                <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
+                <span
+                  className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
+                    'opacity-0 w-0': isCollapsed && !isMobile,
+                    'opacity-100 w-auto': !isCollapsed || isMobile,
+                  })}
+                >
+                  {el.title}
+                </span>
+              </div>
+            );
+          }}
         </NavLink>
       );
     }
