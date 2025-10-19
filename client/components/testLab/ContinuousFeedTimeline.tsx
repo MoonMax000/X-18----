@@ -92,7 +92,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
             onClick={() => onPostClick?.(post.id)}
             className={cn(
               "post-hover-glow flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer",
-              index !== 0 && "border-t border-[#181B22]"
+              index !== 0 && "border-t border-[#5E5E5E]"
             )}
           >
             {/* Header */}
