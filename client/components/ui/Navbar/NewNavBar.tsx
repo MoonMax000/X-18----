@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { navElements, NavElementProps } from './constants';
 import { ChevronDown, DoubleArrow, QuillPen } from './icons';
 import CreatePostModal from '@/components/CreatePostBox/CreatePostModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   variant?: LayoutVariant;
@@ -14,6 +15,7 @@ interface Props {
 
 const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) => {
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [isPostComposerOpen, setIsPostComposerOpen] = useState(false);
@@ -34,7 +36,7 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
     }
   }, [location.pathname]);
 
-  // Закрываем мобильное меню при навигации
+  // Закрыва��м мобильное меню при навигации
   const handleNavClick = () => {
     if (onClose) {
       onClose();
@@ -196,13 +198,15 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               </div>
 
               <div className='flex flex-col gap-1'>
-                {navElements.slice(0, 1).map((el) => renderElement(el, false))}
-                <div
-                  className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
-                    'w-[190px]': !isCollapsed,
-                    'w-[40px]': isCollapsed,
-                  })}
-                />
+                {isAuthenticated && navElements.slice(0, 1).map((el) => renderElement(el, false))}
+                {isAuthenticated && (
+                  <div
+                    className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
+                      'w-[190px]': !isCollapsed,
+                      'w-[40px]': isCollapsed,
+                    })}
+                  />
+                )}
                 {navElements.slice(1).map((el) => renderElement(el, false))}
               </div>
             </div>
@@ -262,8 +266,8 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
               {/* Navigation items */}
               <div className='flex flex-col gap-1'>
-                {navElements.slice(0, 1).map((el) => renderElement(el, true))}
-                <div className='my-3 sidebar-divider-gradient h-[2px]' />
+                {isAuthenticated && navElements.slice(0, 1).map((el) => renderElement(el, true))}
+                {isAuthenticated && <div className='my-3 sidebar-divider-gradient h-[2px]' />}
                 {navElements.slice(1).map((el) => renderElement(el, true))}
               </div>
             </div>

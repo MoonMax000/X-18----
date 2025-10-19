@@ -20,7 +20,7 @@ export interface NavElementProps {
 }
 
 export const navElements: NavElementProps[] = [
-  { icon: <DashboardNavIcon />, title: "Dashboard", route: "/dashboard" },
+  { icon: <DashboardNavIcon />, title: "Dashboard", route: "/profile?tab=dashboard" },
   {
     icon: <SocialIcon className="h-5 w-5" />,
     title: "Social Network",
