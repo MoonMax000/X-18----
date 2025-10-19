@@ -721,7 +721,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                 </span>
               </button>
 
-              <div className="h-5 w-px bg-white" />
+              <div className="h-5 w-px bg-[#1B1F27]" />
 
               <button
                 type="button"
