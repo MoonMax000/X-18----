@@ -137,7 +137,7 @@ const profileSubTabs = [
 ];
 
 const ProfileIntegrated: FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>("profile");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
@@ -181,6 +181,11 @@ const ProfileIntegrated: FC = () => {
       const updated = await updateUserProfile(user.id, updateData);
       if (updated) {
         setProfileData(updated);
+        // Update user in AuthContext
+        updateUser({
+          username: updated.username,
+          email: updated.email,
+        });
         console.log('[ProfileIntegrated] Profile updated successfully');
       }
     } catch (error) {
@@ -197,6 +202,7 @@ const ProfileIntegrated: FC = () => {
         const updated = await updateUserProfile(user.id, { avatar_url: avatarUrl });
         if (updated) {
           setProfileData(updated);
+          console.log('[ProfileIntegrated] Avatar updated successfully');
         }
       }
     } catch (error) {
@@ -213,6 +219,7 @@ const ProfileIntegrated: FC = () => {
         const updated = await updateUserProfile(user.id, { cover: coverUrl });
         if (updated) {
           setProfileData(updated);
+          console.log('[ProfileIntegrated] Cover updated successfully');
         }
       }
     } catch (error) {

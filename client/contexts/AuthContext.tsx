@@ -12,6 +12,7 @@ interface AuthContextType {
   requestPasswordReset: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
   refreshToken: () => Promise<boolean>;
+  updateUser: (updatedUser: Partial<User>) => void;
 }
 
 interface LoginResult {
@@ -184,6 +185,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUser = (updatedUser: Partial<User>) => {
+    if (user) {
+      const newUser = { ...user, ...updatedUser };
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -194,7 +203,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     verifyCode,
     requestPasswordReset,
     resetPassword,
-    refreshToken
+    refreshToken,
+    updateUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
