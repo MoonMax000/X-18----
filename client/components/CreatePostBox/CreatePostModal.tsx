@@ -1195,6 +1195,16 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         onClose={() => setIsCodeBlockOpen(false)}
         onInsert={handleCodeBlockInsert}
       />
+
+      <PaidPostModal
+        isOpen={isPaidModalOpen}
+        onClose={() => setIsPaidModalOpen(false)}
+        onSave={(config) => {
+          setPaidConfig(config);
+          setIsPaid(true);
+        }}
+        initialConfig={paidConfig || undefined}
+      />
     </div>,
     document.body,
   );
