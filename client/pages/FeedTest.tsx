@@ -2984,12 +2984,20 @@ export default function FeedTest() {
                                 <span
                                   className={cn(
                                     "flex h-6 w-6 items-center justify-center rounded-lg flex-shrink-0",
-                                    config?.badgeClassName ?? "bg-[#2F3336] text-white/70",
+                                    filters.category === opt ? config?.badgeClassName ?? "bg-[#2F3336] text-white/70" : "bg-[#2F3336] text-white/70",
                                   )}
                                 >
-                                  <IconComponent className="h-3.5 w-3.5" />
+                                  <IconComponent
+                                    className="h-3.5 w-3.5"
+                                    style={{ color: filters.category === opt && config?.color ? config.color : undefined }}
+                                  />
                                 </span>
-                                <span className="truncate">{opt}</span>
+                                <span
+                                  className="truncate"
+                                  style={{ color: filters.category === opt && config?.color ? config.color : undefined }}
+                                >
+                                  {opt}
+                                </span>
                                 {filters.category === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
                               </button>
                             );
