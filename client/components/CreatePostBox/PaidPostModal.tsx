@@ -119,41 +119,6 @@ export const PaidPostModal = ({
             </div>
           </div>
 
-          {/* Subscription Period (if subscription selected) */}
-          {pricingType === "subscription" && (
-            <div className="mb-6">
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Billing Period
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSubscriptionPeriod("monthly")}
-                  className={cn(
-                    "rounded-xl border p-3 text-center font-semibold transition-all",
-                    subscriptionPeriod === "monthly"
-                      ? "border-[#A06AFF] bg-[#A06AFF]/10 text-[#A06AFF]"
-                      : "border-[#1B1F27] bg-[#0C1014] text-white hover:border-[#A06AFF]/50"
-                  )}
-                >
-                  Monthly
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSubscriptionPeriod("yearly")}
-                  className={cn(
-                    "rounded-xl border p-3 text-center font-semibold transition-all",
-                    subscriptionPeriod === "yearly"
-                      ? "border-[#A06AFF] bg-[#A06AFF]/10 text-[#A06AFF]"
-                      : "border-[#1B1F27] bg-[#0C1014] text-white hover:border-[#A06AFF]/50"
-                  )}
-                >
-                  Yearly
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Preview */}
           <div className="rounded-xl border border-[#1B1F27] bg-gradient-to-br from-[#A06AFF]/5 to-[#6B46C1]/5 p-4">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#808283]">
