@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TweetBlock } from "./TweetBlock";
+import { PaidPostModal, PaidPostConfig } from "./PaidPostModal";
 import { MediaEditor } from "./MediaEditor";
 import { EmojiPicker } from "./EmojiPicker";
 import { CodeBlockModal } from "./CodeBlockModal";
