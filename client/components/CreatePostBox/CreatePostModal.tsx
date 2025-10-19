@@ -149,14 +149,18 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       if (
         isReplyMenuOpen &&
         replyMenuRef.current &&
-        !replyMenuRef.current.contains(e.target as Node)
+        !replyMenuRef.current.contains(e.target as Node) &&
+        replyButtonRef.current &&
+        !replyButtonRef.current.contains(e.target as Node)
       ) {
         setIsReplyMenuOpen(false);
       }
       if (
         isEmojiPickerOpen &&
         emojiMenuRef.current &&
-        !emojiMenuRef.current.contains(e.target as Node)
+        !emojiMenuRef.current.contains(e.target as Node) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(e.target as Node)
       ) {
         setIsEmojiPickerOpen(false);
       }
