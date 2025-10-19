@@ -52,7 +52,7 @@ const HomePostDetail: FC = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#482090]/30 active:bg-[#482090]/50"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/10 active:bg-white/20"
             aria-label="Back"
           >
             <svg
