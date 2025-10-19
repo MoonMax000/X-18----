@@ -4,7 +4,7 @@ import { LAB_CATEGORY_CONFIG, LAB_CATEGORY_LABELS, type LabCategory } from "./ca
 
 const QUICK_FILTERS: { title: string; description: string; categories: LabCategory[] }[] = [
   {
-    title: "Фокус на сигналах",
+    title: "Фо��ус на сигналах",
     description: "Показывать только свежие точки входа",
     categories: ["signals", "analytics"],
   },
@@ -91,30 +91,6 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
               Очистить предпочтения
             </button>
           ) : null}
-        </section>
-
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-          <h3 className="text-lg font-semibold text-white">Монетизация</h3>
-          <ul className="mt-3 space-y-3 text-sm text-[#C5C9D3]">
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
-              <span className="text-white">Pay-per-post</span>
-              <p className="mt-1 text-xs text-[#8E92A0]">
-                Разблокировка отдельного сигнала или аналитики за разовую оплату.
-              </p>
-            </li>
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
-              <span className="text-white">Подписка на автора</span>
-              <p className="mt-1 text-xs text-[#8E92A0]">
-                Доступ ко всем закрытым постам автора и мгновенные уведомления.
-              </p>
-            </li>
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
-              <span className="text-white">Комбинированная модель</span>
-              <p className="mt-1 text-xs text-[#8E92A0]">
-                Авторы сами выбирают: платный сигнал, подписочная аналитика или бесплатные идеи.
-              </p>
-            </li>
-          </ul>
         </section>
       </div>
     </aside>
