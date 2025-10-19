@@ -373,7 +373,6 @@ interface NotificationItemRowProps {
 }
 
 const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRead, onToggleRead }) => {
-  const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
   return (
   <article
@@ -412,23 +411,6 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
         <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs text-[#6C7080]">{notification.timestamp}</span>
-          <div className="relative">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropdownOpen(!dropdownOpen);
-              }}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[#8E92A0] transition-colors hover:bg-[#1A1A1A] hover:text-[#A06AFF]"
-              aria-label="More options"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <circle cx="3" cy="8" r="1.5" />
-                <circle cx="8" cy="8" r="1.5" />
-                <circle cx="13" cy="8" r="1.5" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
       <p className="text-[15px] text-[#E3D8FF]">{notification.message}</p>
