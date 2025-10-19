@@ -27,15 +27,16 @@ export function createServer() {
   // Auth routes
   app.use("/api/auth", authRoutes);
 
-  // 404 handler
-  app.use((_req, res) => {
-    res.status(404).json({ error: 'Route not found' });
-  });
-
-  // Error handler
-  app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error('Server error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+  // Error handler for API routes only
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // Only handle errors for API routes
+    if (req.path.startsWith('/api/')) {
+      console.error('Server error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    } else {
+      // Pass non-API routes to Vite
+      next(err);
+    }
   });
 
   return app;
