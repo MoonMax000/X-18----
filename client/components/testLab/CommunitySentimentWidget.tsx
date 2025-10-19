@@ -47,15 +47,15 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
 
         {/* Center bars */}
         <div className="flex w-32 flex-col gap-2">
-          <div className="h-2.5 overflow-hidden rounded-full bg-[#10131A] ring-1 ring-[#1B1F27]">
+          <div className="h-3 overflow-hidden rounded-full bg-gradient-to-r from-[#0A0D12] to-[#10131A] ring-1 ring-[#2A2D35]/40">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-400 shadow-[0_0_16px_rgba(16,185,129,0.35)] transition-all duration-700 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-400 shadow-[0_0_20px_rgba(16,185,129,0.5),0_0_40px_rgba(16,185,129,0.2)] transition-all duration-700 ease-out"
               style={{ width: `${bullFill}%` }}
             />
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-[#10131A] ring-1 ring-[#1B1F27]">
+          <div className="h-3 overflow-hidden rounded-full bg-gradient-to-r from-[#0A0D12] to-[#10131A] ring-1 ring-[#2A2D35]/40">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-rose-500 to-red-400 shadow-[0_0_16px_rgba(244,63,94,0.35)] transition-all duration-700 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-rose-500 via-rose-400 to-red-400 shadow-[0_0_20px_rgba(244,63,94,0.5),0_0_40px_rgba(244,63,94,0.2)] transition-all duration-700 ease-out"
               style={{ width: `${bearFill}%` }}
             />
           </div>
@@ -75,27 +75,16 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
         <button
           type="button"
           onClick={onBullish}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20 hover:text-emerald-200"
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20 hover:text-emerald-200 hover:shadow-[0_0_16px_rgba(16,185,129,0.3)]"
         >
           <TrendingUp className="h-4 w-4" /> Bullish
         </button>
         <button
           type="button"
           onClick={onBearish}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-300 transition-all hover:bg-rose-500/20 hover:text-rose-200"
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-300 transition-all hover:bg-rose-500/20 hover:text-rose-200 hover:shadow-[0_0_16px_rgba(244,63,94,0.3)]"
         >
           <TrendingDown className="h-4 w-4" /> Bearish
-        </button>
-      </div>
-
-      {/* Slide nav mock */}
-      <div className="mt-3 flex items-center justify-center gap-3 text-xs text-[#6C7280]">
-        <button type="button" className="rounded p-1 hover:bg-white/5">
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <span>1/2</span>
-        <button type="button" className="rounded p-1 hover:bg-white/5">
-          <ChevronRight className="h-4 w-4 text-white" />
         </button>
       </div>
     </div>
