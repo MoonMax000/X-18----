@@ -52,7 +52,7 @@ const SocialPostDetail: FC = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/30 active:bg-white/40"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/20 hover:backdrop-blur-sm active:bg-white/30"
             aria-label="Back"
           >
             <svg
