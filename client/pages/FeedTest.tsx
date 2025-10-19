@@ -1203,7 +1203,7 @@ function QuickComposer({
                 </span>
               </button>
 
-              <div className="h-5 w-px bg-white" />
+              <div className="h-5 w-px bg-[#1B1F27]" />
 
               <button
                 type="button"
@@ -2965,7 +2965,7 @@ export default function FeedTest() {
           </button>
         </div>
 
-        {/* Быстрые фильтры */}
+        {/* Быстрые фил��тры */}
         <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
           <p className="mt-1 text-sm text-[#A3A6B4]">
