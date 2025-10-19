@@ -817,7 +817,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         {/* Post Metadata Selectors */}
         {blocks.some(block => block.text.trim().length > 0) && (
           <div className="border-t border-[#181B22] px-5 py-3">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {/* Market Selector */}
               <div>
                 <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
@@ -827,7 +827,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-8 w-full items-center justify-between gap-1 rounded-lg border border-[#1B1F27] bg-[#0C1014] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                     >
                       <span className="truncate">{postMarket}</span>
                       <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
@@ -864,7 +864,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-8 w-full items-center justify-between gap-1 rounded-lg border border-[#1B1F27] bg-[#0C1014] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                     >
                       <span className="truncate">{postCategory}</span>
                       <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
@@ -892,6 +892,21 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                 </Popover>
               </div>
 
+              {/* Symbol Input */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Symbol
+                </label>
+                <input
+                  type="text"
+                  value={postSymbol}
+                  onChange={(e) => setPostSymbol(e.target.value.toUpperCase())}
+                  placeholder="BTC, ETH..."
+                  className="flex h-8 w-full rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] placeholder:text-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+                  maxLength={10}
+                />
+              </div>
+
               {/* Timeframe Selector */}
               <div>
                 <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
@@ -901,7 +916,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-8 w-full items-center justify-between gap-1 rounded-lg border border-[#1B1F27] bg-[#0C1014] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                     >
                       <span className="truncate">{postTimeframe || 'None'}</span>
                       <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
@@ -938,7 +953,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-8 w-full items-center justify-between gap-1 rounded-lg border border-[#1B1F27] bg-[#0C1014] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                     >
                       <span className="truncate">{postRisk || 'None'}</span>
                       <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
