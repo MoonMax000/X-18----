@@ -90,11 +90,11 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
           <article
             key={post.id}
             onClick={() => onPostClick?.(post.id)}
-            className="post-hover-glow group flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer"
+            className="post-hover-glow group flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer has-[+_article:hover]:opacity-0"
           >
             {index !== 0 && (
               <div
-                className="absolute top-0 left-0 right-0 h-[1px] z-0 transition-opacity duration-300 group-hover:opacity-0"
+                className="post-divider absolute top-0 left-0 right-0 h-[1px] z-0 transition-opacity duration-300 group-hover:opacity-0"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)'
                 }}
@@ -312,7 +312,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                 {post.accuracy && (
                   <div className="mb-3 text-[14px] sm:text-[15px] md:text-[16px] text-[#C5C9D3]">
                     <span className="font-semibold text-green-400">Accuracy {post.accuracy}%</span>
-                    <span className="text-[#6C7280]"> �� </span>
+                    <span className="text-[#6C7280]"> · </span>
                     <span className="text-[#6C7280]">{post.sampleSize} signals / 90d</span>
                   </div>
                 )}
