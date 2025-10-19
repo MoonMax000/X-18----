@@ -277,14 +277,14 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               type='button'
               onClick={() => setIsPostComposerOpen(true)}
               className={cn(
-                'relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
+                'group relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
                 isCollapsed ? 'h-12 w-12' : 'h-12 w-full px-3'
               )}
               title="Open advanced Post composer"
             >
               <span className={cn('flex items-center gap-3 text-sm font-semibold text-white', isCollapsed ? 'justify-center' : 'justify-center')}>
-                <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)]'>
-                  <QuillPen className='h-4 w-4' />
+                <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)] transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,0.95)]'>
+                  <QuillPen className='h-4 w-4 transition-transform duration-300 group-hover:rotate-12' />
                 </span>
                 {!isCollapsed && <span>Tweet</span>}
               </span>
