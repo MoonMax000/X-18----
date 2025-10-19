@@ -17,9 +17,6 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: 'Продукты',
     links: [
       { label: 'Социальная сеть', href: '/social' },
-      { label: 'Торговые сигналы', href: '/home' },
-      { label: 'Аналитика', href: '/analytics' },
-      { label: 'Обучение', href: '/academy' },
       { label: 'Маркетплейс', href: '/marketplace' },
       { label: 'Live Streaming', href: '/streaming' },
     ],
@@ -28,7 +25,6 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: 'Начать',
     links: [
       { label: 'Создать аккаунт', href: '/signup' },
-      { label: 'Как начать торговать', href: '/start-trading' },
       { label: 'Присоединиться к сообществу', href: '/community' },
       { label: 'Гайд для новичков', href: '/beginner-guide' },
       { label: 'FAQ', href: '/faq' },
@@ -39,16 +35,14 @@ const FOOTER_SECTIONS: FooterSection[] = [
     links: [
       { label: 'Центр поддержки', href: '/support' },
       { label: 'Обучающие материалы', href: '/academy' },
-      { label: 'Торговые стратегии', href: '/strategies' },
+      { label: 'Торговые стратег��и', href: '/strategies' },
       { label: 'Блог сообщества', href: '/blog' },
-      { label: 'API документация', href: '/api-docs' },
     ],
   },
   {
     title: 'Компания',
     links: [
       { label: 'О платформе', href: '/about' },
-      { label: 'Команда', href: '/team' },
       { label: 'Контакты', href: '/contact' },
     ],
   },
