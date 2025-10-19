@@ -523,7 +523,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                   aria-label="Save"
                   className={cn(
                     "relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors",
-                    isBookmarked ? "text-[#4D7CFF]" : "hover:text-[#4D7CFF]"
+                    isBookmarked ? "text-[#A06AFF]" : "hover:text-[#A06AFF]"
                   )}
                 >
                   <svg

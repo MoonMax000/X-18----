@@ -229,7 +229,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           type="button"
           onClick={() => setIsBookmarked(!isBookmarked)}
           className={`flex items-center gap-2 transition-colors ${
-            isBookmarked ? "text-[#4D7CFF]" : "text-[#8B98A5] hover:text-[#4D7CFF]"
+            isBookmarked ? "text-[#A06AFF]" : "text-[#8B98A5] hover:text-[#A06AFF]"
           }`}
           aria-label="Bookmark"
         >
