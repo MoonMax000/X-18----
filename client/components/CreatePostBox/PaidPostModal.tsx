@@ -10,26 +10,9 @@ interface PaidPostModalProps {
 }
 
 export interface PaidPostConfig {
-  type: "one-time" | "subscription";
   price: number;
   currency: string;
-  subscriptionPeriod?: "monthly" | "yearly";
 }
-
-const PRICING_TYPES = [
-  {
-    id: "one-time" as const,
-    label: "One-time Payment",
-    description: "Single payment to unlock this post",
-    icon: "💰",
-  },
-  {
-    id: "subscription" as const,
-    label: "Subscription",
-    description: "Recurring payment for continuous access",
-    icon: "🔄",
-  },
-];
 
 const CURRENCIES = [
   { code: "USD", symbol: "$", label: "US Dollar" },
