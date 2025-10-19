@@ -496,15 +496,23 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       >
         <div className="flex items-center justify-between px-5 py-4">
           <button
+            type="button"
             onClick={handleClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-[#E7E9EA] transition-colors hover:bg-white/10"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25]"
             disabled={isPosting}
+            aria-label="Close"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
-                d="M18 6L6 18M6 6L18 18"
+                d="M11.6667 5L6.66675 10L11.6667 15"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
