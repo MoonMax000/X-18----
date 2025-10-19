@@ -3020,7 +3020,7 @@ export default function FeedTest() {
                     placeholder="BTC, AAPL..."
                     value={filters.symbol || ''}
                     onChange={(e) => updateFilter('symbol', e.target.value)}
-                    className="h-[26px] w-[140px] rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] text-[#D5D8E1] placeholder-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF]/70 focus:outline-none focus:bg-[#1C1430]"
+                    className="h-[26px] w-[140px] rounded-[24px] border border-[#5E5E5E] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] placeholder-[#6B7280] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430] focus:border-[#A06AFF]/70 focus:outline-none focus:bg-[#1C1430]"
                   />
                 </div>
               )}
