@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 interface NotificationItem {
   id: string;
@@ -104,6 +106,7 @@ const notifications: NotificationItem[] = [
 ];
 
 const SocialNotifications: FC = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<NotificationFilterId>("all");
   const [readNotifications, setReadNotifications] = useState<Set<string>>(new Set());
   const [attentionDialogOpen, setAttentionDialogOpen] = useState(false);
@@ -115,7 +118,7 @@ const SocialNotifications: FC = () => {
     showFollows: true,
     showMentions: true,
   });
-
+  
   // Newsletter settings
   const [emailNotifications, setEmailNotifications] = useState(false);
 
@@ -162,90 +165,143 @@ const SocialNotifications: FC = () => {
     });
   }, [filteredNotifications]);
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
-    <div className="flex w-full justify-center pb-12">
-      <div className="grid w-full max-w-[1180px] grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,720px)_minmax(0,320px)]">
-        <section className="flex min-h-screen flex-col gap-6">
-          <header className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold text-white">Уведомления</h1>
-                <p className="text-sm text-[#6C7080]">
-                  Отслеживайте реакции на ваши идеи, новые подписки и упоминания.
-                </p>
-              </div>
-              <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
-                {unreadTotal}
-              </span>
+    <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
+      <div className="flex-1 w-full sm:max-w-[720px]">
+        <div className="sticky top-0 z-10 bg-black/95 backdrop-blur-md">
+          <div className="flex items-center gap-4 px-4 py-3">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25]"
+              aria-label="Back"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11.6667 5L6.66675 10L11.6667 15"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-white">Уведомления</h1>
+              <p className="text-sm text-[#8E92A0]">{unreadTotal} непрочитанных</p>
             </div>
             <button
               type="button"
               onClick={handleMarkAllAsRead}
               disabled={filteredUnreadCount === 0}
-              className={`inline-flex w-max items-center gap-2 rounded-full border border-transparent px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+              className={cn(
+                "text-sm font-semibold transition-colors",
                 filteredUnreadCount === 0
-                  ? "bg-white/5 text-white/30"
-                  : "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)]"
-              }`}
+                  ? "text-[#8E92A0] cursor-not-allowed"
+                  : "text-[#A06AFF] hover:text-[#B87AFF]"
+              )}
             >
-              Пометить прочитанными
+              Прочитать все
             </button>
-          </header>
+          </div>
 
-          <NotificationFilters
-            filters={notificationFilters}
-            activeFilter={activeFilter}
-            counts={filterCounts}
-            onFilterChange={setActiveFilter}
-          />
-
-          {filteredNotifications.length > 0 ? (
-            <div className="flex flex-col divide-y divide-[#5E5E5E] overflow-hidden rounded-2xl border border-[#5E5E5E] bg-[#000000]">
-              {filteredNotifications.map((notification) => (
-                <NotificationItemRow
-                  key={notification.id}
-                  notification={notification}
-                  isRead={readNotifications.has(notification.id)}
-                  onToggleRead={() => handleToggleRead(notification.id)}
-                />
-              ))}
+          <div className="px-4 py-3">
+            <div className="flex items-center overflow-x-auto rounded-full border border-[#5E5E5E] bg-[#000000] p-0.5 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)]">
+              {notificationFilters.map((filter) => {
+                const isActive = activeFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setActiveFilter(filter.id)}
+                    className={cn(
+                      "flex-1 min-w-[120px] px-3 py-2 text-sm font-semibold transition-all duration-300 relative group",
+                      isActive
+                        ? "rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,1),inset_0_0_12px_rgba(0,0,0,0.3)]"
+                        : "rounded-full text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20 hover:shadow-[0_8px_20px_-12px_rgba(160,106,255,0.5)]"
+                    )}
+                  >
+                    <span className="flex items-center justify-center gap-1.5">
+                      {filter.label}
+                      <span className={cn(
+                        "ml-1 rounded-full px-2 py-0.5 text-xs",
+                        isActive ? "bg-white/10" : "bg-[#1A1A1A]"
+                      )}>
+                        {filterCounts[filter.id]}
+                      </span>
+                    </span>
+                    {!isActive && (
+                      <div
+                        className="absolute bottom-0 left-1/2 h-0.5 w-0 rounded-full transform -translate-x-1/2 group-hover:w-3/4 transition-all duration-300"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent 0%, #A06AFF 50%, transparent 100%)'
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          ) : (
+          </div>
+        </div>
+
+        <div className="divide-y divide-[#1A1A1A]">
+          {filteredNotifications.length === 0 ? (
             <EmptyNotificationsState activeFilter={activeFilter} />
+          ) : (
+            filteredNotifications.map((notification) => (
+              <NotificationItemRow
+                key={notification.id}
+                notification={notification}
+                isRead={readNotifications.has(notification.id)}
+                onToggleRead={() => handleToggleRead(notification.id)}
+              />
+            ))
           )}
-        </section>
-
-        <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
-          <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
-            <h3 className="text-lg font-semibold text-white">Контроль внимания</h3>
-            <p className="mt-2 text-sm text-[#B0B0B0]">
-              Выберите, какие типы уведомлений вы хотите получать.
-            </p>
-            <button
-              type="button"
-              onClick={() => setAttentionDialogOpen(true)}
-              className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:shadow-[0_0_20px_rgba(160,106,255,0.4)]"
-            >
-              Настроить фильтры
-            </button>
-          </div>
-          <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
-            <h3 className="text-lg font-semibold text-white">Email уведомления</h3>
-            <p className="mt-2 text-sm text-[#B0B0B0]">
-              Получайте важные уведомления на вашу электронную почту.
-            </p>
-            <div className="mt-4">
-              <label className="flex cursor-pointer items-center justify-between text-sm text-white">
-                <span>Включить email уведомления</span>
-                <Switch
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
-                />
-              </label>
-            </div>
-          </div>
-        </aside>
+        </div>
       </div>
+
+      <aside className="hidden h-fit w-[340px] flex-col gap-4 lg:flex">
+        <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
+          <h3 className="text-lg font-semibold text-white">Контроль внимания</h3>
+          <p className="mt-2 text-sm text-[#B0B0B0]">
+            Выберите, какие типы уведомлений вы хотите получать.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAttentionDialogOpen(true)}
+            className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:shadow-[0_0_20px_rgba(160,106,255,0.4)]"
+          >
+            Настроить фильтры
+          </button>
+        </div>
+        <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
+          <h3 className="text-lg font-semibold text-white">Email уведомления</h3>
+          <p className="mt-2 text-sm text-[#B0B0B0]">
+            Получайте важные уведомления на вашу электронную почту.
+          </p>
+          <div className="mt-4">
+            <label className="flex cursor-pointer items-center justify-between text-sm text-white">
+              <span>Включить email уведомления</span>
+              <Switch
+                checked={emailNotifications}
+                onCheckedChange={setEmailNotifications}
+              />
+            </label>
+          </div>
+        </div>
+      </aside>
 
       {/* Attention Control Dialog */}
       <Dialog open={attentionDialogOpen} onOpenChange={setAttentionDialogOpen}>
@@ -310,45 +366,6 @@ const SocialNotifications: FC = () => {
   );
 };
 
-interface NotificationFiltersProps {
-  filters: typeof notificationFilters;
-  activeFilter: NotificationFilterId;
-  counts: Record<NotificationFilterId, number>;
-  onFilterChange: (filter: NotificationFilterId) => void;
-}
-
-const NotificationFilters: FC<NotificationFiltersProps> = ({
-  filters,
-  activeFilter,
-  counts,
-  onFilterChange,
-}) => (
-  <div className="inline-flex w-full gap-2 rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] p-1">
-    {filters.map((filter) => {
-      const isActive = filter.id === activeFilter;
-
-      return (
-        <button
-          key={filter.id}
-          type="button"
-          onClick={() => onFilterChange(filter.id)}
-          aria-pressed={isActive}
-          className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
-            isActive
-              ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white"
-              : "border border-transparent bg-transparent text-[#B0B0B0] hover:border-[#A06AFF]/30 hover:text-white"
-          }`}
-        >
-          <span>{filter.label}</span>
-          <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs">
-            {counts[filter.id]}
-          </span>
-        </button>
-      );
-    })}
-  </div>
-);
-
 interface NotificationItemRowProps {
   notification: NotificationItem;
   isRead: boolean;
@@ -357,9 +374,10 @@ interface NotificationItemRowProps {
 
 const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRead, onToggleRead }) => (
   <article
-    className={`grid grid-cols-[auto_1fr] gap-4 px-5 py-4 transition ${
-      isRead ? "opacity-70" : "hover:bg-white/5"
-    }`}
+    className={cn(
+      "grid grid-cols-[auto_1fr] gap-4 px-4 py-4 transition-colors",
+      isRead ? "opacity-70" : "hover:bg-[#0A0A0A]"
+    )}
   >
     <div className="relative mt-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A1A1A]">
       <img
@@ -393,9 +411,10 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
           type="button"
           onClick={onToggleRead}
           aria-pressed={isRead}
-          className={`ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition ${
+          className={cn(
+            "ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition",
             isRead ? "border border-white/10 text-white/50" : "border border-transparent bg-[#A06AFF]/10 text-[#E3D8FF] hover:bg-[#A06AFF]/20 hover:text-white"
-          }`}
+          )}
         >
           {isRead ? "Сделать непр." : "Отметить прочит."}
         </button>
@@ -432,7 +451,7 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
         ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно отметят вас."
-        : "Вы в курсе всех событий. Новые ув��домления появятся сразу после активности."}
+        : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
     </p>
   </div>
 );
