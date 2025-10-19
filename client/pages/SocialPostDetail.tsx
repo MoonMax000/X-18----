@@ -1,7 +1,7 @@
 import { type FC, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import PostDetailView from "@/components/PostCard/PostDetailView";
+import UnifiedPostDetail from "@/components/PostCard/UnifiedPostDetail";
 import { getSocialPostById, type SocialPost } from "@/data/socialPosts";
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
@@ -74,7 +74,7 @@ const SocialPostDetail: FC = () => {
           <h1 className="text-xl font-bold text-white">Post</h1>
         </div>
 
-        <PostDetailView post={post} />
+        <UnifiedPostDetail post={post} />
       </div>
 
       <aside className="sticky top-4 hidden h-fit w-[340px] flex-col gap-4 lg:flex">

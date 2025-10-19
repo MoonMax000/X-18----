@@ -5,7 +5,7 @@ export interface SocialComment {
   postId: string;
   author: SocialAuthor;
   timestamp: string;
-  content: string;
+  text: string;
   likes: number;
   replies?: number;
 }
@@ -22,7 +22,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: true,
       },
       timestamp: "2h",
-      content:
+      text:
         "This is exactly what I've been waiting for! The analytics dashboard looks incredible.",
       likes: 42,
       replies: 3,
@@ -37,7 +37,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: false,
       },
       timestamp: "5h",
-      content: "Can't wait to try this out. When's the launch date?",
+      text: "Can't wait to try this out. When's the launch date?",
       likes: 18,
       replies: 1,
     },
@@ -53,7 +53,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: false,
       },
       timestamp: "1h",
-      content:
+      text:
         "Great breakdown! I've been following these strategies for years and they work.",
       likes: 89,
       replies: 5,
@@ -68,7 +68,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: true,
       },
       timestamp: "3h",
-      content:
+      text:
         "The asymmetric risk/reward point is key. Most people overlook this completely.",
       likes: 124,
       replies: 8,
@@ -83,7 +83,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: false,
       },
       timestamp: "4h",
-      content:
+      text:
         "I use a mix of momentum and contrarian strategies. Works great in different market conditions.",
       likes: 56,
       replies: 2,
@@ -100,7 +100,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: true,
       },
       timestamp: "30m",
-      content:
+      text:
         "Отличная стратегия! Интересно посмотреть как это сработает в следующем квартале.",
       likes: 156,
       replies: 12,
@@ -115,7 +115,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: false,
       },
       timestamp: "1h",
-      content:
+      text:
         "Какие конкретно инструменты вы используете для хеджирования позиций?",
       likes: 89,
       replies: 4,
@@ -130,7 +130,7 @@ export const mockComments: Record<string, SocialComment[]> = {
         verified: true,
       },
       timestamp: "2h",
-      content:
+      text:
         "Looking forward to the AMA session! Will definitely join and ask about macro trends.",
       likes: 203,
       replies: 6,

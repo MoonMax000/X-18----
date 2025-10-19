@@ -44,7 +44,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment }) => {
         </div>
 
         <p className="whitespace-pre-line text-[15px] leading-relaxed text-white/90">
-          {comment.content}
+          {comment.text}
         </p>
 
         <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
