@@ -238,42 +238,57 @@ const ProfileConnections: FC = () => {
             <p className="text-lg text-[#8E92A0]">No users to show</p>
           </div>
         ) : (
-          currentUsers.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-start gap-3 px-4 py-4 transition-colors hover:bg-[#0A0A0A]"
-            >
-              <Avatar
-                className="h-12 w-12 cursor-pointer"
-                onClick={() =>
-                  navigate(`/social/profile/${user.handle.replace("@", "")}`)
-                }
+          currentUsers.map((user) => {
+            const isFollowing = followingState[user.id] ?? false;
+            return (
+              <div
+                key={user.id}
+                className="flex items-start gap-3 px-4 py-4 transition-colors hover:bg-[#0A0A0A]"
               >
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div
-                  className="cursor-pointer"
-                  onClick={() =>
-                    navigate(`/social/profile/${user.handle.replace("@", "")}`)
-                  }
+                <UserHoverCard
+                  author={{
+                    name: user.name,
+                    handle: user.handle,
+                    avatar: user.avatar,
+                    verified: user.verified,
+                    followers: user.followers,
+                    following: user.following,
+                    bio: user.bio,
+                  }}
+                  isFollowing={isFollowing}
+                  onFollowToggle={(nextState) => setFollowingState(prev => ({ ...prev, [user.id]: nextState }))}
+                  showFollowButton={true}
                 >
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold text-white hover:underline">
-                      {user.name}
-                    </span>
-                    {user.verified && <VerifiedBadge size={16} />}
+                  <div className="flex items-start gap-3 flex-1 min-w-0 cursor-pointer">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold text-white hover:underline">
+                          {user.name}
+                        </span>
+                        {user.verified && <VerifiedBadge size={16} />}
+                      </div>
+                      {user.bio && (
+                        <p className="mt-1 text-sm text-white/80">{user.bio}</p>
+                      )}
+                    </div>
                   </div>
+                </UserHoverCard>
+                <div className="flex flex-col items-end gap-1">
                   <span className="text-sm text-[#8E92A0]">{user.handle}</span>
+                  <FollowButton
+                    profileId={user.id}
+                    size="compact"
+                    isFollowing={isFollowing}
+                    onToggle={(nextState) => setFollowingState(prev => ({ ...prev, [user.id]: nextState }))}
+                  />
                 </div>
-                {user.bio && (
-                  <p className="mt-1 text-sm text-white/80">{user.bio}</p>
-                )}
               </div>
-              <FollowButton profileId={user.id} size="compact" />
-            </div>
-          ))
+            );
+          })
         )}
       </div>
       </div>
