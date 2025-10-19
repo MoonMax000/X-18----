@@ -87,7 +87,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
-  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [replyMenuPosition, setReplyMenuPosition] = useState<{
