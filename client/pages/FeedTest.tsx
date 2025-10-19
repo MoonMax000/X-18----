@@ -91,7 +91,7 @@ interface ComposerData {
 const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassName: string; label: string }> = {
   'signals': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]', label: 'Сигналы' },
   'forecasts': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]', label: 'Прогнозы' },
-  'news': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]', label: 'Новости' },
+  'news': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]', label: 'Новос��и' },
   'education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]', label: 'Обучение' },
   'analytics': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Ан���литика' },
   'code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]', label: 'Код' },
@@ -557,6 +557,8 @@ function QuickComposer({
   const [isBoldActive, setIsBoldActive] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
+  const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
+  const [paidConfig, setPaidConfig] = useState<PaidPostConfig | null>(null);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
 
   // Post metadata for filtering
