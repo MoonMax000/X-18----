@@ -566,6 +566,51 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             />
             <button
               type="button"
+              onClick={() => toolbarDocumentInputRef.current?.click()}
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
+              title="Add documents (PDF, DOCX, PPTX, etc.)"
+              disabled={blocks.length === 0}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M14.5 5H12.5C9.67157 5 8.25736 5 7.37868 5.87868C6.5 6.75736 6.5 8.17157 6.5 11V16C6.5 18.8284 6.5 20.2426 7.37868 21.1213C8.25736 22 9.67157 22 12.5 22H13.8431C14.6606 22 15.0694 22 15.4369 21.8478C15.8045 21.6955 16.0935 21.4065 16.6716 20.8284L19.3284 18.1716C19.9065 17.5935 20.1955 17.3045 20.3478 16.9369C20.5 16.5694 20.5 16.1606 20.5 15.3431V11C20.5 8.17157 20.5 6.75736 19.6213 5.87868C18.7426 5 17.3284 5 14.5 5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15 21.5V20.5C15 18.6144 15 17.6716 15.5858 17.0858C16.1716 16.5 17.1144 16.5 19 16.5H20"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M6.5 19C4.84315 19 3.5 17.6569 3.5 16V8C3.5 5.17157 3.5 3.75736 4.37868 2.87868C5.25736 2 6.67157 2 9.5 2H14.5004C16.1572 2.00001 17.5004 3.34319 17.5004 5.00003"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10.0011 13H14.0011M10.0011 9H17.0011"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <input
+              ref={toolbarDocumentInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+              className="hidden"
+              onChange={handleToolbarDocumentPick}
+            />
+            <button
+              type="button"
               onClick={() =>
                 handleCodeBlockClick(activeBlockId || blocks[0]?.id)
               }
