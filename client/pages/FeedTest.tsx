@@ -1175,8 +1175,8 @@ function QuickComposer({
                 className={cn(
                   "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                   sentiment === "bullish"
-                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A]"
-                    : "bg-transparent"
+                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A] hover:shadow-[0_4px_12px_rgba(46,189,133,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#2EBD85]/15"
                 )}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -1211,8 +1211,8 @@ function QuickComposer({
                 className={cn(
                   "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                   sentiment === "bearish"
-                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414]"
-                    : "bg-transparent"
+                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414] hover:shadow-[0_4px_12px_rgba(255,38,38,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#EF454A]/15"
                 )}
               >
                 <span className={cn(
@@ -2992,7 +2992,7 @@ export default function FeedTest() {
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
-              Вы ещё не сохранили предпочтения. Выб��рите категории в фильтрах и сохраните их.
+              Вы ещё не сох��анили предпочтения. Выб��рите категории в фильтрах и сохраните их.
             </p>
           ) : (
             <div className="mt-4 flex flex-col gap-2">
