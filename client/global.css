@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(160, 106, 255, 0.4), 0 0 40px rgba(160, 106, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(160, 106, 255, 0.6), 0 0 60px rgba(160, 106, 255, 0.3);
+  }
+}
+
 /* Ensure tooltips work properly */
 [title] {
   position: relative;
