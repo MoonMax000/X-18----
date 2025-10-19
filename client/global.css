@@ -610,7 +610,6 @@ textarea::-webkit-scrollbar-track {
 /* Post hover glow effect - beautiful gradient highlight */
 .post-hover-glow {
   position: relative;
-  isolation: isolate;
   transition: all 0.3s ease-in-out;
 }
 
