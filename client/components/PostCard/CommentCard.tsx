@@ -199,6 +199,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, isNested = false, onReply 
                         onReply(comment.id, replyText);
                         setReplyText("");
                         setShowReplyForm(false);
+                        setShowReplies(true);
                       }
                     }}
                     disabled={!replyText.trim()}
