@@ -3286,61 +3286,6 @@ export default function FeedTest() {
         <NewsWidget items={DEFAULT_NEWS_ITEMS as NewsItem[]} />
         <FollowRecommendationsWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
 
-        {/* Top Authors */}
-        <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-4">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-            <Users className="h-5 w-5 text-purple-400" />
-            Top Authors
-          </h3>
-          <div className="space-y-3">
-            {TOP_AUTHORS.map((author, idx) => {
-              const isFollowing = topAuthorsFollowing.has(author.handle);
-              return (
-                <div key={idx} className="flex items-center justify-between gap-3">
-                  <UserHoverCard
-                    author={{
-                      name: author.name,
-                      handle: author.handle,
-                      avatar: author.avatar,
-                      verified: false,
-                      followers: author.followers,
-                      following: Math.floor(Math.random() * 2000) + 100,
-                      bio: "Top cryptocurrency trader and analyst",
-                    }}
-                    isFollowing={isFollowing}
-                    onFollowToggle={() => toggleTopAuthorFollow(author.handle)}
-                    showFollowButton={true}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
-                      <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarImage src={author.avatar} alt={author.name} />
-                        <AvatarFallback>{author.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-white truncate">{author.name}</div>
-                        <div className="text-sm text-[#6C7280] truncate">{author.handle}</div>
-                      </div>
-                    </div>
-                  </UserHoverCard>
-                  <FollowButton
-                    profileId={author.handle}
-                    size="compact"
-                    isFollowing={isFollowing}
-                    onToggle={() => toggleTopAuthorFollow(author.handle)}
-                    stopPropagation
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            className="mt-3 text-sm font-semibold text-[#A06AFF] transition-colors duration-200 hover:text-white"
-          >
-            View More
-          </button>
-        </div>
-
         {/* Быстрые фил��тры */}
         <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
