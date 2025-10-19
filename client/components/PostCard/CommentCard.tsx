@@ -220,6 +220,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
               key={reply.id}
               comment={reply}
               depth={depth + 1}
+              isFirst={index === 0}
               onReply={onReply}
             />
           ))}
