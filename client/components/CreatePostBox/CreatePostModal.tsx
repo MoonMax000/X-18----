@@ -101,8 +101,11 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiMenuRef = useRef<HTMLDivElement>(null);
   const toolbarFileInputRef = useRef<HTMLInputElement>(null);
+  const toolbarDocumentInputRef = useRef<HTMLInputElement>(null);
   const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [isBoldActive, setIsBoldActive] = useState(false);
 
   useEffect(() => {
     setMounted(true);
