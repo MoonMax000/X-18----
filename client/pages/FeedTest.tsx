@@ -2932,7 +2932,7 @@ export default function FeedTest() {
                 {activeConfig?.visible?.includes('category') && (
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                      Кат��гория
+                      Category
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -2961,7 +2961,7 @@ export default function FeedTest() {
                             )}
                           >
                             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2F3336]/60 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/70">
-                              Все
+                              All
                             </span>
                             <span className="truncate">All</span>
                             {!filters.category ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
