@@ -89,7 +89,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
         align="start"
         sideOffset={16}
         className="w-[320px] rounded-[28px] border border-[#B87AFF]/50 p-5 shadow-[0_24px_56px_rgba(184,122,255,0.2)] transition-all duration-300"
-        style={{ backgroundColor: '#000000', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+        style={{ backgroundColor: '#000000', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', zIndex: 99999 }}
       >
         <div className={headerClasses}>
           <div
