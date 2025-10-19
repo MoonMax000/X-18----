@@ -11,14 +11,7 @@ interface PaidPostModalProps {
 
 export interface PaidPostConfig {
   price: number;
-  currency: string;
 }
-
-const CURRENCIES = [
-  { code: "USD", symbol: "$", label: "US Dollar" },
-  { code: "EUR", symbol: "€", label: "Euro" },
-  { code: "GBP", symbol: "£", label: "British Pound" },
-];
 
 export const PaidPostModal = ({
   isOpen,
