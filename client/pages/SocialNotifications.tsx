@@ -117,10 +117,7 @@ const SocialNotifications: FC = () => {
   });
 
   // Newsletter settings
-  const [newsletterSettings, setNewsletterSettings] = useState({
-    pushInApp: true,
-    emailDigest: false,
-  });
+  const [emailNotifications, setEmailNotifications] = useState(false);
 
   const filteredNotifications = useMemo(() => {
     if (activeFilter === "mentions") {
@@ -174,7 +171,7 @@ const SocialNotifications: FC = () => {
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold text-white">Уведомления</h1>
                 <p className="text-sm text-[#6C7080]">
-                  Отслеживайте реакции на ваши идеи, новые подписки и упоминания.
+                  Отслеживайте реакции на ваши идеи, новые подписки и упо��инания.
                 </p>
               </div>
               <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
@@ -233,27 +230,16 @@ const SocialNotifications: FC = () => {
             </button>
           </div>
           <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
-            <h3 className="text-lg font-semibold text-white">Настройки уведомлений</h3>
+            <h3 className="text-lg font-semibold text-white">Email уведомления</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
-              Выберите каналы получения уведомлений.
+              Получайте важные уведомления на вашу электронную почту.
             </p>
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-4">
               <label className="flex cursor-pointer items-center justify-between text-sm text-white">
-                <span>Push в приложении</span>
+                <span>Включить email уведомления</span>
                 <Switch
-                  checked={newsletterSettings.pushInApp}
-                  onCheckedChange={(checked) =>
-                    setNewsletterSettings((prev) => ({ ...prev, pushInApp: checked }))
-                  }
-                />
-              </label>
-              <label className="flex cursor-pointer items-center justify-between text-sm text-white">
-                <span>Email уведомления</span>
-                <Switch
-                  checked={newsletterSettings.emailDigest}
-                  onCheckedChange={(checked) =>
-                    setNewsletterSettings((prev) => ({ ...prev, emailDigest: checked }))
-                  }
+                  checked={emailNotifications}
+                  onCheckedChange={setEmailNotifications}
                 />
               </label>
             </div>
