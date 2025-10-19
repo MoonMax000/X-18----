@@ -27,6 +27,7 @@ export default function ProfileTweetsClassic({
 
   const handlePostClick = (postId: string) => {
     const post = posts.find(p => p.id === postId);
+    // Navigate to social post detail for profile pages
     navigate(`/social/post/${postId}`, { state: post });
   };
 
