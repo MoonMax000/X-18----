@@ -313,7 +313,23 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     if (!targetId) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-    setEmojiMenuPosition({ top: rect.bottom + 8, left: rect.left });
+    const pickerWidth = 720;
+    const pickerHeight = 384; // h-96 in pixels
+
+    let left = rect.left;
+    let top = rect.bottom + 8;
+
+    // Adjust if picker would go off right edge of screen
+    if (left + pickerWidth > window.innerWidth) {
+      left = window.innerWidth - pickerWidth - 20;
+    }
+
+    // Adjust if picker would go off bottom of screen
+    if (top + pickerHeight > window.innerHeight) {
+      top = rect.top - pickerHeight - 8;
+    }
+
+    setEmojiMenuPosition({ top, left });
     setIsEmojiPickerOpen((prev) => !prev);
   }, [ensureActiveBlock]);
 
