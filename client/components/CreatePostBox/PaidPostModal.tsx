@@ -66,42 +66,16 @@ export const PaidPostModal = ({
 
         {/* Content */}
         <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
-          {/* Pricing Type Selection */}
-          <div className="mb-6">
-            <label className="mb-3 block text-sm font-semibold text-white">
-              Pricing Model
-            </label>
-            <div className="grid gap-3">
-              {PRICING_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => setPricingType(type.id)}
-                  className={cn(
-                    "group flex items-start gap-3 rounded-xl border p-4 text-left transition-all",
-                    pricingType === type.id
-                      ? "border-[#A06AFF] bg-[#A06AFF]/10"
-                      : "border-[#1B1F27] bg-[#0C1014] hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
-                  )}
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#A06AFF]/20 to-[#6B46C1]/20 text-2xl">
-                    {type.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white">
-                        {type.label}
-                      </span>
-                      {pricingType === type.id && (
-                        <Check className="h-4 w-4 text-[#A06AFF]" />
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-[#808283]">
-                      {type.description}
-                    </p>
-                  </div>
-                </button>
-              ))}
+          {/* Info Banner */}
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-[#A06AFF]/30 bg-gradient-to-br from-[#A06AFF]/10 to-[#6B46C1]/10 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#A06AFF]/30 to-[#6B46C1]/30 text-2xl">
+              💰
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">One-time Payment</h3>
+              <p className="mt-1 text-xs text-[#808283]">
+                Readers will pay once to unlock this post permanently
+              </p>
             </div>
           </div>
 
