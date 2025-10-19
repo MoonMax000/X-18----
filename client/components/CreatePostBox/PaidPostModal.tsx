@@ -26,23 +26,15 @@ export const PaidPostModal = ({
   onSave,
   initialConfig,
 }: PaidPostModalProps) => {
-  const [pricingType, setPricingType] = useState<PaidPostConfig["type"]>(
-    initialConfig?.type || "one-time"
-  );
   const [price, setPrice] = useState(initialConfig?.price || 5);
   const [currency, setCurrency] = useState(initialConfig?.currency || "USD");
-  const [subscriptionPeriod, setSubscriptionPeriod] = useState<
-    "monthly" | "yearly"
-  >(initialConfig?.subscriptionPeriod || "monthly");
 
   if (!isOpen) return null;
 
   const handleSave = () => {
     const config: PaidPostConfig = {
-      type: pricingType,
       price,
       currency,
-      ...(pricingType === "subscription" && { subscriptionPeriod }),
     };
     onSave(config);
     onClose();
