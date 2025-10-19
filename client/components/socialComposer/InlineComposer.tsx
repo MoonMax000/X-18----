@@ -710,13 +710,13 @@ const InlineComposer: FC<InlineComposerProps> = ({
                     <svg
                       className="mt-0.5 h-5 w-5 shrink-0"
                       viewBox="0 0 24 24"
-                      fill={replySetting === opt.id ? "#1D9BF0" : "none"}
+                      fill={replySetting === opt.id ? "#A06AFF" : "none"}
                       stroke="currentColor"
                       strokeWidth="2"
                     >
                       <circle cx="12" cy="12" r="10" />
                       {replySetting === opt.id && (
-                        <circle cx="12" cy="12" r="4" fill="#1D9BF0" />
+                        <circle cx="12" cy="12" r="4" fill="#A06AFF" />
                       )}
                     </svg>
                     <div className="flex-1">
