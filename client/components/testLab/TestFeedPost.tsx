@@ -79,7 +79,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
     <article
       onClick={() => onOpen?.(post.id)}
       className={cn(
-        "post-hover-glow mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#181B22] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60",
+        "post-hover-glow mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60",
         onOpen && "cursor-pointer",
       )}
     >
