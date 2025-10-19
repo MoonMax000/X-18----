@@ -3280,9 +3280,17 @@ export default function FeedTest() {
                           config?.badgeClassName ?? "bg-[#2F3336] text-white/70"
                         )}
                       >
-                        <IconComponent className="h-4 w-4" />
+                        <IconComponent
+                          className="h-4 w-4"
+                          style={{ color: config?.color }}
+                        />
                       </span>
-                      <span className="text-sm font-semibold text-white">{category}</span>
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: config?.color || '#FFFFFF' }}
+                      >
+                        {category}
+                      </span>
                     </div>
                     <button
                       onClick={(e) => {
