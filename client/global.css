@@ -607,72 +607,28 @@ textarea::-webkit-scrollbar-track {
   transform: translateX(0.5rem);
 }
 
-/* Post hover glow effect - beautiful gradient highlight */
+/* Post hover glow effect - change divider color on hover */
 .post-hover-glow {
   position: relative;
-  isolation: isolate;
   transition: all 0.3s ease-in-out;
 }
 
-/* Top glow on hover */
-.post-hover-glow::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 1px;
+/* Change divider above hovered post to purple glow */
+.post-divider {
+  transition: background 0.3s ease-in-out, filter 0.3s ease-in-out;
+}
+
+.post-hover-glow:hover ~ .post-divider,
+.post-divider:has(+ .post-hover-glow:hover) {
   background: linear-gradient(
     to right,
     transparent 0%,
     rgba(160, 106, 255, 0) 5%,
-    rgba(160, 106, 255, 0.5) 25%,
-    rgba(160, 106, 255, 0.8) 50%,
-    rgba(160, 106, 255, 0.5) 75%,
+    rgba(160, 106, 255, 0.6) 25%,
+    rgba(160, 106, 255, 0.9) 50%,
+    rgba(160, 106, 255, 0.6) 75%,
     rgba(160, 106, 255, 0) 95%,
     transparent 100%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  pointer-events: none;
-  filter: blur(1px);
-  z-index: 20;
-}
-
-/* Bottom glow on hover */
-.post-hover-glow::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(160, 106, 255, 0) 5%,
-    rgba(160, 106, 255, 0.5) 25%,
-    rgba(160, 106, 255, 0.8) 50%,
-    rgba(160, 106, 255, 0.5) 75%,
-    rgba(160, 106, 255, 0) 95%,
-    transparent 100%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  pointer-events: none;
-  filter: blur(1px);
-  z-index: 20;
-}
-
-.post-hover-glow:hover::before {
-  opacity: 1;
-}
-
-.post-hover-glow:hover::after {
-  opacity: 1;
-}
-
-/* Hide the divider between posts when hovering */
-.post-hover-glow:hover + .post-divider {
-  opacity: 0;
+  ) !important;
+  filter: blur(0.5px) drop-shadow(0 0 4px rgba(160, 106, 255, 0.4));
 }

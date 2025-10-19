@@ -90,7 +90,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
           <React.Fragment key={post.id}>
             {index !== 0 && (
               <div
-                className="post-divider w-full h-[1px] relative transition-opacity duration-300"
+                className="post-divider w-full h-[1px] relative"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)',
                   zIndex: 0
