@@ -74,7 +74,7 @@ const Footer: FC = () => {
   const selectedLanguage = LANGUAGES.find((lang) => lang.code === currentLanguage) || LANGUAGES[0];
 
   return (
-    <footer className="border-t border-[#181B22] bg-[#000000] text-white">
+    <footer className="border-t border-[#5E5E5E] bg-[#000000] text-white">
       <div className="mx-auto max-w-[1400px] px-4 py-12 md:px-6 lg:px-8">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
           {/* Left Column: Logo, Language Selector, Copyright */}
