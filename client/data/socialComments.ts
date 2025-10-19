@@ -26,7 +26,22 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "This is exactly what I've been waiting for! The analytics dashboard looks incredible.",
       likes: 42,
-      replies: 3,
+      replyCount: 1,
+      replies: [
+        {
+          id: "comment-1-1",
+          postId: "crypto-video",
+          author: {
+            name: "David Kim",
+            avatar: "https://i.pravatar.cc/120?img=15",
+            handle: "@davidkim",
+            verified: false,
+          },
+          timestamp: "1h",
+          text: "Same here! The real-time tracking feature is a game changer.",
+          likes: 15,
+        },
+      ],
     },
     {
       id: "comment-2",
@@ -40,7 +55,6 @@ export const mockComments: Record<string, SocialComment[]> = {
       timestamp: "5h",
       text: "Can't wait to try this out. When's the launch date?",
       likes: 18,
-      replies: 1,
     },
   ],
   "ai-article": [
@@ -146,7 +160,35 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "Отличная стратегия! Интересно посмотреть как это сработает в следующем квартале.",
       likes: 156,
-      replies: 12,
+      replyCount: 2,
+      replies: [
+        {
+          id: "comment-6-1",
+          postId: "personal-highlight",
+          author: {
+            name: "Maria Ivanova",
+            avatar: "https://i.pravatar.cc/120?img=25",
+            handle: "@mariaivanova",
+            verified: false,
+          },
+          timestamp: "20m",
+          text: "Полностью согласна! Буду следить за обновлениями.",
+          likes: 34,
+        },
+        {
+          id: "comment-6-2",
+          postId: "personal-highlight",
+          author: {
+            name: "James Wilson",
+            avatar: "https://i.pravatar.cc/120?img=68",
+            handle: "@jameswilson",
+            verified: true,
+          },
+          timestamp: "15m",
+          text: "@mariaivanova Спасибо! Планирую поделиться результатами в следующем месяце.",
+          likes: 56,
+        },
+      ],
     },
     {
       id: "comment-7",
@@ -161,7 +203,22 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "Какие конкретно инструменты вы используете для хеджирования позиций?",
       likes: 89,
-      replies: 4,
+      replyCount: 1,
+      replies: [
+        {
+          id: "comment-7-1",
+          postId: "personal-highlight",
+          author: {
+            name: "Alex Morgan",
+            avatar: "https://i.pravatar.cc/120?img=33",
+            handle: "@alexmorgan",
+            verified: true,
+          },
+          timestamp: "45m",
+          text: "Обычно использую опционы и фьючерсы. Отличный способ защиты портфеля.",
+          likes: 42,
+        },
+      ],
     },
     {
       id: "comment-8",
@@ -176,7 +233,6 @@ export const mockComments: Record<string, SocialComment[]> = {
       text:
         "Looking forward to the AMA session! Will definitely join and ask about macro trends.",
       likes: 203,
-      replies: 6,
     },
   ],
 };
