@@ -285,7 +285,7 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       className={classNames(
                         "inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
                         aspectPreset === "original"
-                          ? "text-[#1D9BF0]"
+                          ? "text-[#A06AFF]"
                           : "text-[#71767B] hover:text-white",
                       )}
                     >
@@ -304,7 +304,7 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       className={classNames(
                         "inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
                         aspectPreset === "wide"
-                          ? "text-[#1D9BF0]"
+                          ? "text-[#A06AFF]"
                           : "text-[#71767B] hover:text-white",
                       )}
                     >
@@ -323,7 +323,7 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       className={classNames(
                         "inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
                         aspectPreset === "square"
-                          ? "text-[#1D9BF0]"
+                          ? "text-[#A06AFF]"
                           : "text-[#71767B] hover:text-white",
                       )}
                     >
@@ -361,7 +361,7 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       step={0.01}
                       value={zoom}
                       onChange={(e) => setZoom(parseFloat(e.target.value))}
-                      className="h-1 flex-1 cursor-pointer accent-[#1D9BF0]"
+                      className="h-1 flex-1 cursor-pointer accent-[#A06AFF]"
                     />
 
                     <button
