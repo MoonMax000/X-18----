@@ -88,7 +88,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
       <HoverCardContent
         align="start"
         sideOffset={16}
-        className="w-[320px] rounded-[28px] border border-[#181B22] p-5 shadow-[0_24px_56px_rgba(2,6,18,0.58)]"
+        className="w-[320px] rounded-[28px] border border-[#525252]/40 p-5 shadow-[0_24px_56px_rgba(2,6,18,0.58)] transition-all duration-300 hover:border-[#A06AFF]/60 hover:shadow-[0_24px_56px_rgba(160,106,255,0.15)]"
         style={{ backgroundColor: '#000000', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
       >
         <div className={headerClasses}>
