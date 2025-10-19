@@ -3117,6 +3117,63 @@ export default function FeedTest() {
 
       {/* Right Sidebar */}
       <div className="hidden lg:block w-[340px] space-y-4">
+        {/* Мои рубрики */}
+        <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+          <h3 className="text-lg font-semibold text-white">My Categories</h3>
+          {savedCategories.length === 0 ? (
+            <p className="mt-2 text-sm text-[#A3A6B4]">
+              You haven't saved any preferences yet. Choose categories in the filters and save them.
+            </p>
+          ) : (
+            <div className="mt-4 flex flex-col gap-2">
+              {savedCategories.map((category) => {
+                const config = CATEGORY_CONFIG_MAP[category];
+                const IconComponent = config?.icon || Sparkles;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => updateFilter('category', category)}
+                    className={cn(
+                      "group flex items-center justify-between rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10",
+                      filters.category === category && "border-[#A06AFF]/70 bg-[#A06AFF]/20"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0",
+                          config?.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                        )}
+                      >
+                        <IconComponent
+                          className="h-4 w-4"
+                          style={{ color: config?.color }}
+                        />
+                      </span>
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: config?.color || '#FFFFFF' }}
+                      >
+                        {category}
+                      </span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSavedCategory(category);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-[#8E92A0] hover:text-red-400"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         {/* Fear & Greed Index Widget */}
         <FearGreedWidget score={32} />
 
