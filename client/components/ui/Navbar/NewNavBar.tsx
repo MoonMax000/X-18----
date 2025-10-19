@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutVariant } from '../AppBackground/AppBackground';
 import { cn } from '@/lib/utils';
 import { navElements, NavElementProps } from './constants';
@@ -13,11 +13,26 @@ interface Props {
 }
 
 const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) => {
+  const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [isPostComposerOpen, setIsPostComposerOpen] = useState(false);
 
   const toggleGroup = (title: string) => setOpenGroup(openGroup === title ? null : title);
+
+  // Auto-open group if current page is in its children
+  useEffect(() => {
+    const currentPath = location.pathname;
+    for (const el of navElements) {
+      if (el.children && el.children.length > 0) {
+        const hasActiveChild = el.children.some(child => child.route === currentPath);
+        if (hasActiveChild) {
+          setOpenGroup(el.title);
+          break;
+        }
+      }
+    }
+  }, [location.pathname]);
 
   // Закрываем мобильное меню при навигации
   const handleNavClick = () => {
