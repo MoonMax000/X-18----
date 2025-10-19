@@ -93,6 +93,7 @@ const InlineComposer: FC<InlineComposerProps> = ({
   const [replyMenuPosition, setReplyMenuPosition] = useState<{
     top: number;
     left: number;
+    openBelow?: boolean;
   } | null>(null);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
@@ -362,7 +363,14 @@ const InlineComposer: FC<InlineComposerProps> = ({
   const handleReplyButtonClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       const rect = event.currentTarget.getBoundingClientRect();
-      setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
+      const menuHeight = 280;
+
+      // Check if there's enough space above
+      const spaceAbove = rect.top;
+      const shouldOpenBelow = spaceAbove < menuHeight;
+
+      const top = shouldOpenBelow ? rect.bottom + 10 : rect.top - 10;
+      setReplyMenuPosition({ top, left: rect.left, openBelow: shouldOpenBelow });
       setIsComposerActive(true);
       setIsReplyMenuOpen((prev) => !prev);
     },
@@ -690,7 +698,7 @@ const InlineComposer: FC<InlineComposerProps> = ({
               ref={replyMenuRef}
               className="fixed z-[2300] w-[90vw] sm:w-80 rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3 sm:p-4"
               style={{
-                top: `${replyMenuPosition.top - 280}px`,
+                top: replyMenuPosition.openBelow ? `${replyMenuPosition.top}px` : `${replyMenuPosition.top - 280}px`,
                 left: `${replyMenuPosition.left}px`,
               }}
             >
