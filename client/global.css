@@ -610,6 +610,7 @@ textarea::-webkit-scrollbar-track {
 /* Post hover glow effect - beautiful gradient highlight */
 .post-hover-glow {
   position: relative;
+  isolation: isolate;
   transition: all 0.3s ease-in-out;
 }
 
@@ -671,7 +672,7 @@ textarea::-webkit-scrollbar-track {
   opacity: 1;
 }
 
-/* Hide the divider of the next post when hovering on current post */
-.post-hover-glow:hover + .post-hover-glow .post-divider {
+/* Hide the divider between posts when hovering */
+.post-hover-glow:hover + .post-divider {
   opacity: 0;
 }
