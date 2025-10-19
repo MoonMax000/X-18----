@@ -31,7 +31,11 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isCodeExpired, setIsCodeExpired] = useState(false);
   const [isBlocked2FA, setIsBlocked2FA] = useState(false);
-  
+  const [userId, setUserId] = useState('');
+
+  // Auth context
+  const { login, verify2FA } = useAuth();
+
   // Forgot Password states
   const [forgotEmail, setForgotEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
