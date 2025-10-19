@@ -110,6 +110,9 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   const [isBoldActive, setIsBoldActive] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
+  const [paidConfig, setPaidConfig] = useState<PaidPostConfig | null>(null);
 
   // Post metadata for filtering
   const [postMarket, setPostMarket] = useState<string>('Crypto');
