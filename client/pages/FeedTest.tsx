@@ -3046,12 +3046,23 @@ export default function FeedTest() {
               {filters.category && !savedCategories.includes(filters.category) && (
                 <button
                   type="button"
-                  onClick={saveCurrentCategory}
-                  className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#2EBD85]/50 bg-[#2EBD85]/10 px-3 text-[11px] font-semibold text-[#2EBD85] transition-colors hover:border-[#2EBD85] hover:bg-[#2EBD85]/20"
+                  onClick={() => {
+                    console.log('Saving category:', filters.category);
+                    console.log('Current saved categories:', savedCategories);
+                    saveCurrentCategory();
+                  }}
+                  className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border-2 border-[#2EBD85] bg-[#2EBD85]/20 px-4 text-[12px] font-bold text-[#2EBD85] transition-all hover:bg-[#2EBD85]/30 hover:scale-105 shadow-lg"
                 >
-                  <Save className="h-3.5 w-3.5" />
-                  Сохранить фильтр
+                  <Save className="h-4 w-4" />
+                  Save Filter
                 </button>
+              )}
+
+              {/* Debug info - remove after testing */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-[10px] text-white/50">
+                  Category: {filters.category || 'none'} | Saved: {savedCategories.join(', ') || 'none'}
+                </div>
               )}
 
             </div>
