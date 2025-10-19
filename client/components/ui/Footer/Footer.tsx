@@ -66,7 +66,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
 const LANGUAGES = [
   { code: 'ru', name: 'Русский', label: 'RU' },
   { code: 'en', name: 'English', label: 'EN' },
-  { code: 'zh', name: '简体中文', label: '中文' },
+  { code: 'zh', name: '���体中文', label: '中文' },
   { code: 'es', name: 'Español', label: 'ES' },
   { code: 'fr', name: 'Français', label: 'FR' },
   { code: 'de', name: 'Deutsch', label: 'DE' },
@@ -172,8 +172,8 @@ const Footer: FC = () => {
             </div>
           </div>
 
-          {/* Navigation Column */}
-          <nav className="flex flex-col gap-8">
+          {/* Navigation Row */}
+          <nav className="flex flex-wrap gap-8 lg:gap-12">
             {FOOTER_SECTIONS.map((section, idx) => (
               <div key={idx}>
                 <h3 className="mb-4 text-sm font-semibold text-white">{section.title}</h3>
