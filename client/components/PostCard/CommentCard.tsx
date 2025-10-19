@@ -29,7 +29,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, onReply }) => {
 
   return (
     <>
-      <article className="flex gap-3 border-b border-[#181B22] py-4 relative">
+      <article className="post-hover-glow flex gap-3 border-t border-[#181B22] py-4 relative cursor-pointer transition-colors duration-200">
         <div className="relative flex flex-col items-center">
           <UserAvatar
             src={comment.author.avatar}
