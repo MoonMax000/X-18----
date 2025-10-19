@@ -283,6 +283,7 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                     'hover:scale-105 active:scale-95',
                     isCollapsed ? 'h-12 w-12 bg-gradient-to-r from-[#A06AFF] to-[#482090]' : 'h-12 w-full px-4 bg-gradient-to-r from-[#A06AFF] to-[#482090]'
                   )}
+                  style={{ animation: 'pulse-glow 3s ease-in-out infinite' }}
                 >
                   {/* Animated glow effect */}
                   <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
