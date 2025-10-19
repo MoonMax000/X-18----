@@ -1666,6 +1666,17 @@ function QuickComposer({
           initialSentiment={sentiment as any}
         />
 
+        {/* Paid Post Settings Modal */}
+        <PaidPostModal
+          isOpen={isPaidModalOpen}
+          onClose={() => setIsPaidModalOpen(false)}
+          onSave={(config) => {
+            setPaidConfig(config);
+            setIsPaid(true);
+          }}
+          initialConfig={paidConfig || undefined}
+        />
+
         {/* Hidden File Inputs */}
         <input
           ref={mediaInputRef}
