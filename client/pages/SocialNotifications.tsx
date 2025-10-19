@@ -361,7 +361,7 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
       isRead ? "opacity-70" : "hover:bg-white/5"
     }`}
   >
-    <div className="relative mt-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#181B22]">
+    <div className="relative mt-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A1A1A]">
       <img
         src={notification.actor.avatar}
         alt={notification.actor.name}
@@ -404,7 +404,7 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
       <div className="flex flex-wrap items-center gap-3 text-xs text-[#6C7080]">
         <span>{notification.timestamp}</span>
         {notification.meta ? (
-          <span className="rounded-full bg-[#181B22] px-2 py-0.5 text-white/60">{notification.meta}</span>
+          <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-white/60">{notification.meta}</span>
         ) : null}
       </div>
     </div>
