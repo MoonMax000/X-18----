@@ -129,16 +129,9 @@ export const PaidPostModal = ({
                 {selectedCurrency?.symbol}
                 {price}
               </span>
-              {pricingType === "subscription" && (
-                <span className="text-sm text-[#808283]">
-                  / {subscriptionPeriod === "monthly" ? "month" : "year"}
-                </span>
-              )}
             </div>
             <p className="mt-2 text-xs text-[#808283]">
-              {pricingType === "one-time"
-                ? "Readers pay once to unlock this post"
-                : "Readers get access with an active subscription"}
+              One-time payment to unlock this post
             </p>
           </div>
         </div>
