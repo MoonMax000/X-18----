@@ -428,47 +428,6 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
                 <circle cx="13" cy="8" r="1.5" />
               </svg>
             </button>
-            {dropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setDropdownOpen(false)}
-                />
-                <div
-                  className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-[#5E5E5E] bg-[#000000] shadow-lg"
-                  role="menu"
-                >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      console.log('See less');
-                      setDropdownOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white transition-colors hover:bg-[#1A1A1A]"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9.5 7c.828 0 1.5 1.119 1.5 2.5S10.328 12 9.5 12 8 10.881 8 9.5 8.672 7 9.5 7zm5 0c.828 0 1.5 1.119 1.5 2.5s-.672 2.5-1.5 2.5S13 10.881 13 9.5 13.672 7 14.5 7zM12 22.25C6.348 22.25 1.75 17.652 1.75 12S6.348 1.75 12 1.75 22.25 6.348 22.25 12 17.652 22.25 12 22.25zm0-18.5c-4.549 0-8.25 3.701-8.25 8.25s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25S16.549 3.75 12 3.75zM8.947 17.322l-1.896-.638C7.101 16.534 8.322 13 12 13s4.898 3.533 4.949 3.684l-1.897.633c-.031-.09-.828-2.316-3.051-2.316s-3.021 2.227-3.053 2.322z" />
-                    </svg>
-                    <span>Видеть реже</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      onToggleRead();
-                      setDropdownOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white transition-colors hover:bg-[#1A1A1A]"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 12l5 5L20 7" />
-                    </svg>
-                    <span>{isRead ? "Отметить непрочитанным" : "Отметить прочитанным"}</span>
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
