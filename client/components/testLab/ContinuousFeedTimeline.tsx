@@ -365,27 +365,30 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                 <div className="absolute inset-0 backdrop-blur-[8.65px]" />
 
                 {/* Content */}
-                <div className="relative z-10 flex flex-col items-center justify-center gap-6 sm:gap-8 py-12 sm:py-16 px-4 sm:px-6">
+                <div className="group relative z-10 flex flex-col items-center justify-center gap-6 sm:gap-8 py-12 sm:py-16 px-4 sm:px-6">
                   {/* Lock Icon */}
                   <div className="flex flex-col items-center gap-3 sm:gap-4">
                     <svg
-                      className="w-8 h-8 sm:w-10 sm:h-10"
+                      className="w-8 h-8 sm:w-10 sm:h-10 transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_12px_rgba(160,106,255,0.6)]"
                       viewBox="0 0 41 41"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
+                        className="transition-all duration-500 group-hover:stroke-[#A06AFF]"
                         d="M20.5 28.0003V24.667"
                         stroke="#B0B0B0"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                       />
                       <path
+                        className="transition-all duration-500 group-hover:stroke-[#A06AFF]"
                         d="M7.61298 31.9078C7.98778 34.6917 10.2935 36.8725 13.0994 37.0015C15.4604 37.11 17.8588 37.1667 20.5 37.1667C23.1411 37.1667 25.5395 37.11 27.9005 37.0015C30.7065 36.8725 33.0121 34.6917 33.387 31.9078C33.6315 30.0912 33.8333 28.2293 33.8333 26.3333C33.8333 24.4373 33.6315 22.5755 33.387 20.7588C33.0121 17.975 30.7065 15.7941 27.9005 15.6651C25.5395 15.5566 23.1411 15.5 20.5 15.5C17.8588 15.5 15.4604 15.5566 13.0994 15.6651C10.2935 15.7941 7.98778 17.975 7.61298 20.7588C7.36838 22.5755 7.16663 24.4373 7.16663 26.3333C7.16663 28.2293 7.36838 30.0912 7.61298 31.9078Z"
                         stroke="#B0B0B0"
                         strokeWidth="1.5"
                       />
                       <path
+                        className="transition-all duration-500 origin-bottom group-hover:stroke-[#A06AFF] group-hover:-translate-y-1 group-hover:rotate-[-8deg]"
                         d="M13 15.4997V11.333C13 7.19087 16.3579 3.83301 20.5 3.83301C24.6422 3.83301 28 7.19087 28 11.333V15.4997"
                         stroke="#B0B0B0"
                         strokeWidth="1.5"
@@ -404,36 +407,8 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                   {/* Button - horizontal wide with gradient */}
                   <button
                     onClick={(e) => e.stopPropagation()}
-                    className="group flex items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-8 sm:px-12 md:px-14 py-2 text-sm sm:text-[15px] font-medium text-white shadow-[0_8px_24px_rgba(160,106,255,0.4)] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(160,106,255,0.6)] hover:ring-2 hover:ring-[#A06AFF] hover:ring-offset-2 hover:ring-offset-black whitespace-nowrap"
+                    className="flex items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-8 sm:px-12 md:px-14 py-2 text-sm sm:text-[15px] font-medium text-white shadow-[0_8px_24px_rgba(160,106,255,0.4)] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(160,106,255,0.6)] hover:ring-2 hover:ring-[#A06AFF] hover:ring-offset-2 hover:ring-offset-black whitespace-nowrap"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2 transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]"
-                      viewBox="0 0 41 41"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        className="transition-all duration-500 group-hover:stroke-white"
-                        d="M20.5 28.0003V24.667"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        className="transition-all duration-500 group-hover:stroke-white"
-                        d="M7.61298 31.9078C7.98778 34.6917 10.2935 36.8725 13.0994 37.0015C15.4604 37.11 17.8588 37.1667 20.5 37.1667C23.1411 37.1667 25.5395 37.11 27.9005 37.0015C30.7065 36.8725 33.0121 34.6917 33.387 31.9078C33.6315 30.0912 33.8333 28.2293 33.8333 26.3333C33.8333 24.4373 33.6315 22.5755 33.387 20.7588C33.0121 17.975 30.7065 15.7941 27.9005 15.6651C25.5395 15.5566 23.1411 15.5 20.5 15.5C17.8588 15.5 15.4604 15.5566 13.0994 15.6651C10.2935 15.7941 7.98778 17.975 7.61298 20.7588C7.36838 22.5755 7.16663 24.4373 7.16663 26.3333C7.16663 28.2293 7.36838 30.0912 7.61298 31.9078Z"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
-                      <path
-                        className="transition-all duration-500 origin-bottom group-hover:stroke-white group-hover:-translate-y-0.5 group-hover:rotate-[-5deg]"
-                        d="M13 15.4997V11.333C13 7.19087 16.3579 3.83301 20.5 3.83301C24.6422 3.83301 28 7.19087 28 11.333V15.4997"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
                     Get Access
                   </button>
                 </div>
