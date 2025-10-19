@@ -222,12 +222,9 @@ export const PaidPostModal = ({
               )}
             </div>
             <p className="mt-2 text-xs text-[#808283]">
-              {pricingType === "one-time" &&
-                "Readers pay once to unlock this post"}
-              {pricingType === "subscription" &&
-                "Readers get access with an active subscription"}
-              {pricingType === "tiered" &&
-                "Readers choose from multiple pricing tiers"}
+              {pricingType === "one-time"
+                ? "Readers pay once to unlock this post"
+                : "Readers get access with an active subscription"}
             </p>
           </div>
         </div>
