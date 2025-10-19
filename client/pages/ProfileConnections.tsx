@@ -164,7 +164,7 @@ const ProfileConnections: FC = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-[#A06AFF]/20"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25]"
             aria-label="Back"
           >
             <svg
