@@ -94,7 +94,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
           >
             {index !== 0 && (
               <div
-                className="absolute top-0 left-0 right-0 h-[1px]"
+                className="absolute top-0 left-0 right-0 h-[1px] z-0"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)'
                 }}
