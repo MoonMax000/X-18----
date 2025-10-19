@@ -109,7 +109,7 @@ const FILTERS_CONFIG = {
   direction: { type: 'select', opts: ['Long', 'Short'] },
   timeframe: { type: 'select', opts: ['15m', '1h', '4h', '1d', '1w'] },
   risk: { type: 'select', opts: ['Low', 'Medium', 'High'] },
-  accuracy: { type: 'buckets', opts: ['≥60%', '≥70%', '��80%'] },
+  accuracy: { type: 'buckets', opts: ['≥60%', '≥70%', '���80%'] },
   minSamples: { type: 'select', opts: ['≥30', '≥50', '≥100'] },
   verified: { type: 'toggle' }
 } as const;
@@ -571,6 +571,9 @@ function QuickComposer({
     blocks,
     activeBlockId,
     addMedia,
+    removeMedia,
+    replaceMedia,
+    reorderMedia,
     insertCodeBlock,
     removeCodeBlock,
     updateBlockText,
@@ -2990,7 +2993,7 @@ export default function FeedTest() {
           <div className="mt-4 flex flex-col gap-3">
             <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Фокус на сигналах</span>
-              <span className="mt-1 block text-xs text-[#8E92A0]">Показыват�� только св��жие точки вх����а</span>
+              <span className="mt-1 block text-xs text-[#8E92A0]">Пока��ыват�� только св��жие точки вх����а</span>
             </button>
             <button type="button" className="w-full rounded-2xl border border-[#5E5E5E] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10">
               <span className="text-sm font-semibold text-white">Обучение</span>
