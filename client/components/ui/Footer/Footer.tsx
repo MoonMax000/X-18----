@@ -25,35 +25,6 @@ const FOOTER_SECTIONS: FooterSection[] = [
     ],
   },
   {
-    title: 'Криптовалюты',
-    links: [
-      { label: 'Bitcoin', href: '/coin/bitcoin' },
-      { label: 'Ethereum', href: '/coin/ethereum' },
-      { label: 'Solana', href: '/coin/solana' },
-      { label: 'Cardano', href: '/coin/cardano' },
-      { label: 'XRP', href: '/coin/xrp' },
-      { label: 'Все активы', href: '/coins' },
-    ],
-  },
-  {
-    title: 'Сервисы',
-    links: [
-      { label: 'Цены криптовалют', href: '/prices' },
-      { label: 'Покупка крипты', href: '/buy' },
-      { label: 'Стейкинг', href: '/staking' },
-      { label: 'Обмен', href: '/swap' },
-      { label: 'Портфолио', href: '/portfolio' },
-    ],
-  },
-  {
-    title: 'Для би��неса',
-    links: [
-      { label: 'Корпоративные решения', href: '/enterprise' },
-      { label: 'Партнёрская программа', href: '/affiliates' },
-      { label: 'API для разработчиков', href: '/api' },
-    ],
-  },
-  {
     title: 'Начать',
     links: [
       { label: 'Регистрация', href: '/signup' },
@@ -201,8 +172,8 @@ const Footer: FC = () => {
             </div>
           </div>
 
-          {/* Right Columns: Navigation */}
-          <nav className="grid flex-1 grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4">
+          {/* Navigation Column */}
+          <nav className="flex flex-col gap-8">
             {FOOTER_SECTIONS.map((section, idx) => (
               <div key={idx}>
                 <h3 className="mb-4 text-sm font-semibold text-white">{section.title}</h3>
