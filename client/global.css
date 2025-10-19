@@ -618,7 +618,7 @@ textarea::-webkit-scrollbar-track {
   transition: background 0.3s ease-in-out, filter 0.3s ease-in-out;
 }
 
-.post-hover-glow:hover ~ .post-divider,
+.post-hover-glow:hover + .post-divider,
 .post-divider:has(+ .post-hover-glow:hover) {
   background: linear-gradient(
     to right,
