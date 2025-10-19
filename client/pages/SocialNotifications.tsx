@@ -171,7 +171,7 @@ const SocialNotifications: FC = () => {
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold text-white">Уведомления</h1>
                 <p className="text-sm text-[#6C7080]">
-                  Отслеживайте реакции на ваши идеи, новые подписки и упоминания.
+                  Отслеживайте реакции на ваши идеи, нов��е подписки и упоминания.
                 </p>
               </div>
               <span className="inline-flex min-w-[48px] items-center justify-center rounded-full border border-[#5E5E5E] bg-[rgba(12,16,20,0.5)] px-3 py-1 text-xs font-semibold text-white/70">
@@ -216,7 +216,7 @@ const SocialNotifications: FC = () => {
         </section>
 
         <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
-          <div className="rounded-3xl border border-[#5E5E5E] bg-[rgba(12,16,20,0.6)] p-5">
+          <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
             <h3 className="text-lg font-semibold text-white">Контроль внимания</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
               Выберите, какие типы уведомлений вы хотите получать.
@@ -229,7 +229,7 @@ const SocialNotifications: FC = () => {
               Настроить фильтры
             </button>
           </div>
-          <div className="rounded-3xl border border-[#5E5E5E] bg-[rgba(12,16,20,0.6)] p-5">
+          <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
             <h3 className="text-lg font-semibold text-white">Email уведомления</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
               Получайте важные уведомления на вашу электронную почту.
@@ -431,7 +431,7 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <h3 className="text-lg font-semibold text-white">Нет уведомлений</h3>
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
-        ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно отметят вас."
+        ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно от��етят вас."
         : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
     </p>
   </div>
