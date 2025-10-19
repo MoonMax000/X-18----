@@ -40,6 +40,7 @@ import { CodeBlockModal } from "@/components/CreatePostBox/CodeBlockModal";
 import { MediaEditor } from "@/components/CreatePostBox/MediaEditor";
 import { MediaGrid } from "@/components/CreatePostBox/MediaGrid";
 import { useAdvancedComposer } from "@/components/CreatePostBox/useAdvancedComposer";
+import { PaidPostModal, PaidPostConfig } from "@/components/CreatePostBox/PaidPostModal";
 
 // Types
 type FeedTab = "all" | "ideas" | "opinions" | "analytics" | "soft" | "liked";
