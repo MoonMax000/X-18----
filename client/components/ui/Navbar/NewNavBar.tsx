@@ -290,10 +290,10 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
                   <span className={cn('relative flex items-center gap-3 text-sm font-semibold text-white z-10', isCollapsed ? 'justify-center' : 'justify-center')}>
                     {isCollapsed ? (
-                      <QuillPen className='h-5 w-5 animate-pulse' />
+                      <QuillPen className='h-5 w-5' />
                     ) : (
                       <>
-                        <span className='flex h-9 w-9 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm'>
+                        <span className='flex h-9 w-9 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm group-hover:bg-white/20 transition-colors'>
                           <QuillPen className='h-4 w-4' />
                         </span>
                         <span className="font-bold">Tweet</span>
