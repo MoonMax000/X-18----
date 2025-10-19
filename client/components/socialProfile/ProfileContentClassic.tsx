@@ -230,7 +230,7 @@ export default function ProfileContentClassic({
           </div>
 
           <div className="mt-8">
-            <TabListClassic />
+            <TabListClassic isOwnProfile={isOwnProfile} />
           </div>
         </div>
         <ProfileTweetsClassic posts={posts} />
