@@ -607,6 +607,43 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 Sign In
               </h2>
 
+              <div className="flex items-center justify-center">
+                <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20">
+                  <button
+                    onClick={() => {
+                      setAuthMethod('phone');
+                      setPhoneError('');
+                      setEmailError('');
+                      setAuthError('');
+                    }}
+                    className={cn(
+                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                      authMethod === 'phone'
+                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
+                        : 'text-white hover:text-primary'
+                    )}
+                  >
+                    Phone
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAuthMethod('email');
+                      setPhoneError('');
+                      setEmailError('');
+                      setAuthError('');
+                    }}
+                    className={cn(
+                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                      authMethod === 'email'
+                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
+                        : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white shadow-md'
+                    )}
+                  >
+                    Email
+                  </button>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
                   <div className={cn(
