@@ -161,36 +161,9 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
         </div>
       ) : null}
 
-      {/* Timestamp & Views */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B98A5] border-b border-[#181B22] pb-4">
+      {/* Timestamp */}
+      <div className="flex flex-wrap items-center gap-3 text-sm text-[#8B98A5] border-b border-[#181B22] pb-4">
         <div>{post.timestamp}</div>
-        {typeof post.views === "number" ? (
-          <div className="flex items-center gap-1">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 3.33337C5.83337 3.33337 2.27504 5.90837 0.833374 9.58337C0.833374 9.58337 2.27504 13.25 6.66671 15C8.33337 15.8334 10 15.8334 10 15.8334C10 15.8334 11.6667 15.8334 13.3334 15C17.725 13.25 19.1667 9.58337 19.1667 9.58337C17.725 5.90837 14.1667 3.33337 10 3.33337Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span>{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}K` : post.views} views</span>
-          </div>
-        ) : null}
       </div>
 
       {/* Action Buttons */}
