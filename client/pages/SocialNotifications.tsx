@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Heart, Repeat2, MessageCircle, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -358,7 +359,7 @@ const SocialNotifications: FC = () => {
               onClick={() => setAttentionDialogOpen(false)}
               className="w-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-[0_0_20px_rgba(160,106,255,0.4)]"
             >
-              Сохранить настройки
+              Сохранить настр��йки
             </button>
           </div>
         </DialogContent>
@@ -383,17 +384,17 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
       isRead ? "opacity-70" : "hover:bg-[#0A0A0A]"
     )}
   >
-    <div className="relative mt-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A1A1A]">
+    <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A1A1A]">
       <img
         src={notification.actor.avatar}
         alt={notification.actor.name}
         className="h-12 w-12 rounded-full object-cover"
       />
-      <NotificationBadge type={notification.type} />
     </div>
     <div className="grid grid-cols-[1fr_auto] gap-2 text-sm text-white">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2 text-[15px]">
+          <NotificationIcon type={notification.type} />
           <span className="font-semibold">{notification.actor.name}</span>
           {notification.actor.verified && <VerifiedBadge size={16} />}
           <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
@@ -473,7 +474,7 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
         ? "Упоминаний пока нет. Поделитесь новой идеей — и кол��еги обязательно отметят вас."
-        : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
+        : "Вы в курсе всех событий. ��овые уведомления появятся сразу после активности."}
     </p>
   </div>
 );
