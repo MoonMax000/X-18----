@@ -3253,7 +3253,7 @@ export default function FeedTest() {
 
         {/* Мои рубрики */}
         <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-          <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
+          <h3 className="text-lg font-semibold text-white">My Categories</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
               You haven't saved any preferences yet. Choose categories in the filters and save them.
