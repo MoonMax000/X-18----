@@ -436,14 +436,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               />
             </svg>
           </button>
-
-          <button
-            onClick={() => setIsDraftsOpen(true)}
-            className="text-sm font-semibold text-[#A06AFF] transition-colors hover:text-[#E3D8FF]"
-            disabled={isPosting}
-          >
-            Drafts
-          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6 scrollbar">
