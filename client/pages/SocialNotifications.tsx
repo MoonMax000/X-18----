@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -504,7 +504,7 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <h3 className="text-lg font-semibold text-white">Нет уведомлений</h3>
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
-        ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно отметят вас."
+        ? "Упоминаний пока нет. Поделитесь новой идеей — и кол��еги обязательно отметят вас."
         : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
     </p>
   </div>
