@@ -522,12 +522,12 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                   }}
                   aria-label="Save"
                   className={cn(
-                    "relative z-10 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full transition-colors duration-200",
-                    isBookmarked ? "text-[#4D7CFF]" : "text-[#9BA0AF] hover:bg-[#482090]/10 hover:text-white"
+                    "relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors",
+                    isBookmarked ? "text-[#4D7CFF]" : "hover:text-[#4D7CFF]"
                   )}
                 >
                   <svg
-                    className="w-[14px] h-[14px] sm:w-[15px] sm:h-[15px]"
+                    className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5"
                     viewBox="0 0 20 20"
                     fill={isBookmarked ? "currentColor" : "none"}
                     xmlns="http://www.w3.org/2000/svg"
