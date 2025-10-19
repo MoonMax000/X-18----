@@ -673,3 +673,8 @@ textarea::-webkit-scrollbar-track {
 .post-hover-glow:hover + .post-hover-glow .post-divider {
   opacity: 0;
 }
+
+/* Hide the bottom glow of previous post when hovering on next post to avoid double brightness */
+.post-hover-glow:has(+ .post-hover-glow:hover)::after {
+  opacity: 0;
+}
