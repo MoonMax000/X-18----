@@ -56,7 +56,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: 'Правовая информация',
     links: [
       { label: 'Пользовательское соглашение', href: '/terms' },
-      { label: 'Пол��тика конфиденциальности', href: '/privacy' },
+      { label: 'Политика конфиденциальности', href: '/privacy' },
       { label: 'Правила сообщества', href: '/community-guidelines' },
       { label: 'Уведомление о рисках', href: '/risk-disclosure' },
     ],
@@ -172,7 +172,7 @@ const Footer: FC = () => {
           </div>
 
           {/* Navigation Row */}
-          <nav className="flex flex-wrap gap-8 lg:gap-12">
+          <nav className="flex flex-wrap gap-6 lg:gap-8">
             {FOOTER_SECTIONS.map((section, idx) => (
               <div key={idx}>
                 <h3 className="mb-4 text-sm font-semibold text-white">{section.title}</h3>
