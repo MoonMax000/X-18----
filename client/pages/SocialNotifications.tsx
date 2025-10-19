@@ -277,7 +277,7 @@ const SocialNotifications: FC = () => {
         <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-5">
           <h3 className="text-lg font-semibold text-white">Контроль внимания</h3>
           <p className="mt-2 text-sm text-[#B0B0B0]">
-            Выберите, какие типы уведомлений вы хотите получать.
+            Выберите, какие ��ипы уведомлений вы хотите получать.
           </p>
           <button
             type="button"
@@ -391,13 +391,14 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
       />
       <NotificationBadge type={notification.type} />
     </div>
-    <div className="flex flex-col gap-2 text-sm text-white">
-      <div className="flex flex-wrap items-center gap-2 text-[15px]">
-        <span className="font-semibold">{notification.actor.name}</span>
-        {notification.actor.verified && <VerifiedBadge size={16} />}
-        <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-[#6C7080]">{notification.timestamp}</span>
+    <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-white">
+      <div className="flex items-start gap-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-[15px]">
+          <span className="font-semibold">{notification.actor.name}</span>
+          {notification.actor.verified && <VerifiedBadge size={16} />}
+          <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
+        </div>
+        <div className="flex flex-col items-end gap-1">
           <div className="relative">
             <button
               type="button"
@@ -442,15 +443,15 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
               </>
             )}
           </div>
+          <span className="text-xs text-[#6C7080] whitespace-nowrap">{notification.timestamp}</span>
         </div>
       </div>
-      <p className="text-[15px] text-[#E3D8FF]">{notification.message}</p>
-      <div className="flex flex-wrap items-center gap-3 text-xs text-[#6C7080]">
-        <span>{notification.timestamp}</span>
-        {notification.meta ? (
-          <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-white/60">{notification.meta}</span>
-        ) : null}
-      </div>
+      <p className="text-[15px] text-[#E3D8FF] pr-12">{notification.message}</p>
+      {notification.meta && (
+        <div className="flex items-center">
+          <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-xs text-white/60">{notification.meta}</span>
+        </div>
+      )}
     </div>
   </article>
   );
