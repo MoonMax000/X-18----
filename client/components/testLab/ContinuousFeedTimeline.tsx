@@ -87,19 +87,20 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
             : "border-rose-400/40 bg-rose-400/10 text-rose-300";
 
         return (
-          <article
-            key={post.id}
-            onClick={() => onPostClick?.(post.id)}
-            className="post-hover-glow group flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer"
-          >
+          <React.Fragment key={post.id}>
             {index !== 0 && (
               <div
-                className="post-divider absolute top-0 left-0 right-0 h-[1px] z-0 transition-opacity duration-300 group-hover:opacity-0"
+                className="post-divider w-full h-[1px] relative transition-opacity duration-300"
                 style={{
-                  background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)'
+                  background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)',
+                  zIndex: 0
                 }}
               />
             )}
+            <article
+              onClick={() => onPostClick?.(post.id)}
+              className="post-hover-glow group flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer"
+            >
             {/* Header */}
             <header className="flex w-full items-start justify-between gap-2 sm:gap-3 md:gap-4">
               <UserHoverCard
@@ -542,6 +543,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
               </div>
             </footer>
           </article>
+          </React.Fragment>
         );
       })}
     </div>
