@@ -67,7 +67,7 @@ export default {
         gray: "#272A32",
 
         // Widget styling colors
-        "widget-border": "rgb(24,27,34)",
+        "widget-border": "rgba(32,36,44,1)",
         "widget-border-hover": "#2F3240",
         "widget-bg": "rgba(12,16,20,0.50)",
         "widget-bg-alt": "rgba(12,16,20,0.55)",
