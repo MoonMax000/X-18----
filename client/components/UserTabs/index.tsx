@@ -328,7 +328,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
   );
 
   const renderEmptyState = (tabId: TabId) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.40)] p-6 text-center backdrop-blur-[50px]">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-[rgba(24,27,34,0.85)] bg-[rgba(12,16,20,0.40)] p-6 text-center backdrop-blur-[50px]">
       <h4 className="text-lg font-bold text-white">
         No {tabs.find((tab) => tab.id === tabId)?.label.toLowerCase()} yet
       </h4>
@@ -364,7 +364,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
     return (
       <article
         key={`${activeTab}-${index}-${post.title}`}
-        className="mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#181B22] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60"
+        className="mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[rgba(24,27,34,0.85)] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60"
       >
         <header className="flex w-full items-start justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -423,7 +423,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#181B22] pt-3 text-xs text-[#8E92A0]">
+        <div className="flex items-center justify-between border-t border-[rgba(24,27,34,0.85)] pt-3 text-xs text-[#8E92A0]">
           <div className="flex gap-4">
             <span>❤️ {post.likes}</span>
             <span>💬 {post.comments}</span>
@@ -446,7 +446,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCateg
             className={`group flex items-center justify-center gap-2 rounded-[32px] px-2.5 py-3 text-[15px] font-bold transition backdrop-blur-[58px] ${
               activeTab === tab.id
                 ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_8px_20px_-8px_rgba(160,106,255,0.7)]"
-                : "border border-[#181B22] bg-[rgba(12,16,20,0.50)] text-[#B0B0B0] hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] hover:text-white"
+                : "border border-[rgba(24,27,34,0.85)] bg-[rgba(12,16,20,0.50)] text-[#B0B0B0] hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] hover:text-white"
             }`}
           >
             <span
