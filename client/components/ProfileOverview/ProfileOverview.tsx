@@ -57,8 +57,8 @@ const ProfileOverview: FC = () => {
       // If we don't have profile data yet, set defaults from user
       setFirstName("");
       setLastName("");
-      setDisplayName(user.display_name || user.username || "");
-      setUsername(user.username || "");
+      setDisplayName("");
+      setUsername("");
       setLocation("");
       setWebsite("");
       setRole("");

@@ -10,7 +10,7 @@ import NotFound from "./NotFound";
 
 export default function ProfileDynamic() {
   const { username } = useParams<{ username: string }>();
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [profileUser, setProfileUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
