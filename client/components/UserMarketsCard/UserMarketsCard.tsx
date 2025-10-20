@@ -18,7 +18,7 @@ const UserMarketsCard: FC<UserMarketsCardProps> = ({
   bestTradeValue = "+8.40%",
 }) => {
   return (
-    <div className="flex w-full flex-col items-start justify-center gap-4 self-stretch rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
+    <div className="flex w-full flex-col items-start justify-center gap-4 self-stretch rounded-3xl border border-[rgba(24,27,34,0.85)] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
       <div className="flex items-baseline self-stretch pb-2">
         <div className="flex-1 text-2xl font-bold leading-normal text-white">
           {title}
