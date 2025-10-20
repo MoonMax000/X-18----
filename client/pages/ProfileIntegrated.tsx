@@ -330,7 +330,7 @@ const ProfileIntegrated: FC = () => {
 
       {/* Navigation Tabs */}
       <div className="flex flex-col items-center gap-4">
-        <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
+        <div className="inline-flex flex-wrap items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-black backdrop-blur-[50px]">
           {profileSubTabs.map((subTab) => (
             <button
               key={subTab.id}
@@ -339,22 +339,29 @@ const ProfileIntegrated: FC = () => {
                 setSearchParams({ tab: subTab.id });
               }}
               className={cn(
-                "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
+                "flex items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
                 activeSubTab === subTab.id
-                  ? "bg-gradient-to-r from-primary to-[#482090] text-white backdrop-blur-[58.33px]"
-                  : "border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-webGray hover:text-white backdrop-blur-[58.33px]",
+                  ? "bg-gradient-to-l from-[#A06AFF] to-[#482090] backdrop-blur-[58.33px]"
+                  : "border border-[#181B22] bg-black backdrop-blur-[58.33px]",
               )}
             >
               <span
-                className={
-                  activeSubTab === subTab.id
-                    ? "text-white"
-                    : "text-webGray"
-                }
+                className={cn(
+                  "w-5 h-5 flex items-center justify-center",
+                  activeSubTab === subTab.id ? "text-white" : "text-[#B0B0B0]"
+                )}
               >
                 {subTab.icon}
               </span>
-              {subTab.label}
+              <span
+                className={cn(
+                  "text-[15px] font-bold leading-normal",
+                  activeSubTab === subTab.id ? "text-white" : "text-[#B0B0B0]"
+                )}
+                style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+              >
+                {subTab.label}
+              </span>
             </button>
           ))}
         </div>
