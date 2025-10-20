@@ -721,31 +721,28 @@ const ProfileIntegrated: FC = () => {
       </div>
 
       {/* Tab content */}
-      <div className="mt-4">
+      <div className="mt-4" key={`${activeMainTab}-${activeSubTab}-${activeSocialSubTab}`}>
         {/* Dashboard Tab */}
-        {activeMainTab === "dashboard" && <Dashboard />}
+        {activeMainTab === "dashboard" && <Dashboard key="dashboard" />}
 
         {/* Profile Tab with Sub-tabs */}
         {activeMainTab === "profile" && (
           <>
-            {activeSubTab === "overview" && <ProfileOverview />}
-
-            {activeSubTab === "security" && <SecuritySettings />}
-            {activeSubTab === "notifications" && <NotificationsSettings />}
-            {activeSubTab === "billing" && <BillingSettings />}
-            {activeSubTab === "referrals" && <ReferralsSettings />}
-            {activeSubTab === "kyc" && <KycSettings />}
+            {activeSubTab === "overview" && <ProfileOverview key="profile-overview" />}
+            {activeSubTab === "security" && <SecuritySettings key="profile-security" />}
+            {activeSubTab === "notifications" && <NotificationsSettings key="profile-notifications" />}
+            {activeSubTab === "billing" && <BillingSettings key="profile-billing" />}
+            {activeSubTab === "referrals" && <ReferralsSettings key="profile-referrals" />}
+            {activeSubTab === "kyc" && <KycSettings key="profile-kyc" />}
           </>
         )}
 
         {/* Social Network Tab with Sub-tabs */}
         {activeMainTab === "social" && (
           <>
-            {activeSocialSubTab === "overview" && <SocialOverview />}
-
-            {activeSocialSubTab === "my-posts" && <MyPosts />}
-
-            {activeSocialSubTab === "monetization" && <Monetization />}
+            {activeSocialSubTab === "overview" && <SocialOverview key="social-overview" />}
+            {activeSocialSubTab === "my-posts" && <MyPosts key="social-posts" />}
+            {activeSocialSubTab === "monetization" && <Monetization key="social-monetization" />}
           </>
         )}
       </div>
