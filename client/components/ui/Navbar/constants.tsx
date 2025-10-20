@@ -34,7 +34,7 @@ export const navElements: NavElementProps[] = [
       {
         icon: <BoxIcon className="h-5 w-5" />,
         title: "My Profile",
-        route: "/profile/tyrian_trade",
+        route: "/profile",
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
