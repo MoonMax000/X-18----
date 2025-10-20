@@ -90,7 +90,7 @@ const UserHeader: FC<Props> = ({
   return (
     <div className={cn("flex w-full flex-col gap-4", className)}>
       {/* Cover/Banner image */}
-      <div className="group relative w-full overflow-hidden rounded-3xl border border-[#181B22] bg-[#16181C]">
+      <div className="group relative w-full overflow-hidden rounded-3xl border border-[rgba(24,27,34,0.95)] bg-[#16181C]">
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
           alt="Profile cover"
