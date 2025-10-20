@@ -187,7 +187,42 @@ const profileSubTabs = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path
-          d="M12.9173 9.16667C12.9173 7.55583 11.6115 6.25 10.0007 6.25C8.38982 6.25 7.08398 7.55583 7.08398 9.16667C7.08398 10.7775 8.38982 12.0833 10.0007 12.0833C11.6115 12.0833 12.9173 10.7775 12.9173 9.16667Z"
+          d="M12.9163 9.16667C12.9163 7.55583 11.6105 6.25 9.99967 6.25C8.38884 6.25 7.08301 7.55583 7.08301 9.16667C7.08301 10.7775 8.38884 12.0833 9.99967 12.0833C11.6105 12.0833 12.9163 10.7775 12.9163 9.16667Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M12.9022 9.45825C13.1705 9.53958 13.4551 9.58333 13.7499 9.58333C15.3607 9.58333 16.6666 8.2775 16.6666 6.66667C16.6666 5.05583 15.3607 3.75 13.7499 3.75C12.2375 3.75 10.9939 4.90117 10.8477 6.37511"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9.15192 6.37511C9.00567 4.90117 7.76211 3.75 6.24967 3.75C4.63884 3.75 3.33301 5.05583 3.33301 6.66667C3.33301 8.2775 4.63884 9.58333 6.24967 9.58333C6.54452 9.58333 6.82913 9.53958 7.0974 9.45825"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M18.3333 13.7497C18.3333 11.4485 16.2813 9.58301 13.75 9.58301"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M14.5837 16.2497C14.5837 13.9485 12.5317 12.083 10.0003 12.083C7.46902 12.083 5.41699 13.9485 5.41699 16.2497"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M6.25033 9.58301C3.71902 9.58301 1.66699 11.4485 1.66699 13.7497"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
