@@ -440,8 +440,9 @@ const ProfileIntegrated: FC = () => {
   // Update tabs when URL changes
   useEffect(() => {
     const tabs = getTabsFromUrl();
-    setActiveMainTab(tabs.mainTab);
-    setActiveSubTab(tabs.subTab);
+    // Only update if values actually changed to prevent unnecessary re-renders
+    setActiveMainTab((prev) => tabs.mainTab !== prev ? tabs.mainTab : prev);
+    setActiveSubTab((prev) => tabs.subTab !== prev ? tabs.subTab : prev);
   }, [searchParams]);
 
   // Load user profile from Supabase
@@ -606,8 +607,10 @@ const ProfileIntegrated: FC = () => {
             <button
               key={tab.id}
               onClick={() => {
-                setActiveMainTab(tab.id);
-                setSearchParams({ tab: tab.id });
+                if (activeMainTab !== tab.id) {
+                  setActiveMainTab(tab.id);
+                  setSearchParams({ tab: tab.id }, { replace: true });
+                }
               }}
               className={cn(
                 "flex items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
@@ -644,8 +647,10 @@ const ProfileIntegrated: FC = () => {
               <button
                 key={subTab.id}
                 onClick={() => {
-                  setActiveSubTab(subTab.id);
-                  setSearchParams({ tab: activeMainTab, subtab: subTab.id });
+                  if (activeSubTab !== subTab.id) {
+                    setActiveSubTab(subTab.id);
+                    setSearchParams({ tab: activeMainTab, subtab: subTab.id }, { replace: true });
+                  }
                 }}
                 className={cn(
                   "flex items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
