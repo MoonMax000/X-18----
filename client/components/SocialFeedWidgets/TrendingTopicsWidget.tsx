@@ -25,7 +25,7 @@ interface NewsWidgetProps {
 
 const NewsWidget: FC<NewsWidgetProps> = ({ title = "Today's News", items }) => {
   return (
-    <section className="rounded-[24px] border border-[#5E5E5E] bg-background p-5 backdrop-blur-[20px] transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)]">
+    <section className="rounded-[24px] border border-[rgba(40,44,52,1)] bg-background p-5 backdrop-blur-[20px] transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)]">
       <header className="flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
       </header>
