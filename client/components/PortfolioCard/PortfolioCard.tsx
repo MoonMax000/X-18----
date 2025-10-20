@@ -110,7 +110,7 @@ const PortfolioCard: FC<PortfolioCardProps> = ({
   );
 
   return (
-    <div className="flex w-full flex-col items-center gap-3 self-stretch rounded-3xl border border-[rgba(24,27,34,0.95)] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
+    <div className="flex w-full flex-col items-center gap-3 self-stretch rounded-3xl border border-[rgba(40,44,52,1)] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
       <div className="flex items-baseline self-stretch pb-2">
         <div className="flex-1 text-2xl font-bold leading-normal text-white">
           {title}
