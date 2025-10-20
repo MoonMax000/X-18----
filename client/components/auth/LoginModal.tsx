@@ -34,7 +34,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [userId, setUserId] = useState('');
 
   // Auth context
-  const { login, verify2FA } = useAuth();
+  const { login, verifyCode } = useAuth();
 
   // Forgot Password states
   const [forgotEmail, setForgotEmail] = useState('');
@@ -281,7 +281,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     console.log('Verifying 2FA code:', code);
 
     try {
-      const result = await verify2FA(userId, code);
+      const result = await verifyCode(userId, code, '2fa');
 
       if (result.success) {
         console.log('2FA verification successful!');
