@@ -29,6 +29,8 @@ type ProfileSubTab =
   | "api"
   | "kyc";
 
+type SocialSubTab = "overview" | "my-posts" | "monetization";
+
 const mainTabs = [
   {
     id: "dashboard" as MainTab,
