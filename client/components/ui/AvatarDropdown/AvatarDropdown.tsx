@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import LoginModal from "@/components/auth/LoginModal";
 import { useTheme } from "@/contexts/ThemeContext";
-import { User, Settings, UserPlus, Sparkles, Sun, Moon, Languages, LogOut, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { User, Settings, UserPlus, Sparkles, Sun, Moon, Languages, LogOut, LogIn, LayoutDashboard } from "lucide-react";
 
 interface MenuItem {
   id: string;
@@ -12,23 +13,29 @@ interface MenuItem {
   onClick?: () => void;
   icon: JSX.Element;
   dividerAfter?: boolean;
+  showWhenAuthenticated?: boolean;
+  showWhenNotAuthenticated?: boolean;
 }
 
 export const AvatarDropdown: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user, isAuthenticated, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Mock user data - replace with real user data from your auth system
-  const user = {
-    email: "example***@yandex.ru",
-    id: "12345678910111213",
-    avatar: "https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87?format=webp&width=200"
-  };
+  // Use real user data from auth context
+  const displayEmail = user?.email || "Guest";
+  const displayId = user?.id || "";
+  const displayAvatar = user?.avatarUrl || "https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87?format=webp&width=200";
 
   // Theme label changes based on current theme
   const themeLabel = theme === 'dark' ? 'Light theme' : 'Dark theme';
+
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
+  };
 
   const menuItems: MenuItem[] = [
     {
@@ -36,14 +43,24 @@ export const AvatarDropdown: FC = () => {
       label: "Login",
       onClick: () => setIsLoginModalOpen(true),
       icon: <LogIn className="w-5 h-5" style={{ color: '#A06AFF' }} />,
-      dividerAfter: true
+      dividerAfter: true,
+      showWhenNotAuthenticated: true
     },
     {
       id: "profile",
       label: "Мой профиль",
       to: "/profile",
       icon: <User className="w-5 h-5" style={{ color: '#B0B0B0' }} />,
-      dividerAfter: false
+      dividerAfter: false,
+      showWhenAuthenticated: true
+    },
+    {
+      id: "dashboard",
+      label: "Дашб��рд",
+      to: "/profile?tab=dashboard",
+      icon: <LayoutDashboard className="w-5 h-5" style={{ color: '#B0B0B0' }} />,
+      dividerAfter: false,
+      showWhenAuthenticated: true
     },
     {
       id: "settings",
@@ -83,14 +100,19 @@ export const AvatarDropdown: FC = () => {
     {
       id: "logout",
       label: "Log out",
-      onClick: () => {
-        console.log("Logout clicked");
-        // Add logout logic here
-      },
+      onClick: handleLogout,
       icon: <LogOut className="w-5 h-5" style={{ color: '#B0B0B0' }} />,
-      dividerAfter: false
+      dividerAfter: false,
+      showWhenAuthenticated: true
     },
   ];
+
+  // Filter menu items based on authentication state
+  const visibleMenuItems = menuItems.filter(item => {
+    if (item.showWhenAuthenticated && !isAuthenticated) return false;
+    if (item.showWhenNotAuthenticated && isAuthenticated) return false;
+    return true;
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
