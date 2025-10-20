@@ -11,6 +11,7 @@ import SecuritySettings from "@/components/SecuritySettings/SecuritySettings";
 import ProfileOverview from "@/components/ProfileOverview/ProfileOverview";
 import SocialOverview from "@/components/SocialOverview/SocialOverview";
 import MyPosts from "@/components/MyPosts/MyPosts";
+import Monetization from "@/components/Monetization/Monetization";
 import { cn } from "@/lib/utils";
 import { 
   getCurrentUserProfile, 
@@ -739,24 +740,7 @@ const ProfileIntegrated: FC = () => {
 
             {activeSocialSubTab === "my-posts" && <MyPosts />}
 
-            {activeSocialSubTab === "monetization" && (
-              <div className="container-card p-6">
-                <h2 className="text-xl font-semibold text-white">Monetization</h2>
-                <p className="mt-4 text-sm text-webGray">
-                  Track your earnings, set up payment methods, and manage monetization settings.
-                </p>
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase text-webGray">Total Earnings</span>
-                    <span className="mt-1 text-lg font-bold text-white">$0.00</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase text-webGray">This Month</span>
-                    <span className="mt-1 text-lg font-bold text-green">$0.00</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeSocialSubTab === "monetization" && <Monetization />}
           </>
         )}
       </div>
