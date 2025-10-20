@@ -807,12 +807,6 @@ const ProfileIntegrated: FC = () => {
             {activeSubTab === "notifications" && <NotificationsSettings />}
             {activeSubTab === "billing" && <BillingSettings />}
             {activeSubTab === "referrals" && <ReferralsSettings />}
-            {activeSubTab === "api" && (
-              <div className="container-card p-6">
-                <h2 className="text-xl font-semibold text-white">API Settings</h2>
-                <p className="mt-4 text-sm text-webGray">API settings coming soon...</p>
-              </div>
-            )}
             {activeSubTab === "kyc" && <KycSettings />}
           </>
         )}
