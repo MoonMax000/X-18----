@@ -28,7 +28,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   const handleSubmitComment = () => {
     if (!commentText.trim()) return;
     
-    const newComment = {
+    const newComment: SocialComment = {
       id: `comment-${Date.now()}`,
       postId: post.id,
       author: {
@@ -40,7 +40,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
       timestamp: "Just now",
       text: commentText,
       likes: 0,
-      replies: 0,
+      replyCount: 0,
     };
     
     setLocalComments([newComment, ...localComments]);
