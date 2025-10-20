@@ -478,107 +478,122 @@ const ProfileIntegrated: FC = () => {
 
       {/* Tab content */}
       <div className="mt-4">
-        {activeSubTab === "dashboard" && <Dashboard />}
-        {activeSubTab === "profile" && (
-          <div className="flex flex-col gap-6">
-            <div className="container-card p-6">
-              <h2 className="text-xl font-semibold text-white">Personal Details</h2>
-              <div className="mt-4 flex flex-col gap-4 text-sm text-white/80">
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Full Name</span>
-                  <span className="mt-1 font-medium">
-                    {profileData.first_name} {profileData.last_name}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Username</span>
-                  <span className="mt-1 font-medium">@{profileData.username}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Email</span>
-                  <span className="mt-1 font-medium">{profileData.email}</span>
-                </div>
-                {profileData.location && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase text-webGray">Location</span>
-                    <span className="mt-1 font-medium">{profileData.location}</span>
-                  </div>
-                )}
-                {profileData.trading_style && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase text-webGray">Trading Style</span>
-                    <span className="mt-1 font-medium">{profileData.trading_style}</span>
-                  </div>
-                )}
-                {profileData.specialization && (
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase text-webGray">Specialization</span>
-                    <span className="mt-1 font-medium">{profileData.specialization}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Dashboard Tab */}
+        {activeMainTab === "dashboard" && <Dashboard />}
 
-            <div className="container-card p-6">
-              <h2 className="text-xl font-semibold text-white">Trading Stats</h2>
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Followers</span>
-                  <span className="mt-1 text-lg font-bold text-white">
-                    {profileData.followers_count?.toLocaleString()}
-                  </span>
+        {/* Profile Tab with Sub-tabs */}
+        {activeMainTab === "profile" && (
+          <>
+            {activeSubTab === "overview" && (
+              <div className="flex flex-col gap-6">
+                <div className="container-card p-6">
+                  <h2 className="text-xl font-semibold text-white">Personal Details</h2>
+                  <div className="mt-4 flex flex-col gap-4 text-sm text-white/80">
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Full Name</span>
+                      <span className="mt-1 font-medium">
+                        {profileData.first_name} {profileData.last_name}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Username</span>
+                      <span className="mt-1 font-medium">@{profileData.username}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Email</span>
+                      <span className="mt-1 font-medium">{profileData.email}</span>
+                    </div>
+                    {profileData.location && (
+                      <div className="flex flex-col">
+                        <span className="text-xs uppercase text-webGray">Location</span>
+                        <span className="mt-1 font-medium">{profileData.location}</span>
+                      </div>
+                    )}
+                    {profileData.trading_style && (
+                      <div className="flex flex-col">
+                        <span className="text-xs uppercase text-webGray">Trading Style</span>
+                        <span className="mt-1 font-medium">{profileData.trading_style}</span>
+                      </div>
+                    )}
+                    {profileData.specialization && (
+                      <div className="flex flex-col">
+                        <span className="text-xs uppercase text-webGray">Specialization</span>
+                        <span className="mt-1 font-medium">{profileData.specialization}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Following</span>
-                  <span className="mt-1 text-lg font-bold text-white">
-                    {profileData.following_count?.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Posts</span>
-                  <span className="mt-1 text-lg font-bold text-white">
-                    {profileData.posts_count?.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Accuracy Rate</span>
-                  <span className="mt-1 text-lg font-bold text-green">
-                    {profileData.accuracy_rate}%
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Win Rate</span>
-                  <span className="mt-1 text-lg font-bold text-green">
-                    {profileData.win_rate}%
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase text-webGray">Total Trades</span>
-                  <span className="mt-1 text-lg font-bold text-white">
-                    {profileData.total_trades?.toLocaleString()}
-                  </span>
+
+                <div className="container-card p-6">
+                  <h2 className="text-xl font-semibold text-white">Trading Stats</h2>
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Followers</span>
+                      <span className="mt-1 text-lg font-bold text-white">
+                        {profileData.followers_count?.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Following</span>
+                      <span className="mt-1 text-lg font-bold text-white">
+                        {profileData.following_count?.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Posts</span>
+                      <span className="mt-1 text-lg font-bold text-white">
+                        {profileData.posts_count?.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Accuracy Rate</span>
+                      <span className="mt-1 text-lg font-bold text-green">
+                        {profileData.accuracy_rate}%
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Win Rate</span>
+                      <span className="mt-1 text-lg font-bold text-green">
+                        {profileData.win_rate}%
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase text-webGray">Total Trades</span>
+                      <span className="mt-1 text-lg font-bold text-white">
+                        {profileData.total_trades?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {activeSubTab === "security" && (
+              <div className="container-card p-6">
+                <h2 className="text-xl font-semibold text-white">Security Settings</h2>
+                <p className="mt-4 text-sm text-webGray">Security settings coming soon...</p>
+              </div>
+            )}
+            {activeSubTab === "notifications" && <NotificationsSettings />}
+            {activeSubTab === "billing" && <BillingSettings />}
+            {activeSubTab === "referrals" && <ReferralsSettings />}
+            {activeSubTab === "api" && (
+              <div className="container-card p-6">
+                <h2 className="text-xl font-semibold text-white">API Settings</h2>
+                <p className="mt-4 text-sm text-webGray">API settings coming soon...</p>
+              </div>
+            )}
+            {activeSubTab === "kyc" && <KycSettings />}
+          </>
         )}
 
-        {activeSubTab === "security" && (
+        {/* Social Network Tab */}
+        {activeMainTab === "social" && (
           <div className="container-card p-6">
-            <h2 className="text-xl font-semibold text-white">Security Settings</h2>
-            <p className="mt-4 text-sm text-webGray">Security settings coming soon...</p>
+            <h2 className="text-xl font-semibold text-white">Social Network</h2>
+            <p className="mt-4 text-sm text-webGray">Social network features coming soon...</p>
           </div>
         )}
-        {activeSubTab === "notifications" && <NotificationsSettings />}
-        {activeSubTab === "billing" && <BillingSettings />}
-        {activeSubTab === "referrals" && <ReferralsSettings />}
-        {activeSubTab === "api" && (
-          <div className="container-card p-6">
-            <h2 className="text-xl font-semibold text-white">API Settings</h2>
-            <p className="mt-4 text-sm text-webGray">API settings coming soon...</p>
-          </div>
-        )}
-        {activeSubTab === "kyc" && <KycSettings />}
       </div>
 
       {/* Edit Profile Modal */}
