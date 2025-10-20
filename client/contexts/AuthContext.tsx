@@ -39,11 +39,24 @@ type VerificationType = 'email_verification' | 'phone_verification' | '2fa';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Initialize user state from localStorage immediately to persist across HMR
+const getInitialUser = (): User | null => {
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+  } catch (error) {
+    console.error('Failed to parse stored user:', error);
+  }
+  return null;
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(getInitialUser);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from localStorage on mount
+  // Verify token and refresh if needed on mount
   useEffect(() => {
     const loadUser = async () => {
       const accessToken = localStorage.getItem('accessToken');
@@ -51,14 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (accessToken && storedUser) {
         try {
-          setUser(JSON.parse(storedUser));
-          // Optionally verify token is still valid
+          // User is already loaded from initial state, just verify token
           await refreshToken();
         } catch (error) {
-          console.error('Failed to load user:', error);
+          console.error('Failed to verify token:', error);
+          // Only clear if token is invalid
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
+          setUser(null);
         }
       }
       setIsLoading(false);
