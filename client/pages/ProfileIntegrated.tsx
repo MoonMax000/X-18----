@@ -27,7 +27,6 @@ type ProfileSubTab =
   | "notifications"
   | "billing"
   | "referrals"
-  | "api"
   | "kyc";
 
 type SocialSubTab = "overview" | "my-posts" | "monetization";
