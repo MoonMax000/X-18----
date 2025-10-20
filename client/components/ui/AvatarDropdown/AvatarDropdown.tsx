@@ -56,7 +56,7 @@ export const AvatarDropdown: FC = () => {
     },
     {
       id: "dashboard",
-      label: "Дашб��рд",
+      label: "Дашборд",
       to: "/profile?tab=dashboard",
       icon: <LayoutDashboard className="w-5 h-5" style={{ color: '#B0B0B0' }} />,
       dividerAfter: false,
@@ -142,7 +142,7 @@ export const AvatarDropdown: FC = () => {
         aria-expanded={isOpen}
       >
         <img
-          src={user.avatar}
+          src={displayAvatar}
           alt="User avatar"
           className="w-full h-full object-cover"
         />
@@ -158,29 +158,35 @@ export const AvatarDropdown: FC = () => {
 
           <div className="fixed sm:absolute right-3 sm:right-0 top-16 sm:top-auto sm:mt-2 w-[calc(100vw-1.5rem)] sm:w-[300px] max-w-[320px] bg-black/50 backdrop-blur-[50px] border border-[#181B22] rounded-xl shadow-2xl shadow-black/50 py-6 px-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {/* User Info Header */}
-            <div className="flex items-center gap-2 mb-6">
-              <img
-                src={user.avatar}
-                alt="User avatar"
-                className="w-11 h-11 rounded-full object-cover"
-              />
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <div className="text-white text-[15px] font-bold truncate">
-                  {user.email}
+            {isAuthenticated && (
+              <>
+                <div className="flex items-center gap-2 mb-6">
+                  <img
+                    src={displayAvatar}
+                    alt="User avatar"
+                    className="w-11 h-11 rounded-full object-cover"
+                  />
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <div className="text-white text-[15px] font-bold truncate">
+                      {displayEmail}
+                    </div>
+                    {displayId && (
+                      <div className="flex items-center gap-1 text-[#B0B0B0] text-xs font-bold">
+                        <span>ID:</span>
+                        <span className="truncate">{displayId.substring(0, 17)}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 text-[#B0B0B0] text-xs font-bold">
-                  <span>ID:</span>
-                  <span className="truncate">{user.id}</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Divider */}
-            <div className="h-px bg-[#2E2744] mb-6" />
+                {/* Divider */}
+                <div className="h-px bg-[#2E2744] mb-6" />
+              </>
+            )}
 
             {/* Menu Items */}
             <div className="space-y-0">
-              {menuItems.map((item, index) => {
+              {visibleMenuItems.map((item, index) => {
                 const content = (
                   <div className="flex items-center gap-2 px-0 py-3 hover:opacity-70 transition-opacity duration-200 cursor-pointer">
                     <div className="flex-shrink-0">
