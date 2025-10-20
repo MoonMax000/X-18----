@@ -546,7 +546,7 @@ const ProfileIntegrated: FC = () => {
   }
 
   // Transform Supabase data to SocialProfileData format for EditProfileModal
-  const socialProfileData: SocialProfileData = {
+  const socialProfileData: SocialProfileData = useMemo(() => ({
     id: profileData.id,
     name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || profileData.username,
     username: profileData.username,
@@ -564,7 +564,7 @@ const ProfileIntegrated: FC = () => {
     },
     isVerified: profileData.verified,
     isPremium: profileData.premium,
-  };
+  }), [profileData]);
 
   return (
     <div className="flex flex-col gap-6">
