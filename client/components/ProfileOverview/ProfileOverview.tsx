@@ -145,7 +145,7 @@ const ProfileOverview: FC = () => {
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="Enter display name"
           />
@@ -158,7 +158,7 @@ const ProfileOverview: FC = () => {
           >
             User name
           </label>
-          <div className="flex px-4 py-3 justify-between items-center rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]">
+          <div className="flex px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]">
             <input
               type="text"
               value={username}
@@ -196,7 +196,7 @@ const ProfileOverview: FC = () => {
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="Your location"
           />
@@ -213,7 +213,7 @@ const ProfileOverview: FC = () => {
             type="url"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="https://"
           />
@@ -233,7 +233,7 @@ const ProfileOverview: FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className="flex w-full px-4 py-3 justify-between items-center rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+              className="flex w-full px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             >
               <span
                 className="text-[15px] font-bold text-white"
@@ -253,7 +253,7 @@ const ProfileOverview: FC = () => {
             </button>
             
             {isRoleDropdownOpen && (
-              <div className="absolute z-10 w-full mt-2 rounded-lg border border-[#181B22] bg-black/95 shadow-lg backdrop-blur-[50px] max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-2 rounded-2xl border border-[#181B22] bg-black/95 shadow-lg backdrop-blur-[50px] max-h-60 overflow-y-auto">
                 {ROLES.map((roleOption) => (
                   <button
                     key={roleOption}
@@ -286,7 +286,7 @@ const ProfileOverview: FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsSectorDropdownOpen(!isSectorDropdownOpen)}
-              className="flex w-full px-4 py-3 justify-between items-center rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+              className="flex w-full px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             >
               <div className="flex flex-wrap gap-2">
                 {selectedSectors.length === 0 ? (
@@ -383,7 +383,7 @@ const ProfileOverview: FC = () => {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={5}
-          className="flex px-4 py-3 items-start gap-2 rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+          className="flex px-4 py-3 items-start gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
           style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
           placeholder="Tell us about yourself..."
         />
