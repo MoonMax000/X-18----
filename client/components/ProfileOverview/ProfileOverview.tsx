@@ -47,20 +47,33 @@ const ProfileOverview: FC = () => {
   }, [user]);
 
   const loadUserProfile = async () => {
-    if (!user?.username) return;
-    
+    if (!user) return;
+
     try {
       setIsLoading(true);
-      const profile = await getCurrentUserProfile(user.username);
-      
-      if (profile) {
-        setDisplayName(profile.display_name || "");
-        setUsername(profile.username || "");
-        setLocation(profile.location || "");
-        setWebsite(profile.website || "");
-        setRole(profile.role || "");
-        setSelectedSectors(profile.sectors || []);
-        setBio(profile.bio || "");
+
+      // If we don't have profile data yet, set defaults from user
+      setDisplayName(user.display_name || user.username || "");
+      setUsername(user.username || "");
+      setLocation("");
+      setWebsite("");
+      setRole("");
+      setSelectedSectors([]);
+      setBio("");
+
+      // Try to load full profile if available
+      if (user.id) {
+        const profile = await getCurrentUserProfile(user.id);
+
+        if (profile) {
+          setDisplayName(profile.display_name || profile.username || "");
+          setUsername(profile.username || "");
+          setLocation(profile.location || "");
+          setWebsite(profile.website || "");
+          setRole(profile.role || "");
+          setSelectedSectors(profile.sectors || []);
+          setBio(profile.bio || "");
+        }
       }
     } catch (error) {
       console.error("Failed to load profile:", error);
@@ -74,10 +87,15 @@ const ProfileOverview: FC = () => {
   };
 
   const handleSave = async () => {
+    if (!user?.id) {
+      alert("User not found. Please try logging in again.");
+      return;
+    }
+
     try {
       setIsSaving(true);
-      
-      await updateUserProfile(user?.username || "", {
+
+      await updateUserProfile(user.id, {
         display_name: displayName,
         location,
         website,
@@ -85,7 +103,7 @@ const ProfileOverview: FC = () => {
         sectors: selectedSectors,
         bio,
       });
-      
+
       // Show success message
       alert("Profile updated successfully!");
     } catch (error) {
