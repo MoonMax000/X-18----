@@ -361,42 +361,48 @@ router.post('/login', rateLimit(10, 15 * 60 * 1000), async (req: Request, res: R
 router.post('/refresh', async (req: Request, res: Response) => {
   try {
     const body = refreshTokenSchema.parse(req.body);
-    
+
     // Verify refresh token
     const payload = verifyRefreshToken(body.refreshToken);
-    
+
     if (!payload) {
       res.status(403).json({ error: 'Invalid refresh token' });
       return;
     }
-    
+
     // Check if session exists
-    const { data: session } = await supabase
+    const { data: session, error: sessionError } = await supabase
       .from('sessions')
       .select('*')
       .eq('refresh_token', body.refreshToken)
-      .single();
-    
+      .maybeSingle();
+
+    if (sessionError) {
+      console.error('Session query error:', sessionError);
+      res.status(500).json({ error: 'Database error' });
+      return;
+    }
+
     if (!session) {
       res.status(403).json({ error: 'Session not found' });
       return;
     }
-    
+
     // Check if session expired
     if (new Date(session.expires_at) < new Date()) {
       res.status(403).json({ error: 'Session expired' });
       return;
     }
-    
+
     // Generate new access token
     const newAccessToken = generateAccessToken(payload);
-    
+
     // Update session with new token
     await supabase
       .from('sessions')
       .update({ token: newAccessToken })
       .eq('id', session.id);
-    
+
     res.json({
       success: true,
       accessToken: newAccessToken
