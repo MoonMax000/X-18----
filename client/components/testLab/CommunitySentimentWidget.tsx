@@ -25,7 +25,7 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
   }, [bullishPercent]);
 
   return (
-    <div className="rounded-2xl border border-[#5E5E5E] bg-[#000000] p-4">
+    <div className="rounded-2xl border border-[rgba(40,44,52,1)] bg-[#000000] p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
