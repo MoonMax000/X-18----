@@ -226,21 +226,41 @@ const profileSubTabs = [
 const ProfileIntegrated: FC = () => {
   const { user, isAuthenticated, updateUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const mainTabFromUrl = (searchParams.get('tab') as MainTab) || "profile";
-  const subTabFromUrl = (searchParams.get('subtab') as ProfileSubTab) || "overview";
 
-  const [activeMainTab, setActiveMainTab] = useState<MainTab>(mainTabFromUrl);
-  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>(subTabFromUrl);
+  // Handle both old and new URL formats
+  const getTabsFromUrl = () => {
+    const tab = searchParams.get('tab');
+    const subtab = searchParams.get('subtab');
+
+    // Check if tab is actually a main tab
+    const isMainTab = ['dashboard', 'profile', 'social'].includes(tab || '');
+
+    if (isMainTab) {
+      return {
+        mainTab: (tab as MainTab) || "profile",
+        subTab: (subtab as ProfileSubTab) || "overview"
+      };
+    } else {
+      // Default to profile main tab
+      return {
+        mainTab: "profile" as MainTab,
+        subTab: "overview" as ProfileSubTab
+      };
+    }
+  };
+
+  const initialTabs = getTabsFromUrl();
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>(initialTabs.mainTab);
+  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>(initialTabs.subTab);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   // Update tabs when URL changes
   useEffect(() => {
-    const mainTab = (searchParams.get('tab') as MainTab) || "profile";
-    const subTab = (searchParams.get('subtab') as ProfileSubTab) || "overview";
-    setActiveMainTab(mainTab);
-    setActiveSubTab(subTab);
+    const tabs = getTabsFromUrl();
+    setActiveMainTab(tabs.mainTab);
+    setActiveSubTab(tabs.subTab);
   }, [searchParams]);
 
   // Load user profile from Supabase
