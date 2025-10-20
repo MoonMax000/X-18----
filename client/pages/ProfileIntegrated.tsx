@@ -320,7 +320,7 @@ const profileSubTabs = [
 const socialSubTabs = [
   {
     id: "overview" as SocialSubTab,
-    label: "Overview",
+    label: "Обзор",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path
