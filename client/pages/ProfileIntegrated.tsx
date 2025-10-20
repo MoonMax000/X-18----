@@ -485,7 +485,6 @@ const ProfileIntegrated: FC = () => {
         setProfileData(updated);
         // Update user in AuthContext
         updateUser({
-          username: updated.username,
           email: updated.email,
         });
         console.log('[ProfileIntegrated] Profile updated successfully');
@@ -562,8 +561,6 @@ const ProfileIntegrated: FC = () => {
       followers: profileData.followers_count || 0,
       likes: 0,
     },
-    isVerified: profileData.verified,
-    isPremium: profileData.premium,
   };
 
   return (
