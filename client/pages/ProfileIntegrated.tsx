@@ -732,12 +732,60 @@ const ProfileIntegrated: FC = () => {
           </>
         )}
 
-        {/* Social Network Tab */}
+        {/* Social Network Tab with Sub-tabs */}
         {activeMainTab === "social" && (
-          <div className="container-card p-6">
-            <h2 className="text-xl font-semibold text-white">Social Network</h2>
-            <p className="mt-4 text-sm text-webGray">Social network features coming soon...</p>
-          </div>
+          <>
+            {activeSocialSubTab === "overview" && (
+              <div className="container-card p-6">
+                <h2 className="text-xl font-semibold text-white">Social Network Overview</h2>
+                <p className="mt-4 text-sm text-webGray">
+                  View your social network activity, connections, and engagement metrics.
+                </p>
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-xs uppercase text-webGray">Total Posts</span>
+                    <span className="mt-1 text-lg font-bold text-white">0</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs uppercase text-webGray">Engagement Rate</span>
+                    <span className="mt-1 text-lg font-bold text-green">0%</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs uppercase text-webGray">Reach</span>
+                    <span className="mt-1 text-lg font-bold text-white">0</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSocialSubTab === "my-posts" && (
+              <div className="container-card p-6">
+                <h2 className="text-xl font-semibold text-white">My Posts</h2>
+                <p className="mt-4 text-sm text-webGray">
+                  Create, edit, and manage your social media posts.
+                </p>
+              </div>
+            )}
+
+            {activeSocialSubTab === "monetization" && (
+              <div className="container-card p-6">
+                <h2 className="text-xl font-semibold text-white">Monetization</h2>
+                <p className="mt-4 text-sm text-webGray">
+                  Track your earnings, set up payment methods, and manage monetization settings.
+                </p>
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-xs uppercase text-webGray">Total Earnings</span>
+                    <span className="mt-1 text-lg font-bold text-white">$0.00</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs uppercase text-webGray">This Month</span>
+                    <span className="mt-1 text-lg font-bold text-green">$0.00</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
