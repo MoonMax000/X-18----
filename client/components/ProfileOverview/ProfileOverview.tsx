@@ -24,7 +24,7 @@ const ROLES = [
 ];
 
 const ProfileOverview: FC = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
