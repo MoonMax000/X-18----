@@ -4,8 +4,8 @@
 Widget border colors are defined in **multiple places** across the codebase. Changing them requires updating all locations.
 
 ## Current Color
-**Dark border:** `rgba(40,44,52,1)`  
-**Previous:** `#181B22` or `rgba(24,27,34,0.95)`
+**Green border:** `#16C784` (emerald green)
+**Previous:** `rgba(40,44,52,1)` (dark gray), `#181B22`, `rgba(24,27,34,0.95)`, `#5E5E5E`
 
 ---
 
@@ -110,11 +110,13 @@ After updating colors:
 ## 🎨 Color Values Reference
 
 ### Current System:
-- **Main border:** `rgba(40,44,52,1)` - Dark gray, fully opaque
-- **Hover border:** `#2F3240` - Lighter gray on hover
+- **Main border:** `#16C784` - Emerald green (growth color)
+- **Hover border:** `#2F3240` - Lighter gray on hover (or `#B87AFF` purple on some widgets)
 - **Active border:** `#A06AFF` - Purple for active/selected state
 
 ### Previous Values (deprecated):
+- ❌ `rgba(40,44,52,1)` - Dark gray
+- ❌ `#5E5E5E` - Light gray (was used in sidebar widgets)
 - ❌ `#181B22` - Old dark gray (hex)
 - ❌ `rgba(24,27,34,0.95)` - Old with 95% opacity
 - ❌ `rgba(24,27,34,0.85)` - Old with 85% opacity
