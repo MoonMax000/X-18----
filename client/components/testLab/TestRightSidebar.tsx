@@ -30,7 +30,7 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
   return (
     <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
       <div className="sticky top-24 flex flex-col gap-5">
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[rgba(40,44,52,1)] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
           <p className="mt-1 text-sm text-[#A3A6B4]">
             Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
@@ -40,7 +40,7 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
               <li key={preset.title}>
                 <button
                   type="button"
-                  className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10"
+                  className="w-full rounded-2xl border border-[rgba(40,44,52,1)] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10"
                   onClick={() => onApplyQuickFilter(preset.categories)}
                 >
                   <span className="text-sm font-semibold text-white">{preset.title}</span>
@@ -67,7 +67,7 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
           </ul>
         </section>
 
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[rgba(40,44,52,1)] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">

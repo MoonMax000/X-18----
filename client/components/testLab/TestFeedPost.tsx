@@ -252,7 +252,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
       </section>
 
       {post.mediaUrl || post.videoUrl ? (
-        <div className="ml-14 overflow-hidden rounded-2xl border border-[#181B22]">
+        <div className="ml-14 overflow-hidden rounded-2xl border border-[rgba(40,44,52,1)]">
           {post.mediaUrl ? (
             <div className="relative">
               <img
