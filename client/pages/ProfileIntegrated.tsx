@@ -338,6 +338,7 @@ const ProfileIntegrated: FC = () => {
   const initialTabs = getTabsFromUrl();
   const [activeMainTab, setActiveMainTab] = useState<MainTab>(initialTabs.mainTab);
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>(initialTabs.subTab);
+  const [activeSocialSubTab, setActiveSocialSubTab] = useState<SocialSubTab>("overview");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
