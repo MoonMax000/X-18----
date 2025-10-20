@@ -10,6 +10,7 @@ import KycSettings from "@/components/KycSettings/KycSettings";
 import SecuritySettings from "@/components/SecuritySettings/SecuritySettings";
 import ProfileOverview from "@/components/ProfileOverview/ProfileOverview";
 import SocialOverview from "@/components/SocialOverview/SocialOverview";
+import MyPosts from "@/components/MyPosts/MyPosts";
 import { cn } from "@/lib/utils";
 import { 
   getCurrentUserProfile, 
@@ -736,14 +737,7 @@ const ProfileIntegrated: FC = () => {
           <>
             {activeSocialSubTab === "overview" && <SocialOverview />}
 
-            {activeSocialSubTab === "my-posts" && (
-              <div className="container-card p-6">
-                <h2 className="text-xl font-semibold text-white">My Posts</h2>
-                <p className="mt-4 text-sm text-webGray">
-                  Create, edit, and manage your social media posts.
-                </p>
-              </div>
-            )}
+            {activeSocialSubTab === "my-posts" && <MyPosts />}
 
             {activeSocialSubTab === "monetization" && (
               <div className="container-card p-6">
