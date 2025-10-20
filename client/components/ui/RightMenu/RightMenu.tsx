@@ -46,8 +46,8 @@ export const RightMenu: FC<Props> = ({ isCollapsed, onClose }) => {
         className={cn(
           "hidden lg:flex flex-col gap-6 min-h-full overflow-hidden transition-all duration-500 ease-in-out",
           {
-            "h-0 w-0 p-0 opacity-0": !isCollapsed,
-            "w-full sm:min-w-[280px] md:min-w-[312px] pr-3 sm:pr-4 md:pr-6 opacity-100": isCollapsed,
+            "w-0 p-0 opacity-0": !isCollapsed,
+            "w-[280px] xl:w-[312px] pr-4 xl:pr-6 opacity-100": isCollapsed,
           },
         )}
       >
