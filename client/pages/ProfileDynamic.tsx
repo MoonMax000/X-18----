@@ -112,7 +112,8 @@ export default function ProfileDynamic() {
     return <NotFound />;
   }
 
-  const isOwnProfile = currentUser?.username === username;
+  // TODO: Implement proper own profile check when user profile data is available
+  const isOwnProfile = false;
 
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
