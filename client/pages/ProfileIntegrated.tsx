@@ -599,7 +599,7 @@ const ProfileIntegrated: FC = () => {
 
       {/* Main Navigation Tabs */}
       <div className="flex flex-col items-center gap-4">
-        <div className="inline-flex flex-wrap items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-black backdrop-blur-[50px]">
+        <div className="inline-flex flex-wrap items-center gap-3 p-1 rounded-[36px] border border-widget-border bg-black backdrop-blur-[50px]">
           {mainTabs.map((tab) => (
             <button
               key={tab.id}
@@ -613,7 +613,7 @@ const ProfileIntegrated: FC = () => {
                 "flex items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
                 activeMainTab === tab.id
                   ? "bg-gradient-to-l from-[#A06AFF] to-[#482090] backdrop-blur-[58.33px]"
-                  : "border border-[#181B22] bg-black backdrop-blur-[58.33px]",
+                  : "border border-widget-border bg-black backdrop-blur-[58.33px]",
               )}
             >
               <span
@@ -639,7 +639,7 @@ const ProfileIntegrated: FC = () => {
 
         {/* Profile Sub-tabs (shown only when Profile main tab is active) */}
         {activeMainTab === "profile" && (
-          <div className="inline-flex flex-wrap items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-black backdrop-blur-[50px]">
+          <div className="inline-flex flex-wrap items-center gap-3 p-1 rounded-[36px] border border-widget-border bg-black backdrop-blur-[50px]">
             {profileSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
@@ -653,7 +653,7 @@ const ProfileIntegrated: FC = () => {
                   "flex items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
                   activeSubTab === subTab.id
                     ? "bg-gradient-to-l from-[#A06AFF] to-[#482090] backdrop-blur-[58.33px]"
-                    : "border border-[#181B22] bg-black backdrop-blur-[58.33px]",
+                    : "border border-widget-border bg-black backdrop-blur-[58.33px]",
                 )}
               >
                 <span
@@ -680,7 +680,7 @@ const ProfileIntegrated: FC = () => {
 
         {/* Social Network Sub-tabs (shown only when Social Network main tab is active) */}
         {activeMainTab === "social" && (
-          <div className="inline-flex flex-wrap items-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-black backdrop-blur-[50px]">
+          <div className="inline-flex flex-wrap items-center gap-2 p-1 rounded-[36px] border border-widget-border bg-black backdrop-blur-[50px]">
             {socialSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
@@ -691,7 +691,7 @@ const ProfileIntegrated: FC = () => {
                   "flex h-8 items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
                   activeSocialSubTab === subTab.id
                     ? "bg-gradient-to-l from-[#A06AFF] to-[#482090] backdrop-blur-[58.33px]"
-                    : "border border-[#181B22] bg-black backdrop-blur-[58.33px]",
+                    : "border border-widget-border bg-black backdrop-blur-[58.33px]",
                 )}
               >
                 <span

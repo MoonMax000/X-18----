@@ -204,7 +204,7 @@ const MyPosts: FC = () => {
             key={post.id}
             className={cn(
               "flex flex-col md:flex-row gap-4 py-4",
-              index !== 0 && "border-t border-[#181B22]",
+              index !== 0 && "border-t border-widget-border",
               post.status === "draft" && "border-t border-[#2E2744]"
             )}
           >

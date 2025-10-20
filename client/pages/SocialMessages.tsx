@@ -51,15 +51,15 @@ const SocialMessages: FC = () => {
   return (
     <div className="flex w-full justify-center pb-12">
       <div className="grid w-full max-w-[1180px] grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
-        <section className="flex h-[calc(100vh-220px)] min-h-[520px] flex-col overflow-hidden rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)]">
-          <div className="border-b border-[#181B22] px-5 py-4">
+        <section className="flex h-[calc(100vh-220px)] min-h-[520px] flex-col overflow-hidden rounded-3xl border border-widget-border bg-[rgba(12,16,20,0.6)]">
+          <div className="border-b border-widget-border px-5 py-4">
             <h1 className="text-xl font-bold text-white">Сообщения</h1>
             <div className="mt-3 flex items-center gap-2">
               <div className="relative flex-1">
                 <input
                   type="search"
                   placeholder="Поиск диалогов"
-                  className="w-full rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.6)] py-2 pl-10 pr-4 text-sm text-white placeholder:text-[#6C7080] focus:border-[#A06AFF] focus:outline-none"
+                  className="w-full rounded-full border border-widget-border bg-[rgba(12,16,20,0.6)] py-2 pl-10 pr-4 text-sm text-white placeholder:text-[#6C7080] focus:border-[#A06AFF] focus:outline-none"
                 />
                 <svg
                   className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6C7080]"

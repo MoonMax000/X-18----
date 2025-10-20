@@ -425,7 +425,7 @@ const SecuritySettings: FC = () => {
               key={session.id}
               className={cn(
                 "flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0",
-                index > 0 && "pt-4 border-t border-[#181B22]"
+                index > 0 && "pt-4 border-t border-widget-border"
               )}
             >
               {/* Device */}

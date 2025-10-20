@@ -33,7 +33,7 @@ export default function Billing() {
         </p>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="rounded-2xl bg-[#0C101480] border border-[#181B22] p-4">
+          <div className="rounded-2xl bg-[#0C101480] border border-widget-border p-4">
             <p className="text-webGray text-xs uppercase tracking-wide">
               Current Plan
             </p>
@@ -42,7 +42,7 @@ export default function Billing() {
               Billed yearly — renews Jul 14, 2024
             </p>
           </div>
-          <div className="rounded-2xl bg-[#0C101480] border border-[#181B22] p-4">
+          <div className="rounded-2xl bg-[#0C101480] border border-widget-border p-4">
             <p className="text-webGray text-xs uppercase tracking-wide">
               Payment Method
             </p>
@@ -51,7 +51,7 @@ export default function Billing() {
             </p>
             <p className="mt-1 text-xs text-webGray">Expires 08/26</p>
           </div>
-          <div className="rounded-2xl bg-[#0C101480] border border-[#181B22] p-4">
+          <div className="rounded-2xl bg-[#0C101480] border border-widget-border p-4">
             <p className="text-webGray text-xs uppercase tracking-wide">
               Last Invoice
             </p>
