@@ -54,6 +54,16 @@ colors: {
 - `client/components/testLab/TestComposer.tsx`
 - `client/components/testLab/TestFeedPost.tsx`
 - `client/components/testLab/TestRightSidebar.tsx`
+- `client/components/testLab/FearGreedWidget.tsx`
+- `client/components/testLab/CommunitySentimentWidget.tsx`
+- `client/pages/FeedTest.tsx`
+
+#### Social Feed Widgets (Right Sidebar):
+- `client/components/SocialFeedWidgets/TopAuthorsWidget.tsx`
+- `client/components/SocialFeedWidgets/TrendingTopicsWidget.tsx`
+- `client/components/SocialFeedWidgets/SuggestedProfilesWidget.tsx`
+- `client/components/SocialFeedWidgets/FollowRecommendationsWidget.tsx`
+- `client/components/SocialFeedWidgets/SocialRightSidebar.tsx`
 
 #### Modals:
 - `client/components/CreatePostBox/CreatePostModal.tsx`
