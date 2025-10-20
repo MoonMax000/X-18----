@@ -142,10 +142,11 @@ const SecuritySettings: FC = () => {
             </span>
           </div>
           <button
-            className="flex justify-center items-center gap-2 px-4 py-3 min-w-[180px] h-[50px] rounded-lg border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]"
+            className="group relative flex justify-center items-center gap-2 px-6 py-3 min-w-[180px] overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
           >
+            <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span
-              className="text-[15px] font-bold text-white text-center"
+              className="relative z-10 text-[15px] font-bold text-[#E5E7EB] text-center"
               style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             >
               Add
@@ -184,16 +185,16 @@ const SecuritySettings: FC = () => {
           <button
             onClick={() => setIs2FAEnabled(!is2FAEnabled)}
             className={cn(
-              "flex justify-end items-center gap-2.5 w-[38px] h-5 p-0.5 rounded-full transition-colors",
-              is2FAEnabled 
-                ? "bg-gradient-to-l from-[#A06AFF] to-[#482090]"
-                : "bg-gray-600"
+              "relative flex items-center w-[50px] h-6 p-0.5 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black",
+              is2FAEnabled
+                ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] shadow-lg shadow-[#A06AFF]/30 focus:ring-[#A06AFF]"
+                : "bg-[#525252] focus:ring-gray-500"
             )}
           >
             <div
               className={cn(
-                "w-4 h-4 rounded-full bg-white transition-transform",
-                is2FAEnabled ? "translate-x-[18px]" : "translate-x-0"
+                "w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300",
+                is2FAEnabled ? "translate-x-[26px]" : "translate-x-0"
               )}
             />
           </button>
@@ -224,10 +225,11 @@ const SecuritySettings: FC = () => {
             </span>
           </div>
           <button
-            className="flex justify-center items-center gap-2 px-4 py-3 min-w-[180px] h-[50px] rounded-lg bg-gradient-to-l from-[#A06AFF] to-[#482090] shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]"
+            className="group relative flex justify-center items-center gap-2 px-6 py-3 min-w-[180px] overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#A06AFF]/20 via-[#A06AFF]/10 to-transparent text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/30 hover:via-[#A06AFF]/15 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
           >
+            <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span
-              className="text-[15px] font-bold text-white text-center"
+              className="relative z-10 text-[15px] font-bold text-white text-center"
               style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             >
               Edit
@@ -516,10 +518,11 @@ const SecuritySettings: FC = () => {
             </span>
           </div>
           <button
-            className="flex justify-center items-center gap-2 px-4 py-3 min-w-[180px] rounded-lg border border-[#523A83] bg-gradient-to-l from-[#A06AFF] to-[#482090] shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]"
+            className="group relative flex justify-center items-center gap-2 px-6 py-3 min-w-[180px] overflow-hidden rounded-full border border-[#523A83] bg-gradient-to-r from-[#A06AFF]/20 via-[#A06AFF]/10 to-transparent text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/30 hover:via-[#A06AFF]/15 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
           >
+            <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span
-              className="text-[15px] font-bold text-white text-center"
+              className="relative z-10 text-[15px] font-bold text-white text-center"
               style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             >
               Deactivate
@@ -544,10 +547,11 @@ const SecuritySettings: FC = () => {
             </span>
           </div>
           <button
-            className="flex justify-center items-center gap-2 px-4 py-3 min-w-[180px] rounded-lg border border-[#3A2127] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]"
+            className="group relative flex justify-center items-center gap-2 px-6 py-3 min-w-[180px] overflow-hidden rounded-full border border-[#3A2127] bg-gradient-to-r from-[#EF454A]/10 via-[#EF454A]/5 to-transparent text-sm font-medium transition-all duration-300 hover:border-[#EF454A] hover:from-[#EF454A]/20 hover:via-[#EF454A]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#EF454A]/30 focus:outline-none focus:ring-2 focus:ring-[#EF454A] focus:ring-inset"
           >
+            <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span
-              className="text-[15px] font-bold text-[#EF454A] text-center"
+              className="relative z-10 text-[15px] font-bold text-[#EF454A] text-center"
               style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             >
               Delete
