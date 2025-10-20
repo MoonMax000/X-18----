@@ -8,6 +8,7 @@ import BillingSettings from "@/components/BillingSettings/BillingSettings";
 import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
 import KycSettings from "@/components/KycSettings/KycSettings";
 import SecuritySettings from "@/components/SecuritySettings/SecuritySettings";
+import ProfileOverview from "@/components/ProfileOverview/ProfileOverview";
 import { cn } from "@/lib/utils";
 import { 
   getCurrentUserProfile, 
