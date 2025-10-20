@@ -226,16 +226,21 @@ const profileSubTabs = [
 const ProfileIntegrated: FC = () => {
   const { user, isAuthenticated, updateUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabFromUrl = (searchParams.get('tab') as ProfileSubTab) || "profile";
-  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>(tabFromUrl);
+  const mainTabFromUrl = (searchParams.get('tab') as MainTab) || "profile";
+  const subTabFromUrl = (searchParams.get('subtab') as ProfileSubTab) || "overview";
+
+  const [activeMainTab, setActiveMainTab] = useState<MainTab>(mainTabFromUrl);
+  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>(subTabFromUrl);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Update activeSubTab when URL changes
+  // Update tabs when URL changes
   useEffect(() => {
-    const tab = (searchParams.get('tab') as ProfileSubTab) || "profile";
-    setActiveSubTab(tab);
+    const mainTab = (searchParams.get('tab') as MainTab) || "profile";
+    const subTab = (searchParams.get('subtab') as ProfileSubTab) || "overview";
+    setActiveMainTab(mainTab);
+    setActiveSubTab(subTab);
   }, [searchParams]);
 
   // Load user profile from Supabase
