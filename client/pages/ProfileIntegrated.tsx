@@ -9,6 +9,7 @@ import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings"
 import KycSettings from "@/components/KycSettings/KycSettings";
 import SecuritySettings from "@/components/SecuritySettings/SecuritySettings";
 import ProfileOverview from "@/components/ProfileOverview/ProfileOverview";
+import SocialOverview from "@/components/SocialOverview/SocialOverview";
 import { cn } from "@/lib/utils";
 import { 
   getCurrentUserProfile, 
