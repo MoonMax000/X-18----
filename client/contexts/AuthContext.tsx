@@ -63,17 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem('user');
 
       if (accessToken && storedUser) {
-        try {
-          // User is already loaded from initial state, just verify token
-          await refreshToken();
-        } catch (error) {
-          console.error('Failed to verify token:', error);
-          // Only clear if token is invalid
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          setUser(null);
-        }
+        // Don't try to refresh on every HMR - just verify we have tokens
+        // Token will be refreshed automatically when API calls fail
+        setIsLoading(false);
+        return;
       }
       setIsLoading(false);
     };
@@ -195,10 +188,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
       return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Token refresh error:', error);
-      // If refresh fails, logout user
-      await logout();
+      // Only logout if we get a 401/403 - token is actually invalid
+      // Don't logout on network errors or other issues during development
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        console.log('Token is invalid, logging out...');
+        await logout();
+      } else {
+        console.log('Token refresh failed, but keeping user logged in (might be a temporary network issue)');
+      }
       return false;
     }
   };
