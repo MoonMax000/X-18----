@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import VerifiedBadge from "./VerifiedBadge";
 import CommentCard from "./CommentCard";
-import { getCommentsByPostId } from "@/data/socialComments";
+import { getCommentsByPostId, type SocialComment } from "@/data/socialComments";
 import type { SocialPost } from "@/data/socialPosts";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MessageCircle, Heart, Repeat2 } from "lucide-react";
