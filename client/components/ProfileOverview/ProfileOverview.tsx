@@ -101,7 +101,7 @@ const ProfileOverview: FC = () => {
     try {
       setIsSaving(true);
 
-      await updateUserProfile(user.id, {
+      const updated = await updateUserProfile(user.id, {
         first_name: firstName,
         last_name: lastName,
         display_name: displayName,
@@ -111,6 +111,13 @@ const ProfileOverview: FC = () => {
         sectors: selectedSectors,
         bio,
       });
+
+      // Update user in context to reflect changes immediately
+      if (updated) {
+        updateUser({
+          ...updated,
+        });
+      }
 
       // Show success message
       alert("Profile updated successfully!");
