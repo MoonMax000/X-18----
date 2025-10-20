@@ -26,7 +26,12 @@ export async function getCurrentUserProfile(userId: string) {
     .single();
 
   if (error) {
-    console.error('[Supabase] Error fetching user profile:', error);
+    console.error('[Supabase] Error fetching user profile:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     return null;
   }
 
@@ -48,8 +53,14 @@ export async function updateUserProfile(userId: string, updates: ProfileUpdateDa
     .single();
 
   if (error) {
-    console.error('[Supabase] Error updating profile:', error);
-    throw error;
+    console.error('[Supabase] Error updating profile:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      error
+    });
+    throw new Error(`Failed to update profile: ${error.message || JSON.stringify(error)}`);
   }
 
   return data;

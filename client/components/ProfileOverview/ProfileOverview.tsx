@@ -121,9 +121,12 @@ const ProfileOverview: FC = () => {
 
       // Show success message
       alert("Profile updated successfully!");
-    } catch (error) {
-      console.error("Failed to save profile:", error);
-      alert("Failed to save profile. Please try again.");
+    } catch (error: any) {
+      console.error("Failed to save profile:", {
+        message: error?.message,
+        error
+      });
+      alert(`Failed to save profile: ${error?.message || 'Please try again.'}`);
     } finally {
       setIsSaving(false);
     }
