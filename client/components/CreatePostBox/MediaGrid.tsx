@@ -50,7 +50,7 @@ export const MediaGrid: FC<MediaGridProps> = ({
               ? "opacity-50 scale-95 border-[#A06AFF]"
               : isInteractive && draggedIndex !== null
                 ? "border-[#A06AFF]/50 bg-black"
-                : "border-[#181B22] bg-black"
+                : "border-widget-border bg-black"
           }`}
         >
           {item.type === "video" ? (

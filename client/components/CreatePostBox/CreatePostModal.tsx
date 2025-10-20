@@ -828,7 +828,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
 
         {/* Post Metadata Selectors */}
         {blocks.some(block => block.text.trim().length > 0) && (
-          <div className="border-t border-[#181B22] px-5 py-3">
+          <div className="border-t border-widget-border px-5 py-3">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {/* Market Selector */}
               <div>
