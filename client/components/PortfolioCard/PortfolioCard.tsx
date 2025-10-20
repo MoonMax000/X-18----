@@ -91,7 +91,7 @@ const PortfolioCard: FC<PortfolioCardProps> = ({
     description: string,
     actionLabel: string,
   ) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-[rgba(40,44,52,1)] bg-[rgba(12,16,20,0.50)] p-6 text-center backdrop-blur-[50px]">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-[#16C784] bg-[rgba(12,16,20,0.50)] p-6 text-center backdrop-blur-[50px]">
       <h4 className="text-lg font-bold text-white">{headline}</h4>
       <p className="text-sm text-[#B0B0B0]">{description}</p>
       <button
@@ -110,7 +110,7 @@ const PortfolioCard: FC<PortfolioCardProps> = ({
   );
 
   return (
-    <div className="flex w-full flex-col items-center gap-3 self-stretch rounded-3xl border border-[rgba(40,44,52,1)] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
+    <div className="flex w-full flex-col items-center gap-3 self-stretch rounded-3xl border border-[#16C784] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
       <div className="flex items-baseline self-stretch pb-2">
         <div className="flex-1 text-2xl font-bold leading-normal text-white">
           {title}
@@ -151,7 +151,7 @@ const PortfolioCard: FC<PortfolioCardProps> = ({
             className={`flex h-10 items-center justify-center rounded-[32px] px-4 py-3 text-[15px] font-bold transition ${
               activeTab === tab.id
                 ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_8px_20px_-8px_rgba(160,106,255,0.7)]"
-                : "border border-[rgba(40,44,52,1)] bg-[rgba(12,16,20,0.50)] text-white/80 hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)]"
+                : "border border-[#16C784] bg-[rgba(12,16,20,0.50)] text-white/80 hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)]"
             }`}
           >
             {tab.label}
@@ -204,7 +204,7 @@ const PortfolioCard: FC<PortfolioCardProps> = ({
           </div>
 
           {comingUpStreams.length > 0 && (
-            <div className="flex flex-col items-start gap-4 self-stretch border-t border-[rgba(40,44,52,1)] pt-3">
+            <div className="flex flex-col items-start gap-4 self-stretch border-t border-[#16C784] pt-3">
               <div className="flex h-5 items-center gap-2 self-stretch">
                 <div className="flex flex-1 flex-col justify-center self-stretch text-[19px] font-bold leading-normal text-white">
                   Coming Up
@@ -232,7 +232,7 @@ const PortfolioCard: FC<PortfolioCardProps> = ({
           )}
 
           {archivedStreams.length > 0 && (
-            <div className="flex flex-col items-start gap-4 self-stretch border-t border-[rgba(40,44,52,1)] pt-3">
+            <div className="flex flex-col items-start gap-4 self-stretch border-t border-[#16C784] pt-3">
               <div className="flex h-5 items-center gap-2 self-stretch">
                 <div className="flex flex-1 flex-col justify-center self-stretch text-[19px] font-bold leading-normal text-white">
                   Archived

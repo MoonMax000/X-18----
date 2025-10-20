@@ -72,7 +72,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
   const sentiment = getSentiment();
 
   return (
-    <div className="rounded-2xl border border-[rgba(40,44,52,1)] bg-black p-4">
+    <div className="rounded-2xl border border-[#16C784] bg-black p-4">
       <div className="mb-4 text-lg font-bold text-white">Fear & Greed</div>
       
       <div className="flex flex-col items-center justify-center">

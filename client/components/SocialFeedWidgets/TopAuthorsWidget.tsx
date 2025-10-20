@@ -57,7 +57,7 @@ const TopAuthorsWidget: FC<TopAuthorsWidgetProps> = ({ limit = 10 }) => {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-[rgba(40,44,52,1)] bg-[#000000] p-4">
+      <div className="rounded-2xl border border-[#16C784] bg-[#000000] p-4">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
           <Users className="h-5 w-5 text-purple-400" />
           Top Authors

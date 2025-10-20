@@ -107,7 +107,7 @@ const TestComposer: FC<TestComposerProps> = ({ userAvatar, userName, onSubmit })
     <div className="space-y-4">
       <InlineComposer userAvatar={userAvatar} userName={userName} onSubmit={handleComposerSubmit} />
 
-      <section className="rounded-3xl border border-[rgba(40,44,52,1)] bg-background/90 p-5 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] backdrop-blur-[30px]">
+      <section className="rounded-3xl border border-[#16C784] bg-background/90 p-5 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] backdrop-blur-[30px]">
         <div className="space-y-5">
           <div className="grid gap-2">
             <span className="text-sm font-semibold text-white">Рубрика</span>
@@ -231,7 +231,7 @@ const TestComposer: FC<TestComposerProps> = ({ userAvatar, userName, onSubmit })
               value={preview}
               onChange={(event) => setPreview(event.target.value)}
               rows={2}
-              className="min-h-[56px] rounded-2xl border border-[rgba(40,44,52,1)] bg-[#0C101480] px-4 py-3 text-sm text-white placeholder:text-[#6C7280] focus:border-[#A06AFF] focus:outline-none"
+              className="min-h-[56px] rounded-2xl border border-[#16C784] bg-[#0C101480] px-4 py-3 text-sm text-white placeholder:text-[#6C7280] focus:border-[#A06AFF] focus:outline-none"
               placeholder="Короткий тизер, который увидят все"
             />
           </div>
