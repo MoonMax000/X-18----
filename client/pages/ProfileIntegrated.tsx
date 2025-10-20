@@ -352,7 +352,7 @@ const socialSubTabs = [
   },
   {
     id: "my-posts" as SocialSubTab,
-    label: "My Posts",
+    label: "Мои посты",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path
@@ -379,7 +379,7 @@ const socialSubTabs = [
   },
   {
     id: "monetization" as SocialSubTab,
-    label: "Monetization",
+    label: "Монетизация",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path
