@@ -3,9 +3,12 @@ import { supabase } from './supabase';
 export interface ProfileUpdateData {
   first_name?: string;
   last_name?: string;
+  display_name?: string;
   bio?: string;
   location?: string;
   website?: string;
+  role?: string;
+  sectors?: string[];
   avatar_url?: string;
   cover?: string;
   trading_style?: string;
