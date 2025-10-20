@@ -7,6 +7,7 @@ import NotificationsSettings from "@/components/NotificationsSettings/Notificati
 import BillingSettings from "@/components/BillingSettings/BillingSettings";
 import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
 import KycSettings from "@/components/KycSettings/KycSettings";
+import SecuritySettings from "@/components/SecuritySettings/SecuritySettings";
 import { cn } from "@/lib/utils";
 import { 
   getCurrentUserProfile, 
@@ -713,12 +714,7 @@ const ProfileIntegrated: FC = () => {
               </div>
             )}
 
-            {activeSubTab === "security" && (
-              <div className="container-card p-6">
-                <h2 className="text-xl font-semibold text-white">Security Settings</h2>
-                <p className="mt-4 text-sm text-webGray">Security settings coming soon...</p>
-              </div>
-            )}
+            {activeSubTab === "security" && <SecuritySettings />}
             {activeSubTab === "notifications" && <NotificationsSettings />}
             {activeSubTab === "billing" && <BillingSettings />}
             {activeSubTab === "referrals" && <ReferralsSettings />}
