@@ -29,6 +29,8 @@ const ProfileOverview: FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   
   // Form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [location, setLocation] = useState("");
@@ -53,6 +55,8 @@ const ProfileOverview: FC = () => {
       setIsLoading(true);
 
       // If we don't have profile data yet, set defaults from user
+      setFirstName("");
+      setLastName("");
       setDisplayName(user.display_name || user.username || "");
       setUsername(user.username || "");
       setLocation("");
@@ -66,6 +70,8 @@ const ProfileOverview: FC = () => {
         const profile = await getCurrentUserProfile(user.id);
 
         if (profile) {
+          setFirstName(profile.first_name || "");
+          setLastName(profile.last_name || "");
           setDisplayName(profile.display_name || profile.username || "");
           setUsername(profile.username || "");
           setLocation(profile.location || "");
@@ -96,6 +102,8 @@ const ProfileOverview: FC = () => {
       setIsSaving(true);
 
       await updateUserProfile(user.id, {
+        first_name: firstName,
+        last_name: lastName,
         display_name: displayName,
         location,
         website,
@@ -132,6 +140,43 @@ const ProfileOverview: FC = () => {
 
   return (
     <div className="flex flex-col gap-6 max-w-[1059px] mx-auto">
+      {/* First Name & Last Name */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col gap-2 flex-1">
+          <label
+            className="text-xs font-bold text-[#B0B0B0] uppercase"
+            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+          >
+            First name
+          </label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+            placeholder="Enter first name"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 flex-1">
+          <label
+            className="text-xs font-bold text-[#B0B0B0] uppercase"
+            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+          >
+            Last name
+          </label>
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+            placeholder="Enter last name"
+          />
+        </div>
+      </div>
+
       {/* Display Name & Username */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex flex-col gap-2 flex-1">
