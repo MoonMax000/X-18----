@@ -581,6 +581,44 @@ const ProfileIntegrated: FC = () => {
             ))}
           </div>
         )}
+
+        {/* Social Network Sub-tabs (shown only when Social Network main tab is active) */}
+        {activeMainTab === "social" && (
+          <div className="inline-flex flex-wrap items-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-black backdrop-blur-[50px]">
+            {socialSubTabs.map((subTab) => (
+              <button
+                key={subTab.id}
+                onClick={() => {
+                  setActiveSocialSubTab(subTab.id);
+                }}
+                className={cn(
+                  "flex h-8 items-center justify-center gap-2 px-4 py-3 rounded-[32px] transition-all whitespace-nowrap",
+                  activeSocialSubTab === subTab.id
+                    ? "bg-gradient-to-l from-[#A06AFF] to-[#482090] backdrop-blur-[58.33px]"
+                    : "border border-[#181B22] bg-black backdrop-blur-[58.33px]",
+                )}
+              >
+                <span
+                  className={cn(
+                    "w-5 h-5 flex items-center justify-center",
+                    activeSocialSubTab === subTab.id ? "text-white" : "text-[#B0B0B0]"
+                  )}
+                >
+                  {subTab.icon}
+                </span>
+                <span
+                  className={cn(
+                    "text-[15px] font-bold leading-normal",
+                    activeSocialSubTab === subTab.id ? "text-white" : "text-[#B0B0B0]"
+                  )}
+                  style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+                >
+                  {subTab.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Tab content */}
