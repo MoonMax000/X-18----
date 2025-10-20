@@ -17,7 +17,7 @@ const Pagination: FC<Props> = ({ totalPages, currentPage, onChange }) => {
   const handleLast = () => onChange(totalPages);
 
   const controlClass =
-    "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded border border-[rgba(24,27,34,0.95)] bg-[rgba(11,14,17,0.50)] p-2.5 backdrop-blur-[50px] transition hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] disabled:cursor-not-allowed disabled:opacity-40";
+    "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded border border-[rgba(40,44,52,1)] bg-[rgba(11,14,17,0.50)] p-2.5 backdrop-blur-[50px] transition hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <div className="inline-flex items-start gap-1">
@@ -80,7 +80,7 @@ const Pagination: FC<Props> = ({ totalPages, currentPage, onChange }) => {
             className={`flex h-11 w-11 items-center justify-center rounded p-2 text-[15px] font-bold transition ${
               isActive
                 ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_8px_20px_-8px_rgba(160,106,255,0.7)]"
-                : "border border-[rgba(24,27,34,0.95)] bg-[rgba(11,14,17,0.50)] text-[#B0B0B0] backdrop-blur-[50px] hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] hover:text-white"
+                : "border border-[rgba(40,44,52,1)] bg-[rgba(11,14,17,0.50)] text-[#B0B0B0] backdrop-blur-[50px] hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] hover:text-white"
             }`}
           >
             {page}
