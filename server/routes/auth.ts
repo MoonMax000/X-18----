@@ -80,8 +80,8 @@ router.post('/signup', rateLimit(5, 15 * 60 * 1000), async (req: Request, res: R
       .from('users')
       .select('id')
       .or(`email.eq.${body.email},phone.eq.${body.phone}`)
-      .single();
-    
+      .maybeSingle();
+
     if (existingUser) {
       res.status(400).json({ error: 'User already exists' });
       return;
@@ -156,7 +156,7 @@ router.post('/verify', rateLimit(10, 15 * 60 * 1000), async (req: Request, res: 
       .eq('code', body.code)
       .eq('type', body.type)
       .eq('is_used', false)
-      .single();
+      .maybeSingle();
     
     if (!verification) {
       res.status(400).json({ error: 'Invalid or expired code' });
@@ -214,8 +214,8 @@ router.post('/login', rateLimit(10, 15 * 60 * 1000), async (req: Request, res: R
     const query = body.email
       ? supabase.from('users').select('*').eq('email', body.email)
       : supabase.from('users').select('*').eq('phone', body.phone);
-    
-    const { data: user } = await query.single();
+
+    const { data: user } = await query.maybeSingle();
     
     if (!user) {
       res.status(401).json({ error: 'Invalid credentials' });
@@ -430,7 +430,7 @@ router.post('/forgot-password', rateLimit(3, 60 * 60 * 1000), async (req: Reques
       .from('users')
       .select('id, email')
       .eq('email', body.email)
-      .single();
+      .maybeSingle();
     
     // Always return success to prevent email enumeration
     if (!user) {
@@ -496,7 +496,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
       .select('*')
       .eq('token', body.token)
       .eq('is_used', false)
-      .single();
+      .maybeSingle();
     
     if (!reset) {
       res.status(400).json({ error: 'Invalid or expired reset token' });
