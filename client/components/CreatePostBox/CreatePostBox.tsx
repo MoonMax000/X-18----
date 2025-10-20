@@ -14,7 +14,7 @@ const CreatePostBox: FC<CreatePostBoxProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="flex flex-col items-end gap-4 rounded-3xl border border-[rgba(24,27,34,0.85)] bg-black p-4 backdrop-blur-[50px]">
+    <div className="flex flex-col items-end gap-4 rounded-3xl border border-[rgba(24,27,34,0.95)] bg-black p-4 backdrop-blur-[50px]">
       {/* Input area */}
       <div className="flex w-full items-start gap-2">
         <img
@@ -24,7 +24,7 @@ const CreatePostBox: FC<CreatePostBoxProps> = ({
         />
         <div
           onClick={() => setIsModalOpen(true)}
-          className="relative flex flex-1 flex-col items-center rounded-2xl border border-[rgba(24,27,34,0.85)] bg-black px-4 py-3 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] cursor-pointer hover:bg-[#482090]/10 transition-colors"
+          className="relative flex flex-1 flex-col items-center rounded-2xl border border-[rgba(24,27,34,0.95)] bg-black px-4 py-3 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] cursor-pointer hover:bg-[#482090]/10 transition-colors"
         >
           <div className="w-full text-[15px] font-normal text-[#B0B0B0]">
             How do you feel about markets today? Share your ideas here!

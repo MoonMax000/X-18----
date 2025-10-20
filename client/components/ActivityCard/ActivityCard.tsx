@@ -95,7 +95,7 @@ const ActivityCard: FC<ActivityCardProps> = ({
   };
 
   return (
-    <div className="flex w-full flex-col items-center gap-6 self-stretch rounded-3xl border border-[rgba(24,27,34,0.85)] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
+    <div className="flex w-full flex-col items-center gap-6 self-stretch rounded-3xl border border-[rgba(24,27,34,0.95)] bg-[rgba(12,16,20,0.50)] p-4 backdrop-blur-[50px]">
       <div className="flex items-baseline self-stretch pb-2">
         <div className="flex-1 text-2xl font-bold leading-normal text-white">
           {title}
@@ -136,7 +136,7 @@ const ActivityCard: FC<ActivityCardProps> = ({
             className={`flex h-10 items-center justify-center rounded-[32px] px-4 py-3 text-[15px] font-bold transition ${
               activeTab === tab
                 ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_8px_20px_-8px_rgba(160,106,255,0.7)]"
-                : "border border-[rgba(24,27,34,0.85)] bg-[rgba(12,16,20,0.50)] text-white/80 hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)]"
+                : "border border-[rgba(24,27,34,0.95)] bg-[rgba(12,16,20,0.50)] text-white/80 hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)]"
             }`}
           >
             {tab === "new" ? "New" : "Top Sellers"}
@@ -150,7 +150,7 @@ const ActivityCard: FC<ActivityCardProps> = ({
             key={product.id}
             className={`flex items-center gap-2 self-stretch ${
               index < visibleProducts.length - 1
-                ? "border-b border-[rgba(24,27,34,0.85)] pb-3"
+                ? "border-b border-[rgba(24,27,34,0.95)] pb-3"
                 : ""
             }`}
           >
