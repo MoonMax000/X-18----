@@ -476,7 +476,7 @@ textarea::-webkit-scrollbar-track {
 
 @layer components {
   .container-card {
-    @apply border border-[rgba(40,44,52,1)] rounded-[24px] max-w-[1340px] bg-[#0C101480] backdrop-blur-[100px];
+    @apply border border-[#16C784] rounded-[24px] max-w-[1340px] bg-[#0C101480] backdrop-blur-[100px];
   }
 
   .search-input {
