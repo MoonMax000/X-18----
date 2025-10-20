@@ -208,7 +208,7 @@ export default function ProfileContentClassic({
                 </span>
                 <button
                   type="button"
-                  onClick={() => navigate(`/social/profile/${profile.handle}/connections?tab=following`)}
+                  onClick={() => navigate(`/social/profile/${profile.username}/connections?tab=following`)}
                   className="text-[15px] font-normal leading-5 text-[#8B98A5] transition-colors hover:underline"
                 >
                   Following
@@ -220,7 +220,7 @@ export default function ProfileContentClassic({
                 </span>
                 <button
                   type="button"
-                  onClick={() => navigate(`/social/profile/${profile.handle}/connections?tab=followers`)}
+                  onClick={() => navigate(`/social/profile/${profile.username}/connections?tab=followers`)}
                   className="text-[15px] font-normal leading-5 text-[#8B98A5] transition-colors hover:underline"
                 >
                   Followers
