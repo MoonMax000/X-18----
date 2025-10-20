@@ -283,7 +283,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     try {
       const result = await verifyCode(userId, code, '2fa');
 
-      if (result.success) {
+      if (result) {
         console.log('2FA verification successful!');
         setTwoFactorError('');
         onClose();
@@ -295,7 +295,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
           setIsBlocked2FA(true);
           setTwoFactorError('Too many failed attempts. Try again later.');
         } else {
-          setTwoFactorError(result.error || 'Invalid code. Please try again.');
+          setTwoFactorError('Invalid code. Please try again.');
           setTimeout(() => {
             setTwoFactorCode(['', '', '', '', '', '']);
             inputRefs[0].current?.focus();
