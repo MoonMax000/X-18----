@@ -158,19 +158,19 @@ export const AvatarDropdown: FC = () => {
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="fixed sm:absolute right-3 sm:right-0 top-16 sm:top-auto sm:mt-2 w-[calc(100vw-1.5rem)] sm:w-[150px] max-w-[160px] bg-black/50 backdrop-blur-[50px] border border-[#181B22] rounded-xl shadow-2xl shadow-black/50 py-3 px-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="fixed sm:absolute right-3 sm:right-0 top-16 sm:top-auto sm:mt-2 w-[calc(100vw-1.5rem)] sm:w-[200px] max-w-[220px] bg-black/50 backdrop-blur-[50px] border border-[#181B22] rounded-xl shadow-2xl shadow-black/50 py-4 px-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {/* User Info Header */}
-            <div className="flex items-center gap-1 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <img
                 src={user.avatar}
                 alt="User avatar"
-                className="w-6 h-6 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover"
               />
               <div className="flex flex-col gap-0.5 min-w-0">
-                <div className="text-white text-[8px] font-bold truncate">
+                <div className="text-white text-[11px] font-bold truncate">
                   {user.email}
                 </div>
-                <div className="flex items-center gap-0.5 text-[#B0B0B0] text-[6px] font-bold">
+                <div className="flex items-center gap-1 text-[#B0B0B0] text-[9px] font-bold">
                   <span>ID:</span>
                   <span className="truncate">{user.id}</span>
                 </div>
@@ -178,17 +178,17 @@ export const AvatarDropdown: FC = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-[#2E2744] mb-3" />
+            <div className="h-px bg-[#2E2744] mb-4" />
 
             {/* Menu Items */}
             <div className="space-y-0">
               {menuItems.map((item, index) => {
                 const content = (
-                  <div className="flex items-center gap-1 px-0 py-1.5 hover:opacity-70 transition-opacity duration-200 cursor-pointer">
-                    <div className="flex-shrink-0 scale-50 origin-left">
+                  <div className="flex items-center gap-2 px-0 py-2 hover:opacity-70 transition-opacity duration-200 cursor-pointer">
+                    <div className="flex-shrink-0 scale-75 origin-left">
                       {item.icon}
                     </div>
-                    <span className="text-[#B0B0B0] text-[8px] font-bold">
+                    <span className="text-[#B0B0B0] text-[11px] font-bold">
                       {item.label}
                     </span>
                   </div>
@@ -220,7 +220,7 @@ export const AvatarDropdown: FC = () => {
                   <div key={item.id}>
                     {element}
                     {item.dividerAfter && (
-                      <div className="h-px bg-[#2E2744] my-3" />
+                      <div className="h-px bg-[#2E2744] my-4" />
                     )}
                   </div>
                 );
