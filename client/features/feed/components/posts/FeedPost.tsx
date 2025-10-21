@@ -157,7 +157,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       </section>
 
       {/* Signal-specific info */}
-      {isSignal && !isPaidLocked && (
+      {isSignal && !isLocked && (
         <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
           {post.accuracy && (
             <div className="mb-3 text-[14px] sm:text-[15px] md:text-[16px] text-[#C5C9D3]">
@@ -185,61 +185,19 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         </section>
       )}
 
-      {/* Paid/Locked Content */}
-      {isPaidLocked && (
-        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px] relative rounded-lg overflow-hidden min-h-[200px] sm:min-h-[240px] md:min-h-[280px] flex items-center justify-center">
-          {/* Background logo */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-            <svg className="w-40 h-40 sm:w-52 sm:h-52 md:w-64 md:h-64" viewBox="0 0 218 267" fill="none">
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M0 133.143L0.010125 133.958C24.1612 128.685 48.4409 123.177 72.7655 117.659L72.8103 248.557L154.645 266.444C154.645 237.7 154.392 156.724 154.659 127.987L97.3967 115.471L89.7755 113.806C132.594 104.118 175.489 94.5576 218 86.3261L217.986 0C146.091 15.7098 72.1247 34.2794 0 47.6345L0 133.143Z"
-                fill="url(#paint0_linear_premium)"
-              />
-              <defs>
-                <linearGradient id="paint0_linear_premium" x1="52.9429" y1="286.428" x2="157.977" y2="21.2498" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#A06AFF" />
-                  <stop offset="1" stopColor="#482090" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-
-          {/* Background blur overlay */}
-          <div className="absolute inset-0 backdrop-blur-[8.65px]" />
-
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center gap-6 sm:gap-8 py-12 sm:py-16 px-4 sm:px-6">
-            {/* Lock Icon */}
-            <div className="flex flex-col items-center gap-3 sm:gap-4">
-              <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 41 41" fill="none">
-                <path d="M20.5 28.0003V24.667" stroke="#B0B0B0" strokeWidth="1.5" strokeLinecap="round" />
-                <path
-                  d="M7.61298 31.9078C7.98778 34.6917 10.2935 36.8725 13.0994 37.0015C15.4604 37.11 17.8588 37.1667 20.5 37.1667C23.1411 37.1667 25.5395 37.11 27.9005 37.0015C30.7065 36.8725 33.0121 34.6917 33.387 31.9078C33.6315 30.0912 33.8333 28.2293 33.8333 26.3333C33.8333 24.4373 33.6315 22.5755 33.387 20.7588C33.0121 17.975 30.7065 15.7941 27.9005 15.6651C25.5395 15.5566 23.1411 15.5 20.5 15.5C17.8588 15.5 15.4604 15.5566 13.0994 15.6651C10.2935 15.7941 7.98778 17.975 7.61298 20.7588C7.36838 22.5755 7.16663 24.4373 7.16663 26.3333C7.16663 28.2293 7.36838 30.0912 7.61298 31.9078Z"
-                  stroke="#B0B0B0"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M13 15.4997V11.333C13 7.19087 16.3579 3.83301 20.5 3.83301C24.6422 3.83301 28 7.19087 28 11.333V15.4997"
-                  stroke="#B0B0B0"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-
-              <p className="text-white text-center text-sm sm:text-[15px] font-bold leading-normal max-w-xs">
-                Access to this content is restricted.
-                <br />
-                Purchase to gain full access.
-              </p>
-            </div>
-
-            <button className="flex items-center justify-center px-8 sm:px-12 md:px-14 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-sm sm:text-[15px] font-bold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 whitespace-nowrap">
-              Get Access
-            </button>
-          </div>
+      {/* Gated/Locked Content */}
+      {isLocked && (
+        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
+          <GatedContent
+            accessLevel={post.accessLevel!}
+            postPrice={post.postPrice}
+            subscriptionPrice={post.author.subscriptionPrice}
+            authorName={post.author.name}
+            isPurchased={post.isPurchased}
+            isSubscriber={post.isSubscriber}
+            onUnlock={() => console.log("Unlock post", post.id)}
+            onSubscribe={() => console.log("Subscribe to", post.author.handle)}
+          />
         </section>
       )}
 
