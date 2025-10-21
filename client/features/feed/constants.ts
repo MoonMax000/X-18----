@@ -3,10 +3,15 @@ import { FeedTab } from "./types";
 import { LayoutGrid, Lightbulb, MessageCircle, BarChart3, Code, Heart } from "lucide-react";
 
 export const FILTERS_CONFIG = {
+  // Тема (Topic) - независимый фильтр
+  topic: { type: 'select' as const, opts: ['All', 'News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'] },
+
+  // Остальные фильтры
   market: { type: 'select' as const, opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select' as const, opts: ['All', 'Free', 'Paid', 'Subscription'] },
   period: { type: 'select' as const, opts: ['All time', 'Today', '7d', '30d', 'YTD', 'Custom'] },
-  category: { type: 'chips' as const, opts: ['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'] },
+
+  // Удалено category (заменено на topic)
   sort: { type: 'select' as const, opts: ['Popular', 'New', 'Top 24h', 'Top 7d', 'Recent'] },
   sentiment: { type: 'chips' as const, opts: ['Bullish', 'Bearish', 'Neutral'] },
   strategy: { type: 'chips' as const, opts: ['TA', 'Quant', 'News', 'Options', 'On-chain'] },
@@ -19,32 +24,47 @@ export const FILTERS_CONFIG = {
   verified: { type: 'toggle' as const }
 } as const;
 
+// Табы теперь определяют Type (вид контента)
+// Topic - это ортогональный фильтр (тематика)
 export const TABS_CONFIG = {
   all: {
-    visible: ['market', 'price', 'period', 'category', 'symbol', 'verified'] as const,
-    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'all' as const,
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
   },
   ideas: {
-    visible: ['market', 'price', 'period', 'category', 'symbol', 'verified'] as const,
-    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'idea' as const,
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
   },
   opinions: {
-    visible: ['market', 'price', 'period', 'category', 'symbol', 'verified'] as const,
-    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'opinion' as const,
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
   },
   analytics: {
-    visible: ['market', 'price', 'period', 'category', 'symbol', 'verified'] as const,
-    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'analysis' as const,
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', period: 'All time', verified: false }
   },
   soft: {
-    visible: ['market', 'price', 'period', 'category', 'symbol', 'verified'] as const,
-    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'code' as const,
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
   },
   liked: {
-    visible: ['market', 'price', 'period', 'category', 'symbol', 'verified'] as const,
-    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'all' as const, // Liked показывает все типы
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
+  },
+  following: {
+    type: 'all' as const, // NEW: Following показывает все типы от подписок
+    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
   }
 } as const;
+
+import { Users } from "lucide-react";
 
 export const FEED_TABS = [
   { key: "all" as FeedTab, label: "All", icon: LayoutGrid },
@@ -52,7 +72,8 @@ export const FEED_TABS = [
   { key: "opinions" as FeedTab, label: "Opinions", icon: MessageCircle },
   { key: "analytics" as FeedTab, label: "Analytics", icon: BarChart3 },
   { key: "soft" as FeedTab, label: "Soft", icon: Code },
-  { key: "liked" as FeedTab, label: "Liked", icon: Heart }
+  { key: "liked" as FeedTab, label: "Liked", icon: Heart },
+  { key: "following" as FeedTab, label: "Following", icon: Users }
 ];
 
 export const SIGNAL_PRESETS = [
