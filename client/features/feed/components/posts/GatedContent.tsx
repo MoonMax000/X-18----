@@ -41,7 +41,7 @@ export default function GatedContent({
         };
       case "premium":
         return {
-          title: "Премиум контент",
+          title: "Премиу�� контент",
           description: `Оформите премиум подписку за $${subscriptionPrice + 20}/мес для доступа к эксклюзивному контенту`,
         };
       default:
@@ -82,7 +82,7 @@ export default function GatedContent({
       </div>
 
       {/* Background blur overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80 backdrop-blur-[12px]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-[12px]" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center gap-6 sm:gap-8 py-12 sm:py-16 px-4 sm:px-6 max-w-lg">
