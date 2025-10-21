@@ -1775,7 +1775,7 @@ function AdvancedComposer({
                     <div>
                       <Label className="text-sm text-[#C5C9D3]">Language *</Label>
                       <Select value={data.language} onValueChange={(v) => updateData({ language: v })}>
-                        <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
+                        <SelectTrigger className="mt-1.5 border-widget-border bg-[#0A0D12] text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="border-widget-border bg-[#0F131A]">
@@ -1794,7 +1794,7 @@ function AdvancedComposer({
                         placeholder="TradingView, MT4, Custom..."
                         value={data.compatibility}
                         onChange={(e) => updateData({ compatibility: e.target.value })}
-                        className="mt-2 border-widget-border bg-[#0A0D12] text-white"
+                        className="mt-1.5 border-widget-border bg-[#0A0D12] text-white"
                       />
                     </div>
                   </div>
