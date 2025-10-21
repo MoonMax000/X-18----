@@ -177,10 +177,10 @@ export default function FeedFilters({
           </div>
         )}
 
-        {/* Category Filter */}
+        {/* Topic Filter */}
         <div className="flex flex-col gap-1">
           <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-            Категория
+            Тема
           </label>
           <Popover>
             <PopoverTrigger asChild>
@@ -189,7 +189,7 @@ export default function FeedFilters({
                 className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
               >
                 {(() => {
-                  const activeCategoryOption = CATEGORY_OPTIONS.find((option) => option.value === (filters.category || 'all'));
+                  const activeCategoryOption = CATEGORY_OPTIONS.find((option) => option.value === (filters.topic || 'all'));
                   const ActiveCategoryIcon = activeCategoryOption?.icon;
                   return (
                     <>
@@ -222,12 +222,12 @@ export default function FeedFilters({
               <div className="grid gap-2">
                 {CATEGORY_OPTIONS.map((category) => {
                   const Icon = category.icon;
-                  const isActive = category.value === (filters.category || 'all');
+                  const isActive = category.value === (filters.topic || 'all');
                   return (
                     <button
                       key={category.value}
                       type="button"
-                      onClick={() => onFilterChange('category', category.value)}
+                      onClick={() => onFilterChange('topic', category.value)}
                       className={cn(
                         "flex items-center gap-3 rounded-[14px] border px-3 py-2 text-left transition-colors",
                         isActive
