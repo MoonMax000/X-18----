@@ -7,10 +7,7 @@ import { useFeedTimeline } from "@/features/feed/hooks/useFeedTimeline";
 import type { ComposerData } from "@/features/feed/types";
 import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 import { MOCK_POSTS, TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
-import QuickComposer from "@/features/feed/components/composers/QuickComposer";
-import FeedTabs from "@/features/feed/components/FeedTabs";
-import FeedFilters from "@/features/feed/components/FeedFilters";
-import RightSidebar from "@/features/feed/components/RightSidebar";
+import { QuickComposer, FeedTabs, FeedFilters, RightSidebar } from "@/features/feed/components";
 
 export default function FeedTest() {
   const {
