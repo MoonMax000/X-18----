@@ -2822,9 +2822,6 @@ export default function FeedTest() {
         {/* Community Sentiment Widget */}
         <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
 
-        {/* Community Sentiment Widget */}
-        <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
-
         {/* Trending Tickers */}
         <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
           <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
