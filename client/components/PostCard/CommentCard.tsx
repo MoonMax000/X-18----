@@ -23,7 +23,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment }) => {
   };
 
   return (
-    <article className="flex gap-3 border-b border-[#181B22] py-4">
+    <article className="flex gap-3 border-b border-widget-border py-4">
       <UserAvatar
         src={comment.author.avatar}
         alt={comment.author.name}

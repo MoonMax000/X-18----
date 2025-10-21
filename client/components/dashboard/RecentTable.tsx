@@ -37,7 +37,7 @@ const RecentTable: FC<Props> = ({ title, rows }) => {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className='border-t border-[#181B22] text-sm'>
+              <tr key={r.id} className='border-t border-widget-border text-sm'>
                 <td className='py-3 pr-4 text-white'>{r.name}</td>
                 <td className='py-3 pr-4 text-white'>{r.amount}</td>
                 <td className={`py-3 pr-4 ${badgeColor[r.status]}`}>{r.status}</td>
