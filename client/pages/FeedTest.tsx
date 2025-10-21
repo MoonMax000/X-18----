@@ -101,7 +101,17 @@ export default function FeedTest() {
       <CreatePostModal
         isOpen={isAdvancedComposerOpen}
         onClose={() => setIsAdvancedComposerOpen(false)}
-        initialData={advancedComposerData}
+        initialBlocks={advancedComposerData.text ? [{
+          id: '1',
+          text: advancedComposerData.text,
+          media: [],
+          codeBlocks: advancedComposerData.codeSnippet ? [{
+            id: 'code-1',
+            code: advancedComposerData.codeSnippet,
+            language: advancedComposerData.language || 'javascript',
+          }] : [],
+        }] : undefined}
+        initialSentiment={advancedComposerData.sentiment || 'neutral'}
       />
     </div>
   );
