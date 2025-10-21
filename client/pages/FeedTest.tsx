@@ -1562,8 +1562,8 @@ function AdvancedComposer({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden border-[#1B1F27] bg-[#0F131A] p-0 text-white">
-        <DialogHeader className="border-b border-[#1B1F27] p-6">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden border-widget-border bg-[#0F131A] p-0 text-white">
+        <DialogHeader className="border-b border-widget-border p-6">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">Create New Post</DialogTitle>
             <div className="flex gap-2">
@@ -1583,7 +1583,7 @@ function AdvancedComposer({
 
         <div className="flex flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1">
-            <TabsList className="flex h-auto w-48 flex-col items-stretch gap-1 rounded-none border-r border-[#1B1F27] bg-transparent p-3">
+            <TabsList className="flex h-auto w-48 flex-col items-stretch gap-1 rounded-none border-r border-widget-border bg-transparent p-3">
               <TabsTrigger 
                 value="content" 
                 className="justify-start gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white"
@@ -1634,7 +1634,7 @@ function AdvancedComposer({
                     placeholder="Share your analysis, ideas, or insights... Use $TICKER for tickers, #tags for hashtags"
                     value={data.text}
                     onChange={(e) => updateData({ text: e.target.value })}
-                    className="mt-2 min-h-[200px] border-[#1B1F27] bg-[#0A0D12] text-white"
+                    className="mt-2 min-h-[200px] border-widget-border bg-[#0A0D12] text-white"
                   />
                   <div className="mt-1 text-xs text-[#6C7280]">{data.text.length} / 5000</div>
                 </div>
@@ -1646,7 +1646,7 @@ function AdvancedComposer({
                       placeholder="Give a preview of your content to entice readers..."
                       value={data.teaser}
                       onChange={(e) => updateData({ teaser: e.target.value })}
-                      className="mt-2 min-h-[80px] border-[#1B1F27] bg-[#0A0D12] text-white"
+                      className="mt-2 min-h-[80px] border-widget-border bg-[#0A0D12] text-white"
                     />
                     <div className="mt-1 text-xs text-[#6C7280]">
                       {data.teaser.length} / 300 (min 20 characters)
@@ -1655,10 +1655,10 @@ function AdvancedComposer({
                 )}
 
                 <div className="flex gap-2">
-                  <Button variant="outline" className="gap-2 border-[#1B1F27]">
+                  <Button variant="outline" className="gap-2 border-widget-border">
                     <Image className="h-4 w-4" /> Add Photo
                   </Button>
-                  <Button variant="outline" className="gap-2 border-[#1B1F27]">
+                  <Button variant="outline" className="gap-2 border-widget-border">
                     <Video className="h-4 w-4" /> Add Video
                   </Button>
                 </div>
@@ -1681,17 +1681,17 @@ function AdvancedComposer({
                         placeholder="$BTC, $ETH, $AAPL..."
                         value={data.ticker}
                         onChange={(e) => updateData({ ticker: e.target.value })}
-                        className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white"
+                        className="mt-2 border-widget-border bg-[#0A0D12] text-white"
                       />
                     </div>
 
                     <div>
                       <Label className="text-sm text-[#C5C9D3]">Direction *</Label>
                       <Select value={data.direction} onValueChange={(v) => updateData({ direction: v as DirectionType })}>
-                        <SelectTrigger className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white">
+                        <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
                           <SelectValue placeholder="Select direction" />
                         </SelectTrigger>
-                        <SelectContent className="border-[#1B1F27] bg-[#0F131A]">
+                        <SelectContent className="border-widget-border bg-[#0F131A]">
                           <SelectItem value="long" className="text-white">Long</SelectItem>
                           <SelectItem value="short" className="text-white">Short</SelectItem>
                         </SelectContent>
@@ -1701,10 +1701,10 @@ function AdvancedComposer({
                     <div>
                       <Label className="text-sm text-[#C5C9D3]">Timeframe *</Label>
                       <Select value={data.timeframe} onValueChange={(v) => updateData({ timeframe: v as TimeframeType })}>
-                        <SelectTrigger className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white">
+                        <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="border-[#1B1F27] bg-[#0F131A]">
+                        <SelectContent className="border-widget-border bg-[#0F131A]">
                           <SelectItem value="15m" className="text-white">15 minutes</SelectItem>
                           <SelectItem value="1h" className="text-white">1 hour</SelectItem>
                           <SelectItem value="4h" className="text-white">4 hours</SelectItem>
@@ -1717,10 +1717,10 @@ function AdvancedComposer({
                     <div>
                       <Label className="text-sm text-[#C5C9D3]">Risk Level</Label>
                       <Select value={data.risk} onValueChange={(v) => updateData({ risk: v as RiskType })}>
-                        <SelectTrigger className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white">
+                        <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="border-[#1B1F27] bg-[#0F131A]">
+                        <SelectContent className="border-widget-border bg-[#0F131A]">
                           <SelectItem value="low" className="text-white">Low</SelectItem>
                           <SelectItem value="medium" className="text-white">Medium</SelectItem>
                           <SelectItem value="high" className="text-white">High</SelectItem>
@@ -1737,7 +1737,7 @@ function AdvancedComposer({
                           placeholder="Entry price"
                           value={data.entry}
                           onChange={(e) => updateData({ entry: e.target.value })}
-                          className="border-[#1B1F27] bg-[#0A0D12] text-white"
+                          className="border-widget-border bg-[#0A0D12] text-white"
                         />
                         <div className="mt-1 text-xs text-[#6C7280]">Entry</div>
                       </div>
@@ -1746,7 +1746,7 @@ function AdvancedComposer({
                           placeholder="Stop loss"
                           value={data.stopLoss}
                           onChange={(e) => updateData({ stopLoss: e.target.value })}
-                          className="border-[#1B1F27] bg-[#0A0D12] text-white"
+                          className="border-widget-border bg-[#0A0D12] text-white"
                         />
                         <div className="mt-1 text-xs text-red-400">Stop Loss</div>
                       </div>
@@ -1755,7 +1755,7 @@ function AdvancedComposer({
                           placeholder="Take profit"
                           value={data.takeProfit}
                           onChange={(e) => updateData({ takeProfit: e.target.value })}
-                          className="border-[#1B1F27] bg-[#0A0D12] text-white"
+                          className="border-widget-border bg-[#0A0D12] text-white"
                         />
                         <div className="mt-1 text-xs text-green-400">Take Profit</div>
                       </div>
@@ -1775,10 +1775,10 @@ function AdvancedComposer({
                     <div>
                       <Label className="text-sm text-[#C5C9D3]">Language *</Label>
                       <Select value={data.language} onValueChange={(v) => updateData({ language: v })}>
-                        <SelectTrigger className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white">
+                        <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="border-[#1B1F27] bg-[#0F131A]">
+                        <SelectContent className="border-widget-border bg-[#0F131A]">
                           <SelectItem value="Python" className="text-white">Python</SelectItem>
                           <SelectItem value="JavaScript" className="text-white">JavaScript</SelectItem>
                           <SelectItem value="Pine Script" className="text-white">Pine Script</SelectItem>
@@ -1794,7 +1794,7 @@ function AdvancedComposer({
                         placeholder="TradingView, MT4, Custom..."
                         value={data.compatibility}
                         onChange={(e) => updateData({ compatibility: e.target.value })}
-                        className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white"
+                        className="mt-2 border-widget-border bg-[#0A0D12] text-white"
                       />
                     </div>
                   </div>
@@ -1805,7 +1805,7 @@ function AdvancedComposer({
                       placeholder="Describe what this code does, strategy details, features..."
                       value={data.codeDescription}
                       onChange={(e) => updateData({ codeDescription: e.target.value })}
-                      className="mt-2 min-h-[80px] border-[#1B1F27] bg-[#0A0D12] text-white"
+                      className="mt-2 min-h-[80px] border-widget-border bg-[#0A0D12] text-white"
                     />
                   </div>
 
@@ -1815,7 +1815,7 @@ function AdvancedComposer({
                       placeholder="Paste your code here..."
                       value={data.codeSnippet}
                       onChange={(e) => updateData({ codeSnippet: e.target.value })}
-                      className="mt-2 min-h-[200px] font-mono text-sm border-[#1B1F27] bg-[#0A0D12] text-white"
+                      className="mt-2 min-h-[200px] font-mono text-sm border-widget-border bg-[#0A0D12] text-white"
                     />
                   </div>
                 </TabsContent>
@@ -1832,10 +1832,10 @@ function AdvancedComposer({
                       isPaid: v !== "free" 
                     })}
                   >
-                    <SelectTrigger className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white">
+                    <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="border-[#1B1F27] bg-[#0F131A]">
+                    <SelectContent className="border-widget-border bg-[#0F131A]">
                       <SelectItem value="free" className="text-white">Free - Everyone can see</SelectItem>
                       <SelectItem value="pay-per-post" className="text-white">Pay-per-post - One-time payment</SelectItem>
                       <SelectItem value="subscribers-only" className="text-white">Subscribers only - Must subscribe</SelectItem>
@@ -1851,7 +1851,7 @@ function AdvancedComposer({
                       placeholder="2.99"
                       value={data.price}
                       onChange={(e) => updateData({ price: e.target.value })}
-                      className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white"
+                      className="mt-2 border-widget-border bg-[#0A0D12] text-white"
                     />
                     <div className="mt-1 text-xs text-[#6C7280]">
                       Recommended: $0.99 - $9.99 for individual posts
@@ -1859,7 +1859,7 @@ function AdvancedComposer({
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 rounded-lg border border-[#1B1F27] bg-[#0A0D12] p-3">
+                <div className="flex items-center gap-2 rounded-lg border border-widget-border bg-[#0A0D12] p-3">
                   <Switch
                     checked={data.verifiedOnly}
                     onCheckedChange={(v) => updateData({ verifiedOnly: v })}
@@ -1888,10 +1888,10 @@ function AdvancedComposer({
                 <div>
                   <Label className="text-sm text-[#C5C9D3]">Who can see this?</Label>
                   <Select value={data.visibility} onValueChange={(v) => updateData({ visibility: v as any })}>
-                    <SelectTrigger className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white">
+                    <SelectTrigger className="mt-2 border-widget-border bg-[#0A0D12] text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="border-[#1B1F27] bg-[#0F131A]">
+                    <SelectContent className="border-widget-border bg-[#0F131A]">
                       <SelectItem value="all" className="text-white">Everyone</SelectItem>
                       <SelectItem value="subscribers" className="text-white">Subscribers only</SelectItem>
                       <SelectItem value="followers" className="text-white">Followers only</SelectItem>
@@ -1907,7 +1907,7 @@ function AdvancedComposer({
                       type="date"
                       value={data.scheduledDate}
                       onChange={(e) => updateData({ scheduledDate: e.target.value })}
-                      className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white"
+                      className="mt-2 border-widget-border bg-[#0A0D12] text-white"
                     />
                   </div>
                   <div>
@@ -1916,7 +1916,7 @@ function AdvancedComposer({
                       type="time"
                       value={data.scheduledTime}
                       onChange={(e) => updateData({ scheduledTime: e.target.value })}
-                      className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white"
+                      className="mt-2 border-widget-border bg-[#0A0D12] text-white"
                     />
                   </div>
                 </div>
@@ -1928,11 +1928,11 @@ function AdvancedComposer({
                     placeholder="Leave empty for permanent"
                     value={data.expiryDays}
                     onChange={(e) => updateData({ expiryDays: e.target.value })}
-                    className="mt-2 border-[#1B1F27] bg-[#0A0D12] text-white"
+                    className="mt-2 border-widget-border bg-[#0A0D12] text-white"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 rounded-lg border border-[#1B1F27] bg-[#0A0D12] p-3">
+                <div className="flex items-center gap-2 rounded-lg border border-widget-border bg-[#0A0D12] p-3">
                   <Switch
                     checked={data.commentsEnabled}
                     onCheckedChange={(v) => updateData({ commentsEnabled: v })}
@@ -1947,17 +1947,17 @@ function AdvancedComposer({
           </Tabs>
         </div>
 
-        <DialogFooter className="border-t border-[#1B1F27] p-4">
+        <DialogFooter className="border-t border-widget-border p-4">
           <div className="flex w-full items-center justify-between">
             <div className="flex gap-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 border-[#1B1F27]">
+                  <Button variant="outline" size="sm" className="gap-2 border-widget-border">
                     <Eye className="h-4 w-4" />
                     Preview
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-48 border-[#1B1F27] bg-[#0F131A]">
+                <PopoverContent className="w-48 border-widget-border bg-[#0F131A]">
                   <div className="space-y-2">
                     <Button 
                       variant="ghost" 
@@ -1993,7 +1993,7 @@ function AdvancedComposer({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="gap-2 border-[#1B1F27]"
+                className="gap-2 border-widget-border"
                 onClick={handleSaveDraft}
               >
                 <Save className="h-4 w-4" />
@@ -2002,7 +2002,7 @@ function AdvancedComposer({
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={onClose} className="border-[#1B1F27]">
+              <Button variant="outline" size="sm" onClick={onClose} className="border-widget-border">
                 Cancel
               </Button>
               {data.scheduledDate && (
@@ -2548,7 +2548,7 @@ export default function FeedTest() {
                     <PopoverContent
                       align="start"
                       sideOffset={10}
-                      className="w-[240px] rounded-[18px] border border-[#1B1F27]/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                      className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
                     >
                       <div className="grid gap-1.5 text-[12px]">
                         {FILTERS_CONFIG.market.opts.map((opt) => (
@@ -2592,7 +2592,7 @@ export default function FeedTest() {
                     <PopoverContent
                       align="start"
                       sideOffset={10}
-                      className="w-[240px] rounded-[18px] border border-[#1B1F27]/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                      className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
                     >
                       <div className="grid gap-1.5 text-[12px]">
                         {FILTERS_CONFIG.price.opts.map((opt) => (
@@ -2638,7 +2638,7 @@ export default function FeedTest() {
                       <PopoverContent
                         align="start"
                         sideOffset={10}
-                        className="w-[240px] rounded-[18px] border border-[#1B1F27]/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
                       >
                         <div className="grid gap-1.5 text-[12px]">
                           {FILTERS_CONFIG.period.opts.map((opt) => (
@@ -2682,7 +2682,7 @@ export default function FeedTest() {
                       <PopoverContent
                         align="start"
                         sideOffset={10}
-                        className="w-[240px] rounded-[18px] border border-[#1B1F27]/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
                       >
                         <div className="grid gap-1.5 text-[12px]">
                           <button
