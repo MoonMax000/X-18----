@@ -256,7 +256,7 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
                 {/* Password Input */}
                 <div className={cn(
                   "flex h-11 px-[10px] py-3 justify-between items-center rounded-[8px] border backdrop-blur-[50px] bg-[rgba(12,16,20,0.5)]",
-                  passwordError ? "border-[#EF454A]" : "border-[#181B22]"
+                  passwordError ? "border-[#EF454A]" : "border-widget-border"
                 )}>
                   <div className="flex items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

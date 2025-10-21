@@ -867,7 +867,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
             <div className={cn(
               "flex h-11 px-[10px] py-3 items-center gap-2 w-full rounded-xl border backdrop-blur-[50px] bg-[rgba(12,16,20,0.5)]",
-              "border-[#181B22]"
+              "border-widget-border"
             )}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5" stroke={forgotEmail ? "white" : "#B0B0B0"} strokeWidth="1.5" strokeLinejoin="round"/>
@@ -1142,7 +1142,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     "flex items-center gap-2 h-11 px-[10px] py-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] transition-all duration-300",
                     (signupAuthMethod === 'phone' && signupPhoneError) || (signupAuthMethod === 'email' && signupEmailError)
                       ? "border-[#EF454A]"
-                      : "border-[#181B22]"
+                      : "border-widget-border"
                   )}>
                     {signupAuthMethod === 'phone' ? (
                       <>
