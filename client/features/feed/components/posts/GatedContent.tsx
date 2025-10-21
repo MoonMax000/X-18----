@@ -125,7 +125,7 @@ export default function GatedContent({
             >
               {accessLevel === "premium" && <Crown className="w-4 h-4" />}
               <span>
-                П��дписка ${accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}/мес
+                П��дписка ${accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}/mo
               </span>
             </button>
           )}
