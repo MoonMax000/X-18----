@@ -175,22 +175,13 @@ const Footer: FC = () => {
                 className="group relative z-20 overflow-hidden flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full px-6 py-3 text-center leading-7 text-white transition-all duration-300 disabled:cursor-not-allowed"
                 style={{
                   background: !email
-                    ? 'linear-gradient(135deg, rgba(160, 106, 255, 0.4) 0%, rgba(127, 87, 255, 0.3) 50%, rgba(160, 106, 255, 0.4) 100%)'
-                    : 'linear-gradient(135deg, rgba(160, 106, 255, 0.5) 0%, rgba(127, 87, 255, 0.4) 50%, rgba(160, 106, 255, 0.5) 100%)',
-                  boxShadow: email
-                    ? '0 0 30px rgba(160, 106, 255, 0.6), inset 0 0 20px rgba(160, 106, 255, 0.2), 0 4px 15px rgba(0, 0, 0, 0.3)'
-                    : '0 0 20px rgba(160, 106, 255, 0.3), inset 0 0 15px rgba(160, 106, 255, 0.1), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                  border: '1px solid rgba(160, 106, 255, 0.5)',
-                  backgroundSize: '200% 200%',
-                  animation: email ? 'gradientShift 3s ease infinite' : 'none'
+                    ? 'linear-gradient(90deg, #2E2E2E 0%, #151515 52.88%, #0C0C0C 100%)'
+                    : 'linear-gradient(90deg, #583E68 0%, #060507 52.88%, #33253D 100%)',
+                  border: !email
+                    ? '1px solid #525252'
+                    : '1px solid #DE9DFF'
                 }}
               >
-                <style>{`
-                  @keyframes gradientShift {
-                    0%, 100% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                  }
-                `}</style>
                 <span className="text-white font-medium">Subscribe to newsletter</span>
                 <ArrowRight className="h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />
               </button>
