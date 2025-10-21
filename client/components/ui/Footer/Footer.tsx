@@ -212,46 +212,35 @@ const Footer: FC = () => {
             <div className="flex flex-col">
               {/* Logo */}
               <a href="/" className="inline-flex gap-3 items-center mb-10 transition-opacity duration-200 hover:opacity-80">
-                <img
-                  src="/logo.svg"
-                  alt="TyrianTrade"
-                  className="h-10 brightness-0 invert"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement?.classList.remove('hidden');
-                  }}
-                />
-                <div className="hidden flex gap-3 items-center">
-                  <svg
-                    className="w-[18px] h-[22px] shrink-0"
-                    width="18"
-                    height="23"
-                    viewBox="0 0 18 23"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M0 11.4935L0.000836009 11.5607C1.99496 11.1253 3.99971 10.6706 6.00816 10.215L6.01186 21.0231L12.7689 22.5C12.7689 20.1266 12.7479 13.4405 12.77 11.0677L8.04193 10.0343L7.41266 9.89685C10.9481 9.0969 14.49 8.30751 18 7.62785L17.9988 0.5C12.0625 1.79714 5.95525 3.33041 0 4.43313L0 11.4935Z"
-                      fill="url(#paint0_linear_footer)"
-                    />
-                    <defs>
-                      <linearGradient
-                        id="paint0_linear_footer"
-                        x1="4.37143"
-                        y1="24.15"
-                        x2="13.044"
-                        y2="2.25457"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop stopColor="#A06AFF"/>
-                        <stop offset="1" stopColor="#7F57FF"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <span className="text-white text-2xl font-bold">TyrianTrade</span>
-                </div>
+                <svg
+                  className="w-[22px] h-[27px] shrink-0"
+                  width="18"
+                  height="23"
+                  viewBox="0 0 18 23"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M0 11.4935L0.000836009 11.5607C1.99496 11.1253 3.99971 10.6706 6.00816 10.215L6.01186 21.0231L12.7689 22.5C12.7689 20.1266 12.7479 13.4405 12.77 11.0677L8.04193 10.0343L7.41266 9.89685C10.9481 9.0969 14.49 8.30751 18 7.62785L17.9988 0.5C12.0625 1.79714 5.95525 3.33041 0 4.43313L0 11.4935Z"
+                    fill="url(#paint0_linear_footer)"
+                  />
+                  <defs>
+                    <linearGradient
+                      id="paint0_linear_footer"
+                      x1="4.37143"
+                      y1="24.15"
+                      x2="13.044"
+                      y2="2.25457"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop stopColor="#A06AFF"/>
+                      <stop offset="1" stopColor="#7F57FF"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span className="text-white text-2xl font-bold">TyrianTrade</span>
               </a>
 
               {/* Language Selector */}
