@@ -96,32 +96,6 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
 
   const currentSentiment = getCurrentSentiment();
 
-  // Precompute label positions (at midpoints of each range)
-  const categoryLabels = categories.map(cat => {
-    const [minVal, maxVal] = cat.range;
-    const midVal = (minVal + maxVal) / 2;
-    const frac = midVal / 100;                   // fraction of full scale
-    const theta = Math.PI * (1 - frac);          // angle in radians for midpoint
-    const labelRadius = 22;                      // radius for label placement (inside arc)
-    const x = centerX + labelRadius * Math.cos(theta);
-    const y = centerY - labelRadius * Math.sin(theta);
-    // Determine horizontal alignment: leftmost label flush right, rightmost label flush left
-    let anchor: 'start' | 'middle' | 'end' = 'middle';
-    if (minVal === 0) anchor = 'start';         // Extreme Fear at far left
-    if (maxVal === 100) anchor = 'end';         // Extreme Greed at far right
-    return { ...cat, x, y, anchor };
-  });
-
-  // Define tick mark values (including boundaries)
-  const ticks = [0, 25, 45, 55, 75, 100];
-  const tickPositions = ticks.map(value => {
-    const frac = value / 100;
-    const theta = Math.PI * (1 - frac);
-    const tickRadius = 27;                     // radius for tick mark placement (near arc)
-    const x = centerX + tickRadius * Math.cos(theta);
-    const y = centerY - tickRadius * Math.sin(theta);
-    return { value, x, y };
-  });
 
   return (
     <div className="rounded-2xl border border-widget-border bg-black p-4">
