@@ -4,15 +4,11 @@ import { Users, TrendingUp } from "lucide-react";
 interface CommunitySentimentWidgetProps {
   bullishPercent?: number; // 0-100
   votesText?: string; // e.g., "1.9M votes"
-  onBullish?: () => void;
-  onBearish?: () => void;
 }
 
 export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> = ({
   bullishPercent = 82,
   votesText = "1.9M votes",
-  onBullish,
-  onBearish,
 }) => {
   const [bullFill, setBullFill] = useState(0);
   const [bearFill, setBearFill] = useState(0);
