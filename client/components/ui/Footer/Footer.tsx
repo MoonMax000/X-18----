@@ -172,13 +172,25 @@ const Footer: FC = () => {
               <button
                 type="submit"
                 disabled={!email}
+                className="group relative overflow-hidden flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full px-6 py-3 text-center leading-7 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-30"
                 style={{
-                  backgroundImage: !email
-                    ? 'linear-gradient(90deg, rgba(230, 230, 230, 0.15), rgba(230, 230, 230, 0.05) 75.8%)'
-                    : 'linear-gradient(90deg, rgba(230, 230, 230, 0.3), rgba(230, 230, 230, 0.1) 75.8%)'
+                  background: !email
+                    ? 'linear-gradient(135deg, rgba(160, 106, 255, 0.15) 0%, rgba(127, 87, 255, 0.1) 50%, rgba(160, 106, 255, 0.15) 100%)'
+                    : 'linear-gradient(135deg, rgba(160, 106, 255, 0.3) 0%, rgba(127, 87, 255, 0.2) 50%, rgba(160, 106, 255, 0.3) 100%)',
+                  boxShadow: email
+                    ? '0 0 30px rgba(160, 106, 255, 0.4), inset 0 0 20px rgba(160, 106, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.3)'
+                    : '0 0 15px rgba(160, 106, 255, 0.2), inset 0 0 10px rgba(160, 106, 255, 0.05)',
+                  border: '1px solid rgba(160, 106, 255, 0.3)',
+                  backgroundSize: '200% 200%',
+                  animation: email ? 'gradientShift 3s ease infinite' : 'none'
                 }}
-                className="group relative z-10 flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border border-[#525252] bg-black/20 px-6 py-3 text-center leading-7 text-white transition-all duration-300 hover:border-[#DE9DFF] hover:shadow-[0_0_20px_rgba(222,157,255,0.6)] disabled:cursor-not-allowed disabled:opacity-30"
               >
+                <style>{`
+                  @keyframes gradientShift {
+                    0%, 100% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                  }
+                `}</style>
                 <span className="text-white font-medium">Subscribe to newsletter</span>
                 <ArrowRight className="h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />
               </button>
