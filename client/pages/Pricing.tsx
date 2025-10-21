@@ -94,7 +94,7 @@ const PricingCard: FC<PricingCardProps> = ({
     ? "border-4 border-primary glow-intense"
     : isPopular
       ? "border-4 border-primary"
-      : "border-2 border-[#181B22]";
+      : "border-2 border-widget-border";
   const cardClasses = isGold
     ? "bg-gradient-to-br from-[#482090]/20 to-[#0C1014]/95"
     : "bg-[#0C101480] backdrop-blur-[100px]";
