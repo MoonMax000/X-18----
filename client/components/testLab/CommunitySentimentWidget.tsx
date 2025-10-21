@@ -60,6 +60,9 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
         {/* Bearish side */}
         <div className="flex items-center justify-end gap-2">
           <div className="text-lg font-bold text-rose-400">{bearishPercent}%</div>
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-[#0A0D12] ring-1 ring-[#1B1F27]">
+            <TrendingDown className="h-4 w-4 text-rose-400" />
+          </div>
         </div>
       </div>
 
