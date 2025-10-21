@@ -24,6 +24,7 @@ interface RightSidebarProps {
   followRecommendations?: any[];
   topAuthors?: TopAuthor[];
   onAuthorFollowToggle?: (handle: string) => void;
+  isOwnProfile?: boolean; // NEW: Controls visibility of owner-only widgets
   showAuthorActivity?: boolean;
   authorActivity?: {
     posts: number;
@@ -53,6 +54,7 @@ export default function RightSidebar({
   followRecommendations = [],
   topAuthors = [],
   onAuthorFollowToggle,
+  isOwnProfile = false,
   showAuthorActivity = false,
   authorActivity,
   showTopTickers = false,
@@ -113,7 +115,8 @@ export default function RightSidebar({
         />
       )}
 
-      {showEarnings && earnings && (
+      {/* Earnings - Only visible to profile owner */}
+      {isOwnProfile && showEarnings && earnings && (
         <EarningsWidget
           mrr={earnings.mrr}
           arpu={earnings.arpu}

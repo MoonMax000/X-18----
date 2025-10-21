@@ -31,6 +31,7 @@ export default function OtherProfilePage() {
       
       {/* Optimized Right Sidebar with widgets */}
       <RightSidebar
+        isOwnProfile={false}
         fearGreedScore={32}
         communitySentiment={{ bullishPercent: 82, votesText: "1.9M votes" }}
         trendingTickers={TRENDING_TICKERS}
