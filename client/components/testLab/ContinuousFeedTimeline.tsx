@@ -489,10 +489,10 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
                   type="button"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Save"
-                  className="relative z-10 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-[#9BA0AF] transition-colors duration-200 hover:bg-[#482090]/10 hover:text-white"
+                  className="relative z-10 flex h-5 w-5 items-center justify-center rounded-full text-[#B0B0B0] transition-colors duration-200 hover:bg-[#482090]/10 hover:text-white"
                 >
                   <svg
-                    className="w-[14px] h-[14px] sm:w-[15px] sm:h-[15px]"
+                    className="w-[14px] h-[14px]"
                     viewBox="0 0 20 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
