@@ -39,7 +39,7 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
       <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         {/* Bullish side */}
         <div className="flex items-center gap-2">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A0D12] ring-1 ring-[#1B1F27]">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-[#0A0D12] ring-1 ring-[#1B1F27]">
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-lg font-bold text-emerald-400">{bullishPercent}%</div>
@@ -64,7 +64,7 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
         {/* Bearish side */}
         <div className="flex items-center justify-end gap-2">
           <div className="text-lg font-bold text-rose-400">{bearishPercent}%</div>
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A0D12] ring-1 ring-[#1B1F27]">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-[#0A0D12] ring-1 ring-[#1B1F27]">
             <TrendingDown className="h-4 w-4 text-rose-400" />
           </div>
         </div>
