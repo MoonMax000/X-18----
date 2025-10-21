@@ -62,10 +62,10 @@ export const TAB_VARIANTS = {
   container: "mb-3 flex items-center overflow-x-auto rounded-full border border-widget-border bg-[#000000] p-0.5",
   
   item: (isActive: boolean, isAll: boolean = false) => {
-    const base = isAll ? "flex-none min-w-[60px]" : "flex-1 min-w-[120px]";
-    const styles = "px-3 py-1 text-xs sm:text-sm font-semibold rounded-full transition-all duration-200";
-    const activeStyles = isActive 
-      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white" 
+    const base = isAll ? "flex-none min-w-[56px]" : "flex-none min-w-[90px]";
+    const styles = "px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 whitespace-nowrap";
+    const activeStyles = isActive
+      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white"
       : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20";
     return `${base} ${styles} ${activeStyles}`;
   },
