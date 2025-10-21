@@ -3,3 +3,4 @@ export { default as FeedTabs } from "./FeedTabs";
 export { default as FeedFilters } from "./FeedFilters";
 export { default as RightSidebar } from "./RightSidebar";
 export * from "./widgets";
+export * from "./posts";
