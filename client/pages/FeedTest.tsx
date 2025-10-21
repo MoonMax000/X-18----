@@ -2913,29 +2913,6 @@ export default function FeedTest() {
           </button>
         </div>
 
-        {/* Market Sentiment */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-            <Sparkles className="h-5 w-5 text-yellow-400" />
-            Market Sentiment
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#C5C9D3]">Bullish</span>
-              <span className="text-sm font-semibold text-green-400">68%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[#1B1F27]">
-              <div className="h-full w-[68%] bg-gradient-to-r from-emerald-500 to-green-400 shadow-[0_0_16px_rgba(16,185,129,0.7)]" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#C5C9D3]">Bearish</span>
-              <span className="text-sm font-semibold text-red-400">32%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[#1B1F27]">
-              <div className="h-full w-[32%] bg-gradient-to-r from-rose-500 to-red-400 shadow-[0_0_16px_rgba(244,63,94,0.7)]" />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
