@@ -1806,7 +1806,7 @@ function AdvancedComposer({
                         placeholder="Describe what this code does, strategy details, features..."
                         value={data.codeDescription}
                         onChange={(e) => updateData({ codeDescription: e.target.value })}
-                        className="mt-2 min-h-[120px] border-widget-border bg-[#0A0D12] text-white"
+                        className="mt-2 min-h-[80px] border-widget-border bg-[#0A0D12] text-white"
                       />
                     </div>
 
@@ -1816,7 +1816,7 @@ function AdvancedComposer({
                         placeholder="Paste your code here..."
                         value={data.codeSnippet}
                         onChange={(e) => updateData({ codeSnippet: e.target.value })}
-                        className="mt-2 min-h-[120px] font-mono text-sm border-widget-border bg-[#0A0D12] text-white"
+                        className="mt-2 min-h-[80px] font-mono text-sm border-widget-border bg-[#0A0D12] text-white"
                       />
                     </div>
                   </div>
