@@ -14,6 +14,25 @@ interface FeedFiltersProps {
   onFeedModeChange: (mode: "recent" | "hot") => void;
 }
 
+type CategoryOption = {
+  value: LabCategory | "all";
+  label: string;
+  description?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  badgeClassName?: string;
+};
+
+const CATEGORY_OPTIONS: CategoryOption[] = [
+  { value: "all", label: "Все", description: "Вся лента" },
+  ...LAB_CATEGORY_CONFIG.map((item) => ({
+    value: item.value,
+    label: item.label,
+    description: item.description,
+    icon: item.icon,
+    badgeClassName: item.badgeClassName,
+  })),
+];
+
 export default function FeedFilters({
   activeTab,
   filters,
