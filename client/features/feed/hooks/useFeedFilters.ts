@@ -2,6 +2,7 @@
 import { useMemo, useState, useCallback } from "react";
 import type { FeedTab, Post } from "../types";
 import { TABS_CONFIG } from "../constants";
+import { sortByHotScore } from "../utils/hotScore";
 
 type FeedMode = "recent" | "hot";
 
@@ -74,8 +75,12 @@ export function useFeedFilters(initialTab: FeedTab = "all") {
       res = res.filter(p => p.ticker?.toUpperCase().includes(q));
     }
 
-    if (feedMode === "hot") res.sort((a, b) => (b.likes + b.views / 10) - (a.likes + a.views / 10));
-    if (feedMode === "recent") res = res.slice().reverse();
+    // Apply sorting
+    if (feedMode === "hot") {
+      res = sortByHotScore(res);
+    } else if (feedMode === "recent") {
+      res = res.slice().reverse();
+    }
 
     return res;
   }, [activeTab, filters, selectedCategories, selectedTicker, feedMode]);
