@@ -510,9 +510,9 @@ const TRENDING_TICKERS = [
 ];
 
 const TOP_AUTHORS = [
-  { name: "Alex Trader", handle: "@alextrader", avatar: "https://i.pravatar.cc/120?img=12", followers: "45.2K", isFollowing: false },
-  { name: "Crypto Whale", handle: "@cryptowhale", avatar: "https://i.pravatar.cc/120?img=33", followers: "38.5K", isFollowing: true },
-  { name: "Algo Dev", handle: "@algodev", avatar: "https://i.pravatar.cc/120?img=25", followers: "32.1K", isFollowing: false }
+  { name: "Alex Trader", handle: "@alextrader", avatar: "https://i.pravatar.cc/120?img=12", followers: 45200, isFollowing: false },
+  { name: "Crypto Whale", handle: "@cryptowhale", avatar: "https://i.pravatar.cc/120?img=33", followers: 38500, isFollowing: true },
+  { name: "Algo Dev", handle: "@algodev", avatar: "https://i.pravatar.cc/120?img=25", followers: 32100, isFollowing: false }
 ];
 
 const INITIAL_COMPOSER_STATE: ComposerData = {
@@ -1270,7 +1270,8 @@ function QuickComposer({
             <button
               type="button"
               className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
-              onClick={() => setMediaCount(prev => prev + 1)}
+              onClick={openMediaPicker}
+              title="Add video"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
@@ -2336,7 +2337,7 @@ export default function FeedTest() {
     });
   };
 
-  const activeConfig = useMemo(() => TABS_CONFIG[activeTab] || TABS_CONFIG.popular, [activeTab]);
+  const activeConfig = useMemo(() => TABS_CONFIG[activeTab] || TABS_CONFIG.all, [activeTab]);
 
   // Simulate new posts arriving
   useEffect(() => {
