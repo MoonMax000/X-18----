@@ -124,9 +124,7 @@ export default function GatedContent({
               className="group relative flex items-center justify-center gap-2 px-8 sm:px-10 py-3 rounded-full border-2 border-[#A06AFF] bg-transparent text-white text-sm sm:text-[15px] font-bold hover:bg-[#A06AFF]/10 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 whitespace-nowrap w-full sm:w-auto"
             >
               {accessLevel === "premium" && <Crown className="w-4 h-4" />}
-              <span>
-                П��дписка ${accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}/mo
-              </span>
+              <span>Subscribe ${accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}/mo</span>
             </button>
           )}
         </div>
