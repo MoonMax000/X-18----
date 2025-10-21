@@ -189,13 +189,13 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
           <GatedContent
             accessLevel={post.accessLevel!}
+            postId={post.id}
+            authorId={post.author.id || post.author.handle}
             postPrice={post.postPrice}
             subscriptionPrice={post.author.subscriptionPrice}
             authorName={post.author.name}
             isPurchased={post.isPurchased}
             isSubscriber={post.isSubscriber}
-            onUnlock={() => console.log("Unlock post", post.id)}
-            onSubscribe={() => console.log("Subscribe to", post.author.handle)}
           />
         </section>
       )}
