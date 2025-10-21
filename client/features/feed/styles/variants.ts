@@ -8,9 +8,9 @@ import { COLORS, GRADIENTS, SHADOWS, RADIUS, SPACING, BACKDROP, TRANSITIONS } fr
 // ============ КНОПКИ ============
 export const BUTTON_VARIANTS = {
   // Primary кнопки (фиолетовые)
-  primary: `${RADIUS.button.default} ${GRADIENTS.primary} text-white ${SHADOWS.purpleButton} hover:${SHADOWS.purpleHover} hover:-translate-y-0.5 active:scale-[0.98] ${TRANSITIONS.default}`,
-  
-  primaryDisabled: `${RADIUS.button.default} cursor-not-allowed bg-[#6C7280]/20 text-[#6C7280]`,
+  primary: "rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)] hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,1)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200",
+
+  primaryDisabled: "rounded-full cursor-not-allowed bg-[#6C7280]/20 text-[#6C7280]",
   
   // Outline кнопки
   outline: `${RADIUS.button.default} border border-[#A06AFF]/40 bg-transparent text-[#A06AFF] hover:bg-[#1C1430] ${TRANSITIONS.colors}`,
