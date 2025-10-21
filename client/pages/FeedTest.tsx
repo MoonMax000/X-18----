@@ -1799,24 +1799,26 @@ function AdvancedComposer({
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-sm text-[#C5C9D3]">Description *</Label>
-                    <Textarea
-                      placeholder="Describe what this code does, strategy details, features..."
-                      value={data.codeDescription}
-                      onChange={(e) => updateData({ codeDescription: e.target.value })}
-                      className="mt-2 min-h-[80px] border-widget-border bg-[#0A0D12] text-white"
-                    />
-                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-[#C5C9D3]">Description *</Label>
+                      <Textarea
+                        placeholder="Describe what this code does, strategy details, features..."
+                        value={data.codeDescription}
+                        onChange={(e) => updateData({ codeDescription: e.target.value })}
+                        className="mt-2 min-h-[120px] border-widget-border bg-[#0A0D12] text-white"
+                      />
+                    </div>
 
-                  <div>
-                    <Label className="text-sm text-[#C5C9D3]">Code Preview/Snippet</Label>
-                    <Textarea
-                      placeholder="Paste your code here..."
-                      value={data.codeSnippet}
-                      onChange={(e) => updateData({ codeSnippet: e.target.value })}
-                      className="mt-2 min-h-[200px] font-mono text-sm border-widget-border bg-[#0A0D12] text-white"
-                    />
+                    <div>
+                      <Label className="text-sm text-[#C5C9D3]">Code Preview/Snippet</Label>
+                      <Textarea
+                        placeholder="Paste your code here..."
+                        value={data.codeSnippet}
+                        onChange={(e) => updateData({ codeSnippet: e.target.value })}
+                        className="mt-2 min-h-[120px] font-mono text-sm border-widget-border bg-[#0A0D12] text-white"
+                      />
+                    </div>
                   </div>
                 </TabsContent>
               )}
