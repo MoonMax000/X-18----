@@ -164,9 +164,10 @@ const Footer: FC = () => {
               <button
                 type="submit"
                 disabled={!email}
-                className="max-h-[52px] min-w-fit rounded-full bg-[#EFEFEF]/30 px-6 py-3 text-center leading-7 text-[#101010]/30 transition-all duration-300 hover:bg-[#EFEFEF]/40 disabled:cursor-not-allowed disabled:opacity-30 enabled:bg-white enabled:text-black enabled:hover:bg-white/90"
+                className="group flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded border border-[#525252] bg-gradient-to-r from-[rgba(230,230,230,0.2)] to-[rgba(230,230,230,0.05)] px-6 py-4 text-center leading-7 text-white transition-all duration-300 hover:border-white hover:from-[rgba(230,230,230,0.3)] hover:to-[rgba(230,230,230,0.1)] disabled:cursor-not-allowed disabled:opacity-30"
               >
-                Subscribe to newsletter
+                <span>Subscribe to newsletter</span>
+                <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
             </form>
 
