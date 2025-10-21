@@ -25,6 +25,7 @@ import SocialPostDetail from "./pages/SocialPostDetail";
 import SocialPostPreview from "./pages/SocialPostPreview";
 import SocialTweetComposer from "./pages/SocialTweetComposer";
 import HomePage from "./pages/Home";
+import NewHome from "./pages/NewHome";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
 import Updates from "./pages/Updates";
@@ -52,7 +53,7 @@ const App = () => (
               element={
                 <ClientLayout>
                   <Routes>
-                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/" element={<NewHome />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
