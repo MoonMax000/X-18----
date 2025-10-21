@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import GatedContent from "./GatedContent";
 import type { Post } from "../../types";
 
 interface FeedPostProps {
