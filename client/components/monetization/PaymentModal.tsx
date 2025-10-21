@@ -1,0 +1,221 @@
+import React, { useState } from "react";
+import { X, CreditCard, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { usePayment, getErrorMessage } from "@/hooks/usePayment";
+
+interface PaymentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  type: "unlock" | "subscribe";
+  amount: number;
+  postId?: string;
+  authorId?: string;
+  authorName?: string;
+  plan?: "monthly" | "yearly";
+  onSuccess?: () => void;
+}
+
+export default function PaymentModal({
+  isOpen,
+  onClose,
+  type,
+  amount,
+  postId,
+  authorId,
+  authorName,
+  plan = "monthly",
+  onSuccess,
+}: PaymentModalProps) {
+  const { status, error, purchasePost, subscribe, reset } = usePayment();
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
+
+  if (!isOpen) return null;
+
+  const handlePayment = async () => {
+    let success = false;
+
+    if (type === "unlock" && postId) {
+      success = await purchasePost(postId, amount);
+    } else if (type === "subscribe" && authorId) {
+      success = await subscribe(authorId, plan);
+    }
+
+    if (success) {
+      setTimeout(() => {
+        onSuccess?.();
+        handleClose();
+      }, 1500);
+    }
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <div className="relative w-full max-w-md rounded-2xl border border-widget-border bg-[#0B0E13] p-6 shadow-2xl">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">
+            {type === "unlock" ? "Разблокировать пост" : "Оформить подписку"}
+          </h2>
+          <button
+            onClick={handleClose}
+            className="rounded-full p-1 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Status */}
+        {status === "success" && (
+          <div className="mb-6 flex items-center gap-3 rounded-xl bg-green-500/10 p-4 text-green-400">
+            <CheckCircle2 className="h-5 w-5" />
+            <div>
+              <p className="font-semibold">Готово! ✓</p>
+              <p className="text-sm">
+                {type === "unlock"
+                  ? "Пост разблокирован. Наслаждайтесь чтением!"
+                  : `Подписка на ${authorName} оформлена!`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {status === "failed" && error && (
+          <div className="mb-6 flex items-center gap-3 rounded-xl bg-red-500/10 p-4 text-red-400">
+            <AlertCircle className="h-5 w-5" />
+            <div>
+              <p className="font-semibold">Ошибка оплаты</p>
+              <p className="text-sm">{getErrorMessage(error)}</p>
+            </div>
+          </div>
+        )}
+
+        {status === "processing" && (
+          <div className="mb-6 flex items-center gap-3 rounded-xl bg-blue-500/10 p-4 text-blue-400">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <div>
+              <p className="font-semibold">Обраб��тка платежа...</p>
+              <p className="text-sm">Пожалуйста, подождите. Не закрывайте окно.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Amount */}
+        <div className="mb-6 rounded-xl bg-white/5 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400">Сумма</span>
+            <span className="text-2xl font-bold text-white">
+              ${amount}
+              {type === "subscribe" && <span className="text-sm text-gray-400">/{plan === "monthly" ? "мес" : "год"}</span>}
+            </span>
+          </div>
+          {type === "subscribe" && (
+            <p className="mt-2 text-xs text-gray-500">
+              {plan === "monthly"
+                ? "Следующее списание через 30 дней"
+                : "Следующее списание через 1 год (экономия 17%)"}
+            </p>
+          )}
+        </div>
+
+        {/* Payment Method */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-semibold text-white">Способ оплаты</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setPaymentMethod("card")}
+              disabled={status === "processing"}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-xl border p-3 transition",
+                paymentMethod === "card"
+                  ? "border-[#A06AFF] bg-[#1C1430] text-white"
+                  : "border-gray-700 bg-white/5 text-gray-400 hover:border-gray-600"
+              )}
+            >
+              <CreditCard className="h-4 w-4" />
+              <span className="text-sm font-medium">Карта</span>
+            </button>
+            <button
+              onClick={() => setPaymentMethod("paypal")}
+              disabled={status === "processing"}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-xl border p-3 transition",
+                paymentMethod === "paypal"
+                  ? "border-[#A06AFF] bg-[#1C1430] text-white"
+                  : "border-gray-700 bg-white/5 text-gray-400 hover:border-gray-600"
+              )}
+            >
+              <span className="text-sm font-medium">PayPal</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mock Card Input */}
+        {paymentMethod === "card" && status !== "success" && (
+          <div className="mb-6 space-y-3">
+            <div>
+              <label className="mb-1 block text-xs text-gray-400">Номер карты</label>
+              <input
+                type="text"
+                placeholder="1234 5678 9012 3456"
+                disabled={status === "processing"}
+                className="w-full rounded-lg border border-gray-700 bg-white/5 px-3 py-2 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">Срок действия</label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  disabled={status === "processing"}
+                  className="w-full rounded-lg border border-gray-700 bg-white/5 px-3 py-2 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">CVV</label>
+                <input
+                  type="text"
+                  placeholder="123"
+                  disabled={status === "processing"}
+                  className="w-full rounded-lg border border-gray-700 bg-white/5 px-3 py-2 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleClose}
+            disabled={status === "processing"}
+            className="flex-1 rounded-lg border border-gray-700 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+          >
+            Отменить
+          </button>
+          <button
+            onClick={handlePayment}
+            disabled={status === "processing" || status === "success"}
+            className="flex-1 rounded-lg bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:opacity-50"
+          >
+            {status === "processing" ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Обработка...
+              </span>
+            ) : status === "success" ? (
+              "Готово ✓"
+            ) : (
+              `Оплатить $${amount}`
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
