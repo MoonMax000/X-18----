@@ -8,13 +8,15 @@ interface WidgetCardProps {
   variant?: "default" | "compact";
 }
 
-export default function WidgetCard({ children, className, variant = "default" }: WidgetCardProps) {
+export function WidgetCard({ children, className, variant = "default" }: WidgetCardProps) {
   return (
     <div className={cn(CARD_VARIANTS.widget[variant], className)}>
       {children}
     </div>
   );
 }
+
+export default WidgetCard;
 
 interface WidgetHeaderProps {
   title: string | ReactNode;
