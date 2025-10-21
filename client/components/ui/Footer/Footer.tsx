@@ -169,10 +169,10 @@ const Footer: FC = () => {
                     ? 'linear-gradient(90deg, rgba(230, 230, 230, 0.1), rgba(230, 230, 230, 0.02) 75.8%)'
                     : 'linear-gradient(90deg, rgba(230, 230, 230, 0.2), rgba(230, 230, 230, 0.05) 75.8%)'
                 }}
-                className="group flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border border-[#525252] px-6 py-3 text-center leading-7 text-white transition-all duration-300 hover:border-white hover:shadow-[0_0_20px_rgba(230,230,230,0.3)] disabled:cursor-not-allowed disabled:opacity-30"
+                className="group flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border border-[#525252] px-6 py-3 text-center leading-7 text-white transition-all duration-300 hover:border-[#DE9DFF] hover:shadow-[0_0_20px_rgba(222,157,255,0.6)] disabled:cursor-not-allowed disabled:opacity-30"
               >
-                <span>Subscribe to newsletter</span>
-                <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="text-white">Subscribe to newsletter</span>
+                <ArrowRight className="h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />
               </button>
             </form>
 
