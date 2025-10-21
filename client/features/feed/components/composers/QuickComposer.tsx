@@ -195,7 +195,7 @@ export default function QuickComposer({ onExpand }: Props) {
         <AvatarFallback>U</AvatarFallback>
       </Avatar>
 
-      <div className="flex-1">
+      <div className="flex-1 mb-[-1px]">
         <Textarea
           placeholder="Share your trading ideas, signals, or analysis... ($TICKER, #tags, @mentions)"
           value={text}
@@ -206,7 +206,7 @@ export default function QuickComposer({ onExpand }: Props) {
             }
           }}
           maxLength={MAX_CHARS}
-          className="!min-h-[80px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0"
+          className="!min-h-[24px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0 !px-3 !py-2"
         />
 
         {activeBlock?.media && activeBlock.media.length > 0 && (
