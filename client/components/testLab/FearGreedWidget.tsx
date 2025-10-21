@@ -85,6 +85,17 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
     { label: 'Extreme Greed', color: '#16C784', range: [75, 100] },
   ];
 
+  // Determine current sentiment based on score
+  const getCurrentSentiment = () => {
+    if (animatedScore < 25) return categories[0];
+    if (animatedScore < 45) return categories[1];
+    if (animatedScore < 55) return categories[2];
+    if (animatedScore < 75) return categories[3];
+    return categories[4];
+  };
+
+  const currentSentiment = getCurrentSentiment();
+
   // Precompute label positions (at midpoints of each range)
   const categoryLabels = categories.map(cat => {
     const [minVal, maxVal] = cat.range;
