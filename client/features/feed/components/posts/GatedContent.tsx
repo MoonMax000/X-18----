@@ -113,7 +113,7 @@ export default function GatedContent({
               className="group relative flex items-center justify-center px-8 sm:px-10 py-3 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-sm sm:text-[15px] font-bold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 whitespace-nowrap w-full sm:w-auto overflow-hidden"
             >
               <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
-              <span className="relative">Разблокировать за ${postPrice}</span>
+              <span className="relative">Unlock for ${postPrice}</span>
             </button>
           )}
 
