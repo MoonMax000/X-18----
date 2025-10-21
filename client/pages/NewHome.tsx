@@ -1,7 +1,7 @@
 import { TopBanner } from "@/components/Homepage/TopBanner";
 import { HeroSection } from "@/components/Homepage/HeroSection";
 import { FeaturesSection } from "@/components/Homepage/FeaturesSection";
-import { FAQSection } from "@/components/Homepage/FAQSection";
+import { NewFAQSection } from "@/components/Homepage/NewFAQSection";
 import { Newsletter } from "@/components/Homepage/Newsletter";
 
 export default function NewHome() {
@@ -10,7 +10,7 @@ export default function NewHome() {
       <TopBanner />
       <HeroSection />
       <FeaturesSection />
-      <FAQSection />
+      <NewFAQSection />
       <Newsletter />
     </div>
   );
