@@ -254,10 +254,20 @@ const Footer: FC = () => {
 
               {/* Copyright */}
               <div className="text-[13px] text-[#949494] leading-[22px]">
-                <p className="mb-5">
-                  Copyright © {new Date().getFullYear()} TyrianTrade. All rights reserved.
-                  TyrianTrade is a registered trademark.
-                </p>
+                <div className="flex items-start gap-3 mb-5">
+                  <img
+                    src="/logo.svg"
+                    alt="TyrianTrade"
+                    className="h-6 mt-0.5 brightness-0 invert opacity-70"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <p className="flex-1">
+                    Copyright © {new Date().getFullYear()} TyrianTrade. All rights reserved.
+                    TyrianTrade is a registered trademark.
+                  </p>
+                </div>
                 <p className="mb-3 font-medium">Payment methods</p>
                 <div className="flex flex-wrap gap-2">
                   <div className="px-3 py-1 bg-white/5 rounded text-xs">Visa</div>
