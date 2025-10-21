@@ -53,7 +53,6 @@ export function FeaturesSection() {
     const handleScroll = () => {
       if (!containerRef.current) return;
 
-      const containerTop = containerRef.current.getBoundingClientRect().top;
       const windowHeight = window.innerHeight;
 
       featureRefs.current.forEach((ref, index) => {
@@ -67,10 +66,13 @@ export function FeaturesSection() {
           elementCenter > viewportCenter - 200 &&
           elementCenter < viewportCenter + 200
         ) {
-          if (activeFeature !== index) {
-            setActiveFeature(index);
-            setImageKey((prev) => prev + 1);
-          }
+          setActiveFeature((current) => {
+            if (current !== index) {
+              setImageKey((prev) => prev + 1);
+              return index;
+            }
+            return current;
+          });
         }
       });
     };
@@ -79,7 +81,7 @@ export function FeaturesSection() {
     handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [activeFeature]);
+  }, []);
 
   return (
     <section
