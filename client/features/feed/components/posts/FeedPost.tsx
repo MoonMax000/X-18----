@@ -143,17 +143,16 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px]">
         <p className="whitespace-pre-line text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white">
           {post.text}
-          {post.tags && post.tags.length > 0 && (
-            <>
-              {" "}
-              {post.tags.map((tag) => (
-                <span key={tag} className="text-[#4D7CFF] font-normal">
-                  {tag}
-                </span>
-              )).reduce((prev, curr) => [prev, " ", curr] as any)}
-            </>
-          )}
         </p>
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {post.tags.map((tag) => (
+              <span key={tag} className="text-[#4D7CFF] font-normal text-[14px] sm:text-[15px]">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Signal-specific info */}
