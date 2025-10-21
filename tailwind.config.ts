@@ -65,6 +65,7 @@ export default {
 
         lightGray: "#1F2229",
         gray: "#272A32",
+        "widget-border": "#2F2F31",
       },
       boxShadow: {
         "avatar-shadow": "0 6.71px 11.41px -1.34px rgba(0,0,0,0.28)",
