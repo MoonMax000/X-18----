@@ -4,6 +4,7 @@ import { Check, ChevronDown, Flame, Clock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FILTERS_CONFIG, TABS_CONFIG } from "../constants";
 import type { FeedTab } from "../types";
+import { LAB_CATEGORY_CONFIG, type LabCategory } from "@/components/testLab/categoryConfig";
 
 interface FeedFiltersProps {
   activeTab: FeedTab;
