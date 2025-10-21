@@ -149,33 +149,6 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
             <path d="M 61.2154 20.1757 A 29 29 0 0 1 65 34.5"
                   stroke="#16C784" strokeWidth="3" strokeLinecap="round" fill="none"/>
 
-            {/* Category Labels on the arc */}
-            {categoryLabels.map(cat => (
-              <text 
-                key={cat.label}
-                x={cat.x} 
-                y={cat.y}
-                textAnchor={cat.anchor} 
-                alignmentBaseline="middle"
-                fontSize="4" fontWeight="600" fill={cat.color}
-              >
-                {cat.label}
-              </text>
-            ))}
-
-            {/* Numeric Tick Marks (range boundaries) */}
-            {tickPositions.map(tick => (
-              <text 
-                key={tick.value}
-                x={tick.x} 
-                y={tick.y}
-                textAnchor="middle" 
-                alignmentBaseline="middle"
-                fontSize="3" fill="#FFFFFF"
-              >
-                {tick.value}
-              </text>
-            ))}
 
             {/* Indicator Dot showing current value position */}
             <circle 
