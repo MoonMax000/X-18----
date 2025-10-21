@@ -1,25 +1,7 @@
 import { useCallback } from "react";
+import type { AnalyticsEvent, BaseEventPayload } from "@/shared/analytics/events";
 
-export type AnalyticsEvent =
-  | "page_view"
-  | "post_create"
-  | "post_view"
-  | "post_unlock"
-  | "subscribe_start"
-  | "subscribe_success"
-  | "subscribe_failed"
-  | "donate_click"
-  | "donate_success"
-  | "filter_apply"
-  | "sort_toggle"
-  | "ticker_filter"
-  | "new_posts_click"
-  | "follow_toggle"
-  | "like_toggle"
-  | "comment_submit"
-  | "share_click";
-
-interface AnalyticsPayload {
+interface AnalyticsPayload extends BaseEventPayload {
   [key: string]: any;
 }
 
