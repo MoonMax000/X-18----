@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Users, TrendingUp } from "lucide-react";
+import { Users, TrendingUp, TrendingDown } from "lucide-react";
 
 interface CommunitySentimentWidgetProps {
   bullishPercent?: number; // 0-100
