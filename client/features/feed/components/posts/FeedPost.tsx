@@ -239,6 +239,15 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             <span className="md:hidden">{formatNumber(post.likes)}</span>
           </button>
 
+          <button
+            onClick={() => setShowTipModal(true)}
+            className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors hover:text-[#10B981]"
+            title="Send tip"
+          >
+            <DollarSign className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" />
+            <span className="hidden lg:inline text-xs">Tip</span>
+          </button>
+
           {typeof post.views === "number" && (
             <button className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors hover:text-[#4D7CFF]">
               <svg className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" viewBox="0 0 24 24" fill="none">
@@ -265,6 +274,15 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           </button>
         </div>
       </footer>
+
+      {/* Tip Modal */}
+      <TipModal
+        isOpen={showTipModal}
+        onClose={() => setShowTipModal(false)}
+        authorId={post.author.handle}
+        authorName={post.author.name}
+        authorAvatar={post.author.avatar}
+      />
     </article>
   );
 }
