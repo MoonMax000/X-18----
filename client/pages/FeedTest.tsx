@@ -44,7 +44,7 @@ export default function FeedTest() {
     });
   }, []);
 
-  const filteredPosts = useMemo(() => applyToPosts(displayed), [applyToPosts, displayed]);
+  const filteredPosts = useMemo(() => applyToPosts(displayed, followingAuthors), [applyToPosts, displayed, followingAuthors]);
 
   return (
     <div className="flex min-h-screen w-full gap-6">

@@ -33,8 +33,13 @@ export function useFeedFilters(initialTab: FeedTab = "all") {
     );
   }, []);
 
-  const applyToPosts = useCallback((posts: Post[]) => {
+  const applyToPosts = useCallback((posts: Post[], followingHandles?: Set<string>) => {
     let res = [...posts];
+
+    // Following tab: show only posts from followed users
+    if (activeTab === "following" && followingHandles) {
+      res = res.filter(p => followingHandles.has(p.author.handle));
+    }
 
     if (activeTab === "ideas") res = res.filter(p => ["education", "analysis", "news"].includes(p.type));
     if (activeTab === "opinions") res = res.filter(p => ["general", "macro"].includes(p.type));
