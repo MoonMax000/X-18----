@@ -45,6 +45,9 @@ export function useFeedFilters(initialTab: FeedTab = "all") {
     if (filters.market && filters.market !== "All") {
       res = res.filter(p => p.market?.toLowerCase() === filters.market.toLowerCase());
     }
+    if (filters.category && filters.category !== "all") {
+      res = res.filter(p => p.type === filters.category);
+    }
     if (selectedCategories.length > 0) {
       res = res.filter(p => selectedCategories.some(cat => p.type === cat.toLowerCase()));
     }
