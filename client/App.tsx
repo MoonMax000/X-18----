@@ -45,62 +45,62 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-          <BrowserRouter>
-          <Routes>
-            {/* Standard pages with ClientLayout */}
-            <Route
-              path="*"
-              element={
-                <ClientLayout>
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/home" element={<FeedTest />} />
-                    <Route path="/home/post/:postId" element={<HomePostDetail />} />
-                    <Route path="/marketplace/test-home" element={<Index />} />
-                    <Route path="/profile/:username" element={<ProfileDynamic />} />
-                    <Route path="/profile-page" element={<ProfilePage />} />
-                    <Route
-                      path="/other-profile"
-                      element={<OtherProfilePage />}
-                    />
-                    <Route path="/social/explore" element={<SocialExplore />} />
-                    <Route
-                      path="/social/notifications"
-                      element={<SocialNotifications />}
-                    />
-                    <Route
-                      path="/social/messages"
-                      element={<SocialMessages />}
-                    />
-                    <Route
-                      path="/social/post/:postId"
-                      element={<SocialPostDetail />}
-                    />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/profile" element={<ProfileIntegrated />} />
-                    <Route path="/profile-old" element={<Profile />} />
-                    <Route path="/billing" element={<Billing />} />
-                    <Route path="/updates" element={<Updates />} />
-                    <Route path="/referrals" element={<Referrals />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/settings/language" element={<Settings />} />
-                    <Route
-                      path="/social/profile/:handle"
-                      element={<OtherProfilePage />}
-                    />
-                    <Route
-                      path="/social/profile/:handle/connections"
-                      element={<ProfileConnections />}
-                    />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ClientLayout>
-              }
-            />
-            </Routes>
-          </BrowserRouter>
+            <BrowserRouter>
+              <Routes>
+                {/* Standard pages with ClientLayout */}
+                <Route
+                  path="*"
+                  element={
+                    <ClientLayout>
+                      <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/home" element={<FeedTest />} />
+                        <Route path="/home/post/:postId" element={<HomePostDetail />} />
+                        <Route path="/marketplace/test-home" element={<Index />} />
+                        <Route path="/profile/:username" element={<ProfileDynamic />} />
+                        <Route path="/profile-page" element={<ProfilePage />} />
+                        <Route
+                          path="/other-profile"
+                          element={<OtherProfilePage />}
+                        />
+                        <Route path="/social/explore" element={<SocialExplore />} />
+                        <Route
+                          path="/social/notifications"
+                          element={<SocialNotifications />}
+                        />
+                        <Route
+                          path="/social/messages"
+                          element={<SocialMessages />}
+                        />
+                        <Route
+                          path="/social/post/:postId"
+                          element={<SocialPostDetail />}
+                        />
+                        <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/profile" element={<ProfileIntegrated />} />
+                        <Route path="/profile-old" element={<Profile />} />
+                        <Route path="/billing" element={<Billing />} />
+                        <Route path="/updates" element={<Updates />} />
+                        <Route path="/referrals" element={<Referrals />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/settings/language" element={<Settings />} />
+                        <Route
+                          path="/social/profile/:handle"
+                          element={<OtherProfilePage />}
+                        />
+                        <Route
+                          path="/social/profile/:handle/connections"
+                          element={<ProfileConnections />}
+                        />
+                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </ClientLayout>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
