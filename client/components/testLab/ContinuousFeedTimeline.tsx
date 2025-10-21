@@ -1,5 +1,5 @@
 import React, { useState, FC } from "react";
-import { SignalPost, RegularPost } from "@/features/feed/components/posts";
+import FeedPost from "@/features/feed/components/posts/FeedPost";
 import type { Post } from "@/features/feed/types";
 
 interface ContinuousFeedTimelineProps {
@@ -31,23 +31,14 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
       {posts.map((post, index) => {
         const isFollowing = followingState.get(post.author.handle) ?? post.author.isFollowing ?? false;
 
-        const PostComponent = post.type === "signal" ? SignalPost : RegularPost;
-
         return (
-          <div
+          <FeedPost
             key={post.id}
-            className="w-full"
-            style={{
-              borderTop: index === 0 ? "1px solid transparent" : "none",
-              borderBottom: "1px solid transparent",
-              backgroundImage: `linear-gradient(to right, transparent 0%, #181B22 20%, #181B22 80%, transparent 100%)`,
-              backgroundPosition: "0 100%",
-              backgroundSize: "100% 1px",
-              backgroundRepeat: "no-repeat"
-            }}
-          >
-            <PostComponent post={post} isFollowing={isFollowing} onFollowToggle={handleFollowToggle} />
-          </div>
+            post={post}
+            isFollowing={isFollowing}
+            onFollowToggle={handleFollowToggle}
+            showTopBorder={index === 0}
+          />
         );
       })}
     </div>
