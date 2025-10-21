@@ -192,7 +192,13 @@ const Footer: FC = () => {
         </div>
 
         {/* Footer Navigation Menu - Logo + 4 Columns */}
-        <nav className="mt-16 pt-12 border-t border-[#2E2744]">
+        <div className="mt-16 relative">
+          <div className="h-1 w-full" style={{
+            backgroundImage: 'linear-gradient(90deg, rgba(23, 23, 23, 0), rgb(23, 23, 23) 25%, rgb(23, 23, 23) 75%, rgba(23, 23, 23, 0))',
+            boxShadow: 'rgba(255, 255, 255, 0.1) 0px -2px 1px 0px inset'
+          }} />
+        </div>
+        <nav className="pt-12">
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 mb-12">
             {/* Left Section: Logo + Language + Copyright */}
             <div className="flex flex-col">
