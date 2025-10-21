@@ -14,8 +14,8 @@ interface FeedPostProps {
 }
 
 export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBorder = false }: FeedPostProps) {
-  const isPaidLocked = post.price !== "free";
   const isSignal = post.type === "signal";
+  const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber;
 
   const getCategoryBadge = () => {
     const badges = {
