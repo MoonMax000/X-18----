@@ -3,7 +3,7 @@ export type FeedTab = "all" | "ideas" | "opinions" | "analytics" | "soft" | "lik
 export type PostType = "signal" | "news" | "analysis" | "code" | "general" | "education" | "macro" | "onchain" | "video";
 export type SentimentType = "bullish" | "bearish" | "neutral";
 export type PriceType = "free" | "pay-per-post" | "subscribers-only";
-export type AccessLevel = "public" | "paid" | "subscribers" | "premium";
+export type AccessLevel = "public" | "paid" | "subscribers" | "premium" | "followers";
 export type MarketType = "crypto" | "stocks" | "forex" | "commodities" | "indices";
 export type DirectionType = "long" | "short";
 export type TimeframeType = "15m" | "1h" | "4h" | "1d" | "1w";
@@ -61,6 +61,7 @@ export interface Post {
   postPrice?: number;
   isPurchased?: boolean;
   isSubscriber?: boolean;
+  isFollower?: boolean;
   ticker?: string;
   direction?: DirectionType;
   timeframe?: TimeframeType;

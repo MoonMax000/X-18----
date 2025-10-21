@@ -12,8 +12,10 @@ interface GatedContentProps {
   authorName: string;
   isPurchased?: boolean;
   isSubscriber?: boolean;
+  isFollower?: boolean;
   onUnlock?: () => void;
   onSubscribe?: () => void;
+  onFollow?: () => void;
 }
 
 export default function GatedContent({
@@ -25,13 +27,16 @@ export default function GatedContent({
   authorName,
   isPurchased = false,
   isSubscriber = false,
+  isFollower = false,
   onUnlock,
   onSubscribe,
+  onFollow,
 }: GatedContentProps) {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
-  if (isPurchased || isSubscriber || accessLevel === "public") {
+  // Unlock conditions: purchased, subscribed, or (followers-only + is follower)
+  if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower)) {
     return null;
   }
 
@@ -74,6 +79,11 @@ export default function GatedContent({
         return {
           title: "Subscribers Only",
           description: `Subscribe to ${authorName} for $${subscriptionPrice}/mo to access this content`,
+        };
+      case "followers":
+        return {
+          title: "Followers Only",
+          description: `Follow ${authorName} to access this exclusive content for followers`,
         };
       case "premium":
         return {
@@ -142,6 +152,17 @@ export default function GatedContent({
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
+          {/* Show Follow button for followers-only content */}
+          {accessLevel === "followers" && (
+            <button
+              onClick={onFollow}
+              className="group relative flex items-center justify-center px-8 sm:px-10 py-3 rounded-full bg-gradient-to-r from-[#1D9BF0] to-[#0EA5E9] text-white text-sm sm:text-[15px] font-bold hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 whitespace-nowrap w-full sm:w-auto overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
+              <span className="relative">Follow {authorName}</span>
+            </button>
+          )}
+
           {/* Show unlock button only for paid posts */}
           {accessLevel === "paid" && (
             <button
