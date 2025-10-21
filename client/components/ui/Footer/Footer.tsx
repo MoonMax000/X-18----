@@ -190,6 +190,146 @@ const Footer: FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Footer Navigation Menu - 4 Columns */}
+        <nav className="mt-16 pt-12 border-t border-[#2E2744]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+            {/* Column 1: Platform */}
+            <div>
+              <h4 className="mb-4 text-white font-semibold text-base">Platform</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/feed" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Market Feed
+                  </a>
+                </li>
+                <li>
+                  <a href="/signals" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Trading Signals
+                  </a>
+                </li>
+                <li>
+                  <a href="/analysis" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Market Analysis
+                  </a>
+                </li>
+                <li>
+                  <a href="/portfolio" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Portfolio Tracker
+                  </a>
+                </li>
+                <li>
+                  <a href="/pricing" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Pricing
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 2: Crypto Assets */}
+            <div>
+              <h4 className="mb-4 text-white font-semibold text-base">Crypto Assets</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/crypto/bitcoin" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Bitcoin (BTC)
+                  </a>
+                </li>
+                <li>
+                  <a href="/crypto/ethereum" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Ethereum (ETH)
+                  </a>
+                </li>
+                <li>
+                  <a href="/crypto/solana" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Solana (SOL)
+                  </a>
+                </li>
+                <li>
+                  <a href="/crypto/all" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    All Cryptocurrencies
+                  </a>
+                </li>
+                <li>
+                  <a href="/markets" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Market Overview
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 3: Community */}
+            <div>
+              <h4 className="mb-4 text-white font-semibold text-base">Community</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/support" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Support Center
+                  </a>
+                </li>
+                <li>
+                  <a href="/referrals" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Referral Program
+                  </a>
+                </li>
+                <li>
+                  <a href="/academy" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Trading Academy
+                  </a>
+                </li>
+                <li>
+                  <a href="/blog" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="/status" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Platform Status
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4: Company */}
+            <div>
+              <h4 className="mb-4 text-white font-semibold text-base">Company</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/about" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="/careers" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a href="/privacy" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="/terms" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a href="/contact" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Contact Us
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-12 pt-8 border-t border-[#2E2744]">
+            <p className="text-[13px] text-[#949494] text-center">
+              Copyright © {new Date().getFullYear()} TyrianTrade. All rights reserved.
+            </p>
+          </div>
+        </nav>
       </div>
     </footer>
   );
