@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import WidgetCard, { WidgetHeader } from "./WidgetCard";
+import { WIDGET_VARIANTS } from "../../styles";
 
 export interface TrendingTicker {
   ticker: string;
@@ -30,10 +31,7 @@ export default function TrendingTickersWidget({
           <button
             key={idx}
             onClick={() => onTickerClick?.(item.ticker)}
-            className={cn(
-              "flex w-full items-center justify-between rounded-lg p-2 transition",
-              selectedTicker === item.ticker ? "bg-blue-500/20" : "hover:bg-[#1B1F27]"
-            )}
+            className={WIDGET_VARIANTS.ticker(selectedTicker === item.ticker)}
           >
             <div className="flex items-center gap-2">
               <span className="font-semibold text-white">{item.ticker}</span>

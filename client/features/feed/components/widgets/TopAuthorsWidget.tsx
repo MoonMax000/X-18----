@@ -1,6 +1,6 @@
 import React from "react";
-import { cn } from "@/lib/utils";
 import WidgetCard, { WidgetHeader, WidgetShowMore } from "./WidgetCard";
+import { BUTTON_VARIANTS } from "../../styles";
 
 export interface TopAuthor {
   name: string;
@@ -41,12 +41,7 @@ export default function TopAuthorsWidget({
             </div>
             <button
               onClick={() => onFollowToggle?.(author.handle)}
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
-                author.isFollowing
-                  ? "bg-white/10 text-white hover:bg-white/20"
-                  : "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white hover:from-[#B17AFF] hover:to-[#5820A0]"
-              )}
+              className={author.isFollowing ? BUTTON_VARIANTS.following : BUTTON_VARIANTS.follow}
             >
               {author.isFollowing ? "Following" : "Follow"}
             </button>

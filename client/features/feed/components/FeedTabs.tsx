@@ -1,5 +1,6 @@
 import React from "react";
 import { FEED_TABS } from "../constants";
+import { TAB_VARIANTS } from "../styles";
 import type { FeedTab } from "../types";
 
 interface FeedTabsProps {
@@ -9,7 +10,7 @@ interface FeedTabsProps {
 
 export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
   return (
-    <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#181B22] bg-[#000000] p-0.5">
+    <div className={TAB_VARIANTS.container}>
       {FEED_TABS.map(tab => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.key;
@@ -20,11 +21,7 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
             type="button"
             onClick={() => onTabChange(tab.key)}
             aria-pressed={isActive}
-            className={`${isAll ? "flex-none min-w-[60px]" : "flex-1 min-w-[120px]"} px-3 py-1 text-xs sm:text-sm font-semibold rounded-full transition-all ${
-              isActive
-                ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white"
-                : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20"
-            }`}
+            className={TAB_VARIANTS.item(isActive, isAll)}
           >
             <span className="flex items-center justify-center gap-1.5">
               <Icon className="h-4 w-4" />
