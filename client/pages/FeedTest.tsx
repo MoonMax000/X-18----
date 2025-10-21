@@ -8,22 +8,25 @@ import NewsWidget, { type NewsItem } from "@/components/SocialFeedWidgets/Trendi
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
 import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
-import TestFiltersBar from "@/components/testLab/TestFiltersBar";
-import type { LabCategory } from "@/components/testLab/categoryConfig";
+import { FEED_TABS } from "@/features/feed/constants";
+import { useFeedFilters } from "@/features/feed/hooks/useFeedFilters";
+import { useFeedTimeline } from "@/features/feed/hooks/useFeedTimeline";
 import type { ComposerData } from "@/features/feed/types";
 import { MOCK_POSTS, TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
 import QuickComposer from "@/features/feed/components/composers/QuickComposer";
 
-type MonetizationFilter = "all" | "free" | "premium";
-type SortOption = "recent" | "likes_desc" | "likes_asc";
-
 export default function FeedTest() {
-  const [feedMode, setFeedMode] = useState<"forYou" | "following">("forYou");
-  const [activeCategory, setActiveCategory] = useState<LabCategory | "all">("all");
-  const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
-  const [monetizationFilter, setMonetizationFilter] = useState<MonetizationFilter>("all");
-  const [sortOption, setSortOption] = useState<SortOption>("recent");
-  const [selectedTicker, setSelectedTicker] = useState("");
+  const {
+    activeTab,
+    setActiveTab,
+    feedMode,
+    setFeedMode,
+    selectedTicker,
+    setSelectedTicker,
+    applyToPosts
+  } = useFeedFilters("all");
+
+  const { displayed, newCount, loadNew } = useFeedTimeline(MOCK_POSTS, ["1", "3", "5"]);
 
   const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(
     new Set(["@cryptowhale", "@marketnews"])
@@ -31,9 +34,6 @@ export default function FeedTest() {
 
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
   const [advancedComposerData, setAdvancedComposerData] = useState<Partial<ComposerData>>({});
-
-  const [displayedPosts, setDisplayedPosts] = useState(MOCK_POSTS);
-  const [newCount, setNewCount] = useState(0);
 
   const handleExpandComposer = useCallback((data: Partial<ComposerData>) => {
     setAdvancedComposerData(data);
@@ -48,108 +48,62 @@ export default function FeedTest() {
     });
   }, []);
 
-  const handleResetFilters = useCallback(() => {
-    setActiveCategory("all");
-    setSelectedAssets([]);
-    setMonetizationFilter("all");
-    setSortOption("recent");
-    setFeedMode("forYou");
-  }, []);
-
-  const loadNew = useCallback(() => {
-    setNewCount(0);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const filteredPosts = useMemo(() => {
-    let res = [...displayedPosts];
-
-    if (feedMode === "following") {
-      res = res.filter(p => followingAuthors.has(p.author.handle));
-    }
-
-    if (activeCategory !== "all") {
-      const categoryMap: Record<LabCategory, string[]> = {
-        signal: ["signal"],
-        news: ["news"],
-        analysis: ["analysis"],
-        code: ["code"],
-        education: ["education"],
-        macro: ["macro"],
-        onchain: ["onchain"],
-        video: ["video"],
-        general: ["general"],
-        analytics: ["analysis", "macro", "onchain"]
-      };
-      const allowedTypes = categoryMap[activeCategory] || [];
-      res = res.filter(p => allowedTypes.includes(p.type));
-    }
-
-    if (selectedAssets.length > 0) {
-      res = res.filter(p => {
-        if (!p.ticker) return false;
-        const tickerSymbol = p.ticker.replace("$", "");
-        return selectedAssets.some(asset => tickerSymbol.toUpperCase().includes(asset.toUpperCase()));
-      });
-    }
-
-    if (monetizationFilter === "free") {
-      res = res.filter(p => p.price === "free");
-    } else if (monetizationFilter === "premium") {
-      res = res.filter(p => p.price !== "free");
-    }
-
-    if (sortOption === "likes_desc") {
-      res.sort((a, b) => b.likes - a.likes);
-    } else if (sortOption === "likes_asc") {
-      res.sort((a, b) => a.likes - b.likes);
-    } else {
-      res = res.slice().reverse();
-    }
-
-    return res;
-  }, [displayedPosts, feedMode, followingAuthors, activeCategory, selectedAssets, monetizationFilter, sortOption]);
-
-  React.useEffect(() => {
-    const id = setInterval(() => setNewCount(prev => prev + Math.floor(Math.random() * 3) + 1), 8000);
-    return () => clearInterval(id);
-  }, []);
+  const filteredPosts = useMemo(() => applyToPosts(displayed), [applyToPosts, displayed]);
 
   return (
     <div className="flex min-h-screen w-full gap-6">
       <div className="flex-1 max-w-[720px]">
+        {/* Composer */}
         <div className="mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
           <QuickComposer onExpand={handleExpandComposer} />
         </div>
 
-        <TestFiltersBar
-          feedMode={feedMode}
-          onFeedModeChange={setFeedMode}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          selectedAssets={selectedAssets}
-          onAssetsChange={setSelectedAssets}
-          monetizationFilter={monetizationFilter}
-          onMonetizationFilterChange={setMonetizationFilter}
-          sortOption={sortOption}
-          onSortOptionChange={setSortOption}
-          onResetFilters={handleResetFilters}
-        />
+        {/* Feed Tabs - All, Ideas, Opinions, Analytics, Soft, Liked */}
+        <div className="sticky top-0 z-30 -mx-2 sm:-mx-4 md:-mx-6 px-2 sm:px-4 md:px-6 bg-black py-2">
+          <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#181B22] bg-[#000000] p-0.5">
+            {FEED_TABS.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.key;
+              const isAll = tab.key === "all";
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  aria-pressed={isActive}
+                  className={`${isAll ? "flex-none min-w-[60px]" : "flex-1 min-w-[120px]"} px-3 py-1 text-xs sm:text-sm font-semibold rounded-full transition-all ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white"
+                      : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20"
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Icon className="h-4 w-4" />
+                    <span className={isAll ? "inline" : "hidden sm:inline"}>{tab.label}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
+        {/* New Posts Notice */}
         {newCount > 0 && (
           <div className="mt-2 mb-4 flex justify-center">
             <button
               onClick={loadNew}
-              className="flex items-center justify-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-xs"
+              className="flex items-center justify-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-xs font-semibold"
             >
               {newCount} new {newCount === 1 ? "post" : "posts"} available
             </button>
           </div>
         )}
 
+        {/* Feed Timeline */}
         <ContinuousFeedTimeline posts={filteredPosts} onFollowToggle={toggleFollow} />
       </div>
 
+      {/* Right Sidebar */}
       <div className="hidden lg:block w-[340px] space-y-4">
         <FearGreedWidget score={32} />
         <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
@@ -205,6 +159,7 @@ export default function FeedTest() {
         </div>
       </div>
 
+      {/* Advanced Composer Modal */}
       <CreatePostModal
         isOpen={isAdvancedComposerOpen}
         onClose={() => setIsAdvancedComposerOpen(false)}
