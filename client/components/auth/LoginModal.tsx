@@ -1190,7 +1190,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       "flex items-center justify-between gap-2 h-11 px-[10px] py-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] transition-all duration-300",
                       signupPasswordError
                         ? "border-[#EF454A]"
-                        : "border-[#181B22]"
+                        : "border-widget-border"
                     )}>
                       <div className="flex items-center gap-2 flex-1">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -1266,7 +1266,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       "flex items-center justify-between gap-2 h-11 px-[10px] py-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] transition-all duration-300",
                       signupConfirmPasswordError
                         ? "border-[#EF454A]"
-                        : "border-[#181B22]"
+                        : "border-widget-border"
                     )}>
                     <div className="flex items-center gap-2 flex-1">
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
