@@ -57,18 +57,25 @@ export default function GatedContent({
   return (
     <section className="relative rounded-xl overflow-hidden min-h-[280px] sm:min-h-[320px] md:min-h-[360px] flex items-center justify-center border border-[#181B22]/50">
       {/* Background logo */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-        <svg className="w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72" viewBox="0 0 218 267" fill="none">
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none">
+        <svg className="w-48 h-56 sm:w-56 sm:h-64 md:w-72 md:h-80" viewBox="0 0 18 23" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
             clipRule="evenodd"
-            d="M0 133.143L0.010125 133.958C24.1612 128.685 48.4409 123.177 72.7655 117.659L72.8103 248.557L154.645 266.444C154.645 237.7 154.392 156.724 154.659 127.987L97.3967 115.471L89.7755 113.806C132.594 104.118 175.489 94.5576 218 86.3261L217.986 0C146.091 15.7098 72.1247 34.2794 0 47.6345L0 133.143Z"
+            d="M0 11.4935L0.000836009 11.5607C1.99496 11.1253 3.99971 10.6706 6.00816 10.215L6.01186 21.0231L12.7689 22.5C12.7689 20.1266 12.7479 13.4405 12.77 11.0677L8.04193 10.0343L7.41266 9.89685C10.9481 9.0969 14.49 8.30751 18 7.62785L17.9988 0.5C12.0625 1.79714 5.95525 3.33041 0 4.43313L0 11.4935Z"
             fill="url(#paint0_linear_gated)"
           />
           <defs>
-            <linearGradient id="paint0_linear_gated" x1="52.9429" y1="286.428" x2="157.977" y2="21.2498" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#A06AFF" />
-              <stop offset="1" stopColor="#482090" />
+            <linearGradient
+              id="paint0_linear_gated"
+              x1="4.37143"
+              y1="24.15"
+              x2="13.044"
+              y2="2.25457"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stopColor="#A06AFF"/>
+              <stop offset="1" stopColor="#7F57FF"/>
             </linearGradient>
           </defs>
         </svg>
@@ -118,7 +125,7 @@ export default function GatedContent({
             >
               {accessLevel === "premium" && <Crown className="w-4 h-4" />}
               <span>
-                Подписка ${accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}/мес
+                П��дписка ${accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}/мес
               </span>
             </button>
           )}
