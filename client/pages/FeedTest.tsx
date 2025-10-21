@@ -1,20 +1,16 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { cn } from "@/lib/utils";
 import ContinuousFeedTimeline from "@/components/testLab/ContinuousFeedTimeline";
-import { FearGreedWidget } from "@/components/testLab/FearGreedWidget";
-import { CommunitySentimentWidget } from "@/components/testLab/CommunitySentimentWidget";
-import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
-import NewsWidget, { type NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
-import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
 import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { useFeedFilters } from "@/features/feed/hooks/useFeedFilters";
 import { useFeedTimeline } from "@/features/feed/hooks/useFeedTimeline";
 import type { ComposerData } from "@/features/feed/types";
+import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 import { MOCK_POSTS, TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
 import QuickComposer from "@/features/feed/components/composers/QuickComposer";
 import FeedTabs from "@/features/feed/components/FeedTabs";
 import FeedFilters from "@/features/feed/components/FeedFilters";
+import RightSidebar from "@/features/feed/components/RightSidebar";
 
 export default function FeedTest() {
   const {
@@ -55,6 +51,7 @@ export default function FeedTest() {
 
   return (
     <div className="flex min-h-screen w-full gap-6">
+      {/* Main Feed */}
       <div className="flex-1 max-w-[720px]">
         {/* Composer */}
         <div className="mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
@@ -89,61 +86,19 @@ export default function FeedTest() {
         <ContinuousFeedTimeline posts={filteredPosts} onFollowToggle={toggleFollow} />
       </div>
 
-      {/* Right Sidebar */}
-      <div className="hidden lg:block w-[340px] space-y-4">
-        <FearGreedWidget score={32} />
-        <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
-
-        <div className="rounded-2xl border border-widget-border bg-[#000000] p-4">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">Trending Tickers</h3>
-          <div className="space-y-3">
-            {TRENDING_TICKERS.map((item, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedTicker(item.ticker)}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-lg p-2 transition",
-                  selectedTicker === item.ticker ? "bg-blue-500/20" : "hover:bg-[#1B1F27]"
-                )}
-              >
-                <div className="font-semibold text-white">{item.ticker}</div>
-                <div className="text-xs text-[#6C7280]">{item.mentions}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <SuggestedProfilesWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
-        <NewsWidget items={DEFAULT_NEWS_ITEMS as NewsItem[]} />
-        <FollowRecommendationsWidget profiles={DEFAULT_FOLLOW_RECOMMENDATIONS} />
-
-        <div className="rounded-2xl border border-widget-border bg-[#000000] p-4">
-          <h3 className="mb-4 text-lg font-bold text-white">Top Authors</h3>
-          <div className="space-y-3">
-            {TOP_AUTHORS.map((author, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img src={author.avatar} alt={author.name} className="h-10 w-10 rounded-full" />
-                  <div>
-                    <div className="font-semibold text-white">{author.name}</div>
-                    <div className="text-xs text-[#6C7280]">{author.handle}</div>
-                  </div>
-                </div>
-                <button
-                  className={cn(
-                    "rounded-full px-3 py-1 text-xs font-semibold",
-                    author.isFollowing
-                      ? "bg-white/10 text-white"
-                      : "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white"
-                  )}
-                >
-                  {author.isFollowing ? "Following" : "Follow"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Right Sidebar - Refactored */}
+      <RightSidebar
+        fearGreedScore={32}
+        communitySentiment={{ bullishPercent: 82, votesText: "1.9M votes" }}
+        trendingTickers={TRENDING_TICKERS}
+        selectedTicker={selectedTicker}
+        onTickerClick={setSelectedTicker}
+        suggestedProfiles={DEFAULT_SUGGESTED_PROFILES}
+        newsItems={DEFAULT_NEWS_ITEMS as NewsItem[]}
+        followRecommendations={DEFAULT_FOLLOW_RECOMMENDATIONS}
+        topAuthors={TOP_AUTHORS}
+        onAuthorFollowToggle={toggleFollow}
+      />
 
       {/* Advanced Composer Modal */}
       <CreatePostModal
