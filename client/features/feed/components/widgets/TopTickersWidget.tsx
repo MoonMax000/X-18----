@@ -1,6 +1,6 @@
 import React from "react";
 import { TrendingUp } from "lucide-react";
-import { WidgetCard } from "./WidgetCard";
+import WidgetCard, { WidgetHeader } from "./WidgetCard";
 
 interface TopTickerData {
   ticker: string;
@@ -19,8 +19,9 @@ export default function TopTickersWidget({
   selectedTicker,
 }: TopTickersWidgetProps) {
   return (
-    <WidgetCard title="Top Tickers" icon={TrendingUp}>
-      <div className="space-y-2">
+    <WidgetCard>
+      <WidgetHeader title="Top Tickers" icon={<TrendingUp className="h-5 w-5" />} />
+      <div className="mt-4 space-y-2">
         {tickers.map((item) => (
           <button
             key={item.ticker}

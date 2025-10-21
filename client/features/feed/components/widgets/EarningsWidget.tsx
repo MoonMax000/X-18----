@@ -1,6 +1,6 @@
 import React from "react";
 import { DollarSign, TrendingUp, Users } from "lucide-react";
-import { WidgetCard } from "./WidgetCard";
+import WidgetCard, { WidgetHeader } from "./WidgetCard";
 
 interface EarningsWidgetProps {
   period?: string;
@@ -31,8 +31,9 @@ export default function EarningsWidget({
   };
 
   return (
-    <WidgetCard title={`💰 Your Earnings (Last ${period === "30d" ? "30 days" : period})`}>
-      <div className="space-y-4">
+    <WidgetCard>
+      <WidgetHeader title={`💰 Your Earnings (Last ${period === "30d" ? "30 days" : period})`} />
+      <div className="mt-4 space-y-4">
         {/* Key Metrics */}
         <div className="grid grid-cols-3 gap-3">
           <div className="flex flex-col gap-1 rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-3">

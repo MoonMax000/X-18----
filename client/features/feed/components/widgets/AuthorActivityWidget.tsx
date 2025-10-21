@@ -1,6 +1,6 @@
 import React from "react";
 import { TrendingUp, MessageCircle, Heart, Users } from "lucide-react";
-import { WidgetCard } from "./WidgetCard";
+import WidgetCard, { WidgetHeader } from "./WidgetCard";
 
 interface AuthorActivityWidgetProps {
   period?: string;
@@ -25,8 +25,9 @@ export default function AuthorActivityWidget({
   ];
 
   return (
-    <WidgetCard title={`Activity (Last ${period === "7d" ? "7 days" : period})`}>
-      <div className="grid grid-cols-2 gap-3">
+    <WidgetCard>
+      <WidgetHeader title={`Activity (Last ${period === "7d" ? "7 days" : period})`} />
+      <div className="mt-4 grid grid-cols-2 gap-3">
         {stats.map((stat) => (
           <div
             key={stat.label}
