@@ -59,7 +59,7 @@ export const CARD_VARIANTS = {
 
 // ============ ТАБЫ ============
 export const TAB_VARIANTS = {
-  container: "mb-3 flex items-center overflow-x-auto rounded-full border border-[#181B22] bg-[#000000] p-0.5",
+  container: "mb-3 flex items-center overflow-x-auto rounded-full border border-widget-border bg-[#000000] p-0.5",
   
   item: (isActive: boolean, isAll: boolean = false) => {
     const base = isAll ? "flex-none min-w-[60px]" : "flex-1 min-w-[120px]";
