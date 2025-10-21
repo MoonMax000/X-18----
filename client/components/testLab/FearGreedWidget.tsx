@@ -191,11 +191,20 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
               />
             </circle>
 
-            {/* Centered current score value */}
-            <text 
-              x={centerX} y={centerY}
+            {/* Centered sentiment label */}
+            <text
+              x={centerX} y={centerY + 2}
               textAnchor="middle" alignmentBaseline="middle"
-              fontSize="8" fontWeight="bold" fill="#FFFFFF"
+              fontSize="4.5" fontWeight="600" fill={currentSentiment.color}
+            >
+              {currentSentiment.label}
+            </text>
+
+            {/* Score number above sentiment */}
+            <text
+              x={centerX} y={centerY - 6}
+              textAnchor="middle" alignmentBaseline="middle"
+              fontSize="10" fontWeight="bold" fill="#FFFFFF"
             >
               {animatedScore}
             </text>
