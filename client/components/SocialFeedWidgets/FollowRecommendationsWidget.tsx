@@ -20,7 +20,7 @@ const FollowRecommendationsWidget: FC<FollowRecommendationsWidgetProps> = ({
   onShowMore,
 }) => {
   return (
-    <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+    <section className="rounded-[24px] border border-widget-border bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <ul className="mt-4 flex flex-col gap-4">
         {profiles.map((profile) => (

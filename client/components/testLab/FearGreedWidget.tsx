@@ -85,7 +85,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
   const sentiment = getSentiment();
 
   return (
-    <div className="rounded-2xl border border-[#181B22] bg-black p-4">
+    <div className="rounded-2xl border border-widget-border bg-black p-4">
       <div className="mb-4 text-lg font-bold text-white">Fear & Greed</div>
 
       <div className="flex flex-col items-center justify-center">
