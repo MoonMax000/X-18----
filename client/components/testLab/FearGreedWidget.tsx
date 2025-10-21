@@ -100,7 +100,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
   return (
     <div className="rounded-2xl border border-widget-border bg-black p-4">
       {/* Title */}
-      <div className="mb-4 text-lg font-bold text-white">Fear &amp; Greed</div>
+      <div className="mb-2 text-lg font-bold text-white">Fear &amp; Greed</div>
 
       {/* Gauge Container */}
       <div className="flex flex-col items-center justify-center">
