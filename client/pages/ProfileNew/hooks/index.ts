@@ -1,0 +1,1 @@
+export { useProfileTabs } from './useProfileTabs';
