@@ -2791,18 +2791,18 @@ export default function FeedTest() {
           <div className="mt-6 mb-3">
             <button
               onClick={loadNewPosts}
-              className="mx-auto flex items-center justify-center gap-1.5 group px-4 py-2 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] hover:from-[#B47FFF] hover:to-[#5A2FA5] transition-all duration-300 shadow-lg hover:shadow-xl shadow-purple-500/30"
+              className="mx-auto flex items-center justify-center gap-0.75 group px-2 py-1 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] hover:from-[#B47FFF] hover:to-[#5A2FA5] transition-all duration-300 shadow-lg hover:shadow-xl shadow-purple-500/30"
             >
               <div className="flex items-center justify-center">
-                <div className="relative h-1.5 w-1.5">
+                <div className="relative h-0.75 w-0.75">
                   <div className="absolute inset-0 bg-white rounded-full animate-pulse" />
                   <div className="absolute inset-0 bg-white rounded-full animate-ping opacity-75" />
                 </div>
               </div>
-              <span className="font-bold text-white text-xs sm:text-sm group-hover:text-white transition">
+              <span className="font-bold text-white text-xs group-hover:text-white transition">
                 {newPostsCount} {newPostsCount === 1 ? 'new post' : 'new posts'} available
               </span>
-              <ChevronUp className="h-3 w-3 text-white group-hover:text-white group-hover:scale-110 transition-transform" />
+              <ChevronUp className="h-2 w-2 text-white group-hover:text-white group-hover:scale-110 transition-transform" />
             </button>
           </div>
         )}
