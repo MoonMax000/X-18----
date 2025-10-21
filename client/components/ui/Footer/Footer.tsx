@@ -12,6 +12,14 @@ const Footer: FC = () => {
 
   return (
     <footer className="relative bg-gradient-to-r from-black via-[#181818] to-black py-20">
+      {/* Top Gradient Divider */}
+      <div className="absolute top-0 left-0 right-0 mx-auto max-w-7xl px-[4%]">
+        <div className="h-1 w-full" style={{
+          backgroundImage: 'linear-gradient(90deg, rgba(23, 23, 23, 0), rgb(23, 23, 23) 25%, rgb(23, 23, 23) 75%, rgba(23, 23, 23, 0))',
+          boxShadow: 'rgba(255, 255, 255, 0.1) 0px -2px 1px 0px inset'
+        }} />
+      </div>
+
       <div className="mx-auto max-w-7xl px-[4%]">
         <div className="flex flex-wrap justify-between gap-12 md:gap-16">
           {/* Stay in touch section */}
