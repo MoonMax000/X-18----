@@ -2788,7 +2788,7 @@ export default function FeedTest() {
 
         {/* New Posts Indicator */}
         {newPostsCount > 0 && (
-          <div className="mt-6 mb-3">
+          <div className="mt-2 mb-1">
             <button
               onClick={loadNewPosts}
               className="mx-auto flex items-center justify-center gap-0.75 group px-2 py-1 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] hover:from-[#B47FFF] hover:to-[#5A2FA5] transition-all duration-300 shadow-lg hover:shadow-xl shadow-purple-500/30"
