@@ -93,5 +93,5 @@ export const navElements: NavElementProps[] = [
       { icon: <BoxIcon className="h-5 w-5" />, title: "Cart", route: "#" },
     ],
   },
-  { icon: <CreditCard className="h-5 w-5" />, title: "Tyrian Trade", route: "/" },
+  { icon: <BoxIcon className="h-5 w-5" />, title: "Tyrian Trade", route: "/" },
 ];
