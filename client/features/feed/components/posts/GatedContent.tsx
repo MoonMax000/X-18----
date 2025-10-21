@@ -134,7 +134,7 @@ export default function GatedContent({
         {/* Additional info */}
         {accessLevel === "paid" && (
           <p className="text-[#6D6D6D] text-xs text-center max-w-sm">
-            Подписка дает доступ ко всем платным постам автора и новым публикациям
+            Subscription gives access to all paid posts and new publications
           </p>
         )}
       </div>
