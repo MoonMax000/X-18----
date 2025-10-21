@@ -1770,8 +1770,8 @@ function AdvancedComposer({
 
               {/* Code Tab */}
               {data.isCode && (
-                <TabsContent value="code" className="mt-0 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <TabsContent value="code" className="mt-0 space-y-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-sm text-[#C5C9D3]">Language *</Label>
                       <Select value={data.language} onValueChange={(v) => updateData({ language: v })}>
