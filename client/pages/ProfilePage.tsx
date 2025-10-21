@@ -41,6 +41,32 @@ export default function ProfilePage() {
         followRecommendations={DEFAULT_FOLLOW_RECOMMENDATIONS}
         topAuthors={TOP_AUTHORS}
         onAuthorFollowToggle={toggleFollow}
+        showAuthorActivity={true}
+        authorActivity={{
+          posts: 24,
+          likesReceived: 1847,
+          comments: 156,
+          newFollowers: 89
+        }}
+        showTopTickers={true}
+        topTickers={[
+          { ticker: "$AAPL", postsCount: 342 },
+          { ticker: "$TSLA", postsCount: 287 },
+          { ticker: "$NVDA", postsCount: 219 },
+          { ticker: "$MSFT", postsCount: 198 },
+          { ticker: "$GOOGL", postsCount: 156 }
+        ]}
+        showEarnings={true}
+        earnings={{
+          mrr: 2450,
+          arpu: 12,
+          activeSubscribers: 204,
+          topPostsByRevenue: [
+            { postId: "1", title: "Premium Market Analysis", revenue: 450 },
+            { postId: "2", title: "Trading Signals Pack", revenue: 380 },
+            { postId: "3", title: "Exclusive Research Report", revenue: 290 }
+          ]
+        }}
       />
     </div>
   );
