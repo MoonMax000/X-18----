@@ -49,6 +49,7 @@ export interface Post {
     verified?: boolean;
     isPremium?: boolean;
     isFollowing?: boolean;
+    subscriptionPrice?: number;
   };
   timestamp: string;
   type: PostType;
@@ -56,6 +57,10 @@ export interface Post {
   sentiment?: SentimentType;
   market?: MarketType;
   price?: PriceType;
+  accessLevel?: AccessLevel;
+  postPrice?: number;
+  isPurchased?: boolean;
+  isSubscriber?: boolean;
   ticker?: string;
   direction?: DirectionType;
   timeframe?: TimeframeType;
