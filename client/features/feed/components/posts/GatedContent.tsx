@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Lock, Crown } from "lucide-react";
 import type { AccessLevel } from "../../types";
+import { PaymentModal } from "@/components/monetization";
 
 interface GatedContentProps {
   accessLevel: AccessLevel;
+  postId?: string;
+  authorId?: string;
   postPrice?: number;
   subscriptionPrice?: number;
   authorName: string;
@@ -15,6 +18,8 @@ interface GatedContentProps {
 
 export default function GatedContent({
   accessLevel,
+  postId,
+  authorId,
   postPrice = 9,
   subscriptionPrice = 29,
   authorName,
@@ -23,9 +28,40 @@ export default function GatedContent({
   onUnlock,
   onSubscribe,
 }: GatedContentProps) {
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+
   if (isPurchased || isSubscriber || accessLevel === "public") {
     return null;
   }
+
+  const handleUnlockClick = () => {
+    if (onUnlock) {
+      onUnlock();
+    } else {
+      setShowUnlockModal(true);
+    }
+  };
+
+  const handleSubscribeClick = () => {
+    if (onSubscribe) {
+      onSubscribe();
+    } else {
+      setShowSubscribeModal(true);
+    }
+  };
+
+  const handleUnlockSuccess = () => {
+    setShowUnlockModal(false);
+    // Reload или refetch для обновления поста
+    window.location.reload();
+  };
+
+  const handleSubscribeSuccess = () => {
+    setShowSubscribeModal(false);
+    // Reload или refetch для обновления всех постов автора
+    window.location.reload();
+  };
 
   const getContentMessage = () => {
     switch (accessLevel) {
@@ -109,7 +145,7 @@ export default function GatedContent({
           {/* Show unlock button only for paid posts */}
           {accessLevel === "paid" && (
             <button
-              onClick={onUnlock}
+              onClick={handleUnlockClick}
               className="group relative flex items-center justify-center px-8 sm:px-10 py-3 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-sm sm:text-[15px] font-bold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 whitespace-nowrap w-full sm:w-auto overflow-hidden"
             >
               <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
@@ -120,7 +156,7 @@ export default function GatedContent({
           {/* Show subscription button for paid, subscribers, and premium posts */}
           {(accessLevel === "paid" || accessLevel === "subscribers" || accessLevel === "premium") && (
             <button
-              onClick={onSubscribe}
+              onClick={handleSubscribeClick}
               className="group relative flex items-center justify-center gap-2 px-8 sm:px-10 py-3 rounded-full border-2 border-[#A06AFF] bg-transparent text-white text-sm sm:text-[15px] font-bold hover:bg-[#A06AFF]/10 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 whitespace-nowrap w-full sm:w-auto"
             >
               {accessLevel === "premium" && <Crown className="w-4 h-4" />}
@@ -136,6 +172,31 @@ export default function GatedContent({
           </p>
         )}
       </div>
+
+      {/* Payment Modals */}
+      {postId && (
+        <PaymentModal
+          isOpen={showUnlockModal}
+          onClose={() => setShowUnlockModal(false)}
+          type="unlock"
+          amount={postPrice}
+          postId={postId}
+          onSuccess={handleUnlockSuccess}
+        />
+      )}
+
+      {authorId && (
+        <PaymentModal
+          isOpen={showSubscribeModal}
+          onClose={() => setShowSubscribeModal(false)}
+          type="subscribe"
+          amount={accessLevel === "premium" ? subscriptionPrice + 20 : subscriptionPrice}
+          authorId={authorId}
+          authorName={authorName}
+          plan="monthly"
+          onSuccess={handleSubscribeSuccess}
+        />
+      )}
     </section>
   );
 }
