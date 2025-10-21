@@ -31,23 +31,23 @@ export default function GatedContent({
     switch (accessLevel) {
       case "paid":
         return {
-          title: "Платный контент",
-          description: `Разблокируйте этот пост за $${postPrice} или подпишитесь на ${authorName} и получайте доступ ко всем платным постам`,
+          title: "Paid Content",
+          description: `Unlock this post for $${postPrice} or subscribe to ${authorName} to access all paid posts`,
         };
       case "subscribers":
         return {
-          title: "Только для подписчиков",
-          description: `Подпишитесь на ${authorName} за $${subscriptionPrice}/мес, чтобы получить доступ к этому контенту`,
+          title: "Subscribers Only",
+          description: `Subscribe to ${authorName} for $${subscriptionPrice}/mo to access this content`,
         };
       case "premium":
         return {
-          title: "Премиу�� контент",
-          description: `Оформите премиум подписку за $${subscriptionPrice + 20}/мес для доступа к эксклюзивному контенту`,
+          title: "Premium Content",
+          description: `Get premium subscription for $${subscriptionPrice + 20}/mo for exclusive content`,
         };
       default:
         return {
-          title: "Ограниченный доступ",
-          description: "Этот контент недоступен",
+          title: "Limited Access",
+          description: "This content is unavailable",
         };
     }
   };
