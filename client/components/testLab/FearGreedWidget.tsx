@@ -2,22 +2,31 @@ import React, { useState, useEffect } from 'react';
 
 interface FearGreedWidgetProps {
   score?: number;
+  onScoreChange?: (score: number) => void;
 }
 
-export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) => {
+export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
+  score = 32,
+  onScoreChange,
+}) => {
   const [animatedScore, setAnimatedScore] = useState(score);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Repeating animation every 15 seconds
+  useEffect(() => {
+    setAnimatedScore(score);
+    onScoreChange?.(score);
+  }, [score, onScoreChange]);
+
+  // Animation logic
   useEffect(() => {
     const animateScore = () => {
       setIsAnimating(true);
       let currentScore = 0;
       const targetScore = score;
-      const steps = 100; // Total animation steps (smoother)
+      const steps = 100;
       const increment = targetScore / steps;
-      const stepDuration = 80; // ms per step (~8s total, slow & smooth)
-      
+      const stepDuration = 80;
+
       let step = 0;
       const interval = setInterval(() => {
         if (step < steps) {
@@ -34,10 +43,8 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
       return () => clearInterval(interval);
     };
 
-    // Initial animation
     animateScore();
 
-    // Repeat every 15 seconds
     const repeatInterval = setInterval(() => {
       animateScore();
     }, 15000);
@@ -47,25 +54,31 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
     };
   }, [score]);
 
-  // Arc configuration - the arc is the bottom half of a circle
+  // Arc configuration
   const centerX = 36;
   const centerY = 36;
   const radius = 29;
-  
-  // Top semicircle: parameterize with radians from π (left) to 0 (right)
-  const t = Math.max(0, Math.min(1, animatedScore / 100));
-  const angleRad = Math.PI * (1 - t); // t=0 => π (left), t=1 => 0 (right)
 
-  // SVG Y grows downward, so subtract for top arc
+  const t = Math.max(0, Math.min(1, animatedScore / 100));
+  const angleRad = Math.PI * (1 - t);
+
   const indicatorX = centerX + radius * Math.cos(angleRad);
   const indicatorY = centerY - radius * Math.sin(angleRad);
 
-  // Determine sentiment label and color based on score
+  // Sentiment determination
   const getSentiment = () => {
-    if (animatedScore < 25) return { label: 'Extreme Fear', color: '#EA3943' };
-    if (animatedScore < 45) return { label: 'Fear', color: '#EA8C00' };
-    if (animatedScore < 55) return { label: 'Neutral', color: '#F3D42F' };
-    if (animatedScore < 75) return { label: 'Greed', color: '#93D900' };
+    if (animatedScore < 25) {
+      return { label: 'Extreme Fear', color: '#EA3943' };
+    }
+    if (animatedScore < 45) {
+      return { label: 'Fear', color: '#EA8C00' };
+    }
+    if (animatedScore < 55) {
+      return { label: 'Neutral', color: '#F3D42F' };
+    }
+    if (animatedScore < 75) {
+      return { label: 'Greed', color: '#93D900' };
+    }
     return { label: 'Extreme Greed', color: '#16C784' };
   };
 
@@ -74,7 +87,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
   return (
     <div className="rounded-2xl border border-[#181B22] bg-black p-4">
       <div className="mb-4 text-lg font-bold text-white">Fear & Greed</div>
-      
+
       <div className="flex flex-col items-center justify-center">
         <div className="w-[200px]">
           <svg
@@ -83,7 +96,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
             viewBox="0 0 72 40"
             preserveAspectRatio="xMidYMid meet"
           >
-            {/* Fear segment (Red) - Extreme Fear */}
+            {/* Extreme Fear segment (Red) */}
             <path
               d="M 7 34.5 A 29 29 0 0 1 10.784647044348649 20.175685869057304"
               stroke="#EA3943"
@@ -92,7 +105,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
               fill="none"
             />
 
-            {/* Fear-Orange segment */}
+            {/* Fear segment (Orange) */}
             <path
               d="M 13.023600342699474 16.805790246863236 A 29 29 0 0 1 24.762047992889016 7.76596860393348"
               stroke="#EA8C00"
@@ -128,7 +141,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
               fill="none"
             />
 
-            {/* Indicator dot positioned ON the arc */}
+            {/* Indicator dot with animation */}
             <circle
               cx={indicatorX}
               cy={indicatorY}
@@ -140,7 +153,6 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
                 transition: isAnimating ? 'all 0.05s linear' : 'all 0.3s ease-out',
               }}
             >
-              {/* Subtle pulsing animation */}
               <animate
                 attributeName="r"
                 values="2.25;2.75;2.25"
@@ -150,23 +162,20 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
             </circle>
 
             {/* Center circle */}
-            <circle
-              cx={centerX}
-              cy={centerY}
-              r="3"
-              fill="#1F2937"
-            />
+            <circle cx={centerX} cy={centerY} r="3" fill="#1F2937" />
           </svg>
-          
-          {/* Baseline under arc (score and label) */}
+
+          {/* Score and sentiment label */}
           <div className="mt-1 flex items-center justify-center gap-2">
-            <div className="text-3xl font-bold text-white leading-none">{animatedScore}</div>
+            <div className="text-3xl font-bold text-white leading-none">
+              {animatedScore}
+            </div>
             <div
               className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold"
               style={{
                 backgroundColor: `${sentiment.color}20`,
                 color: sentiment.color,
-                border: `1px solid ${sentiment.color}40`
+                border: `1px solid ${sentiment.color}40`,
               }}
             >
               {sentiment.label}
@@ -174,7 +183,6 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({ score = 32 }) 
           </div>
         </div>
       </div>
-      
     </div>
   );
 };
