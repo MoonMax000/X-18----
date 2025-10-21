@@ -176,6 +176,93 @@ export default function FeedFilters({
             </Popover>
           </div>
         )}
+
+        {/* Category Filter */}
+        <div className="flex flex-col gap-1">
+          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
+            Категория
+          </label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+              >
+                {(() => {
+                  const activeCategoryOption = CATEGORY_OPTIONS.find((option) => option.value === (filters.category || 'all'));
+                  const ActiveCategoryIcon = activeCategoryOption?.icon;
+                  return (
+                    <>
+                      {ActiveCategoryIcon ? (
+                        <span
+                          className={cn(
+                            "flex h-4 w-4 items-center justify-center rounded",
+                            activeCategoryOption.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                          )}
+                        >
+                          <ActiveCategoryIcon className="h-3 w-3" />
+                        </span>
+                      ) : (
+                        <span className="flex h-4 w-4 items-center justify-center rounded bg-[#2F3336]/60 text-[9px] font-semibold">
+                          Все
+                        </span>
+                      )}
+                      <span className="truncate">{activeCategoryOption?.label || 'Все'}</span>
+                      <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
+                    </>
+                  );
+                })()}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              sideOffset={10}
+              className="w-[300px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+            >
+              <div className="grid gap-2">
+                {CATEGORY_OPTIONS.map((category) => {
+                  const Icon = category.icon;
+                  const isActive = category.value === (filters.category || 'all');
+                  return (
+                    <button
+                      key={category.value}
+                      type="button"
+                      onClick={() => onFilterChange('category', category.value)}
+                      className={cn(
+                        "flex items-center gap-3 rounded-[14px] border px-3 py-2 text-left transition-colors",
+                        isActive
+                          ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                          : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
+                      )}
+                    >
+                      {Icon ? (
+                        <span
+                          className={cn(
+                            "flex h-7 w-7 items-center justify-center rounded-lg",
+                            category.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                      ) : (
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2F3336]/60 text-[10px] font-semibold uppercase">
+                          Все
+                        </span>
+                      )}
+                      <span className="flex flex-col leading-tight">
+                        <span className="text-xs font-semibold text-white">{category.label}</span>
+                        {category.description ? (
+                          <span className="text-[11px] text-[#8E92A0]">{category.description}</span>
+                        ) : null}
+                      </span>
+                      {isActive ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Hot/Recent Toggle */}
