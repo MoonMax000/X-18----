@@ -166,12 +166,12 @@ const Footer: FC = () => {
                 disabled={!email}
                 style={{
                   backgroundImage: !email
-                    ? 'linear-gradient(90deg, rgba(230, 230, 230, 0.1), rgba(230, 230, 230, 0.02) 75.8%)'
-                    : 'linear-gradient(90deg, rgba(230, 230, 230, 0.2), rgba(230, 230, 230, 0.05) 75.8%)'
+                    ? 'linear-gradient(90deg, rgba(230, 230, 230, 0.15), rgba(230, 230, 230, 0.05) 75.8%)'
+                    : 'linear-gradient(90deg, rgba(230, 230, 230, 0.3), rgba(230, 230, 230, 0.1) 75.8%)'
                 }}
-                className="group flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border border-[#525252] px-6 py-3 text-center leading-7 text-white transition-all duration-300 hover:border-[#DE9DFF] hover:shadow-[0_0_20px_rgba(222,157,255,0.6)] disabled:cursor-not-allowed disabled:opacity-30"
+                className="group relative z-10 flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border border-[#525252] bg-black/20 px-6 py-3 text-center leading-7 text-white transition-all duration-300 hover:border-[#DE9DFF] hover:shadow-[0_0_20px_rgba(222,157,255,0.6)] disabled:cursor-not-allowed disabled:opacity-30"
               >
-                <span className="text-white">Subscribe to newsletter</span>
+                <span className="text-white font-medium">Subscribe to newsletter</span>
                 <ArrowRight className="h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />
               </button>
             </form>
