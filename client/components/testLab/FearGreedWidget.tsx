@@ -138,9 +138,9 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
               />
             </circle>
 
-            {/* Centered sentiment label */}
+            {/* Centered sentiment label - aligned with arc bottom */}
             <text
-              x={centerX} y={centerY + 2}
+              x={centerX} y={34.5}
               textAnchor="middle" alignmentBaseline="middle"
               fontSize="4.5" fontWeight="600" fill={currentSentiment.color}
             >
@@ -149,7 +149,7 @@ export const FearGreedWidget: React.FC<FearGreedWidgetProps> = ({
 
             {/* Score number above sentiment */}
             <text
-              x={centerX} y={centerY - 6}
+              x={centerX} y={22}
               textAnchor="middle" alignmentBaseline="middle"
               fontSize="10" fontWeight="bold" fill="#FFFFFF"
             >
