@@ -191,9 +191,71 @@ const Footer: FC = () => {
           </div>
         </div>
 
-        {/* Footer Navigation Menu - 4 Columns */}
+        {/* Footer Navigation Menu - Logo + 4 Columns */}
         <nav className="mt-16 pt-12 border-t border-[#2E2744]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 mb-12">
+            {/* Left Section: Logo + Language + Copyright */}
+            <div className="flex flex-col">
+              {/* Logo */}
+              <a href="/" className="inline-block mb-10 transition-opacity duration-200 hover:opacity-80">
+                <img
+                  src="/logo.svg"
+                  alt="TyrianTrade"
+                  className="h-10 brightness-0 invert"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="hidden text-white text-2xl font-bold">TyrianTrade</span>
+              </a>
+
+              {/* Language Selector */}
+              <div className="mb-8">
+                <div className="relative inline-block">
+                  <select
+                    className="appearance-none bg-transparent border-2 border-white rounded-full px-6 py-3 pr-12 text-white font-semibold text-sm uppercase cursor-pointer transition-all duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    defaultValue="en"
+                  >
+                    <option value="en">English</option>
+                    <option value="ru">Русский</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="pt">Português</option>
+                    <option value="zh">简体中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="ko">한국어</option>
+                    <option value="ar">العربية</option>
+                    <option value="th">ภาษาไทย</option>
+                    <option value="tr">Türkçe</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+                    <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Copyright */}
+              <div className="text-[13px] text-[#949494] leading-[22px]">
+                <p className="mb-5">
+                  Copyright © {new Date().getFullYear()} TyrianTrade. All rights reserved.
+                  TyrianTrade is a registered trademark.
+                </p>
+                <p className="mb-3 font-medium">Payment methods</p>
+                <div className="flex flex-wrap gap-2">
+                  <div className="px-3 py-1 bg-white/5 rounded text-xs">Visa</div>
+                  <div className="px-3 py-1 bg-white/5 rounded text-xs">Mastercard</div>
+                  <div className="px-3 py-1 bg-white/5 rounded text-xs">PayPal</div>
+                  <div className="px-3 py-1 bg-white/5 rounded text-xs">Crypto</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Section: 4 Columns Navigation */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Column 1: Platform */}
             <div>
               <h4 className="mb-4 text-white font-semibold text-base">Platform</h4>
@@ -321,13 +383,7 @@ const Footer: FC = () => {
                 </li>
               </ul>
             </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="mt-12 pt-8 border-t border-[#2E2744]">
-            <p className="text-[13px] text-[#949494] text-center">
-              Copyright © {new Date().getFullYear()} TyrianTrade. All rights reserved.
-            </p>
+            </div>
           </div>
         </nav>
       </div>
