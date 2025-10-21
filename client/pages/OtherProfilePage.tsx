@@ -41,6 +41,21 @@ export default function OtherProfilePage() {
         followRecommendations={DEFAULT_FOLLOW_RECOMMENDATIONS}
         topAuthors={TOP_AUTHORS}
         onAuthorFollowToggle={toggleFollow}
+        showAuthorActivity={true}
+        authorActivity={{
+          posts: 156,
+          likesReceived: 12340,
+          comments: 892,
+          newFollowers: 234
+        }}
+        showTopTickers={true}
+        topTickers={[
+          { ticker: "$BTC", postsCount: 89 },
+          { ticker: "$ETH", postsCount: 67 },
+          { ticker: "$SOL", postsCount: 45 },
+          { ticker: "$AAPL", postsCount: 34 },
+          { ticker: "$TSLA", postsCount: 28 }
+        ]}
       />
     </div>
   );
