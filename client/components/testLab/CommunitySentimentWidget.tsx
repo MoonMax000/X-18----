@@ -21,7 +21,7 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
   }, [bullishPercent]);
 
   return (
-    <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+    <div className="rounded-2xl border border-widget-border bg-[#000000] p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
       <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         {/* Bullish side */}
         <div className="flex items-center gap-2">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A0D12] ring-1 ring-[#1B1F27]">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A0D12] border border-widget-border/30">
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-lg font-bold text-emerald-400">{bullishPercent}%</div>
@@ -43,13 +43,13 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
 
         {/* Center bars */}
         <div className="flex w-32 flex-col gap-2">
-          <div className="h-2.5 overflow-hidden rounded-full bg-[#10131A] ring-1 ring-[#1B1F27]">
+          <div className="h-2.5 overflow-hidden rounded-full bg-[#10131A] border border-widget-border/20">
             <div
               className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-400 shadow-[0_0_16px_rgba(16,185,129,0.35)] transition-all duration-700 ease-out"
               style={{ width: `${bullFill}%` }}
             />
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-[#10131A] ring-1 ring-[#1B1F27]">
+          <div className="h-2.5 overflow-hidden rounded-full bg-[#10131A] border border-widget-border/20">
             <div
               className="h-full rounded-full bg-gradient-to-r from-rose-500 to-red-400 shadow-[0_0_16px_rgba(244,63,94,0.35)] transition-all duration-700 ease-out"
               style={{ width: `${bearFill}%` }}
@@ -60,7 +60,7 @@ export const CommunitySentimentWidget: React.FC<CommunitySentimentWidgetProps> =
         {/* Bearish side */}
         <div className="flex items-center justify-end gap-2">
           <div className="text-lg font-bold text-rose-400">{bearishPercent}%</div>
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A0D12] ring-1 ring-[#1B1F27]">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A0D12] border border-widget-border/30">
             <TrendingDown className="h-4 w-4 text-rose-400" />
           </div>
         </div>
