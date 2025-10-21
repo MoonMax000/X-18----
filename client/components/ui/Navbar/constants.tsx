@@ -50,13 +50,8 @@ export const navElements: NavElementProps[] = [
         route: "/profile",
       },
       {
-        icon: <ComposeIcon className="h-5 w-5" />,
-        title: "Tweet Composer",
-        route: "/social/compose-classic",
-      },
-      {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "🎨 Composer Showcase",
+        title: "���� Composer Showcase",
         route: "/composer-showcase",
       },
       {
@@ -73,11 +68,6 @@ export const navElements: NavElementProps[] = [
         icon: <MessageIcon className="h-5 w-5" />,
         title: "Messages",
         route: "/social/messages",
-      },
-      {
-        icon: <BoxIcon className="h-5 w-5" />,
-        title: "Post Preview",
-        route: "/social/post/preview",
       },
     ],
   },
