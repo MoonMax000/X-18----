@@ -235,7 +235,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
       {/* Gated/Locked Content */}
       {isLocked && (
-        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
+        <section className="w-full">
           <GatedContent
             accessLevel={post.accessLevel!}
             postId={post.id}
