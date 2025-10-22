@@ -8,6 +8,7 @@ import type { ComposerData } from "@/features/feed/types";
 import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 import { MOCK_POSTS, TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
 import { QuickComposer, FeedTabs, FeedFilters, RightSidebar } from "@/features/feed/components";
+import { ChevronUp } from "lucide-react";
 
 export default function FeedTest() {
   const {
@@ -71,10 +72,18 @@ export default function FeedTest() {
         {newCount > 0 && (
           <div className="mt-2 mb-4 flex justify-center">
             <button
+              type="button"
               onClick={loadNew}
-              className="flex items-center justify-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white text-xs font-semibold"
+              className="group flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white transition-all duration-200 bg-gradient-to-r from-[#A06AFF] to-[#482090] hover:from-[#B47FFF] hover:to-[#5A2FA5] shadow-[0_10px_18px_rgba(128,90,213,0.3)] hover:shadow-[0_18px_32px_rgba(128,90,213,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B47FFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
-              {newCount} new {newCount === 1 ? "post" : "posts"} available
+              <span className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+                <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-white opacity-75 animate-ping" />
+                <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-white opacity-90 animate-pulse" />
+                <ChevronUp className="relative z-10 h-3.5 w-3.5 text-white" />
+              </span>
+              <span>
+                {newCount} new {newCount === 1 ? "post" : "posts"} available
+              </span>
             </button>
           </div>
         )}
