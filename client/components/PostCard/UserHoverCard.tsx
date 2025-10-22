@@ -125,22 +125,42 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
         ) : null}
 
         {followersLabel || followingLabel ? (
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#8E92A0]">
+          <div className="mt-4 flex flex-wrap gap-4 text-sm">
             {followingLabel ? (
-              <span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+                  navigate(`/profile-connections/${profileHandle}?tab=following`);
+                }}
+                className="group cursor-pointer transition-colors hover:text-white"
+              >
                 <span className="font-semibold text-white">
                   {followingLabel}
                 </span>{" "}
-                Following
-              </span>
+                <span className="text-[#8E92A0] group-hover:text-white group-hover:underline transition-all">
+                  Following
+                </span>
+              </button>
             ) : null}
             {followersLabel ? (
-              <span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+                  navigate(`/profile-connections/${profileHandle}?tab=followers`);
+                }}
+                className="group cursor-pointer transition-colors hover:text-white"
+              >
                 <span className="font-semibold text-white">
                   {followersLabel}
                 </span>{" "}
-                Followers
-              </span>
+                <span className="text-[#8E92A0] group-hover:text-white group-hover:underline transition-all">
+                  Followers
+                </span>
+              </button>
             ) : null}
           </div>
         ) : null}
