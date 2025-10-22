@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
 import { TipModal } from "@/components/monetization";
 import type { Post } from "../../types";
