@@ -5,6 +5,8 @@ import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedPro
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
 import UnifiedPostDetail from "@/components/PostCard/UnifiedPostDetail";
 import { getSocialPostById, type SocialPost } from "@/data/socialPosts";
+import { MOCK_POSTS } from "@/features/feed/mocks";
+import type { Post } from "@/features/feed/types";
 
 const HomePostDetail: FC = () => {
   const navigate = useNavigate();
@@ -15,13 +17,17 @@ const HomePostDetail: FC = () => {
     window.scrollTo(0, 0);
   }, [postId]);
 
-  const postFromState = location.state as SocialPost | undefined;
+  const postFromState = location.state as (SocialPost | Post) | undefined;
   const post = useMemo(() => {
     if (postFromState) {
       return postFromState;
     }
     if (postId) {
-      return getSocialPostById(postId);
+      const socialPost = getSocialPostById(postId);
+      if (socialPost) return socialPost;
+
+      const feedPost = MOCK_POSTS.find(p => p.id === postId);
+      if (feedPost) return feedPost;
     }
     return undefined;
   }, [postFromState, postId]);
