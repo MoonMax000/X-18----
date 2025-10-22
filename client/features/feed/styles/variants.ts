@@ -59,7 +59,7 @@ export const CARD_VARIANTS = {
 
 // ============ ТАБЫ ============
 export const TAB_VARIANTS = {
-  container: "mb-4 flex w-full flex-wrap gap-1 rounded-[20px] border border-widget-border bg-[#000000] p-1 sm:flex-nowrap sm:items-center sm:gap-1.5 sm:overflow-x-auto",
+  container: "mb-4 flex w-full flex-nowrap gap-1 overflow-x-auto rounded-[20px] border border-widget-border bg-[#000000] p-1 sm:gap-1.5",
 
   item: (isActive: boolean, isAll: boolean = false) => {
     const base = isAll
