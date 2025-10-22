@@ -1,17 +1,31 @@
 import { type FC, useState } from "react";
 
+import AvatarWithHoverCard from "@/components/common/AvatarWithHoverCard";
 import UserAvatar from "@/components/ui/Avatar/UserAvatar";
+import { cn } from "@/lib/utils";
 import type { SocialComment } from "@/data/socialComments";
 
 import VerifiedBadge from "./VerifiedBadge";
 
-interface CommentCardProps {
-  comment: SocialComment;
+interface ExtendedComment extends SocialComment {
+  text?: string;
+  replyCount?: number;
+  replies?: ExtendedComment[];
 }
 
-const CommentCard: FC<CommentCardProps> = ({ comment }) => {
+interface CommentCardProps {
+  comment: ExtendedComment;
+  depth?: number;
+  isFirst?: boolean;
+  onReply?: (commentId: string, text: string) => void;
+}
+
+const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false, onReply }) => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
+  const [showReplies, setShowReplies] = useState(false);
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState("");
 
   const handleLike = () => {
     if (liked) {
@@ -22,103 +36,221 @@ const CommentCard: FC<CommentCardProps> = ({ comment }) => {
     setLiked((prev) => !prev);
   };
 
+  const commentContent = comment.text || comment.content;
+
   return (
-    <article className="flex gap-3 border-b border-widget-border py-4">
-      <UserAvatar
-        src={comment.author.avatar}
-        alt={comment.author.name}
-        size={40}
-        accent={false}
-      />
-      <div className="flex flex-1 flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[15px] font-semibold leading-tight text-white">
-            <span>{comment.author.name}</span>
-            {comment.author.verified ? <VerifiedBadge size={14} /> : null}
-          </div>
-          <span className="text-sm text-[#8E92A0]">
-            {comment.author.handle}
-          </span>
-          <span className="text-sm text-[#6C7080]">·</span>
-          <span className="text-sm text-[#6C7080]">{comment.timestamp}</span>
-        </div>
-
-        <p className="whitespace-pre-line text-[15px] leading-relaxed text-white/90">
-          {comment.content}
-        </p>
-
-        <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
-          <button
-            type="button"
-            onClick={handleLike}
-            className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
+    <>
+      <article className={cn(
+        "post-hover-glow group flex gap-3 py-4 relative cursor-pointer transition-colors duration-200"
+      )}>
+        {!isFirst && (
+          <div
+            className="post-divider absolute top-0 left-0 right-0 h-[1px] z-0 transition-opacity duration-300 group-hover:opacity-0"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, #5E5E5E 20%, #5E5E5E 80%, transparent 100%)'
+            }}
+          />
+        )}
+        <div className="relative flex flex-col items-center">
+          <AvatarWithHoverCard
+            author={{
+              ...comment.author,
+              followers: comment.author.followers ?? 0,
+              following: comment.author.following ?? 0,
+            }}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 20 20"
-              fill={liked ? "currentColor" : "none"}
-              xmlns="http://www.w3.org/2000/svg"
-              className="transition-colors"
-            >
-              <path
-                d="M10.5167 16.0417L10.5083 16.0334L10.5 16.025C8.84167 14.5917 7.525 13.4417 6.575 12.4C5.625 11.3584 5.16667 10.5917 5.16667 9.66671C5.16667 8.74171 5.85833 8.01671 6.66667 8.01671C7.25833 8.01671 7.83333 8.31671 8.14167 8.76671L9.16667 10.225L10.1917 8.76671C10.5 8.31671 11.075 8.01671 11.6667 8.01671C12.475 8.01671 13.1667 8.74171 13.1667 9.66671C13.1667 10.5917 12.7083 11.3584 11.7583 12.4C10.8083 13.4417 9.49167 14.5917 7.83333 16.025L7.825 16.0334L7.81667 16.0417C7.725 16.1251 7.60833 16.1667 7.5 16.1667C7.39167 16.1667 7.275 16.1251 7.18333 16.0417L10.5167 16.0417Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-sm font-medium">{likeCount}</span>
-          </button>
+            <UserAvatar
+              src={comment.author.avatar}
+              alt={comment.author.name}
+              size={40}
+              accent={false}
+            />
+          </AvatarWithHoverCard>
+          {comment.replies && comment.replies.length > 0 && showReplies && (
+            <div className="absolute top-[48px] bottom-0 w-[2px] bg-[#2F3336]" />
+          )}
+        </div>
+        <div className="flex flex-1 flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-[15px] font-semibold leading-tight text-white">
+              <span>{comment.author.name}</span>
+              {comment.author.verified ? <VerifiedBadge size={14} /> : null}
+            </div>
+            <span className="text-sm text-[#8E92A0]">
+              {comment.author.handle}
+            </span>
+            <span className="text-sm text-[#6C7080]">·</span>
+            <span className="text-sm text-[#6C7080]">{comment.timestamp}</span>
+          </div>
 
-          {typeof comment.replies === "number" && comment.replies > 0 ? (
-            <button
-              type="button"
-              className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
-            >
+          <p className="whitespace-pre-line text-[15px] leading-relaxed text-white/90">
+            {commentContent}
+          </p>
+
+          <div className="mt-1 flex items-center gap-6 text-[#6C7080]">
+            {depth < 3 && (
+              <button
+                type="button"
+                onClick={() => setShowReplyForm(!showReplyForm)}
+                className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
+                aria-label="Reply"
+              >
               <svg
                 width="18"
                 height="18"
-                viewBox="0 0 20 20"
+                viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M17.5 9.16667C17.5 13.0326 14.1421 16.25 10 16.25C8.80208 16.25 7.67708 16 6.66667 15.5417L2.5 16.25L3.75 12.9167C3.125 11.8646 2.5 10.5729 2.5 9.16667C2.5 5.30076 5.85786 2.08333 10 2.08333C14.1421 2.08333 17.5 5.30076 17.5 9.16667Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"
+                  fill="currentColor"
                 />
               </svg>
-              <span className="text-sm font-medium">{comment.replies}</span>
+              {comment.replyCount ? (
+                <span className="text-sm font-medium">{comment.replyCount}</span>
+              ) : null}
             </button>
-          ) : null}
+            )}
 
-          <button
-            type="button"
-            className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <button
+              type="button"
+              className="group flex items-center gap-1.5 transition-colors hover:text-[#00BA7C]"
+              aria-label="Repost"
             >
-              <path
-                d="M15.8333 10L10 15.8333M10 15.8333L4.16667 10M10 15.8333V4.16667"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLike}
+              className={`group flex items-center gap-1.5 transition-colors ${
+                liked ? "text-[#F91880]" : "hover:text-[#F91880]"
+              }`}
+              aria-label="Like"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M16.498 5.54308C15.3303 5.48575 13.9382 6.03039 12.7811 7.60698L12.0119 8.64848L11.2417 7.60698C10.0837 6.03039 8.69053 5.48575 7.5229 5.54308C6.3352 5.60997 5.27841 6.28838 4.74237 7.3681C4.21493 8.43827 4.13753 10.0244 5.20006 11.9736C6.22627 13.856 8.31214 16.0537 12.0119 18.2895C15.7097 16.0537 17.7946 13.856 18.8208 11.9736C19.8824 10.0244 19.805 8.43827 19.2766 7.3681C18.7406 6.28838 17.6847 5.60997 16.498 5.54308ZM20.4987 12.8909C19.2078 15.2606 16.6757 17.7831 12.4925 20.2197L12.0119 20.5063L11.5303 20.2197C7.34613 17.7831 4.81403 15.2606 3.52123 12.8909C2.22174 10.5022 2.17397 8.24717 3.0301 6.5177C3.87764 4.80734 5.55933 3.73717 7.42639 3.64162C9.00393 3.55562 10.6445 4.1767 12.0109 5.56219C13.3763 4.1767 15.0169 3.55562 16.5935 3.64162C18.4606 3.73717 20.1423 4.80734 20.9898 6.5177C21.846 8.24717 21.7982 10.5022 20.4987 12.8909Z"
+                  fill={liked ? "currentColor" : "currentColor"}
+                />
+              </svg>
+              {likeCount > 0 ? (
+                <span className="text-sm font-medium">{likeCount}</span>
+              ) : null}
+            </button>
+
+            <button
+              type="button"
+              className="group flex items-center gap-1.5 transition-colors hover:text-[#4D7CFF]"
+              aria-label="Views"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {showReplyForm && (
+            <div className="mt-3 flex gap-2">
+              <UserAvatar
+                src="https://i.pravatar.cc/120?img=45"
+                alt="You"
+                size={32}
+                accent={false}
               />
-            </svg>
-          </button>
+              <div className="flex-1">
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder={`Reply to ${comment.author.name}...`}
+                  className="w-full resize-none rounded-lg border border-[#2F3336] bg-transparent px-3 py-2 text-sm text-white placeholder-[#6C7080] focus:border-[#1D9BF0] focus:outline-none"
+                  rows={2}
+                />
+                <div className="mt-2 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowReplyForm(false);
+                      setReplyText("");
+                    }}
+                    className="rounded-full px-4 py-1.5 text-sm font-semibold text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (replyText.trim() && onReply) {
+                        onReply(comment.id, replyText);
+                        setReplyText("");
+                        setShowReplyForm(false);
+                        setShowReplies(true);
+                      }
+                    }}
+                    disabled={!replyText.trim()}
+                    className="rounded-full bg-[#1D9BF0] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#1A8CD8] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Reply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {comment.replies && comment.replies.length > 0 && !showReplies && (
+            <button
+              type="button"
+              onClick={() => setShowReplies(true)}
+              className="mt-2 flex items-center gap-2 text-sm text-[#1D9BF0] hover:underline"
+            >
+              <div className="h-px w-8 bg-[#2F3336]" />
+              <span>Show {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}</span>
+            </button>
+          )}
         </div>
-      </div>
-    </article>
+      </article>
+
+      {showReplies && comment.replies && comment.replies.length > 0 && (
+        <div className="ml-12">
+          {comment.replies.map((reply, index) => (
+            <CommentCard
+              key={reply.id}
+              comment={reply}
+              depth={depth + 1}
+              isFirst={index === 0}
+              onReply={onReply}
+            />
+          ))}
+        </div>
+      )}
+    </>
   );
 };
 
