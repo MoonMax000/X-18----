@@ -101,7 +101,7 @@ export default function GatedContent({
   const { title, description } = getContentMessage();
 
   return (
-    <section className="ml-[48px] sm:ml-[52px] md:ml-[56px] relative rounded-lg overflow-hidden min-h-[200px] sm:min-h-[240px] md:min-h-[280px] flex items-center justify-center">
+    <section className="relative flex w-full items-center justify-center overflow-hidden rounded-lg min-h-[200px] sm:min-h-[240px] md:min-h-[280px]">
       {/* Background logo with gradient */}
       <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
         <svg className="w-40 h-40 sm:w-52 sm:h-52 md:w-64 md:h-64" viewBox="0 0 218 267" fill="none" xmlns="http://www.w3.org/2000/svg">
