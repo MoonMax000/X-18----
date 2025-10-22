@@ -32,6 +32,7 @@ import Updates from "./pages/Updates";
 import Referrals from "./pages/Referrals";
 import TestovayaPage from "./pages/Testovaya";
 import FeedTest from "./pages/FeedTest";
+import ProfileConnections from "./pages/ProfileConnections";
 import { ClientLayout } from "./components/ClientLayout/ClientLayout";
 
 const queryClient = new QueryClient({
@@ -99,6 +100,10 @@ const App = () => (
                     <Route
                       path="/social/profile/:handle"
                       element={<OtherProfilePage />}
+                    />
+                    <Route
+                      path="/profile-connections/:handle"
+                      element={<ProfileConnections />}
                     />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
