@@ -65,7 +65,7 @@ export const TAB_VARIANTS = {
     const base = isAll
       ? "flex-1 basis-full sm:basis-0 sm:min-w-[110px]"
       : "flex-1 basis-full sm:basis-0 sm:min-w-[130px]";
-    const styles = "px-3 py-2 text-sm font-semibold rounded-[16px] transition-all duration-200 whitespace-nowrap text-center";
+    const styles = "px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-[16px] transition-all duration-200 whitespace-nowrap text-center";
     const activeStyles = isActive
       ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.85)]"
       : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/15 hover:to-[#482090]/15";
