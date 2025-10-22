@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Flame, Clock } from "lucide-react";
+import { Check, ChevronDown, Flame, Clock, SlidersHorizontal, X, DollarSign, Sparkles } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FILTERS_CONFIG, TABS_CONFIG } from "../constants";
 import type { FeedTab } from "../types";
 import { LAB_CATEGORY_CONFIG, type LabCategory } from "@/components/testLab/categoryConfig";
+import { LAB_ASSET_OPTIONS } from "@/components/testLab/postMetaConfig";
 
 interface FeedFiltersProps {
   activeTab: FeedTab;
