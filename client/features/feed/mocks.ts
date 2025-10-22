@@ -4,7 +4,7 @@ import type { Post, SentimentType, ComposerData } from "./types";
 export const MOCK_POSTS: Post[] = [
   {
     id: "1",
-    author: { name: "Alex Trader", handle: "@alextrader", avatar: "https://i.pravatar.cc/120?img=12", verified: true, isPremium: true },
+    author: { name: "Alex Trader", handle: "@alextrader", avatar: "https://i.pravatar.cc/120?img=12", verified: true, isPremium: true, bio: "Professional swing trader | 8+ years experience | Sharing technical analysis & market insights" },
     timestamp: "2h ago",
     type: "signal",
     text: "Strong bullish pattern on $AAPL. Breaking resistance at $180. Perfect risk/reward setup for swing traders.",
@@ -29,7 +29,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: "2",
-    author: { name: "Crypto Whale", handle: "@cryptowhale", avatar: "https://i.pravatar.cc/120?img=33", verified: true },
+    author: { name: "Crypto Whale", handle: "@cryptowhale", avatar: "https://i.pravatar.cc/120?img=33", verified: true, bio: "Early Bitcoin adopter | Crypto analyst since 2013 | Not financial advice" },
     timestamp: "4h ago",
     type: "analysis",
     text: "Bitcoin forming a perfect head and shoulders pattern. Watch for breakdown below $42k. This could trigger massive liquidations.",
@@ -46,7 +46,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: "3",
-    author: { name: "Algo Dev", handle: "@algodev", avatar: "https://i.pravatar.cc/120?img=25", verified: true, isPremium: true },
+    author: { name: "Algo Dev", handle: "@algodev", avatar: "https://i.pravatar.cc/120?img=25", verified: true, isPremium: true, bio: "Quantitative developer | Building algo trading systems | Python & ML enthusiast" },
     timestamp: "6h ago",
     type: "code",
     text: "New mean reversion strategy showing 65% win rate. Full implementation available for premium subscribers. Backtested on 3 years of data.",
@@ -63,7 +63,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: "4",
-    author: { name: "Market News", handle: "@marketnews", avatar: "https://i.pravatar.cc/120?img=41", verified: true },
+    author: { name: "Market News", handle: "@marketnews", avatar: "https://i.pravatar.cc/120?img=41", verified: true, bio: "Breaking market news & economic updates | Real-time coverage of global markets" },
     timestamp: "8h ago",
     type: "news",
     text: "Breaking: Fed announces interest rate decision. Market volatility expected across all sectors. FOMC statement released at 2 PM EST.",
@@ -78,7 +78,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: "5",
-    author: { name: "Tech Analyst", handle: "@techanalyst", avatar: "https://i.pravatar.cc/120?img=55", verified: true },
+    author: { name: "Tech Analyst", handle: "@techanalyst", avatar: "https://i.pravatar.cc/120?img=55", verified: true, bio: "Technical analysis expert | Chart patterns & indicators | 10k+ followers" },
     timestamp: "10h ago",
     type: "signal",
     text: "Bearish signal on $TSLA. Support breaking at $200. Consider shorting with tight stops.",
