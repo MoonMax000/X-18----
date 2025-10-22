@@ -26,8 +26,6 @@ type ProfileSubTab =
 type SocialSubTab =
   | "overview"
   | "posts"
-  | "channels"
-  | "chats"
   | "monetization";
 
 type PortfolioSubTab = "my" | "following";
@@ -428,7 +426,7 @@ const profileSubTabs = [
 const socialSubTabs = [
   {
     id: "overview" as SocialSubTab,
-    label: "Overview",
+    label: "Обзор",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
@@ -460,7 +458,7 @@ const socialSubTabs = [
   },
   {
     id: "posts" as SocialSubTab,
-    label: "My Posts",
+    label: "Мои посты",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
@@ -486,58 +484,8 @@ const socialSubTabs = [
     ),
   },
   {
-    id: "channels" as SocialSubTab,
-    label: "My Channels",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
-        <path
-          d="M12.9386 3.67618L7.3946 6.33742C6.96793 6.54223 6.51203 6.59355 6.04729 6.48943C5.74314 6.4213 5.59105 6.38723 5.46858 6.37325C3.94786 6.19959 3 7.40318 3 8.78724V9.54674C3 10.9308 3.94786 12.1344 5.46858 11.9607C5.59105 11.9467 5.74315 11.9127 6.04729 11.8446C6.51203 11.7404 6.96793 11.7917 7.3946 11.9966L12.9386 14.6578C14.2112 15.2687 14.8475 15.5742 15.557 15.3361C16.2664 15.098 16.5099 14.5871 16.997 13.5653C18.3343 10.7597 18.3343 7.57437 16.997 4.76862C16.5099 3.74687 16.2664 3.236 15.557 2.99791C14.8475 2.75982 14.2112 3.06527 12.9386 3.67618Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M11.332 14.1663V14.583C11.332 15.6531 11.332 16.1881 11.1454 16.4902C10.8964 16.8929 10.4414 17.1205 9.96978 17.0779C9.61611 17.0461 9.18811 16.725 8.33203 16.083L7.33203 15.333C6.51747 14.7221 6.33203 14.3512 6.33203 13.333V12.083"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M6.75 11.667V6.66699"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: "chats" as SocialSubTab,
-    label: "My Chats",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
-        <path
-          d="M17.168 7.50033C16.5053 4.17912 13.4286 1.66699 9.73405 1.66699C5.55588 1.66699 2.16797 4.87967 2.16797 8.84199C2.16797 10.7458 2.94979 12.4757 4.22509 13.7593C4.50588 14.042 4.69334 14.4282 4.61769 14.8256C4.49282 15.4754 4.20985 16.0816 3.79551 16.5867C4.88566 16.7877 6.01919 16.6067 6.99131 16.0942C7.33496 15.9132 7.50678 15.8226 7.62803 15.8042C7.7129 15.7913 7.82346 15.8033 8.0013 15.8338"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M9.66797 13.5517C9.66797 15.9732 11.7203 17.9365 14.2513 17.9365C14.5489 17.9368 14.8456 17.9093 15.138 17.8545C15.3484 17.8149 15.4536 17.7952 15.5271 17.8064C15.6005 17.8176 15.7046 17.873 15.9128 17.9837C16.5016 18.2968 17.1883 18.4074 17.8487 18.2846C17.5977 17.9759 17.4263 17.6055 17.3506 17.2083C17.3048 16.9655 17.4184 16.7295 17.5885 16.5567C18.3611 15.7722 18.8346 14.7152 18.8346 13.5517C18.8346 11.1303 16.7823 9.16699 14.2513 9.16699C11.7203 9.16699 9.66797 11.1303 9.66797 13.5517Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
     id: "monetization" as SocialSubTab,
-    label: "Monetization",
+    label: "Монетизация",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
