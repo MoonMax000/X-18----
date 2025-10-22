@@ -3,6 +3,7 @@ import { type FC } from "react";
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarWithHoverCard from "../common/AvatarWithHoverCard";
 
 import type { SuggestedProfile } from "./SuggestedProfilesWidget";
 
@@ -28,31 +29,43 @@ const FollowRecommendationsWidget: FC<FollowRecommendationsWidgetProps> = ({
             key={profile.id}
             className="flex items-center justify-between gap-4"
           >
-            <div className="flex items-center gap-3">
-              <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)]">
-                {profile.avatar ? (
-                  <AvatarImage src={profile.avatar} alt={profile.name} />
-                ) : null}
-                <AvatarFallback className="text-sm font-semibold text-white">
-                  {profile.name
-                    .split(" ")
-                    .map((chunk) => chunk[0])
-                    .slice(0, 2)
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white">
-                  <span>{profile.name}</span>
-                  {profile.verified && (
-                    <VerifiedBadge size={16} />
-                  )}
+            <AvatarWithHoverCard
+              author={{
+                name: profile.name,
+                handle: profile.handle,
+                avatar: profile.avatar,
+                verified: profile.verified,
+                followers: 0,
+                following: 0,
+              }}
+              isFollowing={false}
+            >
+              <div className="flex items-center gap-3 cursor-pointer">
+                <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)]">
+                  {profile.avatar ? (
+                    <AvatarImage src={profile.avatar} alt={profile.name} />
+                  ) : null}
+                  <AvatarFallback className="text-sm font-semibold text-white">
+                    {profile.name
+                      .split(" ")
+                      .map((chunk) => chunk[0])
+                      .slice(0, 2)
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1 text-[15px] font-semibold leading-tight text-white">
+                    <span>{profile.name}</span>
+                    {profile.verified && (
+                      <VerifiedBadge size={16} />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-[#8E8E94]">
+                    {profile.handle}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-[#8E8E94]">
-                  {profile.handle}
-                </span>
               </div>
-            </div>
+            </AvatarWithHoverCard>
             <FollowButton profileId={profile.id} size="compact" />
           </li>
         ))}
