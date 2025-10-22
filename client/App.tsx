@@ -33,6 +33,7 @@ import Referrals from "./pages/Referrals";
 import TestovayaPage from "./pages/Testovaya";
 import FeedTest from "./pages/FeedTest";
 import ProfileConnections from "./pages/ProfileConnections";
+import HomePostDetail from "./pages/HomePostDetail";
 import { ClientLayout } from "./components/ClientLayout/ClientLayout";
 
 const queryClient = new QueryClient({
@@ -57,6 +58,7 @@ const App = () => (
                     <Route path="/" element={<NewHome />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/home" element={<HomePage />} />
+                    <Route path="/home/post/:postId" element={<HomePostDetail />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
                     <Route
                       path="/other-profile"
