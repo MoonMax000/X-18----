@@ -83,7 +83,7 @@ export const ClientLayout: FC<Props> = ({
       <Footer />
 
       {/* Alternative Footer with Newsletter - for comparison */}
-      <div className="mt-12 border-t-4 border-[#A06AFF]/30">
+      <div className="mt-12">
         <Newsletter />
         <Footer2 />
       </div>
