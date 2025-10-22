@@ -64,7 +64,7 @@ export default function GatedContent({
 
   const handleSubscribeSuccess = () => {
     setShowSubscribeModal(false);
-    // Reload или refetch для обновления всех постов автора
+    // Reload или refetch для обновлени�� всех постов автора
     window.location.reload();
   };
 
@@ -175,11 +175,11 @@ export default function GatedContent({
             </svg>
           )}
 
-          <div className="text-center space-y-2">
-            <h3 className="text-white text-sm sm:text-[15px] font-bold leading-normal max-w-xs">
+          <div className="flex flex-col items-center text-center space-y-2 w-full max-w-md mx-auto">
+            <h3 className="text-white text-sm sm:text-[15px] font-bold leading-normal w-full">
               {title}
             </h3>
-            <p className="text-[#B0B0B0] text-xs sm:text-sm leading-relaxed max-w-md">
+            <p className="text-[#B0B0B0] text-xs sm:text-sm leading-relaxed w-full">
               {description}
             </p>
           </div>
