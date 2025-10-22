@@ -7,10 +7,11 @@ import CommentCard from "./CommentCard";
 import AvatarWithHoverCard from "@/components/common/AvatarWithHoverCard";
 import { getCommentsByPostId, type SocialComment } from "@/data/socialComments";
 import type { SocialPost } from "@/data/socialPosts";
+import type { Post } from "@/features/feed/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface UnifiedPostDetailProps {
-  post: SocialPost;
+  post: SocialPost | Post;
 }
 
 interface ExtendedComment extends SocialComment {
@@ -22,8 +23,10 @@ interface ExtendedComment extends SocialComment {
 const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   const navigate = useNavigate();
   const comments = useMemo(() => getCommentsByPostId(post.id), [post.id]);
-  const hashtags = post.hashtags ?? [];
-  
+  const hashtags = 'hashtags' in post ? (post.hashtags ?? []) : (post.tags ?? []);
+  const postBody = 'body' in post ? post.body : post.text;
+  const postTitle = 'title' in post ? post.title : post.text.split('\n')[0];
+
   const [commentText, setCommentText] = useState("");
   const [localComments, setLocalComments] = useState<ExtendedComment[]>(
     comments.map(c => ({ ...c, text: c.content, replyCount: c.replies || 0, replies: [] }))
@@ -151,17 +154,17 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
       </header>
 
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold leading-tight">{post.title}</h1>
-        {post.body ? (
+        {'title' in post && <h1 className="text-2xl font-bold leading-tight">{post.title}</h1>}
+        {postBody ? (
           <p className="whitespace-pre-line text-[15px] leading-relaxed text-[#E7E9EA]">
-            {post.body}
+            {postBody}
           </p>
         ) : null}
         {hashtags.length > 0 ? (
           <div className="flex flex-wrap gap-2 text-sm font-semibold">
             {hashtags.map((tag) => (
               <span key={tag} className="text-[#4D7CFF] hover:underline cursor-pointer">
-                #{tag}
+                {tag.startsWith('#') ? tag : `#${tag}`}
               </span>
             ))}
           </div>
@@ -172,13 +175,13 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
         <div className="overflow-hidden rounded-2xl border border-widget-border">
           <img
             src={post.mediaUrl}
-            alt={post.title}
+            alt={'title' in post ? post.title : 'Post image'}
             className="w-full object-cover"
           />
         </div>
       ) : null}
-      
-      {post.videoUrl ? (
+
+      {'videoUrl' in post && post.videoUrl ? (
         <div className="overflow-hidden rounded-2xl border border-widget-border">
           <video
             src={post.videoUrl}
@@ -199,7 +202,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           aria-label="Comment"
         >
           <MessageCircle className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" />
-          <span className="text-sm">{localComments.length}</span>
+          <span className="text-sm">{localComments.length || post.comments || 0}</span>
         </button>
         
         <button
