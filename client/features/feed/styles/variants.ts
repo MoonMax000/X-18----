@@ -59,15 +59,15 @@ export const CARD_VARIANTS = {
 
 // ============ ТАБЫ ============
 export const TAB_VARIANTS = {
-  container: "mb-4 flex w-full flex-nowrap gap-1 overflow-x-auto rounded-[20px] border border-widget-border bg-[#000000] p-1 sm:gap-1.5",
+  container: "mb-4 flex w-full flex-wrap gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5 sm:flex-nowrap sm:overflow-x-auto",
 
   item: (isActive: boolean, isAll: boolean = false) => {
     const base = isAll
-      ? "flex-1 min-w-[90px] sm:min-w-[110px]"
-      : "flex-1 min-w-[110px] sm:min-w-[130px]";
+      ? "flex-none min-w-[88px] sm:min-w-[108px]"
+      : "flex-none min-w-[110px] sm:min-w-[128px]";
     const styles = "px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-[16px] transition-all duration-200 whitespace-nowrap text-center";
     const activeStyles = isActive
-      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.85)]"
+      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.65)]"
       : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/15 hover:to-[#482090]/15";
     return `${base} ${styles} ${activeStyles}`;
   },
