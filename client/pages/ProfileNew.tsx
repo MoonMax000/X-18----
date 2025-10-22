@@ -5,6 +5,9 @@ import BillingSettings from "@/components/BillingSettings/BillingSettings";
 import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
 import KycSettings from "@/components/KycSettings/KycSettings";
 import LiveStreamingSettings from "@/components/LiveStreamingSettings/LiveStreamingSettings";
+import SocialOverview from "@/components/SocialOverview/SocialOverview";
+import MyPosts from "@/components/MyPosts/MyPosts";
+import Monetization from "@/components/Monetization/Monetization";
 import { cn } from "@/lib/utils";
 
 type Tab =
@@ -2587,11 +2590,10 @@ const ProfileNew: FC = () => {
         )}
 
         {activeTab === "social" && (
-          <div className="container-card p-6">
-            <h2 className="text-2xl font-bold text-white">Social Network</h2>
-            <p className="mt-2 text-sm text-webGray">
-              Connect with other traders and share insights.
-            </p>
+          <div>
+            {activeSocialSubTab === "overview" && <SocialOverview />}
+            {activeSocialSubTab === "posts" && <MyPosts />}
+            {activeSocialSubTab === "monetization" && <Monetization />}
           </div>
         )}
 
