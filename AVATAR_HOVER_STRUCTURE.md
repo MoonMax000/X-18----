@@ -9,7 +9,7 @@
 ```
 UserHoverCard (базовый UI компонент)
     ↓
-AvatarWithHoverCard (обертка для переиспользования)
+AvatarWithHoverCard (обе��тка для переиспользования)
     ↓
 Любой компонент с аватаром (посты, виджеты и т.д.)
 ```
@@ -25,9 +25,11 @@ AvatarWithHoverCard (обертка для переиспользования)
 - Radix UI HoverCard под капотом
 - Анимации и transitions
 - Кнопки Follow/Unfollow
-- Отображение followers/following
+- Отображение followers/following (кликабельно!)
 - Верификационный бейдж
 - Bio (краткое описание профиля, как в Twitter)
+- Hover эффект с подчеркиванием на Followers/Following
+- Переход на страницу ProfileConnections при клике
 
 ### 2. AvatarWithHoverCard (Обертка)
 **Путь:** `client/components/common/AvatarWithHoverCard.tsx`
@@ -248,8 +250,24 @@ client/
 - Добавьте cursor-pointer к children
 - Проверьте что нет pointer-events: none
 
+## 🔗 Кликабельные Followers/Following
+
+При клике на "Followers" или "Following" в hover card:
+- Открывается страница `/profile-connections/:handle`
+- Автоматически переключается на соответствующую вкладку
+- Hover эффект: подчеркивание текста
+
+```tsx
+// При наведении
+45.2K Followers  ← подчеркивается
+
+// При клике
+→ /profile-connections/alextrader?tab=followers
+```
+
 ## 📚 Дополнительная документация
 
 - Подробное использование: `client/components/common/README.md`
+- ProfileConnections: `PROFILE_CONNECTIONS.md`
 - UserHoverCard API: см. `client/components/PostCard/UserHoverCard.tsx`
 - Radix HoverCard: https://www.radix-ui.com/docs/primitives/components/hover-card
