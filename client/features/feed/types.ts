@@ -50,6 +50,9 @@ export interface Post {
     isPremium?: boolean;
     isFollowing?: boolean;
     subscriptionPrice?: number;
+    bio?: string;
+    followers?: number;
+    following?: number;
   };
   timestamp: string;
   type: PostType;
