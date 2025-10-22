@@ -333,7 +333,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             }}
             className={cn(
               "relative z-10 flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#482090]/10",
-              isBookmarked ? "text-[#A06AFF]" : "text-[#B0B0B0] hover:text-[#A06AFF]"
+              isBookmarked ? "text-[#A06AFF]" : "text-[#6D6D6D] hover:text-[#A06AFF]"
             )}
           >
             <svg
