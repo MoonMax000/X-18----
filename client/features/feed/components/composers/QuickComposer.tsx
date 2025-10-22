@@ -4,12 +4,13 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Code, X } from "lucide-react";
+import { Code, X, ChevronDown, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, TrendingUp } from "lucide-react";
 import { EmojiPicker } from "@/components/CreatePostBox/EmojiPicker";
 import { CodeBlockModal } from "@/components/CreatePostBox/CodeBlockModal";
 import { MediaEditor } from "@/components/CreatePostBox/MediaEditor";
 import { MediaGrid } from "@/components/CreatePostBox/MediaGrid";
 import { useAdvancedComposer } from "@/components/CreatePostBox/useAdvancedComposer";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { ComposerData, DirectionType, TimeframeType } from "../../types";
 import type { MediaItem } from "@/components/CreatePostBox/types";
 
@@ -26,6 +27,25 @@ export default function QuickComposer({ onExpand }: Props) {
   const [isBoldActive, setIsBoldActive] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // Post metadata for filtering
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('Analysis');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
+
+  // Category configuration with icons and colors
+  const categoryConfig = {
+    'News': { icon: Newspaper, color: '#4D7CFF', bg: 'bg-[#4D7CFF]/15' },
+    'Education': { icon: GraduationCap, color: '#F78DA7', bg: 'bg-[#F78DA7]/15' },
+    'Analysis': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Macro': { icon: Brain, color: '#FFD166', bg: 'bg-[#FFD166]/15' },
+    'On-chain': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Code': { icon: Code2, color: '#64B5F6', bg: 'bg-[#64B5F6]/15' },
+    'Video': { icon: Video, color: '#FF8A65', bg: 'bg-[#FF8A65]/20' },
+    'Signal': { icon: TrendingUp, color: '#2EBD85', bg: 'bg-[#2EBD85]/15' },
+  };
 
   const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
@@ -277,6 +297,199 @@ export default function QuickComposer({ onExpand }: Props) {
             )}
           </div>
         </div>
+
+        {/* Post Metadata Selectors */}
+        {text.length > 0 && (
+          <div className="mt-3 border-t border-[#1B1F27] pt-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {/* Market Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Market <span className="text-[#EF454A]">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postMarket}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['Crypto', 'Stocks', 'Forex', 'Commodities', 'Indices'].map((market) => (
+                        <button
+                          key={market}
+                          type="button"
+                          onClick={() => setPostMarket(market)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postMarket === market
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {market}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Category Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Category <span className="text-[#EF454A]">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="flex items-center gap-1.5 truncate">
+                        {(() => {
+                          const config = categoryConfig[postCategory as keyof typeof categoryConfig];
+                          const Icon = config.icon;
+                          return (
+                            <>
+                              <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: config.color }} />
+                              <span className="truncate">{postCategory}</span>
+                            </>
+                          );
+                        })()}
+                      </span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'].map((category) => {
+                        const config = categoryConfig[category as keyof typeof categoryConfig];
+                        const Icon = config.icon;
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => setPostCategory(category)}
+                            className={cn(
+                              "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                              postCategory === category
+                                ? `${config.bg} font-semibold`
+                                : "text-[#D5D8E1] hover:bg-white/5"
+                            )}
+                          >
+                            <span className={cn(
+                              "flex h-5 w-5 shrink-0 items-center justify-center rounded",
+                              postCategory === category ? config.bg : "bg-[#2F3336]"
+                            )}>
+                              <Icon className="h-3 w-3" style={{ color: config.color }} />
+                            </span>
+                            <span style={{ color: postCategory === category ? config.color : undefined }}>
+                              {category}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Symbol Input */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Symbol
+                </label>
+                <input
+                  type="text"
+                  value={postSymbol}
+                  onChange={(e) => setPostSymbol(e.target.value.toUpperCase())}
+                  placeholder="BTC, ETH..."
+                  className="flex h-8 w-full rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] placeholder:text-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+                  maxLength={10}
+                />
+              </div>
+
+              {/* Timeframe Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Timeframe
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postTimeframe || 'None'}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['', '15m', '1h', '4h', '1d', '1w'].map((tf) => (
+                        <button
+                          key={tf || 'none'}
+                          type="button"
+                          onClick={() => setPostTimeframe(tf)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postTimeframe === tf
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {tf || 'None'}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Risk Level */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Risk
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postRisk || 'None'}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['', 'Low', 'Medium', 'High'].map((risk) => (
+                        <button
+                          key={risk || 'none'}
+                          type="button"
+                          onClick={() => setPostRisk(risk)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postRisk === risk
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {risk || 'None'}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
