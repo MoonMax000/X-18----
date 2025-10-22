@@ -27,6 +27,7 @@ AvatarWithHoverCard (обертка для переиспользования)
 - Кнопки Follow/Unfollow
 - Отображение followers/following
 - Верификационный бейдж
+- Bio (краткое описание профиля, как в Twitter)
 
 ### 2. AvatarWithHoverCard (Обертка)
 **Путь:** `client/components/common/AvatarWithHoverCard.tsx`
