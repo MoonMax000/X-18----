@@ -59,14 +59,16 @@ export const CARD_VARIANTS = {
 
 // ============ ТАБЫ ============
 export const TAB_VARIANTS = {
-  container: "mb-3 flex items-center overflow-x-auto rounded-full border border-widget-border bg-[#000000] p-0.5",
-  
+  container: "mb-4 flex w-full flex-wrap gap-1 rounded-[20px] border border-widget-border bg-[#000000] p-1 sm:flex-nowrap sm:items-center sm:gap-1.5 sm:overflow-x-auto",
+
   item: (isActive: boolean, isAll: boolean = false) => {
-    const base = isAll ? "flex-none min-w-[56px]" : "flex-none min-w-[90px]";
-    const styles = "px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 whitespace-nowrap";
+    const base = isAll
+      ? "flex-1 basis-full sm:basis-0 sm:min-w-[110px]"
+      : "flex-1 basis-full sm:basis-0 sm:min-w-[130px]";
+    const styles = "px-3 py-2 text-sm font-semibold rounded-[16px] transition-all duration-200 whitespace-nowrap text-center";
     const activeStyles = isActive
-      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white"
-      : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20";
+      ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.85)]"
+      : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/15 hover:to-[#482090]/15";
     return `${base} ${styles} ${activeStyles}`;
   },
 } as const;
