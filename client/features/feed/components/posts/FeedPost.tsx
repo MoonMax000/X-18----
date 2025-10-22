@@ -63,7 +63,16 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
     >
       {/* Header */}
       <header className="flex w-full items-start justify-between gap-2 sm:gap-3 md:gap-4">
-        <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3 cursor-pointer">
+        <UserHoverCard
+          author={{
+            ...post.author,
+            followers: post.author.followers ?? 0,
+            following: post.author.following ?? 0,
+          }}
+          isFollowing={isFollowing}
+          onFollowToggle={(nextState) => onFollowToggle(post.author.handle, nextState)}
+        >
+          <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3 cursor-pointer">
           <Avatar className="flex-shrink-0 h-11 w-11 sm:w-12 sm:h-12">
             <AvatarImage src={post.author.avatar} />
             <AvatarFallback>{post.author.name[0]}</AvatarFallback>
@@ -128,7 +137,8 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
               {!isSignal && getCategoryBadge()}
             </div>
           </div>
-        </div>
+          </div>
+        </UserHoverCard>
         <button
           type="button"
           aria-label="More options"
