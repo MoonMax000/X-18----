@@ -63,7 +63,7 @@ export const TAB_VARIANTS = {
 
   item: (isActive: boolean, isAll: boolean = false) => {
     const base = isAll ? "w-full" : "w-full";
-    const styles = "w-full px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-[16px] transition-all duration-200 text-center";
+    const styles = "w-full px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-[16px] transition-all duration-200 text-center whitespace-nowrap";
     const activeStyles = isActive
       ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.65)]"
       : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/15 hover:to-[#482090]/15";
@@ -123,7 +123,7 @@ export const REPLY_MENU_VARIANTS = {
       : "flex w-full items-start gap-2.5 rounded-lg bg-white/5 p-2 text-left transition-colors hover:bg-white/10 text-xs",
 } as const;
 
-// ============ WIDGET СПЕЦИФИЧНЫЕ ============
+// ============ WIDGET С��ЕЦИФИЧНЫЕ ============
 export const WIDGET_VARIANTS = {
   header: "text-lg font-bold text-white",
   subtitle: "text-xs text-[#6C7280]",
