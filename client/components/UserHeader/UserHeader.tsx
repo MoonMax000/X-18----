@@ -112,7 +112,7 @@ const UserHeader: FC<Props> = ({
   };
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full max-w-[720px]", className)}>
       <div className="flex flex-col gap-4">
         {/* Cover/Banner image */}
         <div className="group relative w-full overflow-hidden rounded-3xl border border-[#16C784] bg-[#16181C]">
