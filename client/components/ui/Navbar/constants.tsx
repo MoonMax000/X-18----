@@ -21,17 +21,15 @@ export interface NavElementProps {
 
 export const navElements: NavElementProps[] = [
   { icon: <DashboardNavIcon />, title: "Dashboard", route: "/dashboard" },
-  { icon: <HomeIcon className="h-5 w-5" />, title: "Home", route: "/feedtest" },
-  { icon: <ActivityIcon className="h-5 w-5" />, title: "Market Stream", route: "/feedtest" },
   {
     icon: <SocialIcon className="h-5 w-5" />,
     title: "Social Network",
     route: "/social",
     children: [
       {
-        icon: <HomeIcon className="h-5 w-5" />,
-        title: "x_Home",
-        route: "/home",
+        icon: <ActivityIcon className="h-5 w-5" />,
+        title: "Market Stream",
+        route: "/feedtest",
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,

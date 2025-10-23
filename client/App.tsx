@@ -23,7 +23,6 @@ import SocialNotifications from "./pages/SocialNotifications";
 import SocialPostDetail from "./pages/SocialPostDetail";
 import SocialPostPreview from "./pages/SocialPostPreview";
 import SocialTweetComposer from "./pages/SocialTweetComposer";
-import HomePage from "./pages/Home";
 import NewHome from "./pages/NewHome";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
@@ -53,9 +52,9 @@ const App = () => (
               element={
                 <ClientLayout>
                   <Routes>
-                    <Route path="/" element={<NewHome />} />
+                    <Route path="/" element={<FeedTest />} />
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/home" element={<FeedTest />} />
                     <Route path="/home/post/:postId" element={<HomePostDetail />} />
                     <Route path="/profile-page" element={<ProfilePage />} />
                     <Route
