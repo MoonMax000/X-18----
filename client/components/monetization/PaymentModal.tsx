@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { X, CreditCard, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { X, CreditCard, Loader2, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePayment, getErrorMessage } from "@/hooks/usePayment";
+import { useModalScrollLock } from "@/hooks/useModalScrollLock";
+import { createStripeCheckout, redirectToStripeCheckout } from "@/lib/stripe";
 
 interface PaymentModalProps {
   isOpen: boolean;
