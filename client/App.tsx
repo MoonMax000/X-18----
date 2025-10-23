@@ -17,7 +17,6 @@ import Profile from "./pages/Profile";
 import ProfileNew from "./pages/ProfileNew";
 import Billing from "./pages/Billing";
 import NotFound from "./pages/NotFound";
-import ComposerShowcase from "./pages/ComposerShowcase";
 import SocialExplore from "./pages/SocialExplore";
 import SocialMessages from "./pages/SocialMessages";
 import SocialNotifications from "./pages/SocialNotifications";
@@ -30,7 +29,6 @@ import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
 import Updates from "./pages/Updates";
 import Referrals from "./pages/Referrals";
-import TestovayaPage from "./pages/Testovaya";
 import FeedTest from "./pages/FeedTest";
 import ProfileConnections from "./pages/ProfileConnections";
 import HomePostDetail from "./pages/HomePostDetail";
@@ -91,14 +89,9 @@ const App = () => (
                     <Route path="/billing" element={<Billing />} />
                     <Route path="/updates" element={<Updates />} />
                     <Route path="/referrals" element={<Referrals />} />
-                    <Route path="/testovaya" element={<TestovayaPage />} />
                     <Route path="/feedtest" element={<FeedTest />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/language" element={<Settings />} />
-                    <Route
-                      path="/composer-showcase"
-                      element={<ComposerShowcase />}
-                    />
                     <Route
                       path="/social/profile/:handle"
                       element={<OtherProfilePage />}
