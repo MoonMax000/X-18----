@@ -259,34 +259,8 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         </section>
       )}
 
-      {/* Media with lock overlay for premium */}
-      {post.mediaUrl && (
-        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
-          <div className="overflow-hidden rounded-2xl border border-[#181B22] relative">
-            <img
-              src={post.mediaUrl}
-              alt=""
-              className={cn(
-                "h-full w-full object-cover transition",
-                isLocked ? "scale-[1.02] brightness-[0.55] blur-[2px]" : ""
-              )}
-            />
-            {isLocked && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#0B0F16]/80 backdrop-blur-sm">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#A06AFF] via-[#482090] to-[#111827] text-white shadow-[0_18px_40px_-20px_rgba(160,106,255,0.7)]">
-                  <LockKeyhole className="h-6 w-6" />
-                </div>
-                <p className="max-w-[240px] text-center text-sm font-semibold text-white">
-                  Image locked. Unlock access to view original.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Gated/Locked Content */}
-      {isLocked && (
+      {/* Gated/Locked Content - Only show this for locked posts */}
+      {isLocked ? (
         <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
           <GatedContent
             accessLevel={post.accessLevel!}
@@ -299,6 +273,19 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             isSubscriber={post.isSubscriber}
           />
         </section>
+      ) : (
+        /* Media - Only show for unlocked posts */
+        post.mediaUrl && (
+          <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
+            <div className="overflow-hidden rounded-2xl border border-[#181B22]">
+              <img
+                src={post.mediaUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </section>
+        )
       )}
 
       {/* Footer with engagement metrics */}
