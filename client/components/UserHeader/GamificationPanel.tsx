@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Trophy, Target, Flame, Star, TrendingUp, TrendingDown, Crown, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface GamificationData {
   level: number;
