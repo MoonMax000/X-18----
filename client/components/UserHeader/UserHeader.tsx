@@ -88,9 +88,12 @@ const UserHeader: FC<Props> = ({
     "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
 
   return (
-    <div className={cn("flex w-full flex-col gap-4", className)}>
-      {/* Cover/Banner image */}
-      <div className="group relative w-full overflow-hidden rounded-3xl border border-[#16C784] bg-[#16181C]">
+    <div className={cn("w-full", className)}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+        {/* Left: Cover/Banner and User Info */}
+        <div className="flex flex-col gap-4">
+          {/* Cover/Banner image */}
+          <div className="group relative w-full overflow-hidden rounded-3xl border border-[#16C784] bg-[#16181C]">
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
           alt="Profile cover"
@@ -334,6 +337,68 @@ const UserHeader: FC<Props> = ({
           </div>
         </div>
       </div>
+    </div>
+
+    {/* Right: Stats Panel */}
+    <div className="hidden lg:flex flex-col gap-3 w-[280px]">
+      {/* Key Metrics Card */}
+      <div className="rounded-2xl border border-[#16C784] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Key Metrics</h3>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Total Posts</span>
+            <span className="text-base font-bold text-white">{data.stats.tweets}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Engagement</span>
+            <span className="text-base font-bold text-emerald-400">8.2%</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Reach</span>
+            <span className="text-base font-bold text-white">24.5K</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Trading Stats Card */}
+      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Trading Stats</h3>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Win Rate</span>
+            <span className="text-base font-bold text-emerald-400">67%</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Total Signals</span>
+            <span className="text-base font-bold text-white">142</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Avg Accuracy</span>
+            <span className="text-base font-bold text-[#A06AFF]">72%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity Card */}
+      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Activity</h3>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Last Post</span>
+            <span className="text-xs font-medium text-white">2h ago</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Active Days</span>
+            <span className="text-xs font-medium text-white">45/90</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#8B98A5]">Streak</span>
+            <span className="text-xs font-medium text-emerald-400">12 days</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
     </div>
   );
 };
