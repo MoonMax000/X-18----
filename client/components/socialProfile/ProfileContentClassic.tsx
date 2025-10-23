@@ -50,12 +50,15 @@ const derivePostFilterKey = (post: SocialPost): ProfilePostsFilter => {
 const isMediaPost = (post: SocialPost) => Boolean(post.type === "video" || post.videoUrl || post.mediaUrl);
 const isPremiumPost = (post: SocialPost) => Boolean(post.isPremium || typeof post.price === "number" || typeof post.subscriptionPrice === "number");
 
+const LIKED_POST_IDS = ["crypto-video", "john-premium-1", "john-premium-2", "tyrian-followers-only"] as const;
+
 export default function ProfileContentClassic({
   isOwnProfile = true,
 }: ProfileContentClassicProps) {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<SocialProfileData | null>(null);
   const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [likedPosts, setLikedPosts] = useState<SocialPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ProfileSection>("posts");
   const [activePostsFilter, setActivePostsFilter] = useState<ProfilePostsFilter>("all");
