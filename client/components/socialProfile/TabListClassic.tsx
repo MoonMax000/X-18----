@@ -114,27 +114,29 @@ export default function TabListClassic({
               })}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">
-              <span>Sort</span>
-              {sortOptions.map((option) => {
-                const isActive = sortOption === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => onSortChange?.(option.id)}
-                    className={cn(
-                      "inline-flex h-7 items-center gap-2 rounded-full border border-transparent px-3 text-[11px] font-semibold text-[#A5ACBA] transition-colors duration-200 hover:border-[#A06AFF]/40 hover:bg-[#1C1430] hover:text-white",
-                      isActive &&
-                        "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_6px_18px_-14px_rgba(160,106,255,0.6)]"
-                    )}
-                    aria-pressed={isActive}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
+            {totalPosts > 0 ? (
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">
+                <span>Sort</span>
+                {sortOptions.map((option) => {
+                  const isActive = sortOption === option.id;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => onSortChange?.(option.id)}
+                      className={cn(
+                        "inline-flex h-7 items-center gap-2 rounded-full border border-transparent px-3 text-[11px] font-semibold text-[#A5ACBA] transition-colors duration-200 hover:border-[#A06AFF]/40 hover:bg-[#1C1430] hover:text-white",
+                        isActive &&
+                          "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_6px_18px_-14px_rgba(160,106,255,0.6)]"
+                      )}
+                      aria-pressed={isActive}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
