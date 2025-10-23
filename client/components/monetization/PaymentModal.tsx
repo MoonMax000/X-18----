@@ -29,24 +29,56 @@ export default function PaymentModal({
   onSuccess,
 }: PaymentModalProps) {
   const { status, error, purchasePost, subscribe, reset } = usePayment();
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
+  const [isLoadingStripe, setIsLoadingStripe] = useState(false);
+
+  // Lock body scroll when modal is open
+  useModalScrollLock(isOpen);
 
   if (!isOpen) return null;
 
-  const handlePayment = async () => {
-    let success = false;
+  const handleStripeCheckout = async () => {
+    setIsLoadingStripe(true);
 
-    if (type === "unlock" && postId) {
-      success = await purchasePost(postId, amount);
-    } else if (type === "subscribe" && authorId) {
-      success = await subscribe(authorId, plan);
-    }
+    try {
+      // Create Stripe Checkout session
+      const checkoutUrl = await createStripeCheckout({
+        type,
+        amount,
+        postId,
+        authorId,
+        authorName,
+        plan,
+        successUrl: `${window.location.origin}${window.location.pathname}?payment=success`,
+        cancelUrl: `${window.location.origin}${window.location.pathname}?payment=cancelled`,
+      });
 
-    if (success) {
-      setTimeout(() => {
-        onSuccess?.();
-        handleClose();
-      }, 1500);
+      // Close modal before redirect
+      handleClose();
+
+      // Redirect to Stripe Checkout
+      // In production, this redirects to real Stripe checkout page
+      // For demo, we'll simulate the payment flow
+      console.log("🔵 Redirecting to Stripe Checkout:", checkoutUrl);
+
+      // Mock successful payment after 2 seconds (remove in production)
+      setTimeout(async () => {
+        let success = false;
+        if (type === "unlock" && postId) {
+          success = await purchasePost(postId, amount);
+        } else if (type === "subscribe" && authorId) {
+          success = await subscribe(authorId, plan);
+        }
+
+        if (success) {
+          onSuccess?.();
+        }
+      }, 2000);
+
+      // PRODUCTION CODE (uncomment when Stripe is configured):
+      // redirectToStripeCheckout(checkoutUrl);
+    } catch (error) {
+      console.error("Stripe Checkout error:", error);
+      setIsLoadingStripe(false);
     }
   };
 
@@ -130,68 +162,23 @@ export default function PaymentModal({
           )}
         </div>
 
-        {/* Payment Method */}
-        <div className="mb-6">
-          <label className="mb-2 block text-sm font-semibold text-white">Способ оплаты</label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setPaymentMethod("card")}
-              disabled={status === "processing"}
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-xl border p-3 transition-all duration-200",
-                paymentMethod === "card"
-                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                  : "border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent text-gray-400 hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
-              )}
-            >
-              <CreditCard className="h-4 w-4" />
-              <span className="text-sm font-medium">Карта</span>
-            </button>
-            <button
-              onClick={() => setPaymentMethod("paypal")}
-              disabled={status === "processing"}
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-xl border p-3 transition-all duration-200",
-                paymentMethod === "paypal"
-                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                  : "border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent text-gray-400 hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
-              )}
-            >
-              <span className="text-sm font-medium">PayPal</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Mock Card Input */}
-        {paymentMethod === "card" && status !== "success" && (
-          <div className="mb-6 space-y-3">
-            <div>
-              <label className="mb-1 block text-xs text-gray-400">Номер карты</label>
-              <input
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                disabled={status === "processing"}
-                className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-3 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-xs text-gray-400">Срок действия</label>
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  disabled={status === "processing"}
-                  className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-3 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
-                />
+        {/* Stripe Info */}
+        {status !== "success" && (
+          <div className="mb-6 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-4">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-[#635BFF]/10 p-2">
+                <CreditCard className="h-5 w-5 text-[#635BFF]" />
               </div>
-              <div>
-                <label className="mb-1 block text-xs text-gray-400">CVV</label>
-                <input
-                  type="text"
-                  placeholder="123"
-                  disabled={status === "processing"}
-                  className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-3 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
-                />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">Безопасная оплата через Stripe</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  Мы используем Stripe для обработки платежей. Ваши данные защищены и не хранятся на наших серверах.
+                </p>
+                <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                  <span>🔒 256-bit SSL</span>
+                  <span>•</span>
+                  <span>PCI DSS Level 1</span>
+                </div>
               </div>
             </div>
           </div>
