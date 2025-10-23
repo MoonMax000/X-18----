@@ -4,7 +4,7 @@ import { defaultProfile, getProfileTimeline } from "@/data/socialProfile";
 import type { SocialProfileData } from "@/data/socialProfile";
 import type { SocialPost } from "@/data/socialPosts";
 import ProfileHero from "./ProfileHero";
-import TabListClassic, { type ProfilePostsFilter, type ProfileSection } from "./TabListClassic";
+import TabListClassic, { type ProfilePostsFilter, type ProfileSection, type ProfileSortOption } from "./TabListClassic";
 import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 
