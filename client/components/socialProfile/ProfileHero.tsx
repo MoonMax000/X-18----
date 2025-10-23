@@ -18,6 +18,7 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   isOwnProfile = true,
 }) => {
   const [isFollowing, setIsFollowing] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
 
   const handleFollowClick = () => {
     setIsFollowing(!isFollowing);
