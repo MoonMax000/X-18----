@@ -91,6 +91,13 @@ export default function FeedFilters({
         return;
       }
 
+      if (target instanceof HTMLElement) {
+        // Allow Radix Popover content rendered outside modal content
+        if (target.closest('[data-radix-popover-content]') || target.closest('[data-radix-popper-content-wrapper]')) {
+          return;
+        }
+      }
+
       // For backdrop: only prevent default, let onClick handler run
       if (backdrop && target === backdrop) {
         e.preventDefault();
