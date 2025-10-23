@@ -69,6 +69,11 @@ export default function TabListClassic({
     return tabs;
   }, [showLikesTab]);
 
+  const tabsGridClass = cn(
+    "grid w-full gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5",
+    tabsToRender.length === 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3",
+  );
+
   const availableChips = useMemo(() => {
     return postSubFilters.filter((chip) => {
       if (chip.id === "all") {
