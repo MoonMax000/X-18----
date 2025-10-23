@@ -161,7 +161,7 @@ const UserHeader: FC<Props> = ({
         <div className="relative px-3 sm:px-4 md:px-6">
           {/* Avatar positioned to overlap banner */}
           <div className="absolute -top-12 sm:-top-14 md:-top-16 left-3 sm:left-4 md:left-4">
-            <div className={`group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full ${getAvatarBorderClass(data.level)}`}>
+            <div className={`group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full ${getAvatarBorderClass(data.level)} ${getAvatarGlowClass(data.level)}`}>
               <img
                 src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500"
                 alt="Profile"
