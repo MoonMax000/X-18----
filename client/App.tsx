@@ -83,6 +83,7 @@ const App = () => (
                     />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/profile" element={<ProfileNew />} />
+                    <Route path="/profile/:handle" element={<OtherProfilePage />} />
                     <Route path="/profile-old" element={<Profile />} />
                     <Route path="/billing" element={<Billing />} />
                     <Route path="/updates" element={<Updates />} />
