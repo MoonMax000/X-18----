@@ -60,7 +60,7 @@ const Footer: FC = () => {
       {/* Top Gradient Divider */}
       <div className="absolute left-0 top-0 z-10 h-[2px] w-full bg-gradient-to-r from-transparent via-[#3D3D3D] to-transparent" />
 
-      <div className="mx-auto max-w-7xl px-[4%]">
+      <div className="container mx-auto px-2 sm:px-3 md:px-4">
         <div className="flex flex-wrap justify-between gap-12 md:gap-16">
           {/* Stay in touch section */}
           <div className="flex-1 min-w-[300px] mb-15">
