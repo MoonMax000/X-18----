@@ -19,12 +19,20 @@ interface FeedPostProps {
 export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBorder = false }: FeedPostProps) {
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const isSignal = post.type === "signal";
   const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber;
 
   // TODO: Replace with actual user authentication check
   const currentUserHandle = "@tyriantrade"; // This should come from auth context
   const isOwnPost = post.author.handle?.toLowerCase() === currentUserHandle.toLowerCase();
+
+  // Text truncation logic
+  const TEXT_PREVIEW_LENGTH = 300;
+  const shouldTruncate = post.text.length > TEXT_PREVIEW_LENGTH;
+  const displayText = !isExpanded && shouldTruncate
+    ? post.text.slice(0, TEXT_PREVIEW_LENGTH) + "..."
+    : post.text;
 
   const handlePostClick = () => {
     navigate(`/home/post/${post.id}`, { state: post });
