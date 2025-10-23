@@ -361,6 +361,7 @@ export default function ProfileContentClassic({
               postFilterCounts={postFilterCounts}
               sortOption={sortOption}
               onSortChange={setSortOption}
+              showLikesTab={likesTabEnabled}
             />
           </div>
         </div>
