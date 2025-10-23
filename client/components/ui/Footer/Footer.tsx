@@ -234,129 +234,89 @@ const Footer: FC = () => {
 
             {/* Right Section: 4 Columns Navigation */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-            {/* Column 1: Platform */}
+            {/* Column 1: Продукты */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Platform</h4>
+              <h4 className="mb-4 text-white font-semibold text-base">Продукты</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="/feed" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Market Feed
+                  <a href="/social" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Социальная сеть
                   </a>
                 </li>
                 <li>
-                  <a href="/signals" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Trading Signals
+                  <a href="/marketplace" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Маркетплейс
                   </a>
                 </li>
                 <li>
-                  <a href="/analysis" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Market Analysis
-                  </a>
-                </li>
-                <li>
-                  <a href="/portfolio" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Portfolio Tracker
-                  </a>
-                </li>
-                <li>
-                  <a href="/pricing" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Pricing
+                  <a href="/streaming" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Live Streaming
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Column 2: Crypto Assets */}
+            {/* Column 2: Начать */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Crypto Assets</h4>
+              <h4 className="mb-4 text-white font-semibold text-base">Начать</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="/crypto/bitcoin" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Bitcoin (BTC)
+                  <a href="/signup" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Создать аккаунт
                   </a>
                 </li>
                 <li>
-                  <a href="/crypto/ethereum" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Ethereum (ETH)
+                  <a href="/community" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Присоединиться к сообществу
                   </a>
                 </li>
                 <li>
-                  <a href="/crypto/solana" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Solana (SOL)
+                  <a href="/beginner-guide" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Гайд для новичков
                   </a>
                 </li>
                 <li>
-                  <a href="/crypto/all" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    All Cryptocurrencies
-                  </a>
-                </li>
-                <li>
-                  <a href="/markets" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Market Overview
+                  <a href="/faq" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    FAQ
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Column 3: Community */}
+            {/* Column 3: Ресурсы */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Community</h4>
+              <h4 className="mb-4 text-white font-semibold text-base">Ресурсы</h4>
               <ul className="space-y-3">
                 <li>
                   <a href="/support" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Support Center
+                    Центр поддержки
                   </a>
                 </li>
                 <li>
-                  <a href="/referrals" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Referral Program
-                  </a>
-                </li>
-                <li>
-                  <a href="/academy" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Trading Academy
+                  <a href="/roadmap" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
+                    Дорожная карта
                   </a>
                 </li>
                 <li>
                   <a href="/blog" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="/status" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Platform Status
+                    Блог сообщества
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Column 4: Company */}
+            {/* Column 4: Компания */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Company</h4>
+              <h4 className="mb-4 text-white font-semibold text-base">Компания</h4>
               <ul className="space-y-3">
                 <li>
                   <a href="/about" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="/careers" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="/privacy" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="/terms" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Terms of Service
+                    О платформе
                   </a>
                 </li>
                 <li>
                   <a href="/contact" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Contact Us
+                    Контакты
                   </a>
                 </li>
               </ul>
