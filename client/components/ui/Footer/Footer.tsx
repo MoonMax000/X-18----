@@ -132,6 +132,7 @@ const Footer: FC = () => {
             <form onSubmit={handleSubmit} className="mt-4 mb-5 flex flex-col sm:flex-row gap-4">
               <div className="relative w-full max-w-[400px]">
                 <input
+                  id="footer-email-input"
                   type="email"
                   required
                   value={email}
@@ -140,7 +141,8 @@ const Footer: FC = () => {
                   className="peer w-full max-h-[52px] rounded-full border border-[#525252] bg-transparent px-[30px] py-[13px] font-medium text-white transition-all duration-300 placeholder-transparent focus:border-[#A06AFF] focus:outline-none focus:ring-2 focus:ring-[#A06AFF]/50 focus:shadow-lg focus:shadow-[#A06AFF]/30"
                 />
                 <label
-                  className="absolute left-[30px] top-3 text-[#E5E5E5] transition-all duration-200 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:top-[-8px] peer-focus:text-xs peer-focus:bg-black peer-focus:px-1 peer-[:not(:placeholder-shown)]:top-[-8px] peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black peer-[:not(:placeholder-shown)]:px-1"
+                  htmlFor="footer-email-input"
+                  className="absolute left-[30px] top-3 cursor-text text-[#E5E5E5] transition-all duration-200 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:top-[-8px] peer-focus:text-xs peer-focus:bg-black peer-focus:px-1 peer-[:not(:placeholder-shown)]:top-[-8px] peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black peer-[:not(:placeholder-shown)]:px-1"
                 >
                   Enter your email
                 </label>
