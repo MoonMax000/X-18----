@@ -30,6 +30,24 @@ export default function TipModal({
   // Lock body scroll when modal is open
   useModalScrollLock(isOpen);
 
+  // Block all clicks outside modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const blockClicks = (e: MouseEvent) => {
+      const modalContent = document.querySelector('[data-modal-content="tip"]');
+      const target = e.target as Node;
+
+      if (modalContent && !modalContent.contains(target)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('click', blockClicks, { capture: true });
+    return () => document.removeEventListener('click', blockClicks, { capture: true });
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSend = async () => {
