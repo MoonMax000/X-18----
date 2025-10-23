@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TrendingUp, TrendingDown, DollarSign, LockKeyhole, Sparkles } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
