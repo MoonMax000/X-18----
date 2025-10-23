@@ -115,7 +115,7 @@ export default function TabListClassic({
             </div>
 
             {totalPosts > 0 ? (
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">
+              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6B7280]">
                 <span>Sort</span>
                 {sortOptions.map((option) => {
                   const isActive = sortOption === option.id;
@@ -125,7 +125,7 @@ export default function TabListClassic({
                       type="button"
                       onClick={() => onSortChange?.(option.id)}
                       className={cn(
-                        "inline-flex h-7 items-center gap-2 rounded-full border border-transparent px-3 text-[11px] font-semibold text-[#A5ACBA] transition-colors duration-200 hover:border-[#A06AFF]/40 hover:bg-[#1C1430] hover:text-white",
+                        "inline-flex h-6 items-center gap-1.5 rounded-full border border-transparent px-2.5 text-[10px] font-semibold text-[#A5ACBA] transition-colors duration-200 hover:border-[#A06AFF]/40 hover:bg-[#1C1430] hover:text-white",
                         isActive &&
                           "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_6px_18px_-14px_rgba(160,106,255,0.6)]"
                       )}
