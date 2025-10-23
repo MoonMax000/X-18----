@@ -103,12 +103,21 @@ const Footer: FC = () => {
               <button
                 type="submit"
                 disabled={!email}
-                className="group relative z-20 overflow-hidden flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-center leading-7 text-white transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
+                className="group relative z-20 overflow-hidden flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border px-6 py-3 text-center leading-7 transition-all duration-300 disabled:cursor-not-allowed"
+                style={{
+                  background: email
+                    ? 'linear-gradient(90deg, rgba(230, 230, 230, 0.2) 0%, rgba(230, 230, 230, 0.05) 50%, transparent 100%)'
+                    : 'linear-gradient(90deg, #2E2E2E 0%, #151515 52.88%, #0C0C0C 100%)',
+                  borderColor: email ? '#A06AFF' : '#525252',
+                  boxShadow: email ? '0 10px 25px -5px rgba(160, 106, 255, 0.3)' : 'none',
+                }}
               >
-                {/* Animated shine effect */}
-                <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                {/* Animated shine effect - only show when email is entered */}
+                {email && (
+                  <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                )}
 
-                <span className="relative z-10 text-white font-medium">Subscribe to newsletter</span>
+                <span className="relative z-10 font-medium text-white">Subscribe to newsletter</span>
                 <ArrowRight className="relative z-10 h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />
               </button>
             </form>
