@@ -58,14 +58,14 @@ export default function FollowModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-2xl border border-widget-border bg-[#0B0E13] p-6 shadow-2xl">
+      <div className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Follow to unlock</h2>
+          <h2 className="text-xl font-bold text-white">Подписаться для разблокировки</h2>
           <button
             onClick={handleClose}
             disabled={status === "processing"}
-            className="rounded-full p-1 text-gray-400 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
+            className="rounded-full p-1.5 text-gray-400 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
           >
             <X className="h-5 w-5" />
           </button>
@@ -73,7 +73,7 @@ export default function FollowModal({
 
         {/* Status Messages */}
         {status === "success" && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl bg-green-500/10 p-4 text-green-400">
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-green-400">
             <CheckCircle2 className="h-5 w-5" />
             <div>
               <p className="font-semibold">Successfully followed! ✓</p>
@@ -83,7 +83,7 @@ export default function FollowModal({
         )}
 
         {status === "failed" && error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl bg-red-500/10 p-4 text-red-400">
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-400">
             <AlertCircle className="h-5 w-5" />
             <div>
               <p className="font-semibold">Error</p>
