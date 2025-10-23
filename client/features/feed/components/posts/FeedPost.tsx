@@ -26,7 +26,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
   // TODO: Replace with actual user authentication check
   const currentUserHandle = "@tyriantrade"; // This should come from auth context
-  const isOwnPost = post.author.handle === currentUserHandle;
+  const isOwnPost = post.author.handle?.toLowerCase() === currentUserHandle.toLowerCase();
 
   const handlePostClick = () => {
     navigate(`/home/post/${post.id}`, { state: post });
