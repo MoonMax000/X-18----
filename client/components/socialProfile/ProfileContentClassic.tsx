@@ -70,12 +70,16 @@ export default function ProfileContentClassic({
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-[#F7F9F9] transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            aria-label="Back"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path
-                d="M6.19006 11.46L10.3926 16.5L9.21423 17.92L3.00006 10.46L9.21423 3L10.3926 4.42L6.19006 9.46H17.5117V11.46H6.19006Z"
-                fill="#F7F9F9"
+                d="M11.6667 5L6.66675 10L11.6667 15"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
           </button>
