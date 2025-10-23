@@ -8,6 +8,7 @@ import type { FeedTab } from "../types";
 import { LAB_CATEGORY_CONFIG, type LabCategory } from "@/components/testLab/categoryConfig";
 import { LAB_ASSET_OPTIONS } from "@/components/testLab/postMetaConfig";
 import { Portal } from "@/components/ui/Portal";
+import { useModalScrollLock } from "@/hooks/useModalScrollLock";
 
 interface FeedFiltersProps {
   activeTab: FeedTab;
@@ -72,6 +73,9 @@ export default function FeedFilters({
     e.stopPropagation();
     setIsMainFiltersModalOpen(false);
   };
+
+  // Lock scroll when modal is open
+  useModalScrollLock(isMainFiltersModalOpen);
 
   // Block clicks on elements behind modal (but allow backdrop clicks to close)
   useEffect(() => {
@@ -270,7 +274,7 @@ export default function FeedFilters({
                 {activeConfig?.visible?.includes('period') && (
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-semibold text-white">
-                      Пер��од
+                      Период
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
