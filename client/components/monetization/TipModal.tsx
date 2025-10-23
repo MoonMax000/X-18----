@@ -48,21 +48,21 @@ export default function TipModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-2xl border border-widget-border bg-[#0B0E13] p-6 shadow-2xl">
+      <div className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Send Donation</h2>
+          <h2 className="text-xl font-bold text-white">Отправить донат</h2>
           <button
             onClick={handleClose}
-            className="rounded-full p-1 text-gray-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-full p-1.5 text-gray-400 transition hover:bg-white/10 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Author Info */}
-        <div className="mb-6 flex items-center gap-3 rounded-xl bg-white/5 p-4">
-          <img src={authorAvatar} alt={authorName} className="h-12 w-12 rounded-full" />
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-4">
+          <img src={authorAvatar} alt={authorName} className="h-12 w-12 rounded-full ring-2 ring-white/10" />
           <div>
             <p className="font-semibold text-white">{authorName}</p>
             <p className="text-sm text-gray-400">Получит ваш донат</p>
