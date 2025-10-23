@@ -37,9 +37,9 @@ export default function ProfileContentClassic({
 
       // Filter posts based on profile ownership
       if (isOwnProfile) {
-        // On My Profile page, show only posts by @tyriantrade (current user)
+        // On My Profile page, show only posts by @TyrianTrade (current user)
         const userPosts = allPosts.filter(
-          post => post.author.handle === "@tyriantrade"
+          post => post.author.handle?.toLowerCase() === "@tyriantrade"
         );
         setPosts(userPosts);
       } else {
