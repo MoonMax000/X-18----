@@ -49,8 +49,9 @@ export default function PaymentModal({
         return;
       }
 
-      // Allow clicks on backdrop (to close modal)
+      // For backdrop: only prevent default, let onClick handler run
       if (backdrop && target === backdrop) {
+        e.preventDefault();
         return;
       }
 
@@ -122,7 +123,10 @@ export default function PaymentModal({
       <div
         data-modal-backdrop="payment"
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
-        onClick={handleClose}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent click from reaching posts behind modal
+          handleClose();
+        }}
       >
         <div
           data-modal-content="payment"
