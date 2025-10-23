@@ -1,6 +1,7 @@
 import { FC, useRef } from "react";
 import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import { TierBadge } from "@/components/common/TierBadge";
 
 interface ProfileData {
   name: string;
@@ -294,17 +295,7 @@ const UserHeader: FC<Props> = ({
           {/* User metadata with icons */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {/* Tier badge */}
-            <div className="flex items-center gap-1">
-              <svg width="20" height="20" viewBox="0 0 18 20" fill="none">
-                <path
-                  d="M18 9.1833V6.28029C18 4.64029 18 3.82028 17.5959 3.28529C17.1918 2.75029 16.2781 2.49056 14.4507 1.9711C13.2022 1.6162 12.1016 1.18863 11.2223 0.79829C10.0234 0.2661 9.424 0 9 0C8.576 0 7.9766 0.2661 6.77771 0.79829C5.89839 1.18863 4.79784 1.61619 3.54933 1.9711C1.72193 2.49056 0.80822 2.75029 0.40411 3.28529C-5.96046e-08 3.82028 0 4.64029 0 6.28029V9.1833C0 14.8085 5.06277 18.1835 7.594 19.5194C8.2011 19.8398 8.5046 20 9 20C9.4954 20 9.7989 19.8398 10.406 19.5194C12.9372 18.1835 18 14.8085 18 9.1833Z"
-                  fill="#8B98A5"
-                />
-              </svg>
-              <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
-                Tier 4
-              </span>
-            </div>
+            <TierBadge tier={4} />
 
             {/* Location */}
             {data.location && (
