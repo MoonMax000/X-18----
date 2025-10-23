@@ -7,6 +7,7 @@ import { FILTERS_CONFIG, TABS_CONFIG } from "../constants";
 import type { FeedTab } from "../types";
 import { LAB_CATEGORY_CONFIG, type LabCategory } from "@/components/testLab/categoryConfig";
 import { LAB_ASSET_OPTIONS } from "@/components/testLab/postMetaConfig";
+import { Portal } from "@/components/ui/portal";
 
 interface FeedFiltersProps {
   activeTab: FeedTab;
@@ -43,7 +44,8 @@ export default function FeedFilters({
   onFeedModeChange
 }: FeedFiltersProps) {
   const activeConfig = TABS_CONFIG[activeTab];
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isMainFiltersModalOpen, setIsMainFiltersModalOpen] = useState(false);
+  const [isAdvancedFiltersModalOpen, setIsAdvancedFiltersModalOpen] = useState(false);
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [monetizationFilter, setMonetizationFilter] = useState<"all" | "free" | "premium">("all");
   const [sortOption, setSortOption] = useState<"recent" | "likes_desc" | "likes_asc">("recent");
@@ -66,241 +68,28 @@ export default function FeedFilters({
     onFilterChange("period", "All time");
   };
 
+  const handleCloseMainFiltersModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMainFiltersModalOpen(false);
+  };
+
   return (
     <>
       <div className="flex items-end justify-between gap-3">
-        <div className="flex items-end gap-3 flex-wrap flex-1">
-          {/* Market Filter */}
-          {activeConfig?.visible?.includes('market') && (
-            <div className="flex flex-col gap-1">
-              <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                Рынок
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
-                  >
-                    <span className="truncate">{filters.market || 'All'}</span>
-                    <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  sideOffset={10}
-                  className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
-                >
-                  <div className="grid gap-1.5 text-[12px]">
-                    {FILTERS_CONFIG.market.opts.map(opt => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => onFilterChange('market', opt)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
-                          filters.market === opt
-                            ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                            : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
-                        )}
-                      >
-                        <span className="truncate">{opt}</span>
-                        {filters.market === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-
-          {/* Price Filter */}
-          {activeConfig?.visible?.includes('price') && (
-            <div className="flex flex-col gap-1">
-              <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                Цена
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
-                  >
-                    <span className="truncate">{filters.price || 'All'}</span>
-                    <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  sideOffset={10}
-                  className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
-                >
-                  <div className="grid gap-1.5 text-[12px]">
-                    {FILTERS_CONFIG.price.opts.map(opt => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => onFilterChange('price', opt)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
-                          filters.price === opt
-                            ? "border-[#A06AFF]/70 bg-[#1C1430] text-white"
-                            : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
-                        )}
-                      >
-                        <span className="truncate">{opt}</span>
-                        {filters.price === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-
-          {/* Period Filter */}
-          {activeConfig?.visible?.includes('period') && (
-            <div className="flex flex-col gap-1">
-              <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                Период
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
-                  >
-                    <span className="truncate">{filters.period || 'All time'}</span>
-                    <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  sideOffset={10}
-                  className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
-                >
-                  <div className="grid gap-1.5 text-[12px]">
-                    {FILTERS_CONFIG.period.opts.map(opt => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => onFilterChange('period', opt)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
-                          filters.period === opt
-                            ? "border-[#A06AFF]/70 bg-[#1C1430] text-white"
-                            : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
-                        )}
-                      >
-                        <span className="truncate">{opt}</span>
-                        {filters.period === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-
-          {/* Topic Filter */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-              Тема
-            </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
-                >
-                  {(() => {
-                    const activeCategoryOption = CATEGORY_OPTIONS.find((option) => option.value === (filters.topic || 'all'));
-                    const ActiveCategoryIcon = activeCategoryOption?.icon;
-                    return (
-                      <>
-                        {ActiveCategoryIcon ? (
-                          <span
-                            className={cn(
-                              "flex h-4 w-4 items-center justify-center rounded",
-                              activeCategoryOption.badgeClassName ?? "bg-[#2F3336] text-white/70"
-                            )}
-                          >
-                            <ActiveCategoryIcon className="h-3 w-3" />
-                          </span>
-                        ) : (
-                          <span className="flex h-4 w-4 items-center justify-center rounded bg-[#2F3336]/60 text-[9px] font-semibold">
-                            Все
-                          </span>
-                        )}
-                        <span className="truncate">{activeCategoryOption?.label || 'Все'}</span>
-                        <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
-                      </>
-                    );
-                  })()}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="start"
-                sideOffset={10}
-                className="w-[300px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
-              >
-                <div className="grid gap-2">
-                  {CATEGORY_OPTIONS.map((category) => {
-                    const Icon = category.icon;
-                    const isActive = category.value === (filters.topic || 'all');
-                    return (
-                      <button
-                        key={category.value}
-                        type="button"
-                        onClick={() => onFilterChange('topic', category.value)}
-                        className={cn(
-                          "flex items-center gap-3 rounded-[14px] border px-3 py-2 text-left transition-colors",
-                          isActive
-                            ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                            : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
-                        )}
-                      >
-                        {Icon ? (
-                          <span
-                            className={cn(
-                              "flex h-7 w-7 items-center justify-center rounded-lg",
-                              category.badgeClassName ?? "bg-[#2F3336] text-white/70"
-                            )}
-                          >
-                            <Icon className="h-4 w-4" />
-                          </span>
-                        ) : (
-                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2F3336]/60 text-[10px] font-semibold uppercase">
-                            Все
-                          </span>
-                        )}
-                        <span className="flex flex-col leading-tight">
-                          <span className="text-xs font-semibold text-white">{category.label}</span>
-                          {category.description ? (
-                            <span className="text-[11px] text-[#8E92A0]">{category.description}</span>
-                          ) : null}
-                        </span>
-                        {isActive ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        {/* Filter Button & Hot/Recent Toggle */}
+        {/* Filters Button - Now on the left */}
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsFilterModalOpen(true)}
+            onClick={() => setIsMainFiltersModalOpen(true)}
             className="flex h-[26px] items-center gap-1.5 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Filters</span>
           </button>
+        </div>
 
+        {/* Hot/Recent Toggle - Now on the right */}
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] p-0.5">
             <button
               type="button"
@@ -332,15 +121,284 @@ export default function FeedFilters({
         </div>
       </div>
 
+      {/* Main Filters Modal - Market, Price, Period, Topic */}
+      {isMainFiltersModalOpen && (
+        <Portal>
+          <div
+            data-modal-backdrop="main-filters"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={handleCloseMainFiltersModal}
+          >
+            <div
+              data-modal-content="main-filters"
+              className="relative w-full max-w-2xl rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2F2F31]">
+                <h2 className="text-xl font-bold text-white">Filters</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsMainFiltersModalOpen(false)}
+                  className="rounded-full p-2 text-[#8E92A0] transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Filters Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Market Filter */}
+                {activeConfig?.visible?.includes('market') && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-white">
+                      Рынок
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        >
+                          <span className="truncate">{filters.market || 'All'}</span>
+                          <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        sideOffset={10}
+                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                      >
+                        <div className="grid gap-1.5 text-[12px]">
+                          {FILTERS_CONFIG.market.opts.map(opt => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => onFilterChange('market', opt)}
+                              className={cn(
+                                "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
+                                filters.market === opt
+                                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                                  : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
+                              )}
+                            >
+                              <span className="truncate">{opt}</span>
+                              {filters.market === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                {/* Price Filter */}
+                {activeConfig?.visible?.includes('price') && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-white">
+                      Цена
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        >
+                          <span className="truncate">{filters.price || 'All'}</span>
+                          <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        sideOffset={10}
+                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                      >
+                        <div className="grid gap-1.5 text-[12px]">
+                          {FILTERS_CONFIG.price.opts.map(opt => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => onFilterChange('price', opt)}
+                              className={cn(
+                                "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
+                                filters.price === opt
+                                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white"
+                                  : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
+                              )}
+                            >
+                              <span className="truncate">{opt}</span>
+                              {filters.price === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                {/* Period Filter */}
+                {activeConfig?.visible?.includes('period') && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-white">
+                      Период
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        >
+                          <span className="truncate">{filters.period || 'All time'}</span>
+                          <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        sideOffset={10}
+                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                      >
+                        <div className="grid gap-1.5 text-[12px]">
+                          {FILTERS_CONFIG.period.opts.map(opt => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => onFilterChange('period', opt)}
+                              className={cn(
+                                "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
+                                filters.period === opt
+                                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white"
+                                  : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
+                              )}
+                            >
+                              <span className="truncate">{opt}</span>
+                              {filters.period === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                {/* Topic Filter */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-white">
+                    Тема
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                      >
+                        {(() => {
+                          const activeCategoryOption = CATEGORY_OPTIONS.find((option) => option.value === (filters.topic || 'all'));
+                          const ActiveCategoryIcon = activeCategoryOption?.icon;
+                          return (
+                            <>
+                              {ActiveCategoryIcon ? (
+                                <span
+                                  className={cn(
+                                    "flex h-5 w-5 items-center justify-center rounded",
+                                    activeCategoryOption.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                                  )}
+                                >
+                                  <ActiveCategoryIcon className="h-3.5 w-3.5" />
+                                </span>
+                              ) : (
+                                <span className="flex h-5 w-5 items-center justify-center rounded bg-[#2F3336]/60 text-[10px] font-semibold">
+                                  Все
+                                </span>
+                              )}
+                              <span className="truncate">{activeCategoryOption?.label || 'Все'}</span>
+                              <ChevronDown className="ml-auto h-4 w-4 text-[#C4C7D4]" />
+                            </>
+                          );
+                        })()}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="start"
+                      sideOffset={10}
+                      className="w-[300px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                    >
+                      <div className="grid gap-2">
+                        {CATEGORY_OPTIONS.map((category) => {
+                          const Icon = category.icon;
+                          const isActive = category.value === (filters.topic || 'all');
+                          return (
+                            <button
+                              key={category.value}
+                              type="button"
+                              onClick={() => onFilterChange('topic', category.value)}
+                              className={cn(
+                                "flex items-center gap-3 rounded-[14px] border px-3 py-2 text-left transition-colors",
+                                isActive
+                                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                                  : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
+                              )}
+                            >
+                              {Icon ? (
+                                <span
+                                  className={cn(
+                                    "flex h-7 w-7 items-center justify-center rounded-lg",
+                                    category.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                                  )}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                              ) : (
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2F3336]/60 text-[10px] font-semibold uppercase">
+                                  Все
+                                </span>
+                              )}
+                              <span className="flex flex-col leading-tight">
+                                <span className="text-xs font-semibold text-white">{category.label}</span>
+                                {category.description ? (
+                                  <span className="text-[11px] text-[#8E92A0]">{category.description}</span>
+                                ) : null}
+                              </span>
+                              {isActive ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-4 border-t border-[#2F2F31]">
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-sm font-semibold text-[#8E92A0] transition-colors hover:text-white"
+                >
+                  Reset all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMainFiltersModalOpen(false)}
+                  className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
       {/* Advanced Filters Modal */}
-      <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
+      <Dialog open={isAdvancedFiltersModalOpen} onOpenChange={setIsAdvancedFiltersModalOpen}>
         <DialogContent className="max-w-[680px] border-widget-border bg-[#0C1014] text-white p-0 gap-0">
           <DialogHeader className="border-b border-widget-border px-6 py-4">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-bold text-white">Advanced Filters</DialogTitle>
               <button
                 type="button"
-                onClick={() => setIsFilterModalOpen(false)}
+                onClick={() => setIsAdvancedFiltersModalOpen(false)}
                 className="rounded-full p-2 text-[#8E92A0] transition-colors hover:bg-white/5 hover:text-white"
               >
                 <X className="h-5 w-5" />
@@ -463,7 +521,7 @@ export default function FeedFilters({
             </button>
             <button
               type="button"
-              onClick={() => setIsFilterModalOpen(false)}
+              onClick={() => setIsAdvancedFiltersModalOpen(false)}
               className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition hover:brightness-110"
             >
               Apply Filters
