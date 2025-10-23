@@ -57,6 +57,8 @@ export default function ProfileContentClassic({
   const [profile, setProfile] = useState<SocialProfileData | null>(null);
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<ProfileSection>("posts");
+  const [activePostsFilter, setActivePostsFilter] = useState<ProfilePostsFilter>("all");
   const { handle, user_id } = useParams();
 
   useEffect(() => {
