@@ -93,7 +93,7 @@ export default function FollowModal({
         )}
 
         {/* Author Profile Card */}
-        <div className="mb-6 rounded-xl border border-gray-700 bg-gradient-to-br from-white/5 to-white/[0.02] p-6">
+        <div className="mb-6 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-6">
           <div className="flex items-start gap-4">
             <img 
               src={authorAvatar} 
@@ -134,7 +134,7 @@ export default function FollowModal({
         </div>
 
         {/* Note */}
-        <div className="mb-6 rounded-lg bg-blue-500/10 p-3 text-xs text-blue-300">
+        <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-3 text-xs text-blue-300">
           <p className="font-semibold">100% Free</p>
           <p className="mt-1">Following is completely free. No payment required.</p>
         </div>
@@ -144,26 +144,26 @@ export default function FollowModal({
           <button
             onClick={handleClose}
             disabled={status === "processing"}
-            className="flex-1 rounded-lg border border-gray-700 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+            className="flex-1 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-[#A06AFF]/40 disabled:opacity-50"
           >
-            Cancel
+            Отмена
           </button>
           <button
             onClick={handleFollow}
             disabled={status === "processing" || status === "success"}
-            className="group flex-1 rounded-lg bg-gradient-to-r from-[#1D9BF0] to-[#0EA5E9] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-xl hover:shadow-blue-500/40 disabled:opacity-50"
+            className="group flex-1 rounded-xl bg-gradient-to-r from-[#1D9BF0] to-[#0EA5E9] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-20px_rgba(29,155,240,0.75)] transition-all hover:shadow-[0_16px_40px_-12px_rgba(29,155,240,1)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
           >
             {status === "processing" ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Following...
+                Подписка...
               </span>
             ) : status === "success" ? (
-              "Followed ✓"
+              "Подписаны ✓"
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <UserPlus className="h-4 w-4" />
-                Follow {authorName}
+                Подписаться
               </span>
             )}
           </button>
