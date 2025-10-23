@@ -58,6 +58,7 @@ export default function ProfileContentClassic({
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ProfileSection>("posts");
   const [activePostsFilter, setActivePostsFilter] = useState<ProfilePostsFilter>("all");
+  const [sortOption, setSortOption] = useState<ProfileSortOption>("newest");
   const { handle, user_id } = useParams();
 
   useEffect(() => {
