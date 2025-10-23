@@ -224,31 +224,38 @@ const Footer: FC = () => {
               </a>
 
               {/* Language Selector */}
-              <div className="mb-8">
-                <div className="relative inline-block">
-                  <select
-                    className="appearance-none bg-transparent border-2 border-white rounded-full px-6 py-3 pr-12 text-white font-semibold text-sm uppercase cursor-pointer transition-all duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50"
-                    defaultValue="en"
-                  >
-                    <option value="en">English</option>
-                    <option value="ru">Русский</option>
-                    <option value="es">Español</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                    <option value="pt">Português</option>
-                    <option value="zh">简体中文</option>
-                    <option value="ja">日本語</option>
-                    <option value="ko">한국어</option>
-                    <option value="ar">العربية</option>
-                    <option value="th">ภาษาไทย</option>
-                    <option value="tr">Türkçe</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                    <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+              <div className="relative mb-8" ref={languageDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsLanguageOpen(!isLanguageOpen)}
+                  className="flex w-[140px] items-center justify-between rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-4 py-2.5 text-sm font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-[#A06AFF]" />
+                    <span className="text-white">{selectedLanguage.label}</span>
                   </div>
-                </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isLanguageOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isLanguageOpen && (
+                  <div className="absolute bottom-full left-0 z-[9999] mb-2 w-[180px] overflow-hidden rounded-2xl border border-[#525252] bg-[#0A0D12] shadow-lg">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => {
+                          setCurrentLanguage(lang.code);
+                          setIsLanguageOpen(false);
+                        }}
+                        className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent ${
+                          currentLanguage === lang.code ? 'bg-gradient-to-r from-[#A06AFF]/20 via-[#A06AFF]/10 to-transparent text-white' : 'text-[#E5E7EB]'
+                        }`}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Copyright */}
@@ -301,7 +308,7 @@ const Footer: FC = () => {
               </ul>
             </div>
 
-            {/* Column 2: Нача��ь */}
+            {/* Column 2: Начать */}
             <div>
               <h4 className="mb-4 text-white font-semibold text-base">Начать</h4>
               <ul className="space-y-3">
@@ -344,7 +351,7 @@ const Footer: FC = () => {
                 </li>
                 <li>
                   <a href="/blog" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Блог сообщества
+                    Блог ��ообщества
                   </a>
                 </li>
               </ul>
