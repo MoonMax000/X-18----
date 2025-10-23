@@ -84,7 +84,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
   const progressPercentage = (gamificationData.currentXP / gamificationData.xpToNextLevel) * 100;
 
   return (
-    <div className={className}>
+    <div className={cn("flex flex-col gap-3", className)}>
       {/* Level & Progress Section */}
       <div className="rounded-2xl border border-[#16C784] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
         <div className="flex items-center justify-between mb-3">
@@ -128,7 +128,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
       </div>
 
       {/* Badges Section */}
-      <div className="mt-3 rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Achievements</h3>
         <div className="grid grid-cols-2 gap-2">
           {gamificationData.badges.map((badge) => {
@@ -175,7 +175,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
       </div>
 
       {/* Next Milestone */}
-      <div className="mt-3 rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-2">Next Milestone</h3>
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-700 text-white font-bold text-xs">
