@@ -219,7 +219,7 @@ const ProfileOverview: FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className="flex w-full px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+              className="flex w-full px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
             >
               <span
                 className="text-[15px] font-bold text-white"
