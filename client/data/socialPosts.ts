@@ -93,7 +93,7 @@ export const socialPosts: SocialPost[] = [
     price: 9,
     subscriptionPrice: 29,
     unlocked: false,
-    audience: "followers",
+    audience: "everyone",
     hashtags: ["MarketMakers", "Liquidity", "TradingEducation"],
   },
   {
@@ -121,10 +121,9 @@ export const socialPosts: SocialPost[] = [
     comments: 104,
     views: 15400,
     isPremium: true,
-    price: 12,
-    subscriptionPrice: 39,
+    subscriptionPrice: 29,
     unlocked: false,
-    audience: "followers",
+    audience: "everyone",
     hashtags: ["AlgoTrading", "AI", "TradingTech"],
   },
   {
