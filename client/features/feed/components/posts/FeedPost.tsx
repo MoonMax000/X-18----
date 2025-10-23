@@ -330,14 +330,6 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         </div>
       </footer>
 
-      {/* Tip Modal */}
-      <TipModal
-        isOpen={showTipModal}
-        onClose={() => setShowTipModal(false)}
-        authorId={post.author.handle}
-        authorName={post.author.name}
-        authorAvatar={post.author.avatar}
-      />
     </article>
   );
 }
