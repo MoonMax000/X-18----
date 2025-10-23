@@ -287,7 +287,7 @@ export default function FeedFilters({
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover;border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.period || 'All time'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
