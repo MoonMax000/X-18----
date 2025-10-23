@@ -23,7 +23,6 @@ import SocialNotifications from "./pages/SocialNotifications";
 import SocialPostDetail from "./pages/SocialPostDetail";
 import SocialPostPreview from "./pages/SocialPostPreview";
 import SocialTweetComposer from "./pages/SocialTweetComposer";
-import NewHome from "./pages/NewHome";
 import ProfilePage from "./pages/ProfilePage";
 import OtherProfilePage from "./pages/OtherProfilePage";
 import Updates from "./pages/Updates";
