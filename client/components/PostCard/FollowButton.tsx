@@ -77,7 +77,7 @@ const FollowButton: FC<FollowButtonProps> = ({
           "hover:border-[#A06AFF]",
           "hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent",
           "hover:shadow-lg hover:shadow-[#A06AFF]/30",
-          "focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
         ),
         buttonStyle: {
           color: isHovered ? "#E5E7EB" : "#A06AFF",
@@ -94,7 +94,7 @@ const FollowButton: FC<FollowButtonProps> = ({
         "hover:border-[#A06AFF]",
         "hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent",
         "hover:shadow-lg hover:shadow-[#A06AFF]/30",
-        "focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
       ),
       buttonStyle: undefined,
     };
