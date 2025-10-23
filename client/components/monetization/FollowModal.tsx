@@ -83,12 +83,11 @@ export default function FollowModal({
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={handleClose}
-      style={{ pointerEvents: 'auto' }}
     >
       <div
+        data-modal-content="follow"
         className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
-        style={{ pointerEvents: 'auto' }}
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
