@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, UserPlus, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useModalScrollLock } from "@/hooks/useModalScrollLock";
 
 interface FollowModalProps {
   isOpen: boolean;
@@ -22,6 +23,9 @@ export default function FollowModal({
 }: FollowModalProps) {
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "failed">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  // Lock body scroll when modal is open
+  useModalScrollLock(isOpen);
 
   if (!isOpen) return null;
 
@@ -67,7 +71,7 @@ export default function FollowModal({
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Подписаться для разблокировки</h2>
+          <h2 className="text-xl font-bold text-white">Подписаться дл�� разблокировки</h2>
           <button
             onClick={handleClose}
             disabled={status === "processing"}
