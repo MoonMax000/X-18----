@@ -94,7 +94,7 @@ export default function TabListClassic({
               {availableChips.map((chip) => {
                 const isActive = activePostsFilter === chip.id;
                 const count = postFilterCounts?.[chip.id] ?? 0;
-                const displayLabel = chip.id === "all" ? `${chip.label} (${postFilterCounts?.all ?? count ?? 0})` : `${chip.label} (${count})`;
+                const displayLabel = chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
 
                 return (
                   <button
