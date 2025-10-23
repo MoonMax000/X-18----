@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, LockKeyhole, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
@@ -146,6 +146,26 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
               {/* Category Badge for non-signal posts */}
               {!isSignal && getCategoryBadge()}
+
+              {/* Premium Badge */}
+              {isLocked && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#2A1C3F] text-[#CDBAFF] border border-[#A06AFF]/50">
+                  <DollarSign className="h-3 w-3" />
+                  Premium · закрыто
+                </span>
+              )}
+              {post.accessLevel && post.accessLevel !== "public" && !isLocked && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#1F1630] text-[#CDBAFF] border border-[#6F4BD3]/40">
+                  <DollarSign className="h-3 w-3" />
+                  Premium · открыт
+                </span>
+              )}
+              {!post.accessLevel || post.accessLevel === "public" ? (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40">
+                  <Sparkles className="h-3 w-3" />
+                  Free доступ
+                </span>
+              ) : null}
             </div>
           </div>
           </div>
