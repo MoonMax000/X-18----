@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import UserHeader from "@/components/UserHeader/UserHeader";
+import UserHeader, { ProfileStatsWidgets } from "@/components/UserHeader/UserHeader";
 import NotificationsSettings from "@/components/NotificationsSettings/NotificationsSettings";
 import BillingSettings from "@/components/BillingSettings/BillingSettings";
 import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
@@ -1007,8 +1007,11 @@ const ProfileNew: FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* User Header */}
-      <UserHeader isOwn={true} />
+      {/* User Header with Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+        <UserHeader isOwn={true} />
+        <ProfileStatsWidgets />
+      </div>
 
       {/* Navigation Tabs */}
       <div className="flex flex-col items-center gap-4">
