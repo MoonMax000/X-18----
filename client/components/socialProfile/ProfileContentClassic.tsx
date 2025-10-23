@@ -31,15 +31,27 @@ export default function ProfileContentClassic({
 
       // For now, always use defaultProfile
       // In real app, fetch profile by handle or user_id
-      // console.log('Loading profile for handle:', handle);
       setProfile(defaultProfile);
-      setPosts(getProfileTimeline(defaultProfile));
+
+      const allPosts = getProfileTimeline(defaultProfile);
+
+      // Filter posts based on profile ownership
+      if (isOwnProfile) {
+        // On My Profile page, show only posts by @tyriantrade (current user)
+        const userPosts = allPosts.filter(
+          post => post.author.handle === "@tyriantrade"
+        );
+        setPosts(userPosts);
+      } else {
+        // On other profile pages, show all posts from that profile
+        setPosts(allPosts);
+      }
 
       setIsLoading(false);
     };
 
     loadProfile();
-  }, [handle, user_id]);
+  }, [handle, user_id, isOwnProfile]);
 
   if (isLoading) {
     return (
