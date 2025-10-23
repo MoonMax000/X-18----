@@ -57,9 +57,9 @@ const ProfileHero: FC<ProfileHeroProps> = ({
               <button
                 type="button"
                 onClick={onEdit}
-                className="group relative flex items-center justify-center overflow-hidden rounded-full border border-[#A06AFF] px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-br from-[#A06AFF]/20 via-[#A06AFF]/5 to-transparent backdrop-blur-xl transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/30 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="flex items-center justify-center rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
               >
-                <span className="relative z-10 text-center font-semibold leading-5">
+                <span className="text-center font-semibold leading-5 text-white">
                   Edit profile
                 </span>
               </button>
