@@ -9,6 +9,8 @@ import TopAuthorsWidget, { type TopAuthor } from "./widgets/TopAuthorsWidget";
 import AuthorActivityWidget from "./widgets/AuthorActivityWidget";
 import TopTickersWidget from "./widgets/TopTickersWidget";
 import EarningsWidget from "./widgets/EarningsWidget";
+import SubscriptionsWidget from "./widgets/SubscriptionsWidget";
+import PurchasedPostsWidget from "./widgets/PurchasedPostsWidget";
 
 interface RightSidebarProps {
   fearGreedScore?: number;
@@ -41,6 +43,29 @@ interface RightSidebarProps {
     activeSubscribers: number;
     topPostsByRevenue: { postId: string; title: string; revenue: number }[];
   };
+  showSubscriptions?: boolean;
+  subscriptions?: {
+    authorId: string;
+    authorName: string;
+    authorHandle: string;
+    authorAvatar: string;
+    subscribedAt: string;
+    price: number;
+    totalPosts: number;
+    newPostsThisWeek: number;
+  }[];
+  showPurchasedPosts?: boolean;
+  purchasedPosts?: {
+    postId: string;
+    title: string;
+    authorName: string;
+    authorHandle: string;
+    authorAvatar: string;
+    purchasedAt: string;
+    price: number;
+    views?: number;
+    thumbnail?: string;
+  }[];
 }
 
 export default function RightSidebar({
@@ -60,7 +85,11 @@ export default function RightSidebar({
   showTopTickers = false,
   topTickers = [],
   showEarnings = false,
-  earnings
+  earnings,
+  showSubscriptions = false,
+  subscriptions = [],
+  showPurchasedPosts = false,
+  purchasedPosts = []
 }: RightSidebarProps) {
   return (
     <div className="hidden lg:block w-[340px] space-y-4">
@@ -123,6 +152,16 @@ export default function RightSidebar({
           activeSubscribers={earnings.activeSubscribers}
           topPostsByRevenue={earnings.topPostsByRevenue}
         />
+      )}
+
+      {/* Subscriptions - Visible to profile owner */}
+      {isOwnProfile && showSubscriptions && (
+        <SubscriptionsWidget subscriptions={subscriptions} />
+      )}
+
+      {/* Purchased Posts - Visible to profile owner */}
+      {isOwnProfile && showPurchasedPosts && (
+        <PurchasedPostsWidget posts={purchasedPosts} />
       )}
     </div>
   );
