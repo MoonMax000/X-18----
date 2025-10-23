@@ -38,7 +38,7 @@ function transformToPost(socialPost: SocialPost): Post {
     },
     timestamp: socialPost.timestamp,
     type: socialPost.type === "video" ? "video" : "general",
-    text: socialPost.preview || socialPost.body || "",
+    text: socialPost.body || socialPost.preview || "",
     sentiment: socialPost.sentiment,
     likes: socialPost.likes ?? 0,
     comments: socialPost.comments ?? 0,
