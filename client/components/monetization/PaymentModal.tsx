@@ -105,7 +105,7 @@ export default function PaymentModal({
         )}
 
         {/* Amount */}
-        <div className="mb-6 rounded-xl bg-white/5 p-4">
+        <div className="mb-6 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-4">
           <div className="flex items-center justify-between">
             <span className="text-gray-400">Сумма</span>
             <span className="text-2xl font-bold text-white">
@@ -130,10 +130,10 @@ export default function PaymentModal({
               onClick={() => setPaymentMethod("card")}
               disabled={status === "processing"}
               className={cn(
-                "flex items-center justify-center gap-2 rounded-xl border p-3 transition",
+                "flex items-center justify-center gap-2 rounded-xl border p-3 transition-all duration-200",
                 paymentMethod === "card"
-                  ? "border-[#A06AFF] bg-[#1C1430] text-white"
-                  : "border-gray-700 bg-white/5 text-gray-400 hover:border-gray-600"
+                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                  : "border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent text-gray-400 hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
               )}
             >
               <CreditCard className="h-4 w-4" />
@@ -143,10 +143,10 @@ export default function PaymentModal({
               onClick={() => setPaymentMethod("paypal")}
               disabled={status === "processing"}
               className={cn(
-                "flex items-center justify-center gap-2 rounded-xl border p-3 transition",
+                "flex items-center justify-center gap-2 rounded-xl border p-3 transition-all duration-200",
                 paymentMethod === "paypal"
-                  ? "border-[#A06AFF] bg-[#1C1430] text-white"
-                  : "border-gray-700 bg-white/5 text-gray-400 hover:border-gray-600"
+                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                  : "border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent text-gray-400 hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
               )}
             >
               <span className="text-sm font-medium">PayPal</span>
@@ -163,7 +163,7 @@ export default function PaymentModal({
                 type="text"
                 placeholder="1234 5678 9012 3456"
                 disabled={status === "processing"}
-                className="w-full rounded-lg border border-gray-700 bg-white/5 px-3 py-2 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+                className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-3 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -173,7 +173,7 @@ export default function PaymentModal({
                   type="text"
                   placeholder="MM/YY"
                   disabled={status === "processing"}
-                  className="w-full rounded-lg border border-gray-700 bg-white/5 px-3 py-2 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+                  className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-3 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
                 />
               </div>
               <div>
@@ -182,7 +182,7 @@ export default function PaymentModal({
                   type="text"
                   placeholder="123"
                   disabled={status === "processing"}
-                  className="w-full rounded-lg border border-gray-700 bg-white/5 px-3 py-2 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+                  className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-3 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
                 />
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function PaymentModal({
           <button
             onClick={handleClose}
             disabled={status === "processing"}
-            className="flex-1 rounded-lg border border-gray-700 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+            className="flex-1 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-[#A06AFF]/40 disabled:opacity-50"
           >
             Отменить
           </button>
