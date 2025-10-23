@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TAB_VARIANTS } from "@/features/feed/styles";
 
@@ -23,8 +23,14 @@ const postSubFilters = [
   { id: "soft", label: "Soft" },
 ] as const;
 
+const sortOptions = [
+  { id: "newest", label: "Newest first" },
+  { id: "likes", label: "Most likes" },
+] as const;
+
 export type ProfileSection = (typeof primaryTabs)[number]["id"];
 export type ProfilePostsFilter = (typeof postSubFilters)[number]["id"];
+export type ProfileSortOption = (typeof sortOptions)[number]["id"];
 
 interface TabListClassicProps {
   onTabChange?: (tabId: string) => void;
@@ -33,6 +39,9 @@ interface TabListClassicProps {
   onSectionChange?: (section: ProfileSection) => void;
   activePostsFilter?: ProfilePostsFilter;
   onPostsFilterChange?: (filter: ProfilePostsFilter) => void;
+  postFilterCounts?: Partial<Record<ProfilePostsFilter, number>>;
+  sortOption?: ProfileSortOption;
+  onSortChange?: (option: ProfileSortOption) => void;
 }
 
 export default function TabListClassic({
@@ -42,10 +51,23 @@ export default function TabListClassic({
   onSectionChange,
   activePostsFilter = "all",
   onPostsFilterChange,
+  postFilterCounts,
+  sortOption = "newest",
+  onSortChange,
 }: TabListClassicProps) {
   const [legacyActiveTab, setLegacyActiveTab] = useState(legacyTabs[0].id);
 
   if (!isOwnProfile) {
+    const availableChips = useMemo(() => {
+      return postSubFilters.filter((chip) => {
+        if (chip.id === "all") {
+          return true;
+        }
+        const count = postFilterCounts?.[chip.id] ?? 0;
+        return count > 0;
+      });
+    }, [postFilterCounts]);
+
     return (
       <div className="space-y-3">
         <div className="grid w-full grid-cols-3 gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5">
@@ -56,7 +78,8 @@ export default function TabListClassic({
                 key={tab.id}
                 type="button"
                 onClick={() => onSectionChange?.(tab.id)}
-                className={TAB_VARIANTS.item(isActive)}
+                className={TAB_VARIANTS.item(isActive, tab.id === "posts")}
+                aria-pressed={isActive}
               >
                 <span className="text-xs font-semibold sm:text-sm">{tab.label}</span>
               </button>
@@ -65,24 +88,52 @@ export default function TabListClassic({
         </div>
 
         {activeSection === "posts" ? (
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {postSubFilters.map((chip) => {
-              const isActive = activePostsFilter === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  type="button"
-                  onClick={() => onPostsFilterChange?.(chip.id)}
-                  className={cn(
-                    "inline-flex h-8 items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 hover:bg-[#1C1430]",
-                    isActive &&
-                      "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                  )}
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {availableChips.map((chip) => {
+                const isActive = activePostsFilter === chip.id;
+                const count = postFilterCounts?.[chip.id] ?? 0;
+                const displayLabel = chip.id === "all" ? `${chip.label} (${postFilterCounts?.all ?? count ?? 0})` : `${chip.label} (${count})`;
+
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => onPostsFilterChange?.(chip.id)}
+                    className={cn(
+                      "inline-flex h-8 items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 hover:bg-[#1C1430]",
+                      isActive &&
+                        "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                    )}
+                    aria-pressed={isActive}
+                  >
+                    {displayLabel}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">
+              <span>Sort</span>
+              {sortOptions.map((option) => {
+                const isActive = sortOption === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => onSortChange?.(option.id)}
+                    className={cn(
+                      "inline-flex h-7 items-center gap-2 rounded-full border border-transparent px-3 text-[11px] font-semibold text-[#A5ACBA] transition-colors duration-200 hover:border-[#A06AFF]/40 hover:bg-[#1C1430] hover:text-white",
+                      isActive &&
+                        "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_6px_18px_-14px_rgba(160,106,255,0.6)]"
+                    )}
+                    aria-pressed={isActive}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ) : null}
       </div>
