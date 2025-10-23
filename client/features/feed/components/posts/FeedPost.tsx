@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
@@ -286,18 +286,6 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             </svg>
             <span className="hidden md:inline">{formatNumber(post.likes)}</span>
             <span className="md:hidden">{formatNumber(post.likes)}</span>
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowTipModal(true);
-            }}
-            className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors hover:text-[#10B981]"
-            title="Send tip"
-          >
-            <DollarSign className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" />
-            <span className="hidden lg:inline text-xs">Tip</span>
           </button>
 
           {typeof post.views === "number" && (
