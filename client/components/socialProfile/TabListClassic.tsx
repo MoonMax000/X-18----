@@ -104,36 +104,36 @@ export default function TabListClassic({
 
         {activeSection === "posts" ? (
           <div className="space-y-2">
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {availableChips.map((chip) => {
-                const isActive = activePostsFilter === chip.id;
-                const count = postFilterCounts?.[chip.id] ?? 0;
-                const displayLabel =
-                  chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                {availableChips.map((chip) => {
+                  const isActive = activePostsFilter === chip.id;
+                  const count = postFilterCounts?.[chip.id] ?? 0;
+                  const displayLabel =
+                    chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
 
-                return (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    onClick={() => onPostsFilterChange?.(chip.id)}
-                    className={cn(
-                      "inline-flex h-8 items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 hover:bg-[#1C1430]",
-                      isActive &&
-                        "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                    )}
-                    aria-pressed={isActive}
-                  >
-                    {displayLabel}
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={chip.id}
+                      type="button"
+                      onClick={() => onPostsFilterChange?.(chip.id)}
+                      className={cn(
+                        "inline-flex h-8 items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 hover:bg-[#1C1430]",
+                        isActive &&
+                          "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                      )}
+                      aria-pressed={isActive}
+                    >
+                      {displayLabel}
+                    </button>
+                  );
+                })}
+              </div>
 
-            {totalPosts > 0 ? (
-              <div className="flex justify-end">
+              {totalPosts > 0 ? (
                 <div className="flex w-full items-center justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6B7280] sm:w-auto">
                   <span className="hidden sm:inline">Sort</span>
-                  <Select value={sortOption} onValueChange={handleSortSelect}>
+                  <Select aria-label="Sort posts" value={sortOption} onValueChange={handleSortSelect}>
                     <SelectTrigger className="h-8 min-w-[150px] rounded-full border border-[#181B22] bg-[#050215] px-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 focus:ring-0 focus:ring-offset-0">
                       <SelectValue />
                     </SelectTrigger>
@@ -155,8 +155,8 @@ export default function TabListClassic({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>
