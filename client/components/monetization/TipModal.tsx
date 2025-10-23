@@ -51,7 +51,7 @@ export default function TipModal({
       <div className="relative w-full max-w-md rounded-2xl border border-widget-border bg-[#0B0E13] p-6 shadow-2xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Отправить донат</h2>
+          <h2 className="text-xl font-bold text-white">Send Donation</h2>
           <button
             onClick={handleClose}
             className="rounded-full p-1 text-gray-400 transition hover:bg-white/10 hover:text-white"

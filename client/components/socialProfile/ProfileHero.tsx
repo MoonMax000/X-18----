@@ -3,6 +3,7 @@ import type { SocialProfileData } from "@/data/socialProfile";
 import { profileButtonStyles } from "./profileButtonStyles";
 import { TipModal } from "@/components/monetization";
 import { DollarSign } from "lucide-react";
+import { toast } from "sonner";
 
 interface ProfileHeroProps {
   profile: SocialProfileData;
@@ -51,15 +52,30 @@ const ProfileHero: FC<ProfileHeroProps> = ({
 
           <div className="flex items-center gap-2 sm:gap-3 pt-2">
             {isOwnProfile ? (
-              <button
-                type="button"
-                onClick={onEdit}
-                className={profileButtonStyles.primary}
-              >
-                <span className="text-center font-semibold leading-5 text-white">
-                  Edit profile
-                </span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.error("You cannot send donations to yourself");
+                  }}
+                  className={profileButtonStyles.primary}
+                  title="Donate"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  <span className="relative z-10 text-center font-semibold leading-5">
+                    Donate
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className={profileButtonStyles.primary}
+                >
+                  <span className="text-center font-semibold leading-5 text-white">
+                    Edit profile
+                  </span>
+                </button>
+              </>
             ) : (
               <>
                 <button type="button" className={profileButtonStyles.icon}>
@@ -84,11 +100,11 @@ const ProfileHero: FC<ProfileHeroProps> = ({
                   type="button"
                   onClick={() => setShowTipModal(true)}
                   className={profileButtonStyles.primary}
-                  title="Send tip"
+                  title="Send donation"
                 >
                   <DollarSign className="h-4 w-4" />
                   <span className="relative z-10 text-center font-semibold leading-5">
-                    Tip
+                    Donate
                   </span>
                 </button>
 
