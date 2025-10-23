@@ -28,6 +28,24 @@ export default function FollowModal({
   // Lock body scroll when modal is open
   useModalScrollLock(isOpen);
 
+  // Block all clicks outside modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const blockClicks = (e: MouseEvent) => {
+      const modalContent = document.querySelector('[data-modal-content="follow"]');
+      const target = e.target as Node;
+
+      if (modalContent && !modalContent.contains(target)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('click', blockClicks, { capture: true });
+    return () => document.removeEventListener('click', blockClicks, { capture: true });
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleFollow = async () => {
@@ -74,7 +92,7 @@ export default function FollowModal({
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Подписаться для разблокировки</h2>
+          <h2 className="text-xl font-bold text-white">Подписаться для ра��блокировки</h2>
           <button
             onClick={handleClose}
             disabled={status === "processing"}
