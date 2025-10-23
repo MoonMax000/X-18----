@@ -19,6 +19,7 @@ interface ProfileData {
   isVerified?: boolean;
   isPremium?: boolean;
   tradingStyle?: string;
+  level?: number;
 }
 
 interface Props {
@@ -85,6 +86,14 @@ const UserHeader: FC<Props> = ({
   const primaryActionButtonClass =
     "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
 
+  const getAvatarBorderClass = (level: number = 1) => {
+    if (level >= 76) return "border-4 border-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 p-1 animate-pulse";
+    if (level >= 51) return "border-4 border-yellow-400";
+    if (level >= 26) return "border-4 border-purple-500";
+    if (level >= 11) return "border-4 border-blue-500";
+    return "border-3 sm:border-4 border-[#0B0E13]";
+  };
+
   return (
     <div className={cn("w-full max-w-[720px]", className)}>
       <div className="flex flex-col gap-4">
@@ -143,7 +152,7 @@ const UserHeader: FC<Props> = ({
         <div className="relative px-3 sm:px-4 md:px-6">
           {/* Avatar positioned to overlap banner */}
           <div className="absolute -top-12 sm:-top-14 md:-top-16 left-3 sm:left-4 md:left-4">
-            <div className="group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full border-3 sm:border-4 border-[#0B0E13]">
+            <div className={`group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full ${getAvatarBorderClass(data.level)}`}>
               <img
                 src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500"
                 alt="Profile"
@@ -333,71 +342,3 @@ const UserHeader: FC<Props> = ({
 };
 
 export default UserHeader;
-
-// Stats Widgets Component (separate from main header)
-export const ProfileStatsWidgets: FC<{ profileData?: ProfileData }> = ({ profileData }) => {
-  const data = profileData || {
-    stats: { tweets: 0, following: 143, followers: 149 },
-  };
-
-  return (
-    <div className="hidden lg:flex flex-col gap-3 w-[280px]">
-      {/* Key Metrics Card */}
-      <div className="rounded-2xl border border-[#16C784] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Key Metrics</h3>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Total Posts</span>
-            <span className="text-base font-bold text-white">{data.stats.tweets}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Engagement</span>
-            <span className="text-base font-bold text-emerald-400">8.2%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Reach</span>
-            <span className="text-base font-bold text-white">24.5K</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Trading Stats Card */}
-      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Trading Stats</h3>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Win Rate</span>
-            <span className="text-base font-bold text-emerald-400">67%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Total Signals</span>
-            <span className="text-base font-bold text-white">142</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Avg Accuracy</span>
-            <span className="text-base font-bold text-[#A06AFF]">72%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Activity Card */}
-      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Activity</h3>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Last Post</span>
-            <span className="text-xs font-medium text-white">2h ago</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Active Days</span>
-            <span className="text-xs font-medium text-white">45/90</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8B98A5]">Streak</span>
-            <span className="text-xs font-medium text-emerald-400">12 days</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
