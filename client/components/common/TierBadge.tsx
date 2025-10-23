@@ -47,7 +47,7 @@ export const TierBadge: React.FC<TierBadgeProps> = ({ tier, className = "" }) =>
 
   return (
     <div className={`inline-flex items-center justify-center gap-1 ${className}`}>
-      <span className="font-nunito text-xs font-bold uppercase leading-normal text-white">
+      <span className="text-xs font-bold uppercase leading-normal text-white">
         Tier
       </span>
       <div className="relative flex h-5 w-[18px] flex-shrink-0 items-center justify-center">
@@ -78,7 +78,7 @@ export const TierBadge: React.FC<TierBadgeProps> = ({ tier, className = "" }) =>
             </linearGradient>
           </defs>
         </svg>
-        <span className="font-nunito relative z-10 text-xs font-bold uppercase leading-normal text-white">
+        <span className="relative z-10 text-xs font-bold uppercase leading-normal text-white">
           {tier}
         </span>
       </div>
