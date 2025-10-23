@@ -82,6 +82,18 @@ const ProfileHero: FC<ProfileHeroProps> = ({
 
                 <button
                   type="button"
+                  onClick={() => setShowTipModal(true)}
+                  className={profileButtonStyles.primary}
+                  title="Send tip"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  <span className="relative z-10 text-center font-semibold leading-5">
+                    Tip
+                  </span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleFollowClick}
                   className={profileButtonStyles.primary}
                 >
@@ -94,6 +106,17 @@ const ProfileHero: FC<ProfileHeroProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Tip Modal */}
+      {!isOwnProfile && (
+        <TipModal
+          isOpen={showTipModal}
+          onClose={() => setShowTipModal(false)}
+          authorId={profile.username}
+          authorName={profile.name}
+          authorAvatar={profile.avatar}
+        />
+      )}
     </section>
   );
 };
