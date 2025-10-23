@@ -198,9 +198,19 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
       {/* Content Section */}
       <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px]">
-        <p className="whitespace-pre-line text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white">
-          {post.text}
-        </p>
+        <div>
+          <p className="whitespace-pre-line text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white">
+            {displayText}
+          </p>
+          {shouldTruncate && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-2 text-[14px] sm:text-[15px] font-medium text-[#A06AFF] transition-colors duration-200 hover:text-white hover:underline focus:outline-none"
+            >
+              {isExpanded ? "Show less" : "Show more"}
+            </button>
+          )}
+        </div>
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {post.tags.map((tag) => (
