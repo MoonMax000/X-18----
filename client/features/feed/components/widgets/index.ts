@@ -6,3 +6,5 @@ export type { TopAuthor } from "./TopAuthorsWidget";
 export { default as AuthorActivityWidget } from "./AuthorActivityWidget";
 export { default as TopTickersWidget } from "./TopTickersWidget";
 export { default as EarningsWidget } from "./EarningsWidget";
+export { default as SubscriptionsWidget } from "./SubscriptionsWidget";
+export { default as PurchasedPostsWidget } from "./PurchasedPostsWidget";

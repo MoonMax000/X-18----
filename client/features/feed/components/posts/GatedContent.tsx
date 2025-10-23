@@ -13,6 +13,7 @@ interface GatedContentProps {
   isPurchased?: boolean;
   isSubscriber?: boolean;
   isFollower?: boolean;
+  isOwnPost?: boolean; // NEW: Is this the creator's own post?
   onUnlock?: () => void;
   onSubscribe?: () => void;
   onFollow?: () => void;
@@ -28,6 +29,7 @@ export default function GatedContent({
   isPurchased = false,
   isSubscriber = false,
   isFollower = false,
+  isOwnPost = false, // NEW: Check if this is creator's own post
   onUnlock,
   onSubscribe,
   onFollow,
@@ -36,8 +38,8 @@ export default function GatedContent({
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showFollowModal, setShowFollowModal] = useState(false);
 
-  // Unlock conditions: purchased, subscribed, or (followers-only + is follower)
-  if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower)) {
+  // Unlock conditions: purchased, subscribed, (followers-only + is follower), OR is own post
+  if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower) || isOwnPost) {
     return null;
   }
 
