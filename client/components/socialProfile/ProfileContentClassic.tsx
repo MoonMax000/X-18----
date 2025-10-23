@@ -292,10 +292,16 @@ export default function ProfileContentClassic({
           </div>
 
           <div className="mt-8">
-            <TabListClassic />
+            <TabListClassic
+              isOwnProfile={isOwnProfile}
+              activeSection={activeSection}
+              onSectionChange={setActiveSection}
+              activePostsFilter={activePostsFilter}
+              onPostsFilterChange={setActivePostsFilter}
+            />
           </div>
         </div>
-        <ProfileTweetsClassic posts={posts} />
+        <ProfileTweetsClassic posts={filteredPosts} />
       </main>
     </div>
   );
