@@ -287,7 +287,7 @@ export default function FeedFilters({
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover;border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.period || 'All time'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -296,7 +296,7 @@ export default function FeedFilters({
                       <PopoverContent
                         align="start"
                         sideOffset={10}
-                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                        className="z-[10100] w-[240px] max-h-60 overflow-y-auto rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
                       >
                         <div className="grid gap-1.5 text-[12px]">
                           {FILTERS_CONFIG.period.opts.map(opt => (
