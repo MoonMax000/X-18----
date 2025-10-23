@@ -134,7 +134,24 @@ export default function ProfileContentClassic({
     }
   }, [activeSection, sortOption]);
 
+  const likesTabEnabled = useMemo(() => {
+    if (isOwnProfile) {
+      return true;
+    }
+    return likedPosts.length > 0;
+  }, [isOwnProfile, likedPosts.length]);
+
+  useEffect(() => {
+    if (!likesTabEnabled && activeSection === "likes") {
+      setActiveSection("posts");
+    }
+  }, [likesTabEnabled, activeSection]);
+
   const filteredPosts = useMemo(() => {
+    if (activeSection === "likes") {
+      return likedPosts;
+    }
+
     if (!posts.length) {
       return [];
     }
@@ -144,7 +161,11 @@ export default function ProfileContentClassic({
     }
 
     if (activeSection === "premium") {
-      return posts.filter(isPremiumPost);
+      const premiumPosts = posts.filter(isPremiumPost);
+      if (isOwnProfile) {
+        return premiumPosts.map((post) => ({ ...post, unlocked: true }));
+      }
+      return premiumPosts;
     }
 
     if (activePostsFilter === "all") {
@@ -152,7 +173,7 @@ export default function ProfileContentClassic({
     }
 
     return posts.filter((post) => derivePostFilterKey(post) === activePostsFilter);
-  }, [posts, activeSection, activePostsFilter]);
+  }, [posts, likedPosts, activeSection, activePostsFilter, isOwnProfile]);
 
   const sortedPosts = useMemo(() => {
     if (sortOption === "likes") {
