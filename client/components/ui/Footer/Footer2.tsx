@@ -185,36 +185,6 @@ const Footer2: FC = () => {
           </nav>
         </div>
 
-        {/* Bottom Bar: Social Links */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#181B22] pt-8 sm:flex-row">
-          <div className="flex items-center gap-6">
-            <a
-              href="https://twitter.com/tyriantrade"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#8E92A0] transition-colors hover:text-[#A06AFF]"
-              aria-label="Twitter"
-            >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </a>
-            <a
-              href="https://www.youtube.com/@tyriantrade"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#8E92A0] transition-colors hover:text-[#A06AFF]"
-              aria-label="YouTube"
-            >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path fillRule="evenodd" clipRule="evenodd" d="M23.4989 6.44068C23.2174 5.40574 22.4028 4.59108 21.3679 4.30959C19.5049 3.8 12 3.8 12 3.8C12 3.8 4.49513 3.8 2.63211 4.30959C1.59717 4.59108 0.782609 5.40574 0.501117 6.44068C0 8.30369 0 12.2 0 12.2C0 12.2 0 16.0963 0.501117 17.9593C0.782609 18.9943 1.59717 19.8089 2.63211 20.0904C4.49513 20.6 12 20.6 12 20.6C12 20.6 19.5049 20.6 21.3679 20.0904C22.4028 19.8089 23.2174 18.9943 23.4989 17.9593C24 16.0963 24 12.2 24 12.2C24 12.2 24 8.30369 23.4989 6.44068ZM9.54545 15.7636V8.63637L15.8182 12.2L9.54545 15.7636Z" />
-              </svg>
-            </a>
-          </div>
-          <p className="text-xs text-[#8E92A0]">
-            Создано с ❤️ для трейдеров
-          </p>
-        </div>
       </div>
     </footer>
   );
