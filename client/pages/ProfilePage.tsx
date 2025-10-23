@@ -26,7 +26,7 @@ export default function ProfilePage() {
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
       <div className="flex-1 w-full sm:max-w-[720px]">
-        <ProfileContentClassic />
+        <ProfileContentClassic isOwnProfile={true} />
       </div>
       
       {/* Optimized Right Sidebar with widgets */}
