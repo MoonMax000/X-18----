@@ -24,6 +24,10 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   const isSignal = post.type === "signal";
   const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber;
 
+  // TODO: Replace with actual user authentication check
+  const currentUserHandle = "@tyriantrade"; // This should come from auth context
+  const isOwnPost = post.author.handle === currentUserHandle;
+
   const handlePostClick = () => {
     navigate(`/home/post/${post.id}`, { state: post });
   };
@@ -149,11 +153,28 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           </div>
         </UserHoverCard>
         <PostMenu
-          isOwnPost={false}
+          isOwnPost={isOwnPost}
           postId={post.id}
-          onCopyLink={() => console.log("Link copied")}
-          onReport={() => console.log("Post reported")}
-          onBlockAuthor={() => console.log("Author blocked")}
+          onDelete={() => {
+            console.log("Delete post:", post.id);
+            // TODO: Implement delete functionality
+          }}
+          onCopyLink={() => {
+            console.log("Link copied!");
+            // Toast notification will be added
+          }}
+          onPin={() => {
+            console.log("Pin post:", post.id);
+            // TODO: Implement pin functionality
+          }}
+          onReport={() => {
+            console.log("Report post:", post.id);
+            // TODO: Implement report functionality
+          }}
+          onBlockAuthor={() => {
+            console.log("Block author:", post.author.handle);
+            // TODO: Implement block functionality
+          }}
         />
       </header>
 
