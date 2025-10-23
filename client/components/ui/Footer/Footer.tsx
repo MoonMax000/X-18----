@@ -1,14 +1,59 @@
-import { FC, useState } from 'react';
-import { Facebook, Instagram, Linkedin, Youtube, ArrowRight } from 'lucide-react';
+import { FC, useState, useRef, useEffect } from 'react';
+import { Facebook, Instagram, Linkedin, Youtube, ArrowRight, Globe, ChevronDown } from 'lucide-react';
+
+interface Language {
+  code: string;
+  name: string;
+  label: string;
+}
+
+const LANGUAGES: Language[] = [
+  { code: 'ru', name: 'Русский', label: 'RU' },
+  { code: 'en', name: 'English', label: 'EN' },
+  { code: 'zh', name: '简体中文', label: '中文' },
+  { code: 'es', name: 'Español', label: 'ES' },
+  { code: 'fr', name: 'Français', label: 'FR' },
+  { code: 'de', name: 'Deutsch', label: 'DE' },
+  { code: 'ja', name: '日本語', label: 'JA' },
+  { code: 'ko', name: '한국어', label: 'KO' },
+  { code: 'ar', name: 'العربية', label: 'AR' },
+  { code: 'pt', name: 'Português', label: 'PT' },
+  { code: 'th', name: 'ภาษาไทย', label: 'TH' },
+  { code: 'tr', name: 'Türkçe', label: 'TR' },
+];
 
 const Footer: FC = () => {
   const [email, setEmail] = useState('');
+  const [currentLanguage, setCurrentLanguage] = useState('ru');
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedLanguage = LANGUAGES.find((lang) => lang.code === currentLanguage) || LANGUAGES[0];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Newsletter subscription:', email);
     // TODO: Implement newsletter subscription
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageOpen(false);
+      }
+    };
+
+    if (isLanguageOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isLanguageOpen]);
 
   return (
     <footer className="relative bg-gradient-to-r from-black via-[#181818] to-black py-20">
@@ -256,7 +301,7 @@ const Footer: FC = () => {
               </ul>
             </div>
 
-            {/* Column 2: Начать */}
+            {/* Column 2: Нача��ь */}
             <div>
               <h4 className="mb-4 text-white font-semibold text-base">Начать</h4>
               <ul className="space-y-3">
