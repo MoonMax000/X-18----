@@ -208,7 +208,7 @@ export default function FeedFilters({
                       <PopoverContent
                         align="start"
                         sideOffset={10}
-                        className="w-[240px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                        className="z-[10100] w-[240px] max-h-60 overflow-y-auto rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
                       >
                         <div className="grid gap-1.5 text-[12px]">
                           {FILTERS_CONFIG.market.opts.map(opt => (
