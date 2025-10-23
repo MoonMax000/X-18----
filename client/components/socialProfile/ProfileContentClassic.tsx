@@ -141,11 +141,19 @@ export default function ProfileContentClassic({
     }
 
     if (activePostsFilter === "all") {
-      return posts;
+      return [...posts];
     }
 
     return posts.filter((post) => derivePostFilterKey(post) === activePostsFilter);
   }, [posts, activeSection, activePostsFilter]);
+
+  const sortedPosts = useMemo(() => {
+    if (sortOption === "likes") {
+      return [...filteredPosts].sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0));
+    }
+
+    return filteredPosts;
+  }, [filteredPosts, sortOption]);
 
   if (isLoading) {
     return (
