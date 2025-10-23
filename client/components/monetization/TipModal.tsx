@@ -47,8 +47,14 @@ export default function TipModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={handleClose}
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Отправить донат</h2>
@@ -138,7 +144,7 @@ export default function TipModal({
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Спасибо за отличную аналитику!"
+            placeholder="Спасибо за отличную анал��тику!"
             maxLength={200}
             disabled={status === "processing"}
             className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-3 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
@@ -164,7 +170,7 @@ export default function TipModal({
             {status === "processing" ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Отправка...
+                Отпра��ка...
               </span>
             ) : status === "success" ? (
               "Отправлено ✓"

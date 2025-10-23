@@ -21,11 +21,13 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const isSignal = post.type === "signal";
-  const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber;
 
   // TODO: Replace with actual user authentication check
   const currentUserHandle = "@tyriantrade"; // This should come from auth context
   const isOwnPost = post.author.handle?.toLowerCase() === currentUserHandle.toLowerCase();
+
+  // Post is locked if: has access level restrictions AND (not purchased AND not subscribed AND not own post)
+  const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber && !isOwnPost;
 
   // Text truncation logic
   const TEXT_PREVIEW_LENGTH = 300;
