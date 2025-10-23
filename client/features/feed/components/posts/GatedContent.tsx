@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Crown } from "lucide-react";
 import type { AccessLevel } from "../../types";
-import { PaymentModal } from "@/components/monetization";
+import { PaymentModal, FollowModal } from "@/components/monetization";
 
 interface GatedContentProps {
   accessLevel: AccessLevel;
@@ -34,6 +34,7 @@ export default function GatedContent({
 }: GatedContentProps) {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
 
   // Unlock conditions: purchased, subscribed, or (followers-only + is follower)
   if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower)) {
@@ -190,7 +191,13 @@ export default function GatedContent({
           {/* Show Follow button for followers-only content */}
           {accessLevel === "followers" && (
             <button
-              onClick={onFollow}
+              onClick={() => {
+                if (onFollow) {
+                  onFollow();
+                } else {
+                  setShowFollowModal(true);
+                }
+              }}
               className="group/btn relative flex items-center justify-center px-8 sm:px-12 md:px-14 py-2 rounded-full bg-gradient-to-r from-[#1D9BF0] to-[#0EA5E9] text-white text-sm sm:text-[15px] font-medium shadow-[0_8px_24px_rgba(29,155,240,0.4)] hover:shadow-[0_12px_32px_rgba(29,155,240,0.6)] hover:ring-2 hover:ring-[#1D9BF0] hover:ring-offset-2 hover:ring-offset-black transition-all duration-300 whitespace-nowrap w-full sm:w-auto overflow-hidden"
             >
               <span className="absolute inset-0 bg-white/0 group-hover/btn:bg-white/10 transition-colors duration-300" />
@@ -250,6 +257,19 @@ export default function GatedContent({
           authorName={authorName}
           plan="monthly"
           onSuccess={handleSubscribeSuccess}
+        />
+      )}
+
+      {/* Follow Modal for followers-only content */}
+      {authorId && (
+        <FollowModal
+          isOpen={showFollowModal}
+          onClose={() => setShowFollowModal(false)}
+          authorId={authorId}
+          authorName={authorName}
+          authorAvatar="https://i.pravatar.cc/120?img=45"
+          authorBio="Macro-focused trading desk delivering distilled hedge fund tactics."
+          followersCount={28400}
         />
       )}
     </section>
