@@ -87,11 +87,45 @@ export default function ProfileContentClassic({
     loadProfile();
   }, [handle, user_id, isOwnProfile]);
 
+  const postFilterCounts = useMemo(() => {
+    const counts: Record<ProfilePostsFilter, number> = {
+      all: 0,
+      ideas: 0,
+      opinions: 0,
+      analytics: 0,
+      soft: 0,
+    };
+
+    posts.forEach((post) => {
+      counts.all += 1;
+      const key = derivePostFilterKey(post);
+      counts[key] += 1;
+    });
+
+    return counts;
+  }, [posts]);
+
   useEffect(() => {
     if (activeSection !== "posts" && activePostsFilter !== "all") {
       setActivePostsFilter("all");
     }
   }, [activeSection, activePostsFilter]);
+
+  useEffect(() => {
+    if (activeSection !== "posts") {
+      return;
+    }
+
+    if (activePostsFilter !== "all" && (postFilterCounts[activePostsFilter] ?? 0) === 0) {
+      setActivePostsFilter("all");
+    }
+  }, [activeSection, activePostsFilter, postFilterCounts]);
+
+  useEffect(() => {
+    if (activeSection !== "posts" && sortOption !== "newest") {
+      setSortOption("newest");
+    }
+  }, [activeSection, sortOption]);
 
   const filteredPosts = useMemo(() => {
     if (!posts.length) {
