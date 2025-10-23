@@ -40,6 +40,32 @@ export interface SocialPost {
 
 export const socialPosts: SocialPost[] = [
   {
+    id: "tyrian-long-post",
+    type: "article",
+    author: {
+      name: "Tyrian Trade",
+      avatar: "https://i.pravatar.cc/120?img=45",
+      handle: "@TyrianTrade",
+      verified: true,
+      bio: "Macro-focused trading desk delivering distilled hedge fund tactics.",
+      followers: 128400,
+      following: 412,
+      isCurrentUser: true,
+    },
+    timestamp: "30 minutes ago",
+    title: "The Psychology of Professional Trading: What Separates Winners from Losers",
+    preview: "A deep dive into the mental frameworks that distinguish consistently profitable traders from those who struggle.",
+    body: "Trading psychology is often dismissed as soft science, but it's the single biggest determinant of long-term success. Technical skills and market knowledge are necessary, but not sufficient. The difference between winning and losing traders comes down to mental discipline.\n\nConsider this: most traders know the basics. They understand support and resistance, moving averages, and risk management principles. Yet 90% still lose money. Why? Because knowledge doesn't translate to execution under pressure.\n\nProfessional traders develop three core psychological skills that amateurs lack:\n\n1. Emotional detachment from individual trades. Pros view trading as a probability game played over thousands of iterations. A single loss means nothing. Amateurs get emotionally invested in each position, leading to revenge trading and position sizing errors.\n\n2. Systematic decision-making under uncertainty. Markets are inherently uncertain, yet our brains crave certainty. Pros embrace probabilistic thinking. They're comfortable taking trades with 60% win rates, knowing losses are part of the process. Amateurs seek certainty, falling victim to prediction addiction.\n\n3. Self-awareness and adaptive learning. Winners constantly analyze their performance, identifying cognitive biases and behavioral patterns. They keep detailed journals, review mistakes, and adjust. Losers blame external factors and repeat the same errors.\n\nThe most insidious psychological trap is overconfidence after winning streaks. When you hit a hot streak, your brain releases dopamine, creating a biochemical feedback loop that encourages risk-taking. This is when amateurs blow up their accounts. Professionals recognize this pattern and actually reduce position sizes during hot streaks.\n\nAnother critical insight: your trading style must match your personality. If you're naturally anxious, day trading will destroy you. If you're impatient, swing trading won't work. Self-awareness about your psychological makeup determines which strategies you can actually execute consistently.\n\nThe bottom line: master your mind before you can master the markets. No strategy works if you can't execute it with discipline.",
+    mediaUrl:
+      "https://cdn.builder.io/api/v1/image/assets%2Fc1dd850bb9274af09e30dc23d6b4a456%2F528e6e1f2fd14ced880f4b37bf7d1a52?format=webp&width=800",
+    sentiment: "bullish",
+    category: "Education",
+    likes: 892,
+    comments: 147,
+    views: 18500,
+    hashtags: ["TradingPsychology", "MentalGame", "ProfessionalTrading"],
+  },
+  {
     id: "tyrian-premium-1",
     type: "article",
     author: {
