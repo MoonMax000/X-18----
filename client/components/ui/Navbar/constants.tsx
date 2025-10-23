@@ -43,7 +43,7 @@ export const navElements: NavElementProps[] = [
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "My page",
+        title: "Dashboard",
         route: "/profile",
       },
       {
