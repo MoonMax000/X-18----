@@ -47,7 +47,7 @@ export const defaultProfile: SocialProfileData = {
     followers: 28400,
     likes: 9620,
   },
-  highlightedPostId: "ai-article",
+  highlightedPostId: "tyrian-long-post",
 };
 
 export const getProfileTimeline = (
