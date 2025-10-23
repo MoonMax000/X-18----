@@ -359,10 +359,10 @@ export default function FeedFilters({
                       </button>
                     </PopoverTrigger>
                     <PopoverContent
-                      align="start"
-                      sideOffset={10}
-                      className="w-[300px] rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
-                    >
+                    align="start"
+                    sideOffset={10}
+                    className="z-[10100] w-[300px] max-h-72 overflow-y-auto rounded-[18px] border border-widget-border/70 bg-[#0F131A]/95 p-3 text-white shadow-[0_18px_36px_-24px_rgba(12,16,20,0.9)] backdrop-blur-xl"
+                  >
                       <div className="grid gap-2">
                         {CATEGORY_OPTIONS.map((category) => {
                           const Icon = category.icon;
