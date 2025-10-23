@@ -201,7 +201,7 @@ export default function PaymentModal({
           <button
             onClick={handlePayment}
             disabled={status === "processing" || status === "success"}
-            className="flex-1 rounded-lg bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:opacity-50"
+            className="flex-1 rounded-xl bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)] transition-all hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,1)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
           >
             {status === "processing" ? (
               <span className="flex items-center justify-center gap-2">
