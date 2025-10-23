@@ -73,18 +73,13 @@ export default function ProfileContentClassic({
       setProfile(defaultProfile);
 
       const allPosts = getProfileTimeline(defaultProfile);
+      const profileKey = normalizeHandle(defaultProfile.username) || normalizeHandle(defaultProfile.name);
+      const userPosts = allPosts.filter((post) => {
+        const handleKey = normalizeHandle(post.author.handle) || normalizeHandle(post.author.name);
+        return handleKey === profileKey;
+      });
 
-      // Filter posts based on profile ownership
-      if (isOwnProfile) {
-        // On My Profile page, show only posts by @TyrianTrade (current user)
-        const userPosts = allPosts.filter(
-          post => post.author.handle?.toLowerCase() === "@tyriantrade"
-        );
-        setPosts(userPosts);
-      } else {
-        // On other profile pages, show all posts from that profile
-        setPosts(allPosts);
-      }
+      setPosts(userPosts);
 
       setIsLoading(false);
     };
