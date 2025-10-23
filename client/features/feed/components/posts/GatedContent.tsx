@@ -43,7 +43,9 @@ export default function GatedContent({
     return null;
   }
 
-  const handleUnlockClick = () => {
+  const handleUnlockClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (onUnlock) {
       onUnlock();
     } else {
@@ -51,7 +53,9 @@ export default function GatedContent({
     }
   };
 
-  const handleSubscribeClick = () => {
+  const handleSubscribeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (onSubscribe) {
       onSubscribe();
     } else {
@@ -193,7 +197,9 @@ export default function GatedContent({
           {/* Show Follow button for followers-only content */}
           {accessLevel === "followers" && (
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 if (onFollow) {
                   onFollow();
                 } else {
