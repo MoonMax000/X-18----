@@ -103,10 +103,10 @@ export default function TipModal({
                 }}
                 disabled={status === "processing"}
                 className={cn(
-                  "rounded-lg border p-3 transition",
+                  "rounded-xl border p-3 transition-all duration-200",
                   !customAmount && amount === preset
-                    ? "border-[#A06AFF] bg-[#1C1430] text-white"
-                    : "border-gray-700 bg-white/5 text-gray-400 hover:border-gray-600"
+                    ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                    : "border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent text-gray-400 hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70"
                 )}
               >
                 <span className="text-lg font-bold">${preset}</span>
@@ -124,7 +124,7 @@ export default function TipModal({
                 onChange={(e) => setCustomAmount(e.target.value)}
                 placeholder="0"
                 disabled={status === "processing"}
-                className="w-full rounded-lg border border-gray-700 bg-white/5 py-2 pl-8 pr-3 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+                className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent py-2.5 pl-8 pr-3 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
               />
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function TipModal({
             placeholder="Спасибо за отличную аналитику!"
             maxLength={200}
             disabled={status === "processing"}
-            className="w-full rounded-lg border border-gray-700 bg-white/5 p-3 text-white placeholder-gray-500 focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
+            className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-3 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
             rows={3}
           />
           <p className="mt-1 text-right text-xs text-gray-500">{message.length}/200</p>
@@ -152,14 +152,14 @@ export default function TipModal({
           <button
             onClick={handleClose}
             disabled={status === "processing"}
-            className="flex-1 rounded-lg border border-gray-700 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+            className="flex-1 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-[#A06AFF]/40 disabled:opacity-50"
           >
             Отменить
           </button>
           <button
             onClick={handleSend}
             disabled={status === "processing" || status === "success"}
-            className="flex-1 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:opacity-50"
+            className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-20px_rgba(244,114,182,0.75)] transition-all hover:shadow-[0_16px_40px_-12px_rgba(244,114,182,1)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
           >
             {status === "processing" ? (
               <span className="flex items-center justify-center gap-2">
