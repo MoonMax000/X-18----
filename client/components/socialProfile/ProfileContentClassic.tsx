@@ -83,7 +83,10 @@ export default function ProfileContentClassic({
         return handleKey === profileKey;
       });
 
+      const liked = allPosts.filter((post) => LIKED_POST_IDS.includes(post.id) && post.id !== defaultProfile.highlightedPostId);
+
       setPosts(userPosts);
+      setLikedPosts(liked);
 
       setIsLoading(false);
     };
