@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, UserPlus, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useModalScrollLock } from "@/hooks/useModalScrollLock";
+import Portal from "@/components/ui/Portal";
 
 interface FollowModalProps {
   isOpen: boolean;

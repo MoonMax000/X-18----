@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Heart, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePayment, getErrorMessage } from "@/hooks/usePayment";
 import { useModalScrollLock } from "@/hooks/useModalScrollLock";
+import Portal from "@/components/ui/Portal";
 
 interface TipModalProps {
   isOpen: boolean;
