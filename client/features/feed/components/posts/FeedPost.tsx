@@ -6,7 +6,6 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
-import { TipModal } from "@/components/monetization";
 import PostMenu from "./PostMenu";
 import type { Post } from "../../types";
 
@@ -19,7 +18,6 @@ interface FeedPostProps {
 
 export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBorder = false }: FeedPostProps) {
   const navigate = useNavigate();
-  const [showTipModal, setShowTipModal] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const isSignal = post.type === "signal";
   const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber;
