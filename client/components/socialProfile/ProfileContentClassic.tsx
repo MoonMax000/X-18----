@@ -340,10 +340,13 @@ export default function ProfileContentClassic({
               onSectionChange={setActiveSection}
               activePostsFilter={activePostsFilter}
               onPostsFilterChange={setActivePostsFilter}
+              postFilterCounts={postFilterCounts}
+              sortOption={sortOption}
+              onSortChange={setSortOption}
             />
           </div>
         </div>
-        <ProfileTweetsClassic posts={filteredPosts} />
+        <ProfileTweetsClassic posts={sortedPosts} />
       </main>
     </div>
   );
