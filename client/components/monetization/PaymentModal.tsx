@@ -188,25 +188,28 @@ export default function PaymentModal({
         <div className="flex gap-3">
           <button
             onClick={handleClose}
-            disabled={status === "processing"}
+            disabled={status === "processing" || isLoadingStripe}
             className="flex-1 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-[#A06AFF]/40 disabled:opacity-50"
           >
             Отменить
           </button>
           <button
-            onClick={handlePayment}
-            disabled={status === "processing" || status === "success"}
-            className="flex-1 rounded-xl bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)] transition-all hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,1)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
+            onClick={handleStripeCheckout}
+            disabled={status === "processing" || status === "success" || isLoadingStripe}
+            className="group flex-1 rounded-xl bg-gradient-to-r from-[#635BFF] to-[#0A2540] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-20px_rgba(99,91,255,0.75)] transition-all hover:shadow-[0_16px_40px_-12px_rgba(99,91,255,1)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
           >
-            {status === "processing" ? (
+            {status === "processing" || isLoadingStripe ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Обработка...
+                {isLoadingStripe ? "Загрузка..." : "Обработка..."}
               </span>
             ) : status === "success" ? (
               "Готово ✓"
             ) : (
-              `Оплатить $${amount}`
+              <span className="flex items-center justify-center gap-2">
+                Оплатить ${amount}
+                <ExternalLink className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+              </span>
             )}
           </button>
         </div>

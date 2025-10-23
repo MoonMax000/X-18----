@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { X, Heart, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePayment, getErrorMessage } from "@/hooks/usePayment";
+import { useModalScrollLock } from "@/hooks/useModalScrollLock";
 
 interface TipModalProps {
   isOpen: boolean;
@@ -24,6 +25,9 @@ export default function TipModal({
   const [amount, setAmount] = useState(10);
   const [customAmount, setCustomAmount] = useState("");
   const [message, setMessage] = useState("");
+
+  // Lock body scroll when modal is open
+  useModalScrollLock(isOpen);
 
   if (!isOpen) return null;
 
@@ -144,7 +148,7 @@ export default function TipModal({
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Спасибо за отличную анал��тику!"
+            placeholder="Спасибо за отличную аналитику!"
             maxLength={200}
             disabled={status === "processing"}
             className="w-full rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-3 text-white placeholder-gray-500 transition-colors focus:border-[#A06AFF] focus:outline-none disabled:opacity-50"
@@ -170,7 +174,7 @@ export default function TipModal({
             {status === "processing" ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Отпра��ка...
+                Отправка...
               </span>
             ) : status === "success" ? (
               "Отправлено ✓"
