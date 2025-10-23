@@ -82,6 +82,26 @@ export default function PaymentModal({
     }
   };
 
+  // Block all clicks outside modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const blockClicks = (e: MouseEvent) => {
+      const modalContent = document.querySelector('[data-modal-content="payment"]');
+      const target = e.target as Node;
+
+      // If click is outside modal content, prevent it from reaching other elements
+      if (modalContent && !modalContent.contains(target)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+
+    // Capture phase to intercept before other handlers
+    document.addEventListener('click', blockClicks, { capture: true });
+    return () => document.removeEventListener('click', blockClicks, { capture: true });
+  }, [isOpen]);
+
   const handleClose = () => {
     reset();
     onClose();
