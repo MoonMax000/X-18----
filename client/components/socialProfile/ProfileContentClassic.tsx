@@ -87,6 +87,32 @@ export default function ProfileContentClassic({
     loadProfile();
   }, [handle, user_id, isOwnProfile]);
 
+  useEffect(() => {
+    if (activeSection !== "posts" && activePostsFilter !== "all") {
+      setActivePostsFilter("all");
+    }
+  }, [activeSection, activePostsFilter]);
+
+  const filteredPosts = useMemo(() => {
+    if (!posts.length) {
+      return [];
+    }
+
+    if (activeSection === "media") {
+      return posts.filter(isMediaPost);
+    }
+
+    if (activeSection === "premium") {
+      return posts.filter(isPremiumPost);
+    }
+
+    if (activePostsFilter === "all") {
+      return posts;
+    }
+
+    return posts.filter((post) => derivePostFilterKey(post) === activePostsFilter);
+  }, [posts, activeSection, activePostsFilter]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
