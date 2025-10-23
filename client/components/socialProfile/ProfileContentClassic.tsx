@@ -13,6 +13,43 @@ interface ProfileContentClassicProps {
   isOwnProfile?: boolean;
 }
 
+const normalizeHandle = (value?: string) =>
+  value?.replace(/[^a-z0-9]/gi, "").toLowerCase() ?? "";
+
+const derivePostFilterKey = (post: SocialPost): ProfilePostsFilter => {
+  const category = post.category?.toLowerCase() ?? "";
+  const title = post.title.toLowerCase();
+  const preview = post.preview?.toLowerCase() ?? "";
+
+  if (category.includes("analysis") || category.includes("analytics")) {
+    return "analytics";
+  }
+  if (category.includes("insight") || category.includes("education")) {
+    return "ideas";
+  }
+  if (category.includes("opinion") || category.includes("commentary")) {
+    return "opinions";
+  }
+  if (category.includes("followers") || category.includes("community") || category.includes("lifestyle")) {
+    return "soft";
+  }
+
+  if (title.includes("analysis") || preview.includes("analysis")) {
+    return "analytics";
+  }
+  if (title.includes("opinion") || preview.includes("opinion")) {
+    return "opinions";
+  }
+  if (title.includes("soft") || preview.includes("soft")) {
+    return "soft";
+  }
+
+  return "ideas";
+};
+
+const isMediaPost = (post: SocialPost) => Boolean(post.type === "video" || post.videoUrl || post.mediaUrl);
+const isPremiumPost = (post: SocialPost) => Boolean(post.isPremium || typeof post.price === "number" || typeof post.subscriptionPrice === "number");
+
 export default function ProfileContentClassic({
   isOwnProfile = true,
 }: ProfileContentClassicProps) {
