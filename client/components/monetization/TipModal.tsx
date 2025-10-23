@@ -30,18 +30,28 @@ export default function TipModal({
   // Lock body scroll when modal is open
   useModalScrollLock(isOpen);
 
-  // Block all clicks outside modal
+  // Block clicks on elements behind modal (but allow backdrop clicks to close)
   useEffect(() => {
     if (!isOpen) return;
 
     const blockClicks = (e: MouseEvent) => {
       const modalContent = document.querySelector('[data-modal-content="tip"]');
+      const backdrop = document.querySelector('[data-modal-backdrop="tip"]');
       const target = e.target as Node;
 
-      if (modalContent && !modalContent.contains(target)) {
-        e.stopPropagation();
-        e.preventDefault();
+      // Allow clicks on modal content
+      if (modalContent && modalContent.contains(target)) {
+        return;
       }
+
+      // Allow clicks on backdrop (to close modal)
+      if (backdrop && target === backdrop) {
+        return;
+      }
+
+      // Block all other clicks (elements behind modal)
+      e.stopPropagation();
+      e.preventDefault();
     };
 
     document.addEventListener('click', blockClicks, { capture: true });
@@ -71,6 +81,7 @@ export default function TipModal({
 
   return (
     <div
+      data-modal-backdrop="tip"
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={handleClose}
     >

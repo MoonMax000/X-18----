@@ -35,19 +35,28 @@ export default function PaymentModal({
   // Lock body scroll when modal is open
   useModalScrollLock(isOpen);
 
-  // Block all clicks outside modal
+  // Block clicks on elements behind modal (but allow backdrop clicks to close)
   useEffect(() => {
     if (!isOpen) return;
 
     const blockClicks = (e: MouseEvent) => {
       const modalContent = document.querySelector('[data-modal-content="payment"]');
+      const backdrop = document.querySelector('[data-modal-backdrop="payment"]');
       const target = e.target as Node;
-      
-      // If click is outside modal content, prevent it from reaching other elements
-      if (modalContent && !modalContent.contains(target)) {
-        e.stopPropagation();
-        e.preventDefault();
+
+      // Allow clicks on modal content
+      if (modalContent && modalContent.contains(target)) {
+        return;
       }
+
+      // Allow clicks on backdrop (to close modal)
+      if (backdrop && target === backdrop) {
+        return;
+      }
+
+      // Block all other clicks (elements behind modal)
+      e.stopPropagation();
+      e.preventDefault();
     };
 
     // Capture phase to intercept before other handlers
@@ -111,6 +120,7 @@ export default function PaymentModal({
   return (
     <Portal>
       <div
+        data-modal-backdrop="payment"
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
         onClick={handleClose}
       >
@@ -195,7 +205,7 @@ export default function PaymentModal({
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-white">Безопасная оплата через Stripe</p>
                   <p className="mt-1 text-xs text-gray-400">
-                    Мы используем Stripe для обработки платежей. Ваши данные защищены и не хранятся на наших серверах.
+                    Мы используем Stripe для обработки пла��ежей. Ваши данные защищены и не хранятся на наших серверах.
                   </p>
                   <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                     <span>🔒 256-bit SSL</span>
