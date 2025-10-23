@@ -150,7 +150,8 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         <button
           type="button"
           aria-label="More options"
-          className="hidden md:flex h-9 w-9 items-center justify-center rounded-full text-[#9BA0AF] transition-colors duration-200 hover:bg-[#482090]/10 hover:text-white"
+          onClick={(e) => e.stopPropagation()}
+          className="hidden md:flex h-9 w-9 items-center justify-center rounded-full text-[#9BA0AF] transition-all duration-200 hover:bg-[#A06AFF]/[0.15] hover:text-white active:bg-[#A06AFF]/[0.25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           <svg
             width="16"
