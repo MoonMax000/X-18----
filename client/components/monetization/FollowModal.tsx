@@ -62,8 +62,9 @@ export default function FollowModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={handleClose}
+      style={{ pointerEvents: 'auto' }}
     >
       <div
         className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl"
@@ -71,7 +72,7 @@ export default function FollowModal({
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Подписаться дл�� разблокировки</h2>
+          <h2 className="text-xl font-bold text-white">Подписаться для ра��блокировки</h2>
           <button
             onClick={handleClose}
             disabled={status === "processing"}
