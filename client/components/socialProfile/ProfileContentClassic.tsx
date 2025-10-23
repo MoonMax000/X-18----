@@ -5,7 +5,7 @@ import type { SocialProfileData } from "@/data/socialProfile";
 import type { SocialPost } from "@/data/socialPosts";
 import ProfileHero from "./ProfileHero";
 import ProfileBioClassic from "./ProfileBioClassic";
-import TabListClassic from "./TabListClassic";
+import TabListClassic, { type ProfilePostsFilter, type ProfileSection } from "./TabListClassic";
 import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 
