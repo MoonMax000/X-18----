@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
-import UserHeader, { ProfileStatsWidgets } from "@/components/UserHeader/UserHeader";
+import UserHeader from "@/components/UserHeader/UserHeader";
+import GamificationPanel from "@/components/UserHeader/GamificationPanel";
 import NotificationsSettings from "@/components/NotificationsSettings/NotificationsSettings";
 import BillingSettings from "@/components/BillingSettings/BillingSettings";
 import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
@@ -1007,10 +1008,10 @@ const ProfileNew: FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* User Header with Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+      {/* User Header with Gamification */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
         <UserHeader isOwn={true} />
-        <ProfileStatsWidgets />
+        <GamificationPanel className="hidden lg:block" />
       </div>
 
       {/* Navigation Tabs */}
