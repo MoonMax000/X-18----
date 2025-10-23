@@ -37,7 +37,6 @@ export type ProfilePostsFilter = (typeof postSubFilters)[number]["id"];
 export type ProfileSortOption = (typeof sortOptions)[number]["id"];
 
 interface TabListClassicProps {
-  onTabChange?: (tabId: string) => void;
   isOwnProfile?: boolean;
   activeSection?: ProfileSection;
   onSectionChange?: (section: ProfileSection) => void;
@@ -50,7 +49,6 @@ interface TabListClassicProps {
 }
 
 export default function TabListClassic({
-  onTabChange,
   isOwnProfile = true,
   activeSection = "posts",
   onSectionChange,
@@ -59,7 +57,7 @@ export default function TabListClassic({
   postFilterCounts,
   sortOption = "newest",
   onSortChange,
-  showLikesTab = true,
+  showLikesTab = isOwnProfile,
 }: TabListClassicProps) {
   const totalPosts = postFilterCounts?.all ?? 0;
 
