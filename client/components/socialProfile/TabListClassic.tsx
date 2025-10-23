@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TAB_VARIANTS } from "@/features/feed/styles";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const legacyTabs = [
   { id: "tweets", label: "Tweets" },
@@ -69,6 +76,13 @@ export default function TabListClassic({
       });
     }, [postFilterCounts]);
 
+    const handleSortSelect = (value: string) => {
+      const nextOption = sortOptions.find((option) => option.id === value);
+      if (nextOption) {
+        onSortChange?.(nextOption.id);
+      }
+    };
+
     return (
       <div className="space-y-3">
         <div className="grid w-full grid-cols-3 gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5">
@@ -94,7 +108,8 @@ export default function TabListClassic({
               {availableChips.map((chip) => {
                 const isActive = activePostsFilter === chip.id;
                 const count = postFilterCounts?.[chip.id] ?? 0;
-                const displayLabel = chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
+                const displayLabel =
+                  chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
 
                 return (
                   <button
@@ -115,26 +130,31 @@ export default function TabListClassic({
             </div>
 
             {totalPosts > 0 ? (
-              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6B7280]">
-                <span>Sort</span>
-                {sortOptions.map((option) => {
-                  const isActive = sortOption === option.id;
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => onSortChange?.(option.id)}
-                      className={cn(
-                        "inline-flex h-6 items-center gap-1.5 rounded-full border border-transparent px-2.5 text-[10px] font-semibold text-[#A5ACBA] transition-colors duration-200 hover:border-[#A06AFF]/40 hover:bg-[#1C1430] hover:text-white",
-                        isActive &&
-                          "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_6px_18px_-14px_rgba(160,106,255,0.6)]"
-                      )}
-                      aria-pressed={isActive}
+              <div className="flex justify-end">
+                <div className="flex w-full items-center justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6B7280] sm:w-auto">
+                  <span className="hidden sm:inline">Sort</span>
+                  <Select value={sortOption} onValueChange={handleSortSelect}>
+                    <SelectTrigger className="h-8 min-w-[150px] rounded-full border border-[#181B22] bg-[#050215] px-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 focus:ring-0 focus:ring-offset-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent
+                      align="end"
+                      className="min-w-[160px] rounded-xl border border-[#181B22] bg-[#050215] p-1 text-[11px] text-[#A5ACBA] shadow-[0_18px_40px_-22px_rgba(160,106,255,0.55)]"
+                      position="popper"
+                      sideOffset={6}
                     >
-                      {option.label}
-                    </button>
-                  );
-                })}
+                      {sortOptions.map((option) => (
+                        <SelectItem
+                          key={option.id}
+                          value={option.id}
+                          className="rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A5ACBA] focus:bg-[#1C1430] focus:text-white"
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             ) : null}
           </div>
