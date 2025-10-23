@@ -212,7 +212,11 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           </p>
           {shouldTruncate && (
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setIsExpanded(!isExpanded);
+              }}
               className="mt-2 text-[14px] sm:text-[15px] font-medium text-[#A06AFF] transition-colors duration-200 hover:text-white hover:underline focus:outline-none"
             >
               {isExpanded ? "Show less" : "Show more"}
