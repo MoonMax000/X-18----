@@ -88,11 +88,19 @@ const UserHeader: FC<Props> = ({
     "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
 
   const getAvatarBorderClass = (level: number = 1) => {
-    if (level >= 76) return "border-4 border-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 p-1 animate-pulse";
+    if (level >= 76) return "ring-4 ring-offset-2 ring-offset-[#0B0E13] ring-yellow-400 animate-pulse";
     if (level >= 51) return "border-4 border-yellow-400";
     if (level >= 26) return "border-4 border-purple-500";
     if (level >= 11) return "border-4 border-blue-500";
     return "border-3 sm:border-4 border-[#0B0E13]";
+  };
+
+  const getAvatarGlowClass = (level: number = 1) => {
+    if (level >= 76) return "shadow-[0_0_30px_rgba(250,204,21,0.6)]";
+    if (level >= 51) return "shadow-[0_0_20px_rgba(250,204,21,0.4)]";
+    if (level >= 26) return "shadow-[0_0_20px_rgba(168,85,247,0.4)]";
+    if (level >= 11) return "shadow-[0_0_20px_rgba(59,130,246,0.4)]";
+    return "";
   };
 
   return (
