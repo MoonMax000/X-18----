@@ -58,6 +58,7 @@ export default function TabListClassic({
   const [legacyActiveTab, setLegacyActiveTab] = useState(legacyTabs[0].id);
 
   if (!isOwnProfile) {
+    const totalPosts = postFilterCounts?.all ?? 0;
     const availableChips = useMemo(() => {
       return postSubFilters.filter((chip) => {
         if (chip.id === "all") {
