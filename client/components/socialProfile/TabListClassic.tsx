@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { TAB_VARIANTS } from "@/features/feed/styles";
 import {
@@ -9,18 +9,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const legacyTabs = [
-  { id: "tweets", label: "Tweets" },
-  { id: "tweet-replies", label: "Tweets & replies" },
-  { id: "media", label: "Media" },
-  { id: "likes", label: "Likes" },
-];
-
-const primaryTabs = [
+const coreTabs = [
   { id: "posts", label: "Posts" },
   { id: "media", label: "Media" },
   { id: "premium", label: "Premium" },
 ] as const;
+
+const likesTab = { id: "likes", label: "Likes" } as const;
+
+const allTabs = [...coreTabs, likesTab] as const;
 
 const postSubFilters = [
   { id: "all", label: "All" },
@@ -35,7 +32,7 @@ const sortOptions = [
   { id: "likes", label: "Most likes" },
 ] as const;
 
-export type ProfileSection = (typeof primaryTabs)[number]["id"];
+export type ProfileSection = (typeof allTabs)[number]["id"];
 export type ProfilePostsFilter = (typeof postSubFilters)[number]["id"];
 export type ProfileSortOption = (typeof sortOptions)[number]["id"];
 
@@ -49,6 +46,7 @@ interface TabListClassicProps {
   postFilterCounts?: Partial<Record<ProfilePostsFilter, number>>;
   sortOption?: ProfileSortOption;
   onSortChange?: (option: ProfileSortOption) => void;
+  showLikesTab?: boolean;
 }
 
 export default function TabListClassic({
@@ -61,134 +59,111 @@ export default function TabListClassic({
   postFilterCounts,
   sortOption = "newest",
   onSortChange,
+  showLikesTab = true,
 }: TabListClassicProps) {
-  const [legacyActiveTab, setLegacyActiveTab] = useState(legacyTabs[0].id);
+  const totalPosts = postFilterCounts?.all ?? 0;
 
-  if (!isOwnProfile) {
-    const totalPosts = postFilterCounts?.all ?? 0;
-    const availableChips = useMemo(() => {
-      return postSubFilters.filter((chip) => {
-        if (chip.id === "all") {
-          return true;
-        }
-        const count = postFilterCounts?.[chip.id] ?? 0;
-        return count > 0;
-      });
-    }, [postFilterCounts]);
+  const tabsToRender = useMemo(() => {
+    const tabs = [...coreTabs];
+    if (showLikesTab) {
+      tabs.push(likesTab);
+    }
+    return tabs;
+  }, [showLikesTab]);
 
-    const handleSortSelect = (value: string) => {
-      const nextOption = sortOptions.find((option) => option.id === value);
-      if (nextOption) {
-        onSortChange?.(nextOption.id);
+  const availableChips = useMemo(() => {
+    return postSubFilters.filter((chip) => {
+      if (chip.id === "all") {
+        return true;
       }
-    };
+      const count = postFilterCounts?.[chip.id] ?? 0;
+      return count > 0;
+    });
+  }, [postFilterCounts]);
 
-    return (
-      <div className="space-y-3">
-        <div className="grid w-full grid-cols-3 gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5">
-          {primaryTabs.map((tab) => {
-            const isActive = activeSection === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => onSectionChange?.(tab.id)}
-                className={TAB_VARIANTS.item(isActive, tab.id === "posts")}
-                aria-pressed={isActive}
-              >
-                <span className="text-xs font-semibold sm:text-sm">{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {activeSection === "posts" ? (
-          <div className="space-y-2">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {availableChips.map((chip) => {
-                  const isActive = activePostsFilter === chip.id;
-                  const count = postFilterCounts?.[chip.id] ?? 0;
-                  const displayLabel =
-                    chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
-
-                  return (
-                    <button
-                      key={chip.id}
-                      type="button"
-                      onClick={() => onPostsFilterChange?.(chip.id)}
-                      className={cn(
-                        "inline-flex h-8 items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 hover:bg-[#1C1430]",
-                        isActive &&
-                          "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                      )}
-                      aria-pressed={isActive}
-                    >
-                      {displayLabel}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {totalPosts > 0 ? (
-                <div className="flex w-full items-center justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6B7280] sm:w-auto">
-                  <span className="hidden sm:inline">Sort</span>
-                  <Select aria-label="Sort posts" value={sortOption} onValueChange={handleSortSelect}>
-                    <SelectTrigger className="h-8 min-w-[150px] rounded-full border border-[#181B22] bg-[#050215] px-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 focus:ring-0 focus:ring-offset-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent
-                      align="end"
-                      className="min-w-[160px] rounded-xl border border-[#181B22] bg-[#050215] p-1 text-[11px] text-[#A5ACBA] shadow-[0_18px_40px_-22px_rgba(160,106,255,0.55)]"
-                      position="popper"
-                      sideOffset={6}
-                    >
-                      {sortOptions.map((option) => (
-                        <SelectItem
-                          key={option.id}
-                          value={option.id}
-                          className="rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A5ACBA] focus:bg-[#1C1430] focus:text-white"
-                        >
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-      </div>
-    );
-  }
-
-  const handleLegacyTabClick = (tabId: string) => {
-    setLegacyActiveTab(tabId);
-    onTabChange?.(tabId);
+  const handleSortSelect = (value: string) => {
+    const nextOption = sortOptions.find((option) => option.id === value);
+    if (nextOption) {
+      onSortChange?.(nextOption.id);
+    }
   };
 
   return (
-    <div className="sticky top-0 z-20 -mx-6 bg-background/95 px-6 backdrop-blur-md">
-      <div className="grid w-full grid-cols-2 overflow-x-auto sm:grid-cols-4 md:grid-cols-[1fr_2fr_1fr_1fr]">
-        {legacyTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleLegacyTabClick(tab.id)}
-            className="flex w-full items-center justify-center px-3 text-xs font-bold text-[#777] transition hover:bg-[#111] sm:px-6 sm:text-sm md:px-9 md:text-[15px]"
-          >
-            <span
-              className={cn(
-                "relative w-full px-2 py-3 sm:py-4 md:py-5",
-                legacyActiveTab === tab.id &&
-                  "text-white after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:rounded-[40px] after:bg-[#A06AFF]"
-              )}
+    <div className="space-y-3">
+      <div className="grid w-full grid-cols-3 gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5 sm:grid-cols-4">
+        {tabsToRender.map((tab) => {
+          const isActive = activeSection === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onSectionChange?.(tab.id)}
+              className={TAB_VARIANTS.item(isActive, tab.id === "posts")}
+              aria-pressed={isActive}
             >
-              {tab.label}
-            </span>
-          </button>
-        ))}
+              <span className="text-xs font-semibold sm:text-sm">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
+
+      {activeSection === "posts" ? (
+        <div className="space-y-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {availableChips.map((chip) => {
+                const isActive = activePostsFilter === chip.id;
+                const count = postFilterCounts?.[chip.id] ?? 0;
+                const displayLabel =
+                  chip.id === "all" ? `${chip.label} (${totalPosts})` : `${chip.label} (${count})`;
+
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => onPostsFilterChange?.(chip.id)}
+                    className={cn(
+                      "inline-flex h-8 items-center gap-2 rounded-full border border-[#181B22] bg-[#000000] px-3 text-xs font-semibold text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 hover:bg-[#1C1430]",
+                      isActive &&
+                        "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                    )}
+                    aria-pressed={isActive}
+                  >
+                    {displayLabel}
+                  </button>
+                );
+              })}
+            </div>
+
+            {totalPosts > 0 ? (
+              <div className="flex w-full items-center justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6B7280] sm:w-auto">
+                <span className="hidden sm:inline">Sort</span>
+                <Select aria-label="Sort posts" value={sortOption} onValueChange={handleSortSelect}>
+                  <SelectTrigger className="h-8 min-w-[150px] rounded-full border border-[#181B22] bg-[#050215] px-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D5D8E1] transition-colors duration-200 hover:border-[#A06AFF]/50 focus:ring-0 focus:ring-offset-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    align="end"
+                    className="min-w-[160px] rounded-xl border border-[#181B22] bg-[#050215] p-1 text-[11px] text-[#A5ACBA] shadow-[0_18px_40px_-22px_rgba(160,106,255,0.55)]"
+                    position="popper"
+                    sideOffset={6}
+                  >
+                    {sortOptions.map((option) => (
+                      <SelectItem
+                        key={option.id}
+                        value={option.id}
+                        className="rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A5ACBA] focus:bg-[#1C1430] focus:text-white"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
