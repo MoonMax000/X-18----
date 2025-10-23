@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, Flame, Clock, SlidersHorizontal, X, DollarSign, Sparkles } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -72,6 +72,36 @@ export default function FeedFilters({
     e.stopPropagation();
     setIsMainFiltersModalOpen(false);
   };
+
+  // Block clicks on elements behind modal (but allow backdrop clicks to close)
+  useEffect(() => {
+    if (!isMainFiltersModalOpen) return;
+
+    const blockClicks = (e: MouseEvent) => {
+      const modalContent = document.querySelector('[data-modal-content="main-filters"]');
+      const backdrop = document.querySelector('[data-modal-backdrop="main-filters"]');
+      const target = e.target as Node;
+
+      // Allow clicks on modal content
+      if (modalContent && modalContent.contains(target)) {
+        return;
+      }
+
+      // For backdrop: only prevent default, let onClick handler run
+      if (backdrop && target === backdrop) {
+        e.preventDefault();
+        return;
+      }
+
+      // Block all other clicks (elements behind modal)
+      e.stopPropagation();
+      e.preventDefault();
+    };
+
+    // Capture phase to intercept before other handlers
+    document.addEventListener('click', blockClicks, { capture: true });
+    return () => document.removeEventListener('click', blockClicks, { capture: true });
+  }, [isMainFiltersModalOpen]);
 
   return (
     <>
@@ -240,7 +270,7 @@ export default function FeedFilters({
                 {activeConfig?.visible?.includes('period') && (
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-semibold text-white">
-                      Период
+                      Пер��од
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
