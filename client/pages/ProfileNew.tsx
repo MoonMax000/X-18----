@@ -1009,9 +1009,9 @@ const ProfileNew: FC = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* User Header with Gamification */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
-        <UserHeader isOwn={true} />
-        <GamificationPanel className="hidden lg:block" />
+      <div className="flex flex-col lg:flex-row items-start gap-4 w-full">
+        <UserHeader isOwn={true} className="flex-1 min-w-0" />
+        <GamificationPanel className="hidden lg:block w-full lg:w-[280px] shrink-0" />
       </div>
 
       {/* Navigation Tabs */}
