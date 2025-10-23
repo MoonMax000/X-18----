@@ -81,6 +81,7 @@ const UserHeader: FC<Props> = ({
     stats: { tweets: 0, following: 143, followers: 149 },
     isVerified: true,
     isPremium: false,
+    level: 42,
   };
 
   const primaryActionButtonClass =
