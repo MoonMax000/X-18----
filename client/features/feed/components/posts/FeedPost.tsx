@@ -275,6 +275,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             authorName={post.author.name}
             isPurchased={post.isPurchased}
             isSubscriber={post.isSubscriber}
+            isOwnPost={isOwnPost}
           />
         </section>
       ) : (
