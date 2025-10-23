@@ -69,10 +69,11 @@ export default function FollowModal({
       <div
         className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        style={{ pointerEvents: 'auto' }}
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Подписаться для ра��блокировки</h2>
+          <h2 className="text-xl font-bold text-white">Подписаться для разблокировки</h2>
           <button
             onClick={handleClose}
             disabled={status === "processing"}
