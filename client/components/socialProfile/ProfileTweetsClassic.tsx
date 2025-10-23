@@ -11,10 +11,13 @@ interface ProfileTweetsClassicProps {
 function transformToPost(socialPost: SocialPost): Post {
   // Determine access level based on premium status and audience
   let accessLevel: Post["accessLevel"] = "public";
-  if (socialPost.isPremium) {
-    if (socialPost.audience === "followers") {
-      accessLevel = "followers";
-    } else if (socialPost.price && socialPost.subscriptionPrice) {
+
+  // Check for followers-only content (free but requires follow)
+  if (socialPost.audience === "followers") {
+    accessLevel = "followers";
+  } else if (socialPost.isPremium) {
+    // Paid/premium content
+    if (socialPost.price && socialPost.subscriptionPrice) {
       accessLevel = "paid";
     } else if (socialPost.subscriptionPrice) {
       accessLevel = "subscribers";
