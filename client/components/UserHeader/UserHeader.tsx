@@ -1,32 +1,106 @@
-import { FC } from "react";
+import { FC, useRef } from "react";
 import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+
+interface ProfileData {
+  name: string;
+  username: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  joined: string;
+  avatar: string;
+  cover?: string;
+  stats: {
+    tweets: number;
+    following: number;
+    followers: number;
+  };
+  isVerified?: boolean;
+  isPremium?: boolean;
+  tradingStyle?: string;
+}
 
 interface Props {
   isOwn?: boolean;
   className?: string;
+  onEditProfile?: () => void;
+  profileData?: ProfileData;
+  onAvatarUpload?: (file: File) => Promise<void>;
+  onCoverUpload?: (file: File) => Promise<void>;
 }
 
-const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
+const UserHeader: FC<Props> = ({
+  isOwn = true,
+  className,
+  onEditProfile,
+  profileData,
+  onAvatarUpload,
+  onCoverUpload
+}) => {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    if (isOwn) {
+      avatarInputRef.current?.click();
+    }
+  };
+
+  const handleCoverClick = () => {
+    if (isOwn) {
+      coverInputRef.current?.click();
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAvatarUpload) {
+      await onAvatarUpload(file);
+    }
+  };
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onCoverUpload) {
+      await onCoverUpload(file);
+    }
+  };
+
+  // Default data if not provided
+  const data = profileData || {
+    name: "Jane Doe",
+    username: "beautydoe",
+    bio: "Designing Products that Users Love",
+    location: "United States",
+    website: "https://beautydoe.com",
+    joined: "November 2010",
+    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500",
+    cover: "https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118",
+    stats: { tweets: 0, following: 143, followers: 149 },
+    isVerified: true,
+    isPremium: false,
+  };
   const iconButtonClass =
     "group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-[#F7F9F9] shadow-[0_8px_20px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black active:translate-y-0 before:absolute before:inset-x-3 before:-top-1 before:h-1 before:rounded-full before:bg-white/40 before:opacity-0 before:transition-opacity before:duration-200 group-hover:before:opacity-70";
 
   const primaryActionButtonClass =
-    "group relative flex items-center justify-center overflow-hidden rounded-full border border-black/30 bg-[rgba(25,25,25,0.65)] px-6 py-2.5 text-[15px] font-semibold text-[#F7F9F9] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-[#A06AFF]/40 hover:bg-[rgba(32,32,32,0.75)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_18px_36px_rgba(0,0,0,0.5)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black before:absolute before:inset-x-4 before:-top-1 before:h-1 before:rounded-full before:bg-white/50 before:opacity-0 before:transition-opacity before:duration-200 group-hover:before:opacity-100";
+    "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
 
   return (
     <div className={cn("flex w-full flex-col gap-4", className)}>
       {/* Cover/Banner image */}
-      <div className="relative w-full overflow-hidden rounded-3xl border border-[#181B22] bg-[#16181C]">
+      <div className="group relative w-full overflow-hidden rounded-3xl border border-[#16C784] bg-[#16181C]">
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
           alt="Profile cover"
-          className="h-[200px] w-full object-cover"
+          className="h-[120px] sm:h-[160px] md:h-[180px] w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
         <button
           type="button"
-          className="group absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          onClick={handleCoverClick}
+          className="group/btn absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black opacity-0 group-hover:opacity-100"
         >
           <svg
             className="h-5 w-5 text-[#D6DAE2]"
@@ -57,20 +131,28 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
           </svg>
           <span className="whitespace-nowrap">Update cover</span>
         </button>
+        <input
+          ref={coverInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleCoverChange}
+        />
       </div>
 
       {/* Avatar and action buttons container */}
-      <div className="relative px-4">
+      <div className="relative px-3 sm:px-4 md:px-6">
         {/* Avatar positioned to overlap banner */}
-        <div className="absolute -top-16 left-4">
-          <div className="group relative h-[132px] w-[132px]">
+        <div className="absolute -top-12 sm:-top-14 md:-top-16 left-3 sm:left-4 md:left-4">
+          <div className="group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full border-3 sm:border-4 border-[#0B0E13]">
             <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=320"
+              src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500"
               alt="Profile"
-              className="h-full w-full rounded-full border-4 border-[#0B0E13] object-cover object-center"
+              className="h-full w-full object-cover scale-110"
             />
             <button
               type="button"
+              onClick={handleAvatarClick}
               aria-label="Update profile picture"
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 text-white transition-all duration-200 group-hover:bg-black/55 group-hover:backdrop-blur-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
@@ -112,31 +194,20 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
             <span className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100">
               Update profile picture
             </span>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
           </div>
         </div>
 
         {/* Action buttons panel */}
-        <div className="flex items-start justify-end gap-3 py-3">
-          <button type="button" className={iconButtonClass}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M2.5 10.0002C2.5 9.0835 3.25 8.3335 4.16667 8.3335C5.08333 8.3335 5.83333 9.0835 5.83333 10.0002C5.83333 10.9168 5.08333 11.6668 4.16667 11.6668C3.25 11.6668 2.5 10.9168 2.5 10.0002ZM10 11.6668C10.9167 11.6668 11.6667 10.9168 11.6667 10.0002C11.6667 9.0835 10.9167 8.3335 10 8.3335C9.08333 8.3335 8.33333 9.0835 8.33333 10.0002C8.33333 10.9168 9.08333 11.6668 10 11.6668ZM15.8333 11.6668C16.75 11.6668 17.5 10.9168 17.5 10.0002C17.5 9.0835 16.75 8.3335 15.8333 8.3335C14.9167 8.3335 14.1667 9.0835 14.1667 10.0002C14.1667 10.9168 14.9167 11.6668 15.8333 11.6668Z"
-                fill="#F7F9F9"
-              />
-            </svg>
-          </button>
-
-          <button type="button" className={iconButtonClass}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M1.66501 4.58333C1.66501 3.4325 2.59751 2.5 3.74834 2.5H16.2483C17.3992 2.5 18.3317 3.4325 18.3317 4.58333V15.4167C18.3317 16.5675 17.3992 17.5 16.2483 17.5H3.74834C2.59751 17.5 1.66501 16.5675 1.66501 15.4167V4.58333ZM3.74834 4.16667C3.51834 4.16667 3.33168 4.35333 3.33168 4.58333V6.88667L9.99834 9.91833L16.665 6.88833V4.58333C16.665 4.35333 16.4783 4.16667 16.2483 4.16667H3.74834ZM16.665 8.71917L9.99834 11.7492L3.33168 8.7175V15.4167C3.33168 15.6467 3.51834 15.8333 3.74834 15.8333H16.2483C16.4783 15.8333 16.665 15.6467 16.665 15.4167V8.71917Z"
-                fill="#F7F9F9"
-              />
-            </svg>
-          </button>
-
+        <div className="flex items-start justify-end gap-2 sm:gap-3 py-3">
           {isOwn ? (
-            <button type="button" className={primaryActionButtonClass}>
+            <button type="button" className={primaryActionButtonClass} onClick={onEditProfile}>
               <span className="relative z-10 text-center font-semibold leading-5">
                 Edit profile
               </span>
@@ -152,14 +223,14 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
       </div>
 
       {/* User info section */}
-      <div className="flex flex-col gap-3 px-4 pb-4 pt-4">
+      <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-4">
         {/* Name and username */}
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1">
             <h1 className="text-xl font-bold leading-6 text-[#F7F9F9]">
-              Jane Doe
+              {data.name}
             </h1>
-            <VerifiedBadge size={20} />
+            {data.isVerified && <VerifiedBadge size={20} />}
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{display: 'none'}}>
               <path
                 d="M18.9999 10.5C18.9837 9.9156 18.8054 9.34658 18.4843 8.85717C18.1641 8.36867 17.7135 7.97786 17.1834 7.72999C17.3852 7.18087 17.4277 6.58653 17.3101 6.01389C17.1916 5.44035 16.9147 4.91204 16.5122 4.48776C16.087 4.0852 15.5596 3.80928 14.986 3.68987C14.4134 3.57226 13.8191 3.61478 13.2699 3.81652C13.023 3.28549 12.6331 2.83408 12.1437 2.51384C11.6543 2.19359 11.0852 2.01447 10.4999 2C9.91554 2.01538 9.34833 2.19269 8.85983 2.51384C8.37132 2.83498 7.98323 3.2864 7.73807 3.81652C7.18805 3.61478 6.59189 3.57046 6.01745 3.68987C5.443 3.80747 4.91379 4.08429 4.4886 4.48776C4.08604 4.91294 3.81103 5.44216 3.69433 6.01479C3.57673 6.58743 3.62196 7.18178 3.8246 7.72999C3.29357 7.97786 2.84125 8.36776 2.5192 8.85627C2.19715 9.34477 2.01713 9.9147 1.99994 10.5C2.01803 11.0853 2.19715 11.6543 2.5192 12.1437C2.84125 12.6322 3.29357 13.023 3.8246 13.27C3.62196 13.8182 3.57673 14.4126 3.69433 14.9852C3.81193 15.5587 4.08604 16.0871 4.4877 16.5122C4.91288 16.913 5.44119 17.188 6.01383 17.3065C6.58646 17.4259 7.18081 17.3825 7.72993 17.1835C7.9778 17.7136 8.3677 18.1641 8.85711 18.4853C9.34562 18.8055 9.91554 18.9837 10.4999 19C11.0852 18.9855 11.6543 18.8073 12.1437 18.4871C12.6331 18.1668 13.023 17.7145 13.2699 17.1844C13.8164 17.4006 14.4152 17.4522 14.9915 17.3327C15.5668 17.2133 16.0951 16.9284 16.5113 16.5122C16.9274 16.0961 17.2133 15.5678 17.3327 14.9915C17.4521 14.4153 17.4005 13.8164 17.1834 13.27C17.7135 13.0221 18.1641 12.6322 18.4852 12.1428C18.8054 11.6543 18.9837 11.0853 18.9999 10.5Z"
@@ -168,14 +239,16 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
             </svg>
           </div>
           <p className="text-[13px] font-normal leading-4 text-[#8B98A5]">
-            @beautydoe
+            @{data.username}
           </p>
         </div>
 
         {/* Bio/Description */}
-        <p className="text-[15px] font-normal leading-5 text-[#F7F9F9]">
-          Designing Products that Users Love
-        </p>
+        {data.bio && (
+          <p className="text-[15px] font-normal leading-5 text-[#F7F9F9]">
+            {data.bio}
+          </p>
+        )}
 
         {/* User metadata with icons */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -193,33 +266,39 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-1">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M10 5.83317C8.39169 5.83317 7.08335 7.1415 7.08335 8.74984C7.08335 10.3582 8.39169 11.6665 10 11.6665C11.6084 11.6665 12.9167 10.3582 12.9167 8.74984C12.9167 7.1415 11.6084 5.83317 10 5.83317ZM10 9.99984C9.31085 9.99984 8.75002 9.439 8.75002 8.74984C8.75002 8.06067 9.31085 7.49984 10 7.49984C10.6892 7.49984 11.25 8.06067 11.25 8.74984C11.25 9.439 10.6892 9.99984 10 9.99984ZM10 1.6665C6.09419 1.6665 2.91669 4.844 2.91669 8.74984C2.91669 13.7223 9.26752 18.0132 9.53752 18.1932L10 18.5015L10.4625 18.1932C10.7325 18.0132 17.0834 13.7223 17.0834 8.74984C17.0834 4.844 13.9059 1.6665 10 1.6665ZM10 16.4748C8.61252 15.4407 4.58335 12.1448 4.58335 8.74984C4.58335 5.76317 7.01335 3.33317 10 3.33317C12.9867 3.33317 15.4167 5.76317 15.4167 8.74984C15.4167 12.144 11.3875 15.4398 10 16.4748Z"
-                fill="#8B98A5"
-              />
-            </svg>
-            <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
-              United States
-            </span>
-          </div>
+          {data.location && (
+            <div className="flex items-center gap-1">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 5.83317C8.39169 5.83317 7.08335 7.1415 7.08335 8.74984C7.08335 10.3582 8.39169 11.6665 10 11.6665C11.6084 11.6665 12.9167 10.3582 12.9167 8.74984C12.9167 7.1415 11.6084 5.83317 10 5.83317ZM10 9.99984C9.31085 9.99984 8.75002 9.439 8.75002 8.74984C8.75002 8.06067 9.31085 7.49984 10 7.49984C10.6892 7.49984 11.25 8.06067 11.25 8.74984C11.25 9.439 10.6892 9.99984 10 9.99984ZM10 1.6665C6.09419 1.6665 2.91669 4.844 2.91669 8.74984C2.91669 13.7223 9.26752 18.0132 9.53752 18.1932L10 18.5015L10.4625 18.1932C10.7325 18.0132 17.0834 13.7223 17.0834 8.74984C17.0834 4.844 13.9059 1.6665 10 1.6665ZM10 16.4748C8.61252 15.4407 4.58335 12.1448 4.58335 8.74984C4.58335 5.76317 7.01335 3.33317 10 3.33317C12.9867 3.33317 15.4167 5.76317 15.4167 8.74984C15.4167 12.144 11.3875 15.4398 10 16.4748Z"
+                  fill="#8B98A5"
+                />
+              </svg>
+              <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
+                {data.location}
+              </span>
+            </div>
+          )}
 
           {/* Website link */}
-          <div className="flex items-center gap-1">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M15.3 4.70013C13.675 3.0668 11.0417 3.0668 9.40834 4.70013L8.23334 5.87513L7.05001 4.70013L8.23334 3.5168C10.5083 1.2418 14.2 1.2418 16.4833 3.5168C18.7583 5.80013 18.7583 9.4918 16.4833 11.7668L15.3 12.9501L14.125 11.7668L15.3 10.5918C16.9333 8.95846 16.9333 6.32513 15.3 4.70013ZM13.5333 7.6418L7.64168 13.5335L6.46668 12.3585L12.3583 6.4668L13.5333 7.6418ZM3.51667 8.23346L4.70001 7.05013L5.87501 8.23346L4.70001 9.40846C3.06668 11.0418 3.06668 13.6751 4.70001 15.3001C6.32501 16.9335 8.95834 16.9335 10.5917 15.3001L11.7667 14.1251L12.95 15.3001L11.7667 16.4835C9.49168 18.7585 5.80001 18.7585 3.51667 16.4835C1.24167 14.2001 1.24167 10.5085 3.51667 8.23346Z"
-                fill="#8B98A5"
-              />
-            </svg>
-            <a
-              href="https://beautydoe.com"
-              className="text-[15px] font-normal leading-5 text-[#A06AFF] hover:underline"
-            >
-              beautydoe.com
-            </a>
-          </div>
+          {data.website && (
+            <div className="flex items-center gap-1">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M15.3 4.70013C13.675 3.0668 11.0417 3.0668 9.40834 4.70013L8.23334 5.87513L7.05001 4.70013L8.23334 3.5168C10.5083 1.2418 14.2 1.2418 16.4833 3.5168C18.7583 5.80013 18.7583 9.4918 16.4833 11.7668L15.3 12.9501L14.125 11.7668L15.3 10.5918C16.9333 8.95846 16.9333 6.32513 15.3 4.70013ZM13.5333 7.6418L7.64168 13.5335L6.46668 12.3585L12.3583 6.4668L13.5333 7.6418ZM3.51667 8.23346L4.70001 7.05013L5.87501 8.23346L4.70001 9.40846C3.06668 11.0418 3.06668 13.6751 4.70001 15.3001C6.32501 16.9335 8.95834 16.9335 10.5917 15.3001L11.7667 14.1251L12.95 15.3001L11.7667 16.4835C9.49168 18.7585 5.80001 18.7585 3.51667 16.4835C1.24167 14.2001 1.24167 10.5085 3.51667 8.23346Z"
+                  fill="#8B98A5"
+                />
+              </svg>
+              <a
+                href={data.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[15px] font-normal leading-5 text-[#A06AFF] hover:underline"
+              >
+                {data.website.replace(/^https?:\/\//, '')}
+              </a>
+            </div>
+          )}
 
           {/* Join date */}
           <div className="flex items-center gap-1">
@@ -230,7 +309,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
               />
             </svg>
             <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
-              Joined November 2010
+              Joined {data.joined}
             </span>
           </div>
         </div>
@@ -239,7 +318,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
         <div className="flex flex-wrap items-baseline gap-3">
           <div className="flex items-baseline gap-1">
             <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
-              143
+              {data.stats.following.toLocaleString()}
             </span>
             <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
               Following
@@ -247,7 +326,7 @@ const UserHeader: FC<Props> = ({ isOwn = true, className }) => {
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
-              149
+              {data.stats.followers.toLocaleString()}
             </span>
             <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
               Followers
