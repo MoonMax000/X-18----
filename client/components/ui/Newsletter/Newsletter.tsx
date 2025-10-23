@@ -107,13 +107,13 @@ const Newsletter: FC = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="Enter your email"
-                      className="w-full rounded-full border border-[#525252] bg-[#0A0D12] px-6 py-3 text-white placeholder-[#6C7280] transition-all duration-300 hover:border-white focus:border-[#A06AFF] focus:outline-none focus:ring-1 focus:ring-[#A06AFF]"
+                      className="w-full rounded-full border border-[#525252] bg-[#0A0D12] px-6 py-3 text-white placeholder-[#6C7280] transition-all duration-300 hover:border-white focus:border-[#A06AFF] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A06AFF]"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isSubmitting || !email}
-                    className="newsletter-subscribe-btn group relative flex w-fit items-center gap-1 overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
+                    className="newsletter-subscribe-btn group relative flex w-fit items-center gap-1 overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent px-6 py-3 text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {/* Animated shine effect */}
                     <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
