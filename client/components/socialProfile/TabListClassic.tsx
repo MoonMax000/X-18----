@@ -93,7 +93,7 @@ export default function TabListClassic({
 
   return (
     <div className="space-y-3">
-      <div className="grid w-full grid-cols-3 gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5 sm:grid-cols-4">
+      <div className={tabsGridClass}>
         {tabsToRender.map((tab) => {
           const isActive = activeSection === tab.id;
           return (
