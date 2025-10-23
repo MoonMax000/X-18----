@@ -1,6 +1,8 @@
 import { type FC, useState } from "react";
 import type { SocialProfileData } from "@/data/socialProfile";
 import { profileButtonStyles } from "./profileButtonStyles";
+import { TipModal } from "@/components/monetization";
+import { DollarSign } from "lucide-react";
 
 interface ProfileHeroProps {
   profile: SocialProfileData;
