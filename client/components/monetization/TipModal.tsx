@@ -71,8 +71,8 @@ export default function TipModal({
 
         {/* Status */}
         {status === "success" && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl bg-green-500/10 p-4 text-green-400">
-            <CheckCircle2 className="h-5 w-5" />
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-green-400">
+            <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
             <div>
               <p className="font-semibold">Донат отправлен! ✓</p>
               <p className="text-sm">Вы отправили ${customAmount || amount} {authorName}. Спасибо за поддержку!</p>
@@ -81,8 +81,8 @@ export default function TipModal({
         )}
 
         {status === "failed" && error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl bg-red-500/10 p-4 text-red-400">
-            <AlertCircle className="h-5 w-5" />
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-400">
+            <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <div>
               <p className="font-semibold">Ошибка</p>
               <p className="text-sm">{getErrorMessage(error)}</p>
