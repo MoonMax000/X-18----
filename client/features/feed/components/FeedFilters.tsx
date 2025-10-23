@@ -7,7 +7,7 @@ import { FILTERS_CONFIG, TABS_CONFIG } from "../constants";
 import type { FeedTab } from "../types";
 import { LAB_CATEGORY_CONFIG, type LabCategory } from "@/components/testLab/categoryConfig";
 import { LAB_ASSET_OPTIONS } from "@/components/testLab/postMetaConfig";
-import { Portal } from "@/components/ui/portal";
+import { Portal } from "@/components/ui/Portal";
 
 interface FeedFiltersProps {
   activeTab: FeedTab;
