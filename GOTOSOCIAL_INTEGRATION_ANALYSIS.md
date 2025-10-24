@@ -84,54 +84,65 @@ This document identifies frontend functionalities that **cannot** be directly co
 
 ---
 
-### 4. **Trading Signals & Market Metadata** ✅ EASY FIX
+### 4. **Post Metadata (Categories, Market, Symbol)** ✅ СУПЕР ПРОСТО
 
-**Our Features:**
-- Signal posts with structured data:
-  - Entry price, Stop Loss, Take Profit
-  - Direction (Long/Short)
-  - Timeframe (15m, 1h, 4h, 1d, 1w)
-  - Risk level (Low, Medium, High)
-  - Ticker symbols ($BTC, $ETH, $AAPL)
-  - Accuracy metrics (85% accuracy over 90 days)
-  - Sample size tracking
-- Market categorization (crypto, stocks, forex, commodities, indices)
-- Post categories (signal, news, education, analysis, macro, onchain, video, code)
-- Sentiment tracking (bullish/bearish)
+**Что это на самом деле:**
 
-**GoToSocial Status:** ⚠️ **NOT SUPPORTED (But Easy to Add)**
-- No structured metadata beyond basic ActivityPub fields
-- No custom post types or taxonomies
-- No financial/trading-specific features
+Это **просто дропдауны в форме создания поста**! Никакой сложной бизнес-логики.
 
-**✅ SOLUTION: Simple GoToSocial Customization**
+Frontend уже готов (`ComposerMetadata.tsx`):
+- **Market** dropdown: Crypto, Stocks, Forex, Commodities, Indices
+- **Category** dropdown с иконками: Signal, News, Education, Analysis, Macro, Code, Video, General
+- **Symbol** text input: BTC, ETH, AAPL
+- **Timeframe** dropdown: 15m, 1h, 4h, 1d, 1w
+- **Risk** dropdown: Low, Medium, High
 
-This is **NOT a critical blocker**. Trading signals are just badges and filters on posts. The solution is straightforward:
+Когда пользователь создаёт пост, frontend собирает JSON:
 
-1. **Add `custom_metadata` JSONB column** to statuses table
-2. **Extend API request/response** to accept/return metadata
-3. **Add filtering support** to timeline endpoints
+```json
+{
+  "status": "BTC breakout! 🚀",
+  "custom_metadata": {
+    "market": "Crypto",
+    "category": "Signal",
+    "symbol": "BTC",
+    "timeframe": "4h",
+    "risk": "Medium"
+  }
+}
+```
 
-**See `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` for complete implementation guide with Go code examples.**
+**GoToSocial Status:** ⚠️ **Нет поддержки (но добавляется за 4 часа)**
 
-**Development Effort:**
-- ⏱️ 1-2 days for core implementation
-- ⏱️ 1 day for testing
-- ✅ No complex architecture changes needed
-- ✅ Frontend is already prepared to use this
+**✅ РЕШЕНИЕ: Минимальная доработка**
 
-**Required Changes:**
-- Database migration (1 JSONB column)
-- API endpoint extensions (~200 lines of Go code)
-- Query filtering logic (~100 lines)
-- Validation functions (~50 lines)
+1. **Добавить 1 колонку** `custom_metadata JSONB` в таблицу statuses (SQL: 1 строка)
+2. **Принимать JSON** в API endpoint `/api/v1/statuses` (~20 строк Go)
+3. **Возвращать JSON** в ответе (~10 строк Go)
+4. *Опционально:* Фильтрация по категориям (~20 строк Go)
 
-**Benefits:**
-- ✅ Fully structured data storage
-- ✅ Server-side filtering by ticker, sentiment, market, etc.
-- ✅ SQL queries for analytics
-- ✅ Clean separation from post content
-- ✅ Easy to extend with new fields
+**Сколько времени:**
+- ⏱️ **30 минут** базовая реализация (просто сохранить/вернуть JSON)
+- ⏱️ **3 часа** добавить фильтрацию + тесты
+- ✅ **Итого: 4 часа работы**
+
+**Сколько кода:**
+- **1 SQL миграция** (3 строки)
+- **3 Go файла** изменить (добавить по 1-2 строки в каждый)
+- **Итого: ~50 строк кода**
+
+**Что НЕ нужно:**
+- ❌ Отдельные таблицы для сигналов
+- ❌ Сложная валидация
+- ❌ Бизнес-логика
+- ❌ Парсинг или обработка данных
+
+**Frontend уже готов:**
+- ✅ `useSimpleComposer.ts` собирает метаданные
+- ✅ `ComposerMetadata.tsx` отображает дропдауны
+- ✅ Нужно только чтобы GoToSocial сохранял и возвращал JSON
+
+**См. полный гайд:** `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` с примерами кода
 
 ---
 
