@@ -84,6 +84,57 @@ This document identifies frontend functionalities that **cannot** be directly co
 
 ---
 
+### 4. **Trading Signals & Market Metadata** ✅ EASY FIX
+
+**Our Features:**
+- Signal posts with structured data:
+  - Entry price, Stop Loss, Take Profit
+  - Direction (Long/Short)
+  - Timeframe (15m, 1h, 4h, 1d, 1w)
+  - Risk level (Low, Medium, High)
+  - Ticker symbols ($BTC, $ETH, $AAPL)
+  - Accuracy metrics (85% accuracy over 90 days)
+  - Sample size tracking
+- Market categorization (crypto, stocks, forex, commodities, indices)
+- Post categories (signal, news, education, analysis, macro, onchain, video, code)
+- Sentiment tracking (bullish/bearish)
+
+**GoToSocial Status:** ⚠️ **NOT SUPPORTED (But Easy to Add)**
+- No structured metadata beyond basic ActivityPub fields
+- No custom post types or taxonomies
+- No financial/trading-specific features
+
+**✅ SOLUTION: Simple GoToSocial Customization**
+
+This is **NOT a critical blocker**. Trading signals are just badges and filters on posts. The solution is straightforward:
+
+1. **Add `custom_metadata` JSONB column** to statuses table
+2. **Extend API request/response** to accept/return metadata
+3. **Add filtering support** to timeline endpoints
+
+**See `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` for complete implementation guide with Go code examples.**
+
+**Development Effort:**
+- ⏱️ 1-2 days for core implementation
+- ⏱️ 1 day for testing
+- ✅ No complex architecture changes needed
+- ✅ Frontend is already prepared to use this
+
+**Required Changes:**
+- Database migration (1 JSONB column)
+- API endpoint extensions (~200 lines of Go code)
+- Query filtering logic (~100 lines)
+- Validation functions (~50 lines)
+
+**Benefits:**
+- ✅ Fully structured data storage
+- ✅ Server-side filtering by ticker, sentiment, market, etc.
+- ✅ SQL queries for analytics
+- ✅ Clean separation from post content
+- ✅ Easy to extend with new fields
+
+---
+
 ### 5. **Media Features Beyond Basic Images/Videos**
 
 **Our Features:**
