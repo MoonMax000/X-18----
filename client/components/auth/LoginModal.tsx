@@ -616,7 +616,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     setAuthError('');
                   }}
                   className={cn(
-                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
                     authMethod === 'email'
                       ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
                       : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
@@ -632,7 +632,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     setAuthError('');
                   }}
                   className={cn(
-                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
                     authMethod === 'phone'
                       ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
                       : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
