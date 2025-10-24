@@ -1144,7 +1144,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     setSignupEmailError('');
                   }}
                   className={cn(
-                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
                     signupAuthMethod === 'email'
                       ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
                       : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white shadow-md'
@@ -1159,7 +1159,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     setSignupEmailError('');
                   }}
                   className={cn(
-                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
                     signupAuthMethod === 'phone'
                       ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
                       : 'text-white hover:text-primary'
