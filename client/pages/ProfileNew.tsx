@@ -6,6 +6,7 @@ import BillingSettings from "@/components/BillingSettings/BillingSettings";
 import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
 import KycSettings from "@/components/KycSettings/KycSettings";
 import LiveStreamingSettings from "@/components/LiveStreamingSettings/LiveStreamingSettings";
+import ProfileOverview from "@/components/ProfileOverview/ProfileOverview";
 import SocialOverview from "@/components/SocialOverview/SocialOverview";
 import MyPosts from "@/components/MyPosts/MyPosts";
 import Subscriptions from "@/components/Subscriptions/Subscriptions";
