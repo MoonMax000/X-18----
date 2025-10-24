@@ -34,6 +34,16 @@ const StatCard: FC<StatCardProps> = ({ title, amount, change, changePercent }) =
 const Monetization: FC = () => {
   const [activeTimeRange, setActiveTimeRange] = useState<"1M" | "3M" | "1Y">("1M");
 
+  const revenueChartData = {
+    "1M": [280, 320, 290, 350, 310, 380, 340, 360, 330, 370, 350, 400, 380, 390, 360, 410, 390, 420, 400, 430, 410, 440, 420, 450, 430, 460, 440, 470, 450, 480],
+    "3M": [200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 420],
+    "1Y": [150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480],
+  };
+
+  const currentChartData = revenueChartData[activeTimeRange];
+  const maxValue = Math.max(...currentChartData);
+  const minValue = Math.min(...currentChartData);
+
   const revenueData = [
     { label: "Subscription", amount: "$4,500", percentage: 53 },
     { label: "Referrals", amount: "$1.200", percentage: 14 },
