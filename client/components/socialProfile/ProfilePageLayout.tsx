@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ProfileContentClassic from "./ProfileContentClassic";
 import { RightSidebar } from "@/features/feed/components";
-import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
+import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import { TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
 import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 
