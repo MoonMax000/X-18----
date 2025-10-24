@@ -273,7 +273,7 @@ const UserHeader: FC<Props> = ({
         {/* User info section */}
         <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-4">
           {/* Name and username */}
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
               <h1 className="text-xl font-bold leading-6 text-[#F7F9F9]">
                 {data.name}
@@ -283,6 +283,25 @@ const UserHeader: FC<Props> = ({
             <p className="text-[13px] font-normal leading-4 text-[#8B98A5]">
               @{data.username}
             </p>
+            {data.role && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex items-center gap-1.5 rounded-full border border-[#A06AFF]/30 bg-[#A06AFF]/10 px-2.5 py-1">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#A06AFF]">
+                    <path
+                      d="M6 1L7.545 4.13L11 4.635L8.5 7.07L9.09 10.51L6 8.885L2.91 10.51L3.5 7.07L1 4.635L4.455 4.13L6 1Z"
+                      fill="currentColor"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="text-xs font-semibold text-[#A06AFF]">
+                    {data.role}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bio/Description */}
