@@ -303,7 +303,7 @@ const SocialOverview: FC = () => {
       avatar: "https://api.builder.io/api/v1/image/assets/TEMP/7746a2e8ebde2c6e52ec623079f09df3e63924fe?width=88",
       title: "Sophia Light",
       subtitle: "Check out new ETH Analysis...",
-      timestamp: "5 мин ��азад",
+      timestamp: "5 мин назад",
     },
     {
       avatar: "https://api.builder.io/api/v1/image/assets/TEMP/23996870cb880292839824f9010dd522308f5fac?width=88",
@@ -418,12 +418,18 @@ const SocialOverview: FC = () => {
         </div>
         <div className="relative mt-6 h-48 flex items-end gap-2">
           {followerGrowth.map((height, index) => (
-            <div key={index} className="flex flex-1 flex-col items-center gap-2">
-              <div
-                className="w-full rounded-t-lg bg-gradient-to-t from-[#A06AFF] to-[#482090] transition-all hover:opacity-80"
-                style={{ height: `${height}%` }}
-              />
-              <span className="text-xs text-[#B0B0B0]">{index + 1}</span>
+            <div key={index} className="group flex flex-1 flex-col items-center gap-2">
+              <div className="relative w-full">
+                <div
+                  className="w-full rounded-t-lg bg-gradient-to-t from-[#A06AFF] to-[#482090] transition-all hover:opacity-80 cursor-pointer"
+                  style={{ height: `${height}%` }}
+                  title={`${height}%`}
+                />
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/90 border border-[#A06AFF] rounded px-2 py-1 text-xs font-bold text-white whitespace-nowrap z-10">
+                  {height}%
+                </div>
+              </div>
+              <span className="text-xs text-[#B0B0B0]">{subscriberTimeRange === "week" ? ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"][index] : index + 1}</span>
             </div>
           ))}
         </div>
