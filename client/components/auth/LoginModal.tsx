@@ -607,51 +607,39 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 Sign In
               </h2>
 
-              <div className="flex justify-between items-center w-full">
-                <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
-                  <button
-                    onClick={() => {
-                      setAuthMethod('email');
-                      setPhoneError('');
-                      setEmailError('');
-                      setAuthError('');
-                    }}
-                    className={cn(
-                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
-                      authMethod === 'email'
-                        ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
-                        : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
-                    )}
-                  >
-                    Email
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthMethod('phone');
-                      setPhoneError('');
-                      setEmailError('');
-                      setAuthError('');
-                    }}
-                    className={cn(
-                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
-                      authMethod === 'phone'
-                        ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
-                        : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
-                    )}
-                  >
-                    Phone
-                  </button>
-                </div>
-                <div className="flex w-[26px] h-[26px] p-[10px] justify-center items-center rounded-lg border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M2 4C2 3.05719 2 2.58579 2.29289 2.29289C2.58579 2 3.05719 2 4 2C4.94281 2 5.41421 2 5.70711 2.29289C6 2.58579 6 3.05719 6 4C6 4.94281 6 5.41421 5.70711 5.70711C5.41421 6 4.94281 6 4 6C3.05719 6 2.58579 6 2.29289 5.70711C2 5.41421 2 4.94281 2 4Z" stroke="white" strokeWidth="1.5"/>
-                    <path d="M2 12C2 11.0572 2 10.5858 2.29289 10.2929C2.58579 10 3.05719 10 4 10C4.94281 10 5.41421 10 5.70711 10.2929C6 10.5858 6 11.0572 6 12C6 12.9428 6 13.4142 5.70711 13.7071C5.41421 14 4.94281 14 4 14C3.05719 14 2.58579 14 2.29289 13.7071C2 13.4142 2 12.9428 2 12Z" stroke="white" strokeWidth="1.5"/>
-                    <path d="M2 8H6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M8 2V5.33333" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M10 4C10 3.05719 10 2.58579 10.2929 2.29289C10.5858 2 11.0572 2 12 2C12.9428 2 13.4142 2 13.7071 2.29289C14 2.58579 14 3.05719 14 4C14 4.94281 14 5.41421 13.7071 5.70711C13.4142 6 12.9428 6 12 6C11.0572 6 10.5858 6 10.2929 5.70711C10 5.41421 10 4.94281 10 4Z" stroke="white" strokeWidth="1.5"/>
-                    <path d="M14 8H10C9.0572 8 8.5858 8 8.29287 8.29287C8 8.5858 8 9.0572 8 10M8 11.8461V13.6923M10 10V11C10 11.9643 10.5225 12 11.3333 12C11.7015 12 12 12.2985 12 12.6667M10.6667 14H10M12 10C12.9428 10 13.4142 10 13.7071 10.2933C14 10.5866 14 11.0587 14 12.0029C14 12.9471 14 13.4191 13.7071 13.7125C13.4933 13.9265 13.1845 13.9844 12.6667 14" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </div>
+              <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
+                <button
+                  onClick={() => {
+                    setAuthMethod('email');
+                    setPhoneError('');
+                    setEmailError('');
+                    setAuthError('');
+                  }}
+                  className={cn(
+                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    authMethod === 'email'
+                      ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
+                      : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
+                  )}
+                >
+                  Email
+                </button>
+                <button
+                  onClick={() => {
+                    setAuthMethod('phone');
+                    setPhoneError('');
+                    setEmailError('');
+                    setAuthError('');
+                  }}
+                  className={cn(
+                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    authMethod === 'phone'
+                      ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
+                      : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
+                  )}
+                >
+                  Phone
+                </button>
               </div>
 
               <div className="flex flex-col gap-4">
