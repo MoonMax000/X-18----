@@ -26,26 +26,41 @@ const [accessType, setAccessType] = useState<
 const [postPrice, setPostPrice] = useState<number>(5.0);
 ```
 
-### UI Component
+### UI Components
 
-The access type selector is in `ComposerToolbar`:
+#### 1. ComposerToolbar Button
+Shows current access type:
 
 ```typescript
 // client/features/feed/components/composers/shared/ComposerToolbar.tsx
-<Popover>
-  <PopoverTrigger>
-    {/* Access type button with icon and label */}
-  </PopoverTrigger>
-  <PopoverContent>
-    {/* Dropdown with 5 options */}
-  </PopoverContent>
-</Popover>
-
-{/* Price input - only visible when accessType === "pay-per-post" */}
-{accessType === "pay-per-post" && (
-  <input type="number" value={postPrice} onChange={...} />
-)}
+<button onClick={onAccessTypeClick}>
+  <Icon /> {/* Sparkles, DollarSign, Users, etc. */}
+  <span>{label}</span> {/* "Free", "Paid", "Subscribers", etc. */}
+  {accessType === "pay-per-post" && <span>${price}</span>}
+</button>
 ```
+
+#### 2. AccessTypeModal
+Full modal for selecting access type:
+
+```typescript
+// client/features/feed/components/composers/shared/AccessTypeModal.tsx
+<AccessTypeModal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  currentAccessType={accessType}
+  currentPrice={postPrice}
+  onSave={(newType, newPrice) => {
+    setAccessType(newType);
+    setPostPrice(newPrice);
+  }}
+/>
+```
+
+Modal contains:
+- 5 large selectable cards (one per access type)
+- Price input embedded in pay-per-post card
+- Save/Cancel buttons in footer
 
 ---
 
@@ -219,7 +234,7 @@ const payload = {
 
 ## Visual States
 
-### Access Type Button
+### Toolbar Button
 
 ```tsx
 // Free (not paid)
@@ -228,26 +243,51 @@ const payload = {
   <span style={{ color: "#6CA8FF" }}>Free</span>
 </button>
 
-// Paid types (active)
+// Pay-per-post (with price)
 <button className="bg-gradient-to-l bg-[#2A1C3F]">
   <DollarSign color="white" />
-  <span className="text-white">Pay-per-post</span>
+  <span className="text-white">Paid</span>
+  <span className="text-white">$9.99</span>
+</button>
+
+// Other paid types
+<button className="bg-gradient-to-l bg-[#1A3A30]">
+  <Users color="white" />
+  <span className="text-white">Subscribers</span>
 </button>
 ```
 
-### Price Input
+### Modal Card States
 
 ```tsx
-{accessType === "pay-per-post" && (
-  <div className="flex items-center gap-1">
-    <span className="text-[#808283]">$</span>
-    <input
-      type="number"
-      min="0"
-      step="0.5"
-      value={postPrice}
-      className="w-16 rounded-lg border border-[#1B1F27] bg-[#000000] text-[#A06AFF]"
-    />
+// Unselected
+<button className="border-[#1B1F27] bg-[#0A0D12] hover:border-[#2F3336]">
+  {/* Icon, title, description */}
+</button>
+
+// Selected
+<button className="border-[#A06AFF]/50 bg-gradient-to-br from-[#A06AFF]/20 to-[#6B46C1]/10">
+  {/* Icon, title, description */}
+  {/* Checkmark in top-right */}
+  {/* Price input if pay-per-post */}
+</button>
+```
+
+### Price Input (in Modal)
+
+```tsx
+// Only visible when pay-per-post card is selected
+{selectedType === "pay-per-post" && (
+  <div className="mt-4 flex items-center gap-3">
+    <label>Price:</label>
+    <div className="rounded-xl border border-[#A06AFF]/40 bg-[#000000] px-3 py-2">
+      <span className="text-[#A06AFF]">$</span>
+      <input
+        type="number"
+        value={price}
+        className="bg-transparent text-[#A06AFF]"
+      />
+    </div>
   </div>
 )}
 ```
