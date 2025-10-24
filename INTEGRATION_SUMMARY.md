@@ -4,7 +4,7 @@
 
 **Новичок?** Начните с **`GOTOSOCIAL_QUICKSTART.md`** - там план на 1 неделю!
 
-**Опытный разработчик?** Читайте дальше ⬇️
+**Опытный ра��работчик?** Читайте дальше ⬇️
 
 ---
 
@@ -122,7 +122,7 @@ GoToSocial **DOES NOT** support these features out of the box. You MUST build a 
    - Возвращать JSON в ответе
    - **Итого: ~50 строк кода на Go**
 
-   **Время:** ⏱️ 30 минут базовая реализация + 3 часа фильтрация и тесты = **4 часа**
+   **Время:** ⏱��� 30 минут базовая реализация + 3 часа фильтрация и тесты = **4 часа**
 
    **См. детали:** `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` (с примерами кода)
 
@@ -279,15 +279,20 @@ Use the testing checklist in `GOTOSOCIAL_PAGES_INTEGRATION.md`:
 ## 🔧 Files Created/Modified
 
 ### New Files:
+
+**Frontend (готовый код):**
 - ✅ `client/services/api/gotosocial.ts` - GoToSocial API service
 - ✅ `client/hooks/useGTSProfile.ts` - Profile data hook
 - ✅ `client/hooks/useGTSTimeline.ts` - Timeline data hook
 - ✅ `client/hooks/useGTSNotifications.ts` - Notifications hook
-- ✅ `GOTOSOCIAL_INTEGRATION_ANALYSIS.md` - Feature analysis
-- ✅ `GOTOSOCIAL_PAGES_INTEGRATION.md` - Integration guide
-- ✅ `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` - **ОБНОВЛЁННЫЙ** Простой гайд (4 часа работы, ~50 строк кода)
+
+**Документация (читать по порядку):**
+- ✅ `GOTOSOCIAL_QUICKSTART.md` - ⭐ **НАЧАТЬ ЗДЕСЬ** - План на 1 неделю
+- ✅ `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` - Как добавить метаданные (4 часа, 50 строк кода)
+- ✅ `GOTOSOCIAL_PAGES_INTEGRATION.md` - Интеграция каждой страницы
+- ✅ `GOTOSOCIAL_INTEGRATION_ANALYSIS.md` - Полный анализ совместимости
 - ✅ `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` - Детальный гайд (для справки)
-- ✅ `INTEGRATION_SUMMARY.md` - This file
+- ✅ `INTEGRATION_SUMMARY.md` - Эта сводка
 
 ### Previously Created (from optimization):
 - ✅ `client/services/api/client.ts` - HTTP client
