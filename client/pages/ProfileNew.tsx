@@ -177,13 +177,6 @@ const tabs = [
   },
 ];
 
-const DASHBOARD_WIDGET_VISIBILITY = {
-  myRevenue: false,
-  liveStreaming: false,
-  aiAssistant: false,
-  followingPortfolios: false,
-} as const;
-
 const profileSubTabs = [
   {
     id: "profile" as ProfileSubTab,
