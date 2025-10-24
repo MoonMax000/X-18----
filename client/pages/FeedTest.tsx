@@ -81,7 +81,7 @@ export default function FeedTest() {
         trendingTickers={TRENDING_TICKERS}
         selectedTicker={selectedTicker}
         onTickerClick={setSelectedTicker}
-        suggestedProfiles={DEFAULT_SUGGESTED_PROFILES}
+        suggestedProfiles={[]}
         newsItems={DEFAULT_NEWS_ITEMS as NewsItem[]}
         followRecommendations={DEFAULT_FOLLOW_RECOMMENDATIONS}
         topAuthors={TOP_AUTHORS}
