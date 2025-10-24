@@ -294,7 +294,7 @@ const SocialOverview: FC = () => {
 
   const mockTopPosts = [
     { title: "Bitcoin достиг нового максимума! Анализ текущей ситуации", likes: 342, comments: 87, views: 5420 },
-    { title: "5 правил ��спешного трейдинга в 2024 году", likes: 289, comments: 64, views: 4850 },
+    { title: "5 правил успешного трейдинга в 2024 году", likes: 289, comments: 64, views: 4850 },
     { title: "Ethereum: что ждет нас в ближайшие месяцы?", likes: 215, comments: 52, views: 3920 },
   ];
 
@@ -375,7 +375,7 @@ const SocialOverview: FC = () => {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
         <StatCard label="Посты за месяц" value={mockStats.posts} change={mockStats.postsChange} isPositive />
         <StatCard label="Лайки" value={mockStats.likes} change={mockStats.likesChange} isPositive />
-        <StatCard label="Комментарии" value={mockStats.comments} change={mockStats.commentsChange} isPositive />
+        <StatCard label="Ком��ентарии" value={mockStats.comments} change={mockStats.commentsChange} isPositive />
         <StatCard label="Подписчики" value={mockStats.followers} change={mockStats.followersChange} isPositive />
       </div>
 
@@ -422,7 +422,7 @@ const SocialOverview: FC = () => {
             type="button"
             className="mt-5 w-full rounded-full border border-widget-border/80 bg-black/40 px-4 py-2 text-sm font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/35 hover:text-white"
           >
-            П��смотреть все →
+            Посмотреть все →
           </button>
         </SectionCard>
 
@@ -445,7 +445,7 @@ const SocialOverview: FC = () => {
                 <span className="text-sm font-semibold text-[#B0B0B0]">{metric.label}</span>
                 <span className="text-lg font-bold text-white">{metric.value}</span>
               </div>
-              <div className="h-2 w-full rounded-full bg-[#181B22]">
+              <div className="h-2 w-full rounded-full bg-widget-border/60">
                 <div
                   className={cn("h-full rounded-full", `bg-gradient-to-r ${metric.gradient}`)}
                   style={{ width: `${metric.progress}%` }}
@@ -485,7 +485,7 @@ const SocialOverview: FC = () => {
         </SectionCard>
 
         <SectionCard>
-          <h3 className={sectionTitleClass}>Группы, которые вы отслеживаете</h3>
+          <h3 className={sectionTitleClass}>Гр��ппы, которые вы отслеживаете</h3>
           <div className="mt-4 flex flex-col gap-3">
             {groupChats.map((chat, index) => (
               <div key={`${chat.name}-${index}`} className={listItemClass}>
