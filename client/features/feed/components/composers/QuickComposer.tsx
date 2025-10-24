@@ -9,13 +9,19 @@ import { CodeBlockModal } from "@/components/CreatePostBox/CodeBlockModal";
 import { MediaEditor } from "@/components/CreatePostBox/MediaEditor";
 import { MediaGrid } from "@/components/CreatePostBox/MediaGrid";
 import { useSimpleComposer } from "@/components/CreatePostBox/useSimpleComposer";
-import type { ComposerData, DirectionType, TimeframeType } from "../../types";
+import type { ComposerData } from "../../types";
 import type { MediaItem } from "@/components/CreatePostBox/types";
 import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from "./shared";
+import { createStatus, uploadMedia } from "@/services/api/gotosocial";
+import { useToast } from "@/hooks/use-toast";
 
-type Props = { onExpand: (data: Partial<ComposerData>) => void };
+type Props = { 
+  onExpand: (data: Partial<ComposerData>) => void;
+  onPostCreated?: () => void;
+};
 
-export default function QuickComposer({ onExpand }: Props) {
+export default function QuickComposer({ onExpand, onPostCreated }: Props) {
+  const { toast } = useToast();
   const [isReplyMenuOpen, setIsReplyMenuOpen] = useState(false);
   const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
@@ -24,6 +30,7 @@ export default function QuickComposer({ onExpand }: Props) {
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
+  const [isPosting, setIsPosting] = useState(false);
 
   const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
@@ -33,40 +40,13 @@ export default function QuickComposer({ onExpand }: Props) {
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   const {
-    text,
-    media,
-    codeBlocks,
-    sentiment,
-    replySetting,
-    accessType,
-    postPrice,
-    postMarket,
-    postCategory,
-    postSymbol,
-    postTimeframe,
-    postRisk,
-    charRatio,
-    remainingChars,
-    isNearLimit,
-    isOverLimit,
-    canPost,
-    updateText,
-    addMedia,
-    removeMedia,
-    replaceMedia,
-    reorderMedia,
-    setSentiment,
-    setReplySetting,
-    setAccessType,
-    setPostPrice,
-    setPostMarket,
-    setPostCategory,
-    setPostSymbol,
-    setPostTimeframe,
-    setPostRisk,
-    insertEmoji,
-    insertCodeBlock,
-    removeCodeBlock,
+    text, media, codeBlocks, sentiment, replySetting, accessType, postPrice,
+    postMarket, postCategory, postSymbol, postTimeframe, postRisk,
+    charRatio, remainingChars, isNearLimit, isOverLimit, canPost,
+    updateText, addMedia, removeMedia, replaceMedia, reorderMedia,
+    setSentiment, setReplySetting, setAccessType, setPostPrice,
+    setPostMarket, setPostCategory, setPostSymbol, setPostTimeframe, setPostRisk,
+    insertEmoji, insertCodeBlock, removeCodeBlock, reset,
   } = useSimpleComposer();
 
   const MAX_CHARS = 300;
@@ -107,22 +87,15 @@ export default function QuickComposer({ onExpand }: Props) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isEmojiPickerOpen &&
-        emojiPickerRef.current &&
-        emojiButtonRef.current &&
+      if (isEmojiPickerOpen && emojiPickerRef.current && emojiButtonRef.current &&
         !emojiPickerRef.current.contains(event.target as Node) &&
-        !emojiButtonRef.current.contains(event.target as Node)
-      ) {
+        !emojiButtonRef.current.contains(event.target as Node)) {
         handleCloseEmojiPicker();
       }
     };
-
     if (isEmojiPickerOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
+      return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isEmojiPickerOpen]);
 
@@ -133,12 +106,9 @@ export default function QuickComposer({ onExpand }: Props) {
         setEmojiPickerPosition({ top: rect.bottom + 10, left: rect.left });
       }
     };
-
     if (isEmojiPickerOpen) {
       window.addEventListener("scroll", handleScroll, true);
-      return () => {
-        window.removeEventListener("scroll", handleScroll, true);
-      };
+      return () => window.removeEventListener("scroll", handleScroll, true);
     }
   }, [isEmojiPickerOpen]);
 
@@ -153,7 +123,6 @@ export default function QuickComposer({ onExpand }: Props) {
     setIsBoldActive(!isBoldActive);
   };
 
-  // Auto-detect sentiment from text patterns
   useEffect(() => {
     const mTicker = text.match(/\$[A-Z]{2,5}/);
     const mTf = text.match(/\b(15m|1h|4h|1d|1w)\b/i);
@@ -164,40 +133,57 @@ export default function QuickComposer({ onExpand }: Props) {
     }
   }, [text, sentiment, setSentiment]);
 
-  const handlePost = () => {
-    // Build post payload with correct accessLevel mapping
-    const accessLevelMap: Record<typeof accessType, string> = {
-      "free": "public",
-      "pay-per-post": "paid",
-      "subscribers-only": "subscribers",
-      "followers-only": "followers",
-      "premium": "premium",
-    };
+  const handlePost = async () => {
+    if (!canPost || isPosting) return;
+    setIsPosting(true);
 
-    const payload = {
-      text,
-      media: media.map((m) => ({
-        id: m.id,
-        transform: m.transform,
-        alt: m.alt,
-        sensitiveTags: m.sensitiveTags,
-      })),
-      codeBlocks,
-      replySetting,
-      sentiment,
-      metadata: {
-        market: postMarket,
-        category: postCategory,
-        symbol: postSymbol,
-        timeframe: postTimeframe,
-        risk: postRisk,
-      },
-      accessLevel: accessLevelMap[accessType],
-      accessType, // Keep original value
-      ...(accessType === "pay-per-post" && { price: postPrice }),
-    };
+    try {
+      const mediaIds: string[] = [];
+      for (const mediaItem of media) {
+        if (mediaItem.file) {
+          const uploaded = await uploadMedia(mediaItem.file, { description: mediaItem.alt });
+          mediaIds.push(uploaded.id);
+        }
+      }
 
-    console.log('Posting from QuickComposer:', payload);
+      const visibilityMap: Record<typeof replySetting, 'public' | 'unlisted' | 'private' | 'direct'> = {
+        everyone: 'public',
+        following: 'unlisted',
+        verified: 'public',
+        mentioned: 'direct',
+      };
+
+      await createStatus({
+        status: text,
+        media_ids: mediaIds,
+        visibility: visibilityMap[replySetting],
+        sensitive: false,
+        custom_metadata: {
+          post_type: postCategory.toLowerCase(),
+          market: postMarket.toLowerCase(),
+          category: postCategory.toLowerCase(),
+          ticker: postSymbol,
+          sentiment: sentiment || 'neutral',
+          timeframe: postTimeframe,
+          risk: postRisk.toLowerCase(),
+          access_level: accessType,
+          ...(accessType === 'pay-per-post' && { price: postPrice }),
+        },
+      } as any);
+
+      toast({ title: "Post created!", description: "Your post has been published successfully." });
+      reset();
+      onPostCreated?.();
+    } catch (error) {
+      console.error('Failed to create post:', error);
+      toast({
+        title: "Post failed",
+        description: error instanceof Error ? error.message : "Failed to publish post. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   return (
@@ -214,6 +200,7 @@ export default function QuickComposer({ onExpand }: Props) {
           onChange={e => updateText(e.target.value)}
           maxLength={MAX_CHARS}
           className="!min-h-[24px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0 !px-3 !py-2"
+          disabled={isPosting}
         />
 
         {media.length > 0 && (
@@ -222,7 +209,7 @@ export default function QuickComposer({ onExpand }: Props) {
             onEdit={m => setEditingMedia(m)}
             onRemove={mediaId => removeMedia(mediaId)}
             onReorder={(from, to) => reorderMedia(from, to)}
-            readOnly={false}
+            readOnly={isPosting}
           />
         )}
 
@@ -234,12 +221,7 @@ export default function QuickComposer({ onExpand }: Props) {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeCodeBlock(cb.id)}
-                    className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#6B46C1]/20 rounded-lg text-[#9F7AEA] hover:text-[#A06AFF]"
-                    aria-label="Remove code block"
-                  >
+                  <button type="button" onClick={() => removeCodeBlock(cb.id)} className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#6B46C1]/20 rounded-lg text-[#9F7AEA] hover:text-[#A06AFF]" aria-label="Remove code block" disabled={isPosting}>
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -254,19 +236,11 @@ export default function QuickComposer({ onExpand }: Props) {
         <div className="mt-3 flex items-center justify-between">
           <div>
             {text.length > 0 && (
-              <button
-                ref={replyButtonRef}
-                type="button"
-                onClick={handleReplyButtonClick}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10"
-              >
+              <button ref={replyButtonRef} type="button" onClick={handleReplyButtonClick} className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10" disabled={isPosting}>
                 <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#1D9BF0]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 2v1.5M12 20.5V22M4.5 12H2M22 12h-2.5M7.05 4.05l1.06 1.06M15.89 17.95l1.06 1.06M5.56 18.44l1.06-1.06M17.38 6.62l1.06-1.06" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M12 13.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M8.75 17.5 8 14l-1-3-2.2-1.27" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="m17 14-.5-3-1-3 2.5-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
                 <span className="text-xs">{replySummary}</span>
@@ -275,7 +249,6 @@ export default function QuickComposer({ onExpand }: Props) {
           </div>
         </div>
 
-        {/* Post Metadata */}
         <ComposerMetadata
           visible={text.length > 0}
           market={postMarket}
@@ -291,7 +264,6 @@ export default function QuickComposer({ onExpand }: Props) {
         />
 
         <div className="mt-3 flex items-center justify-between">
-          {/* Toolbar */}
           <ComposerToolbar
             onMediaClick={() => mediaInputRef.current?.click()}
             onDocumentClick={() => documentInputRef.current?.click()}
@@ -305,16 +277,17 @@ export default function QuickComposer({ onExpand }: Props) {
             accessType={accessType}
             onAccessTypeClick={() => setIsAccessModalOpen(true)}
             postPrice={postPrice}
+            disabled={isPosting}
           />
 
-          {/* Footer */}
           <ComposerFooter
             charRatio={charRatio}
             remainingChars={remainingChars}
             isNearLimit={isNearLimit}
             isOverLimit={isOverLimit}
-            canPost={canPost}
+            canPost={canPost && !isPosting}
             onPost={handlePost}
+            isPosting={isPosting}
           />
         </div>
 
@@ -360,9 +333,9 @@ export default function QuickComposer({ onExpand }: Props) {
           }}
         />
 
-        <input ref={mediaInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
-        <input ref={documentInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
-        <input ref={videoInputRef} type="file" accept=".mp4,.webm,.mov,.avi,video/mp4,video/webm,video/quicktime,video/x-msvideo" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
+        <input ref={mediaInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} disabled={isPosting} />
+        <input ref={documentInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} disabled={isPosting} />
+        <input ref={videoInputRef} type="file" accept=".mp4,.webm,.mov,.avi,video/mp4,video/webm,video/quicktime,video/x-msvideo" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} disabled={isPosting} />
       </div>
     </div>
   );
