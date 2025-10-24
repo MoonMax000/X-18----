@@ -347,7 +347,14 @@ const SocialOverview: FC = () => {
     },
   ];
 
-  const followerGrowth = [42, 58, 45, 72, 65, 88, 95, 78, 92, 85, 98, 100];
+  const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
+
+  const followerGrowthData = {
+    week: [85, 90, 88, 92, 87, 95, 100],
+    month: [42, 58, 45, 72, 65, 88, 95, 78, 92, 85, 98, 100, 85, 90, 88, 92, 87, 95, 100, 75, 82, 78, 85, 80, 90, 88, 92, 87, 95, 100],
+  };
+
+  const followerGrowth = followerGrowthData[subscriberTimeRange];
 
   const engagementMetrics = [
     {
