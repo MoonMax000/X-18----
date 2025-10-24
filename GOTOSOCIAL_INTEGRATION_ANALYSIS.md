@@ -389,7 +389,7 @@ This is **NOT a critical blocker**. Trading signals are just badges and filters 
 | Feature Category | GoToSocial Support | Required Development |
 |---|---|---|
 | Monetization (Pay-per-post, Subscriptions) | ❌ None | Critical - Full payment system |
-| Trading Signals & Market Data | ❌ None | Critical - Structured metadata schema |
+| Trading Signals & Market Data | ⚠️ Easy to Add | ✅ Low - Simple GTS customization (1-2 days) |
 | Advanced Access Control | ⚠️ Partial | Medium - Extend visibility system |
 | Code Snippets | ⚠️ Partial | Low - Add metadata storage |
 | Media (Documents, Editing) | ⚠️ Partial | Medium - Document support, metadata |
@@ -410,8 +410,7 @@ This is **NOT a critical blocker**. Trading signals are just badges and filters 
 
 ### **Phase 1 - Critical (Launch Blockers)**
 1. **Monetization System** - Without this, core business model fails
-2. **Trading Signals Metadata** - Core differentiator for financial social network
-3. **Advanced Access Control** - Required for monetization to work
+2. **Advanced Access Control** - Required for monetization to work
 
 ### **Phase 2 - High Priority (User Experience)**
 4. **Widgets & Discovery** - Essential for engagement and retention
@@ -424,10 +423,11 @@ This is **NOT a critical blocker**. Trading signals are just badges and filters 
 9. **Hover Cards** - Smoother UX
 
 ### **Phase 4 - Low Priority (Nice-to-Have)**
-10. **Drafts System** - Quality of life improvement
-11. **Poll Enhancements** - Community features
-12. **Code Snippets** - Already works via Markdown
-13. **Reply Settings** - Basic functionality exists
+10. **Trading Signals Metadata** - ✅ Simple GoToSocial customization (1-2 days, see GOTOSOCIAL_CUSTOMIZATION_GUIDE.md)
+11. **Drafts System** - Quality of life improvement
+12. **Poll Enhancements** - Community features
+13. **Code Snippets** - Already works via Markdown
+14. **Reply Settings** - Basic functionality exists
 
 ---
 
@@ -435,9 +435,9 @@ This is **NOT a critical blocker**. Trading signals are just badges and filters 
 
 ### Option A: GoToSocial + Custom Backend (Recommended)
 - Use GoToSocial for core social features (posts, follows, ActivityPub federation)
+- Extend GoToSocial with custom metadata for trading signals (simple customization)
 - Build custom backend service for:
   - Monetization
-  - Trading signals
   - Analytics
   - Recommendations
 - Frontend calls both APIs
