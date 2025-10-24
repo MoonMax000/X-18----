@@ -10,7 +10,7 @@ type ScreenType = 'login' | '2fa' | 'forgot-email' | 'forgot-sent' | 'create-pas
 
 const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('login');
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('phone');
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [showPassword, setShowPassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
