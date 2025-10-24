@@ -1,8 +1,10 @@
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { defaultProfile, getProfileTimeline } from "@/data/socialProfile";
 import type { SocialProfileData } from "@/data/socialProfile";
 import type { SocialPost } from "@/data/socialPosts";
+import type { RootState } from "@/store/store";
 import ProfileHero from "./ProfileHero";
 import TabListClassic, { type ProfilePostsFilter, type ProfileSection, type ProfileSortOption } from "./TabListClassic";
 import ProfileTweetsClassic from "./ProfileTweetsClassic";
@@ -56,6 +58,7 @@ export default function ProfileContentClassic({
   isOwnProfile = true,
 }: ProfileContentClassicProps) {
   const navigate = useNavigate();
+  const currentUser = useSelector((state: RootState) => state.profile.currentUser);
   const [profile, setProfile] = useState<SocialProfileData | null>(null);
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [likedPosts, setLikedPosts] = useState<SocialPost[]>([]);
@@ -72,9 +75,22 @@ export default function ProfileContentClassic({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // For now, always use defaultProfile
-      // In real app, fetch profile by handle or user_id
-      setProfile(defaultProfile);
+      // Use Redux data for own profile, defaultProfile for others
+      const profileData = isOwnProfile
+        ? {
+            ...defaultProfile,
+            name: currentUser.name,
+            username: currentUser.username,
+            bio: currentUser.bio,
+            role: currentUser.role,
+            location: currentUser.location,
+            website: currentUser.website ? { label: currentUser.website, url: currentUser.website } : defaultProfile.website,
+            avatar: currentUser.avatar || defaultProfile.avatar,
+            cover: currentUser.cover || defaultProfile.cover,
+          }
+        : defaultProfile;
+
+      setProfile(profileData);
 
       const allPosts = getProfileTimeline(defaultProfile);
       const profileKey = normalizeHandle(defaultProfile.username) || normalizeHandle(defaultProfile.name);
@@ -98,7 +114,7 @@ export default function ProfileContentClassic({
     };
 
     loadProfile();
-  }, [handle, user_id, isOwnProfile]);
+  }, [handle, user_id, isOwnProfile, currentUser]);
 
   const postFilterCounts = useMemo(() => {
     const counts: Record<ProfilePostsFilter, number> = {
