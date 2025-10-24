@@ -303,7 +303,7 @@ const SocialOverview: FC = () => {
       avatar: "https://api.builder.io/api/v1/image/assets/TEMP/7746a2e8ebde2c6e52ec623079f09df3e63924fe?width=88",
       title: "Sophia Light",
       subtitle: "Check out new ETH Analysis...",
-      timestamp: "5 мин назад",
+      timestamp: "5 мин ��азад",
     },
     {
       avatar: "https://api.builder.io/api/v1/image/assets/TEMP/23996870cb880292839824f9010dd522308f5fac?width=88",
@@ -392,13 +392,25 @@ const SocialOverview: FC = () => {
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)]"
+              onClick={() => setSubscriberTimeRange("month")}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-xs font-semibold transition-all",
+                subscriberTimeRange === "month"
+                  ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)]"
+                  : "border border-widget-border/80 text-[#B0B0B0] hover:text-white hover:border-[#A06AFF]/50"
+              )}
             >
               Месяц
             </button>
             <button
               type="button"
-              className="rounded-full border border-widget-border/80 px-3 py-1.5 text-xs font-semibold text-[#B0B0B0] transition-colors hover:text-white"
+              onClick={() => setSubscriberTimeRange("week")}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-xs font-semibold transition-all",
+                subscriberTimeRange === "week"
+                  ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)]"
+                  : "border border-widget-border/80 text-[#B0B0B0] hover:text-white hover:border-[#A06AFF]/50"
+              )}
             >
               Неделя
             </button>
