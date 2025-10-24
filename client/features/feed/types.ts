@@ -1,5 +1,5 @@
 // features/feed/types.ts
-export type FeedTab = "all" | "ideas" | "opinions" | "analytics" | "soft" | "liked" | "following";
+export type FeedTab = "all" | "signal" | "news" | "education" | "analysis" | "macro" | "code" | "video" | "liked";
 export type PostType = "signal" | "news" | "analysis" | "code" | "general" | "education" | "macro" | "onchain" | "video";
 export type SentimentType = "bullish" | "bearish" | "neutral";
 export type PriceType = "free" | "pay-per-post" | "subscribers-only";
