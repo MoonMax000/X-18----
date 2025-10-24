@@ -1,17 +1,21 @@
-import { FC, useState } from "react";
+import { FC, lazy, Suspense } from "react";
+import { useSearchParams } from "react-router-dom";
 import UserHeader from "@/components/UserHeader/UserHeader";
 import GamificationPanel from "@/components/UserHeader/GamificationPanel";
-import NotificationsSettings from "@/components/NotificationsSettings/NotificationsSettings";
-import BillingSettings from "@/components/BillingSettings/BillingSettings";
-import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
-import KycSettings from "@/components/KycSettings/KycSettings";
-import LiveStreamingSettings from "@/components/LiveStreamingSettings/LiveStreamingSettings";
-import ProfileOverview from "@/components/ProfileOverview/ProfileOverview";
-import SocialOverview from "@/components/SocialOverview/SocialOverview";
-import MyPosts from "@/components/MyPosts/MyPosts";
-import Subscriptions from "@/components/Subscriptions/Subscriptions";
-import Monetization from "@/components/Monetization/Monetization";
+import TabLoader from "@/components/common/TabLoader";
 import { cn } from "@/lib/utils";
+
+// Lazy load heavy tab components
+const NotificationsSettings = lazy(() => import("@/components/NotificationsSettings/NotificationsSettings"));
+const BillingSettings = lazy(() => import("@/components/BillingSettings/BillingSettings"));
+const ReferralsSettings = lazy(() => import("@/components/ReferralsSettings/ReferralsSettings"));
+const KycSettings = lazy(() => import("@/components/KycSettings/KycSettings"));
+const LiveStreamingSettings = lazy(() => import("@/components/LiveStreamingSettings/LiveStreamingSettings"));
+const ProfileOverview = lazy(() => import("@/components/ProfileOverview/ProfileOverview"));
+const SocialOverview = lazy(() => import("@/components/SocialOverview/SocialOverview"));
+const MyPosts = lazy(() => import("@/components/MyPosts/MyPosts"));
+const Subscriptions = lazy(() => import("@/components/Subscriptions/Subscriptions"));
+const Monetization = lazy(() => import("@/components/Monetization/Monetization"));
 
 type Tab =
   | "profile"
@@ -1027,17 +1031,40 @@ const streamingSubTabs = [
 ];
 
 const ProfileNew: FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("social");
-  const [activeProfileSubTab, setActiveProfileSubTab] =
-    useState<ProfileSubTab>("profile");
-  const [activeSocialSubTab, setActiveSocialSubTab] =
-    useState<SocialSubTab>("overview");
-  const [activePortfolioSubTab, setActivePortfolioSubTab] =
-    useState<PortfolioSubTab>("my");
-  const [activeMarketplaceSubTab, setActiveMarketplaceSubTab] =
-    useState<MarketplaceSubTab>("products");
-  const [activeStreamingSubTab, setActiveStreamingSubTab] =
-    useState<StreamingSubTab>("profile");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get active tab from URL or default
+  const activeTab = (searchParams.get('tab') as Tab) || 'social';
+  const activeProfileSubTab = (searchParams.get('profileTab') as ProfileSubTab) || 'profile';
+  const activeSocialSubTab = (searchParams.get('socialTab') as SocialSubTab) || 'overview';
+  const activePortfolioSubTab = (searchParams.get('portfolioTab') as PortfolioSubTab) || 'my';
+  const activeMarketplaceSubTab = (searchParams.get('marketplaceTab') as MarketplaceSubTab) || 'products';
+  const activeStreamingSubTab = (searchParams.get('streamingTab') as StreamingSubTab) || 'profile';
+
+  // Update URL when tab changes
+  const setActiveTab = (tab: Tab) => {
+    setSearchParams({ tab });
+  };
+
+  const setActiveProfileSubTab = (tab: ProfileSubTab) => {
+    setSearchParams({ tab: activeTab, profileTab: tab });
+  };
+
+  const setActiveSocialSubTab = (tab: SocialSubTab) => {
+    setSearchParams({ tab: activeTab, socialTab: tab });
+  };
+
+  const setActivePortfolioSubTab = (tab: PortfolioSubTab) => {
+    setSearchParams({ tab: activeTab, portfolioTab: tab });
+  };
+
+  const setActiveMarketplaceSubTab = (tab: MarketplaceSubTab) => {
+    setSearchParams({ tab: activeTab, marketplaceTab: tab });
+  };
+
+  const setActiveStreamingSubTab = (tab: StreamingSubTab) => {
+    setSearchParams({ tab: activeTab, streamingTab: tab });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -1221,10 +1248,20 @@ const ProfileNew: FC = () => {
 
       {/* Tab content */}
       <div className="mt-4">
-        {activeTab === "social" && activeSocialSubTab === "overview" && <SocialOverview />}
-        {activeTab === "social" && activeSocialSubTab === "posts" && <MyPosts />}
-        {activeTab === "social" && activeSocialSubTab === "subscriptions" && <Subscriptions />}
-        {activeTab === "social" && activeSocialSubTab === "monetization" && <Monetization />}
+        <Suspense fallback={<TabLoader />}>
+          {activeTab === "social" && activeSocialSubTab === "overview" && <SocialOverview />}
+          {activeTab === "social" && activeSocialSubTab === "posts" && <MyPosts />}
+          {activeTab === "social" && activeSocialSubTab === "subscriptions" && <Subscriptions />}
+          {activeTab === "social" && activeSocialSubTab === "monetization" && <Monetization />}
+
+          {activeTab === "profile" && activeProfileSubTab === "profile" && <ProfileOverview />}
+          {activeTab === "profile" && activeProfileSubTab === "notifications" && <NotificationsSettings />}
+          {activeTab === "profile" && activeProfileSubTab === "billing" && <BillingSettings />}
+          {activeTab === "profile" && activeProfileSubTab === "referrals" && <ReferralsSettings />}
+          {activeTab === "profile" && activeProfileSubTab === "kyc" && <KycSettings />}
+
+          {activeTab === "streaming" && <LiveStreamingSettings activeTab={activeStreamingSubTab} />}
+        </Suspense>
 
         {false && (
           <div className="flex flex-col gap-6">
