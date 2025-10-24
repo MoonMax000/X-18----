@@ -50,6 +50,10 @@ export function useFeedFilters(initialTab: FeedTab = "all") {
     if (filters.market && filters.market !== "All") {
       res = res.filter(p => p.market?.toLowerCase() === filters.market.toLowerCase());
     }
+    if (filters.topic && filters.topic !== "All") {
+      const topicLower = filters.topic.toLowerCase();
+      res = res.filter(p => p.type === topicLower);
+    }
     if (filters.category && filters.category !== "all") {
       res = res.filter(p => p.type === filters.category);
     }
