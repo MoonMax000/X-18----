@@ -9,7 +9,7 @@ import { MediaGrid } from '../MediaGrid';
 import { EmojiPicker } from '../EmojiPicker';
 import { useSimpleComposer } from '../useSimpleComposer';
 import { MediaItem } from '../types';
-import { ComposerMetadata, ComposerToolbar, ComposerFooter } from '@/features/feed/components/composers/shared';
+import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from '@/features/feed/components/composers/shared';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -69,6 +69,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const [mounted, setMounted] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
 
   const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiMenuRef = useRef<HTMLDivElement>(null);
@@ -303,9 +304,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             sentiment={sentiment}
             onSentimentChange={setSentiment}
             accessType={accessType}
-            onAccessTypeChange={setAccessType}
+            onAccessTypeClick={() => setIsAccessModalOpen(true)}
             postPrice={postPrice}
-            onPostPriceChange={setPostPrice}
           />
         </div>
 
@@ -375,6 +375,17 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       <input ref={mediaInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
       <input ref={documentInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
       <input ref={videoInputRef} type="file" accept=".mp4,.webm,.mov,.avi,video/*" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
+
+      <AccessTypeModal
+        isOpen={isAccessModalOpen}
+        onClose={() => setIsAccessModalOpen(false)}
+        currentAccessType={accessType}
+        currentPrice={postPrice}
+        onSave={(newAccessType, newPrice) => {
+          setAccessType(newAccessType);
+          setPostPrice(newPrice);
+        }}
+      />
     </div>,
     document.body
   );

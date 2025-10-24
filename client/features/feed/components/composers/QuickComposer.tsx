@@ -11,7 +11,7 @@ import { MediaGrid } from "@/components/CreatePostBox/MediaGrid";
 import { useSimpleComposer } from "@/components/CreatePostBox/useSimpleComposer";
 import type { ComposerData, DirectionType, TimeframeType } from "../../types";
 import type { MediaItem } from "@/components/CreatePostBox/types";
-import { ComposerMetadata, ComposerToolbar, ComposerFooter } from "./shared";
+import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from "./shared";
 
 type Props = { onExpand: (data: Partial<ComposerData>) => void };
 
@@ -22,6 +22,7 @@ export default function QuickComposer({ onExpand }: Props) {
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
 
   const replyButtonRef = useRef<HTMLButtonElement>(null);
@@ -302,9 +303,8 @@ export default function QuickComposer({ onExpand }: Props) {
             sentiment={sentiment}
             onSentimentChange={setSentiment}
             accessType={accessType}
-            onAccessTypeChange={setAccessType}
+            onAccessTypeClick={() => setIsAccessModalOpen(true)}
             postPrice={postPrice}
-            onPostPriceChange={setPostPrice}
           />
 
           {/* Footer */}
@@ -348,6 +348,17 @@ export default function QuickComposer({ onExpand }: Props) {
 
         <CodeBlockModal isOpen={isCodeBlockOpen} onClose={() => setIsCodeBlockOpen(false)} onInsert={handleCodeBlockInsert} />
         {editingMedia && <MediaEditor media={editingMedia} onSave={(updated) => { replaceMedia(updated); setEditingMedia(null); }} onClose={() => setEditingMedia(null)} />}
+
+        <AccessTypeModal
+          isOpen={isAccessModalOpen}
+          onClose={() => setIsAccessModalOpen(false)}
+          currentAccessType={accessType}
+          currentPrice={postPrice}
+          onSave={(newAccessType, newPrice) => {
+            setAccessType(newAccessType);
+            setPostPrice(newPrice);
+          }}
+        />
 
         <input ref={mediaInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
         <input ref={documentInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
