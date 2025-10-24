@@ -2631,14 +2631,6 @@ const ProfileNew: FC = () => {
           <LiveStreamingSettings activeTab={activeStreamingSubTab} />
         )}
 
-        {activeTab === "social" && (
-          <div>
-            {activeSocialSubTab === "overview" && <SocialOverview />}
-            {activeSocialSubTab === "posts" && <MyPosts />}
-            {activeSocialSubTab === "monetization" && <Monetization />}
-          </div>
-        )}
-
         {activeTab === "portfolios" && (
           <div className="container-card p-6">
             <h2 className="text-2xl font-bold text-white">Portfolios</h2>
