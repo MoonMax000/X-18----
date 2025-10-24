@@ -1,13 +1,21 @@
-import React, { useState, FC } from "react";
+import React, { useState, useRef, useEffect, FC } from "react";
 import FeedPost from "@/features/feed/components/posts/FeedPost";
 import type { Post } from "@/features/feed/types";
 
 interface ContinuousFeedTimelineProps {
   posts: Post[];
   onFollowToggle?: (handle: string, isFollowing: boolean) => void;
+  onLoadMore?: () => void;
+  isLoading?: boolean;
 }
 
-const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFollowToggle }) => {
+const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({
+  posts,
+  onFollowToggle,
+  onLoadMore,
+  isLoading = false,
+}) => {
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [followingState, setFollowingState] = useState<Map<string, boolean>>(new Map());
 
   const handleFollowToggle = (handle: string, isFollowing: boolean) => {
@@ -16,6 +24,24 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
     setFollowingState(newState);
     onFollowToggle?.(handle, !isFollowing);
   };
+
+  // Infinite scroll: trigger onLoadMore when scrolling near bottom
+  useEffect(() => {
+    if (!onLoadMore || !loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [onLoadMore, isLoading]);
 
   if (!posts || posts.length === 0) {
     return (
@@ -41,6 +67,18 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({ posts, onFoll
           />
         );
       })}
+
+      {/* Infinite scroll trigger */}
+      {onLoadMore && (
+        <div ref={loadMoreRef} className="flex w-full justify-center py-8">
+          {isLoading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span>Loading more...</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
