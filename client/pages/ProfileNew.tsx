@@ -1155,7 +1155,7 @@ const ProfileNew: FC = () => {
               </button>
             ))}
           </div>
-        )}
+        )} */}
 
         {/* Live Streaming Sub-Navigation */}
         {activeTab === "streaming" && (
