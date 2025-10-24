@@ -400,7 +400,7 @@ Frontend уже готов (`ComposerMetadata.tsx`):
 | Feature Category | GoToSocial Support | Required Development |
 |---|---|---|
 | Monetization (Pay-per-post, Subscriptions) | ❌ None | Critical - Full payment system |
-| Trading Signals & Market Data | ⚠️ Easy to Add | ✅ Low - Simple GTS customization (1-2 days) |
+| Post Metadata (Categories, Market, Symbol) | ⚠️ Easy to Add | ✅ **Trivial - 4 hours (50 lines of code)** |
 | Advanced Access Control | ⚠️ Partial | Medium - Extend visibility system |
 | Code Snippets | ⚠️ Partial | Low - Add metadata storage |
 | Media (Documents, Editing) | ⚠️ Partial | Medium - Document support, metadata |
