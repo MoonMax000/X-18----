@@ -145,6 +145,7 @@ export default function QuickComposer({ onExpand }: Props) {
     setIsBoldActive(!isBoldActive);
   };
 
+  // Auto-detect sentiment from text patterns
   useEffect(() => {
     const mTicker = text.match(/\$[A-Z]{2,5}/);
     const mTf = text.match(/\b(15m|1h|4h|1d|1w)\b/i);
@@ -152,27 +153,8 @@ export default function QuickComposer({ onExpand }: Props) {
     if (mTicker && mTf && mDir && !sentiment) {
       const s = mDir[0].toLowerCase() === "long" ? "bullish" : "bearish";
       setSentiment(s);
-      onExpand({
-        text,
-        sentiment: s as any,
-        ticker: mTicker[0],
-        timeframe: mTf[0].toLowerCase() as TimeframeType,
-        direction: mDir[0].toLowerCase() as DirectionType
-      });
     }
-  }, [text, sentiment, onExpand, setSentiment]);
-
-  useEffect(() => {
-    const MEDIA_LIMIT = 4;
-    if (isPaid || sentiment || media.length > MEDIA_LIMIT) {
-      onExpand({
-        text,
-        isPaid,
-        sentiment,
-        accessType: isPaid ? "pay-per-post" : "free"
-      });
-    }
-  }, [isPaid, sentiment, media.length, text, onExpand]);
+  }, [text, sentiment, setSentiment]);
 
   const handlePost = () => {
     // Post logic here

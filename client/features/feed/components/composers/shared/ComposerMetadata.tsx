@@ -62,7 +62,7 @@ export function ComposerMetadata({
                 <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+            <PopoverContent align="start" className="z-[2100] w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
               <div className="grid gap-0.5 text-xs">
                 {['Crypto', 'Stocks', 'Forex', 'Commodities', 'Indices'].map((m) => (
                   <button
@@ -111,7 +111,7 @@ export function ComposerMetadata({
                 <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+            <PopoverContent align="start" className="z-[2100] w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
               <div className="grid gap-0.5 text-xs">
                 {Object.keys(categoryConfig).map((cat) => {
                   const config = categoryConfig[cat as keyof typeof categoryConfig];
