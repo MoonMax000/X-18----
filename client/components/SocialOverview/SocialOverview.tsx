@@ -440,18 +440,12 @@ const SocialOverview: FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Subscriptions Widget */}
         <div className="w-full">
-          <SubscriptionsWidget
-            subscriptions={mockSubscriptions}
-            onViewAll={() => console.log('View all subscriptions')}
-          />
+          <SubscriptionsWidget subscriptions={mockSubscriptions} />
         </div>
 
         {/* Purchased Posts Widget */}
         <div className="w-full">
-          <PurchasedPostsWidget
-            posts={mockPurchasedPosts}
-            onViewAll={() => console.log('View all purchased posts')}
-          />
+          <PurchasedPostsWidget posts={mockPurchasedPosts} />
         </div>
       </div>
     </div>
