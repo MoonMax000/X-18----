@@ -1,5 +1,7 @@
 import { FC, useRef } from "react";
+import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
+import { type RootState } from "@/store/store";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
 
@@ -43,6 +45,7 @@ const UserHeader: FC<Props> = ({
 }) => {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const currentUser = useSelector((state: RootState) => state.profile.currentUser);
 
   const handleAvatarClick = () => {
     if (isOwn) {
@@ -70,8 +73,8 @@ const UserHeader: FC<Props> = ({
     }
   };
 
-  // Default data if not provided
-  const data = profileData || {
+  // Use Redux data for own profile, provided data or defaults for others
+  const defaultData = {
     name: "Jane Doe",
     username: "beautydoe",
     bio: "Designing Products that Users Love",
@@ -86,6 +89,22 @@ const UserHeader: FC<Props> = ({
     isPremium: false,
     level: 42,
   };
+
+  const data = profileData || (isOwn ? {
+    name: currentUser.name,
+    username: currentUser.username,
+    bio: currentUser.bio,
+    role: currentUser.role,
+    location: currentUser.location,
+    website: currentUser.website,
+    joined: currentUser.joined,
+    avatar: currentUser.avatar,
+    cover: currentUser.cover,
+    stats: currentUser.stats || defaultData.stats,
+    isVerified: currentUser.isVerified,
+    isPremium: currentUser.isPremium,
+    level: currentUser.level,
+  } : defaultData);
 
   const primaryActionButtonClass =
     "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
