@@ -974,7 +974,7 @@ const streamingSubTabs = [
 ];
 
 const ProfileNew: FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [activeTab, setActiveTab] = useState<Tab>("social");
   const [activeProfileSubTab, setActiveProfileSubTab] =
     useState<ProfileSubTab>("profile");
   const [activeSocialSubTab, setActiveSocialSubTab] =
