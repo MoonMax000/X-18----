@@ -310,4 +310,4 @@ const Monetization: FC = () => {
   );
 };
 
-export default Monetization;
+export default memo(Monetization);
