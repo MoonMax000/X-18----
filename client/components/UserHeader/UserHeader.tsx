@@ -75,6 +75,7 @@ const UserHeader: FC<Props> = ({
     name: "Jane Doe",
     username: "beautydoe",
     bio: "Designing Products that Users Love",
+    role: "Crypto Trader",
     location: "United States",
     website: "https://beautydoe.com",
     joined: "November 2010",
