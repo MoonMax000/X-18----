@@ -9,28 +9,31 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
-import Pricing from "./pages/Pricing";
-import Profile from "./pages/Profile";
-import ProfileNew from "./pages/ProfileNew";
-import Billing from "./pages/Billing";
-import NotFound from "./pages/NotFound";
-import SocialExplore from "./pages/SocialExplore";
-import SocialMessages from "./pages/SocialMessages";
-import SocialNotifications from "./pages/SocialNotifications";
-import SocialPostDetail from "./pages/SocialPostDetail";
-import SocialPostPreview from "./pages/SocialPostPreview";
-import SocialTweetComposer from "./pages/SocialTweetComposer";
-import ProfilePage from "./pages/ProfilePage";
-import OtherProfilePage from "./pages/OtherProfilePage";
-import Updates from "./pages/Updates";
-import Referrals from "./pages/Referrals";
-import FeedTest from "./pages/FeedTest";
-import ProfileConnections from "./pages/ProfileConnections";
-import HomePostDetail from "./pages/HomePostDetail";
 import { ClientLayout } from "./components/ClientLayout/ClientLayout";
+import { lazy, Suspense } from "react";
+
+// Lazy load all pages for better performance and code splitting
+const Index = lazy(() => import("./pages/Index"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ProfileNew = lazy(() => import("./pages/ProfileNew"));
+const Billing = lazy(() => import("./pages/Billing"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const SocialExplore = lazy(() => import("./pages/SocialExplore"));
+const SocialMessages = lazy(() => import("./pages/SocialMessages"));
+const SocialNotifications = lazy(() => import("./pages/SocialNotifications"));
+const SocialPostDetail = lazy(() => import("./pages/SocialPostDetail"));
+const SocialPostPreview = lazy(() => import("./pages/SocialPostPreview"));
+const SocialTweetComposer = lazy(() => import("./pages/SocialTweetComposer"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const OtherProfilePage = lazy(() => import("./pages/OtherProfilePage"));
+const Updates = lazy(() => import("./pages/Updates"));
+const Referrals = lazy(() => import("./pages/Referrals"));
+const FeedTest = lazy(() => import("./pages/FeedTest"));
+const ProfileConnections = lazy(() => import("./pages/ProfileConnections"));
+const HomePostDetail = lazy(() => import("./pages/HomePostDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },

@@ -246,10 +246,14 @@ export const AvatarDropdown: FC = () => {
         </>
       )}
 
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
+      {isLoginModalOpen && (
+        <Suspense fallback={null}>
+          <LoginModal
+            isOpen={isLoginModalOpen}
+            onClose={() => setIsLoginModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };
