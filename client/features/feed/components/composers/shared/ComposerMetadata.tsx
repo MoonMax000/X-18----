@@ -176,7 +176,7 @@ export function ComposerMetadata({
                 <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+            <PopoverContent align="start" className="z-[2100] w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
               <div className="grid gap-0.5 text-xs">
                 {['', '15m', '1h', '4h', '1d', '1w'].map((tf) => (
                   <button
@@ -213,7 +213,7 @@ export function ComposerMetadata({
                 <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+            <PopoverContent align="start" className="z-[2100] w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
               <div className="grid gap-0.5 text-xs">
                 {['', 'Low', 'Medium', 'High'].map((r) => (
                   <button
