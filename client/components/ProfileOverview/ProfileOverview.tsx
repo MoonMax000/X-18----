@@ -94,7 +94,7 @@ const ProfileOverview: FC = () => {
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="Enter first name"
           />
@@ -111,7 +111,7 @@ const ProfileOverview: FC = () => {
             type="text"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="Enter last name"
           />
@@ -131,7 +131,7 @@ const ProfileOverview: FC = () => {
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="Enter display name"
           />
@@ -144,7 +144,7 @@ const ProfileOverview: FC = () => {
           >
             User name
           </label>
-          <div className="flex px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px]">
+          <div className="flex px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)]">
             <input
               type="text"
               value={username}
@@ -182,7 +182,7 @@ const ProfileOverview: FC = () => {
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="Your location"
           />
@@ -199,7 +199,7 @@ const ProfileOverview: FC = () => {
             type="url"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
             placeholder="https://"
           />
@@ -219,7 +219,7 @@ const ProfileOverview: FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className="flex w-full px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
+              className="flex w-full px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
             >
               <span
                 className="text-[15px] font-bold text-white"
@@ -272,7 +272,7 @@ const ProfileOverview: FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsSectorDropdownOpen(!isSectorDropdownOpen)}
-              className="flex w-full px-4 py-3 justify-between items-center rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
+              className="flex w-full px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
             >
               <div className="flex flex-wrap gap-2">
                 {selectedSectors.length === 0 ? (
@@ -369,7 +369,7 @@ const ProfileOverview: FC = () => {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={5}
-          className="flex px-4 py-3 items-start gap-2 rounded-2xl border border-[#181B22] bg-black/50 shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-[15px] text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+          className="flex px-4 py-3 items-start gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
           style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
           placeholder="Tell us about yourself..."
         />
