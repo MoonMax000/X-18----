@@ -116,7 +116,7 @@ const UserHeader: FC<Props> = ({
     <div className={cn("w-full max-w-[720px]", className)}>
       <div className="flex flex-col gap-4">
         {/* Cover/Banner image */}
-        <div className="group relative w-full overflow-hidden rounded-3xl border border-[#16C784] bg-[#16181C]">
+        <div className="group relative w-full overflow-hidden rounded-3xl border border-widget-border bg-[#16181C]">
           <img
             src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
             alt="Profile cover"
@@ -247,7 +247,7 @@ const UserHeader: FC<Props> = ({
               <button
                 type="button"
                 onClick={onEditProfile}
-                className="group relative flex items-center justify-center overflow-hidden rounded-full border border-[#16C784] px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-br from-[#16C784]/20 via-[#16C784]/5 to-transparent backdrop-blur-xl transition-all duration-300 hover:border-[#16C784] hover:from-[#16C784]/30 hover:via-[#16C784]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#16C784]/30 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16C784] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="group relative flex items-center justify-center overflow-hidden rounded-full border border-widget-border px-5 py-2.5 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] backdrop-blur-xl transition-all duration-300 hover:border-white/40 hover:bg-[rgba(35,35,35,0.75)] hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mr-2" aria-hidden="true">
                   <path d="M11.3327 2.00065C11.5078 1.82554 11.716 1.68704 11.9451 1.59329C12.1743 1.49954 12.4198 1.45215 12.6673 1.45215C12.9149 1.45215 13.1604 1.49954 13.3896 1.59329C13.6187 1.68704 13.8269 1.82554 14.002 2.00065C14.1771 2.17576 14.3156 2.38399 14.4093 2.61312C14.5031 2.84225 14.5505 3.08775 14.5505 3.33532C14.5505 3.58288 14.5031 3.82838 14.4093 4.05751C14.3156 4.28664 14.1771 4.49487 14.002 4.66998L5.00065 13.6713L1.33398 14.6673L2.33065 11.0007L11.3327 2.00065Z"

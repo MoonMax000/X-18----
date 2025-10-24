@@ -87,7 +87,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       {/* Level & Progress Section */}
-      <div className="rounded-2xl border border-[#16C784] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+      <div className="rounded-2xl border border-widget-border bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${getLevelColor(gamificationData.level)} text-white font-bold text-sm shadow-lg`}>
@@ -139,14 +139,14 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
                 key={badge.id}
                 className={`group relative rounded-2xl border p-2.5 transition-all duration-200 ${
                   badge.earned
-                    ? "border-[#16C784] bg-[#16C784]/10 hover:bg-[#16C784]/20"
+                    ? "border-primary bg-primary/10 hover:bg-primary/20"
                     : "border-widget-border bg-[#0C1014] opacity-60"
                 }`}
               >
                 <div className="flex items-start gap-2">
                   <div
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                      badge.earned ? "bg-[#16C784]/20 text-[#16C784]" : "bg-widget-bg text-[#8B98A5]"
+                      badge.earned ? "bg-primary/20 text-primary" : "bg-[#1B1F27] text-[#8B98A5]"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
