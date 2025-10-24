@@ -39,7 +39,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   // SignUp states
-  const [signupAuthMethod, setSignupAuthMethod] = useState<'email' | 'phone'>('phone');
+  const [signupAuthMethod, setSignupAuthMethod] = useState<'email' | 'phone'>('email');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -1137,22 +1137,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </h2>
 
               <div className="flex items-center justify-between gap-4">
-                <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20">
-                  <button
-                    onClick={() => {
-                      setSignupAuthMethod('phone');
-                      setSignupPhoneError('');
-                      setSignupEmailError('');
-                    }}
-                    className={cn(
-                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
-                      signupAuthMethod === 'phone'
-                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
-                        : 'text-white hover:text-primary'
-                    )}
-                  >
-                    Phone
-                  </button>
+                <div className="flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20 w-full">
                   <button
                     onClick={() => {
                       setSignupAuthMethod('email');
@@ -1167,6 +1152,21 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     )}
                   >
                     Email
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSignupAuthMethod('phone');
+                      setSignupPhoneError('');
+                      setSignupEmailError('');
+                    }}
+                    className={cn(
+                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                      signupAuthMethod === 'phone'
+                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
+                        : 'text-white hover:text-primary'
+                    )}
+                  >
+                    Phone
                   </button>
                 </div>
               </div>
