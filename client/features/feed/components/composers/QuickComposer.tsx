@@ -367,8 +367,9 @@ export default function QuickComposer({ onExpand }: Props) {
                   </PopoverTrigger>
                   <PopoverContent align="start" className="w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
                     <div className="grid gap-0.5 text-xs">
-                      {['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'].map((category) => {
+                      {Object.keys(categoryConfig).map((category) => {
                         const config = categoryConfig[category as keyof typeof categoryConfig];
+                        if (!config) return null;
                         const Icon = config.icon;
                         return (
                           <button
