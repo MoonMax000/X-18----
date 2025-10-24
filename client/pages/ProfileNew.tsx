@@ -2050,6 +2050,10 @@ const ProfileNew: FC = () => {
         )}
 
         {activeTab === "profile" && activeProfileSubTab === "profile" && (
+          <ProfileOverview />
+        )}
+
+        {false && activeTab === "profile" && activeProfileSubTab === "profile" && (
           <div className="flex flex-col gap-6">
             {/* Profile Form */}
             <div className="flex flex-col gap-6">
