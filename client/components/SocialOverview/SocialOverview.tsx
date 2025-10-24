@@ -293,9 +293,36 @@ const SocialOverview: FC = () => {
   ];
 
   const mockTopPosts = [
-    { title: "Bitcoin достиг нового максимума! Анализ текущей ситуации", likes: 342, comments: 87, views: 5420 },
-    { title: "5 правил успешного трейдинга в 2024 году", likes: 289, comments: 64, views: 4850 },
-    { title: "Ethereum: что ждет нас в ближайшие месяцы?", likes: 215, comments: 52, views: 3920 },
+    {
+      id: "1",
+      title: "Bitcoin достиг нового максимума! Анализ текущей ситуации",
+      likes: 342,
+      comments: 87,
+      views: 5420,
+      date: "15 марта",
+      thumbnail: "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=300&h=200&fit=crop",
+      category: "crypto" as const,
+    },
+    {
+      id: "2",
+      title: "5 правил успешного трейдинга в 2024 году",
+      likes: 289,
+      comments: 64,
+      views: 4850,
+      date: "14 марта",
+      thumbnail: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&h=200&fit=crop",
+      category: "trading" as const,
+    },
+    {
+      id: "3",
+      title: "Ethereum: что ждет нас в ближайшие месяцы?",
+      likes: 215,
+      comments: 52,
+      views: 3920,
+      date: "13 марта",
+      thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=300&h=200&fit=crop",
+      category: "analysis" as const,
+    },
   ];
 
   /* НЕ ДЛЯ MVP - Данные для отключенных виджетов */
@@ -519,7 +546,7 @@ const SocialOverview: FC = () => {
         </SectionCard>
 
         <SectionCard>
-          <h3 className={sectionTitleClass}>Группы, которые вы отслеживаете</h3>
+          <h3 className={sectionTitleClass}>Гру��пы, которые вы отслеживаете</h3>
           <div className="mt-4 flex flex-col gap-3">
             {groupChats.map((chat, index) => (
               <div key={`${chat.name}-${index}`} className={listItemClass}>
