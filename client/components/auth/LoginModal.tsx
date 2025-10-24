@@ -1136,7 +1136,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 Sign Up
               </h2>
 
-              <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20">
+              <div className="inline-flex self-start items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20">
                 <button
                   onClick={() => {
                     setSignupAuthMethod('email');
