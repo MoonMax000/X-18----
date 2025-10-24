@@ -182,28 +182,37 @@ const payload = {
 ### User Experience
 
 1. **Click access type button** in composer toolbar
-   - Shows current access type with icon and color
-   - Chevron icon indicates dropdown
+   - Shows current access type with icon, label, and price (if pay-per-post)
+   - Example: "💵 Paid $9.99"
 
-2. **Dropdown opens** with 5 options
-   - Each option has:
-     - Icon on left
-     - Title and description
-     - Color-coded background when selected
-   
-3. **Select access type**
-   - Dropdown closes
-   - Button updates to show selected type
-   - If "Pay-per-post" selected → price input appears
+2. **Modal opens** (`AccessTypeModal`)
+   - Full-screen overlay with centered card
+   - Title: "Post Access"
+   - Subtitle: "Choose who can see this post"
+
+3. **Select access type** in modal
+   - 5 large, clickable cards
+   - Each card shows:
+     - Icon (12x12px, colored)
+     - Title (bold)
+     - Description
+     - Checkmark when selected
+     - Color-coded border and gradient background
 
 4. **Set price** (pay-per-post only)
-   - Input field appears next to access type button
+   - Price input appears **inside** the pay-per-post card
+   - Inline, no extra UI clutter
    - User can type custom price
    - Default: $5.00
    - Min: $0
    - Step: $0.50
 
-5. **Post**
+5. **Save**
+   - Click "Save" button in modal footer
+   - Modal closes
+   - Button in toolbar updates to show new selection
+
+6. **Post**
    - Payload includes `accessLevel` and optional `price`
 
 ---
