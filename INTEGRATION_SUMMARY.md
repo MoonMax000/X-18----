@@ -97,17 +97,26 @@ GoToSocial **DOES NOT** support these features out of the box. You MUST build a 
    - Subscription checks
    - Preview/teaser for locked content
 
-### ✅ **Easy to Add with Simple GoToSocial Customization**
+### ✅ **Супер Простые Доработки GoToSocial**
 
-These features can be added by extending GoToSocial (no separate backend needed):
+Эти фичи — просто **UI элементы** (дропдауны и инпуты). Никакой сложной логики!
 
-3. **📈 Trading Signals & Market Data** ✅ **1-2 Days Work**
-   - Signal metadata (entry, stop loss, take profit)
-   - Market categorization (crypto, stocks, forex)
-   - Sentiment tracking (bullish/bearish)
-   - Post type taxonomy (signal, news, education, etc.)
-   - **Solution:** Add JSONB column + extend API (~350 lines of Go code)
-   - **See:** `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` for complete implementation
+3. **📋 Post Metadata (Categories, Market, Symbol)** ✅ **4 ЧАСА РАБОТЫ**
+
+   **Что это:**
+   - Дропдауны в форме создания поста: Market (Crypto/Stocks), Category (Signal/News/Education), Timeframe, Risk
+   - Frontend уже готов (см. `ComposerMetadata.tsx`)
+   - Нужно только сохранить JSON в GoToSocial
+
+   **Решение:**
+   - Добавить 1 колонку `custom_metadata JSONB` в таблицу statuses
+   - Принимать JSON в API `/api/v1/statuses`
+   - Возвращать JSON в ответе
+   - **Итого: ~50 строк кода на Go**
+
+   **Время:** ⏱️ 30 ми��ут базовая реализация + 3 часа фильтрация и тесты = **4 часа**
+
+   **См. детали:** `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` (с примерами кода)
 
 ### ⚠️ **Medium-High Priority (More Complex Development)**
 
