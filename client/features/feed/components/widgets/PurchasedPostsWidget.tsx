@@ -110,28 +110,28 @@ export default function PurchasedPostsWidget({
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h4 className="line-clamp-1 text-xs font-bold text-white transition-colors group-hover:text-[#2EBD85]">
+                <h4 className="line-clamp-1 text-sm font-semibold text-white transition-colors group-hover:text-[#2EBD85]">
                   {post.title}
                 </h4>
                 <div className="mt-1 flex items-center gap-1.5">
                   <img
                     src={post.authorAvatar}
                     alt={post.authorName}
-                    className="h-3.5 w-3.5 rounded-full border border-widget-border/60"
+                    className="h-4 w-4 rounded-full border border-widget-border/60"
                   />
-                  <p className="truncate text-[10px] text-[#6C7280]">
+                  <p className="truncate text-xs text-[#6C7280]">
                     {post.authorHandle}
                   </p>
                 </div>
 
                 {/* Stats */}
-                <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[#6C7280]">
+                <div className="mt-1.5 flex items-center gap-2 text-xs text-[#6C7280]">
                   <span>{formatDate(post.purchasedAt)}</span>
                   {post.views !== undefined && (
                     <>
                       <span>•</span>
-                      <div className="flex items-center gap-0.5">
-                        <Eye className="h-2.5 w-2.5" />
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
                         <span>{post.views}</span>
                       </div>
                     </>
@@ -141,8 +141,8 @@ export default function PurchasedPostsWidget({
 
               {/* Price Badge */}
               <div className="flex items-center gap-1 rounded-lg border border-[#2EBD85]/30 bg-[#2EBD85]/10 px-2 py-1">
-                <DollarSign className="h-3 w-3 text-[#2EBD85]" />
-                <span className="text-xs font-bold text-[#2EBD85]">{post.price}</span>
+                <DollarSign className="h-3.5 w-3.5 text-[#2EBD85]" />
+                <span className="text-sm font-bold text-[#2EBD85]">{post.price}</span>
               </div>
             </div>
           </div>

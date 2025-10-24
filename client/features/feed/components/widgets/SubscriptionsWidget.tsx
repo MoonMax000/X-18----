@@ -99,12 +99,12 @@ export default function SubscriptionsWidget({
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <h4 className="truncate text-xs font-bold text-white">{sub.authorName}</h4>
+                <h4 className="truncate font-semibold text-white">{sub.authorName}</h4>
                 {sub.newPostsThisWeek > 0 && (
-                  <Sparkles className="h-3 w-3 text-[#2EBD85]" />
+                  <Sparkles className="h-3.5 w-3.5 text-[#2EBD85]" />
                 )}
               </div>
-              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-[#6C7280]">
+              <div className="mt-0.5 flex items-center gap-2 text-xs text-[#6C7280]">
                 <span className="truncate">{sub.authorHandle}</span>
                 <span>•</span>
                 <span>{sub.totalPosts} posts</span>
@@ -113,8 +113,8 @@ export default function SubscriptionsWidget({
 
             {/* Price */}
             <div className="flex flex-col items-end gap-0.5">
-              <span className="text-xs font-bold text-[#A06AFF]">${sub.price}</span>
-              <span className="text-[10px] text-[#6C7280]">/month</span>
+              <span className="text-sm font-bold text-[#A06AFF]">${sub.price}</span>
+              <span className="text-xs text-[#6C7280]">/mo</span>
             </div>
           </div>
         ))}
