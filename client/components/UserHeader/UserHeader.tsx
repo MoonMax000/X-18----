@@ -269,7 +269,7 @@ const UserHeader: FC<Props> = ({
         </div>
 
         {/* User info section */}
-        <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-12 sm:pt-16 md:pt-20">
+        <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-3 sm:pt-4">
           {/* Name and username */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
