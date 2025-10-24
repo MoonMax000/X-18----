@@ -227,4 +227,4 @@ const Subscriptions: FC = () => {
   );
 };
 
-export default Subscriptions;
+export default memo(Subscriptions);

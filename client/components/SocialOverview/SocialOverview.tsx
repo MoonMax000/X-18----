@@ -567,4 +567,4 @@ const SocialOverview: FC = () => {
   );
 };
 
-export default SocialOverview;
+export default memo(SocialOverview);

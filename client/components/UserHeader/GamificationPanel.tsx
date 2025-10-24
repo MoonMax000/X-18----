@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import { Trophy, Target, Flame, Star, TrendingUp, TrendingDown, Crown, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -203,4 +203,4 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
   );
 };
 
-export default GamificationPanel;
+export default memo(GamificationPanel);

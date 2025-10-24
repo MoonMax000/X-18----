@@ -1,4 +1,4 @@
-import { FC, useRef } from "react";
+import { FC, useRef, memo } from "react";
 import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
 import { type RootState } from "@/store/store";
@@ -390,4 +390,4 @@ const UserHeader: FC<Props> = ({
   );
 };
 
-export default UserHeader;
+export default memo(UserHeader);

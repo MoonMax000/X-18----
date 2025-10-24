@@ -419,4 +419,4 @@ const MyPosts: FC = () => {
   );
 };
 
-export default MyPosts;
+export default memo(MyPosts);
