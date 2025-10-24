@@ -434,11 +434,13 @@ Frontend уже готов (`ComposerMetadata.tsx`):
 9. **Hover Cards** - Smoother UX
 
 ### **Phase 4 - Low Priority (Nice-to-Have)**
-10. **Trading Signals Metadata** - ✅ Simple GoToSocial customization (1-2 days, see GOTOSOCIAL_CUSTOMIZATION_GUIDE.md)
+10. **Post Metadata** - ✅ Супер просто! 4 часа работы, 50 строк кода (см. GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md)
 11. **Drafts System** - Quality of life improvement
 12. **Poll Enhancements** - Community features
 13. **Code Snippets** - Already works via Markdown
 14. **Reply Settings** - Basic functionality exists
+
+**Примечание:** Метаданные постов (пункт 10) настолько просты, что можно сделать в первый же день интеграции!
 
 ---
 
