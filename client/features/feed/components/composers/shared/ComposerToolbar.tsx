@@ -1,7 +1,6 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DollarSign, Users, UserCheck, Lock, Sparkles, ChevronDown } from "lucide-react";
+import { DollarSign, Users, UserCheck, Lock, Sparkles } from "lucide-react";
 
 export interface ComposerToolbarProps {
   onMediaClick: () => void;
@@ -14,58 +13,47 @@ export interface ComposerToolbarProps {
   sentiment: "bullish" | "bearish" | null;
   onSentimentChange: (sentiment: "bullish" | "bearish" | null) => void;
   accessType: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium";
-  onAccessTypeChange: (accessType: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium") => void;
+  onAccessTypeClick: () => void;
   postPrice: number;
-  onPostPriceChange: (price: number) => void;
 }
 
-const accessOptions = [
-  {
-    id: "free" as const,
-    label: "Free",
-    description: "Anyone can see this post",
+const accessTypeConfig = {
+  "free": {
     icon: Sparkles,
+    label: "Free",
     color: "#6CA8FF",
     bg: "bg-[#14243A]",
     border: "border-[#3B82F6]/40",
   },
-  {
-    id: "pay-per-post" as const,
-    label: "Pay-per-post",
-    description: "Users pay once to unlock",
+  "pay-per-post": {
     icon: DollarSign,
+    label: "Paid",
     color: "#A06AFF",
     bg: "bg-[#2A1C3F]",
     border: "border-[#A06AFF]/50",
   },
-  {
-    id: "subscribers-only" as const,
-    label: "Subscribers Only",
-    description: "Only your subscribers can see",
+  "subscribers-only": {
     icon: Users,
+    label: "Subscribers",
     color: "#2EBD85",
     bg: "bg-[#1A3A30]",
     border: "border-[#2EBD85]/40",
   },
-  {
-    id: "followers-only" as const,
-    label: "Followers Only",
-    description: "Only your followers can see",
+  "followers-only": {
     icon: UserCheck,
+    label: "Followers",
     color: "#FFD166",
     bg: "bg-[#3A3420]",
     border: "border-[#FFD166]/40",
   },
-  {
-    id: "premium" as const,
-    label: "Premium",
-    description: "Premium tier subscribers only",
+  "premium": {
     icon: Lock,
+    label: "Premium",
     color: "#FF6B6B",
     bg: "bg-[#3A2020]",
     border: "border-[#FF6B6B]/40",
   },
-];
+};
 
 export function ComposerToolbar({
   onMediaClick,
@@ -78,23 +66,12 @@ export function ComposerToolbar({
   sentiment,
   onSentimentChange,
   accessType,
-  onAccessTypeChange,
+  onAccessTypeClick,
   postPrice,
-  onPostPriceChange,
 }: ComposerToolbarProps) {
-  const [isAccessMenuOpen, setIsAccessMenuOpen] = useState(false);
-  const priceInputRef = useRef<HTMLInputElement>(null);
-
-  const currentAccess = accessOptions.find(opt => opt.id === accessType) || accessOptions[0];
-  const CurrentIcon = currentAccess.icon;
+  const currentConfig = accessTypeConfig[accessType];
+  const CurrentIcon = currentConfig.icon;
   const isPaid = accessType !== "free";
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      onPostPriceChange(value);
-    }
-  };
 
   return (
     <div className="flex items-center gap-2">
@@ -218,85 +195,28 @@ export function ComposerToolbar({
         </button>
       </div>
 
-      {/* Access Type Dropdown */}
-      <div className="ml-2 inline-flex items-center gap-2">
-        <Popover open={isAccessMenuOpen} onOpenChange={setIsAccessMenuOpen}>
-          <PopoverTrigger asChild>
-            <button 
-              type="button" 
-              className={cn(
-                "flex h-6 items-center gap-1 rounded-full px-2 transition-all border", 
-                isPaid 
-                  ? `bg-gradient-to-l ${currentAccess.bg}` 
-                  : `bg-transparent ${currentAccess.border}`
-              )}
-            >
-              <CurrentIcon className="h-3.5 w-3.5" style={{ color: isPaid ? "white" : currentAccess.color }} />
-              <span className={cn("text-xs font-bold", isPaid ? "text-white" : "")} style={{ color: !isPaid ? currentAccess.color : undefined }}>
-                {currentAccess.label}
-              </span>
-              <ChevronDown className={cn("h-3 w-3 transition-transform", isAccessMenuOpen && "rotate-180")} style={{ color: isPaid ? "white" : currentAccess.color }} />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="z-[2100] w-72 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-2 text-white shadow-xl backdrop-blur-xl">
-            <div className="mb-2 px-2 py-1">
-              <h3 className="text-xs font-semibold text-white">Post Access</h3>
-              <p className="text-[10px] text-[#808283]">Choose who can see this post</p>
-            </div>
-            <div className="grid gap-1 text-xs">
-              {accessOptions.map((opt) => {
-                const Icon = opt.icon;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => {
-                      onAccessTypeChange(opt.id);
-                      setIsAccessMenuOpen(false);
-                    }}
-                    className={cn(
-                      "flex items-start gap-2.5 rounded-lg p-2 text-left transition-colors",
-                      accessType === opt.id
-                        ? `${opt.bg} ${opt.border} border`
-                        : "hover:bg-white/5"
-                    )}
-                  >
-                    <div className={cn(
-                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                      accessType === opt.id ? opt.bg : "bg-[#2F3336]"
-                    )}>
-                      <Icon className="h-4 w-4" style={{ color: opt.color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold" style={{ color: accessType === opt.id ? opt.color : "#FFFFFF" }}>
-                        {opt.label}
-                      </div>
-                      <div className="text-[10px] text-[#808283] mt-0.5">{opt.description}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Price Input (only for pay-per-post) */}
-        {accessType === "pay-per-post" && (
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-[#808283]">$</span>
-            <input
-              ref={priceInputRef}
-              type="number"
-              min="0"
-              step="0.5"
-              value={postPrice}
-              onChange={handlePriceChange}
-              className="w-16 rounded-lg border border-[#1B1F27] bg-[#000000] px-2 py-1 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
-              placeholder="5.00"
-            />
-          </div>
+      {/* Access Type Button - Opens Modal */}
+      <button 
+        type="button" 
+        onClick={onAccessTypeClick}
+        className={cn(
+          "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all border", 
+          isPaid 
+            ? `bg-gradient-to-l ${currentConfig.bg}` 
+            : `bg-transparent ${currentConfig.border}`
         )}
-      </div>
+        title="Set post access type"
+      >
+        <CurrentIcon className="h-3.5 w-3.5" style={{ color: isPaid ? "white" : currentConfig.color }} />
+        <span className={cn("text-xs font-bold", isPaid ? "text-white" : "")} style={{ color: !isPaid ? currentConfig.color : undefined }}>
+          {currentConfig.label}
+        </span>
+        {accessType === "pay-per-post" && (
+          <span className={cn("text-xs font-bold ml-0.5", isPaid ? "text-white" : "")} style={{ color: !isPaid ? currentConfig.color : undefined }}>
+            ${postPrice.toFixed(2)}
+          </span>
+        )}
+      </button>
     </div>
   );
 }
