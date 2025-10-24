@@ -20,7 +20,7 @@
 - Один источник истины для UI
 - Легко обновлять и тестировать
 
-### 2. Упрощение логики (useSimpleComposer) ✅
+### 2. Упрощение логики (useSimpleComposer) ��
 
 **Файл**: `client/components/CreatePostBox/useSimpleComposer.ts`
 
@@ -235,7 +235,7 @@ Your post will not be saved.
    - Метрики успешности постов
    - A/B тестирование UI
 
-## ✅ Чеклист перед развертыванием
+## ✅ Чеклист перед развертывани��м
 
 - [x] Создать shared компоненты
 - [x] Создать useSimpleComposer
@@ -256,6 +256,100 @@ Your post will not be saved.
 - [ ] Развернуть на staging
 - [ ] Развернуть на production
 
+## 🔍 Post Creation Logic Review (Latest Update)
+
+### Проблемы найдены и исправлены
+
+#### 🔴 Критические проблемы (ИСПРАВЛЕНЫ)
+
+1. **`isPaid` state не был в `useSimpleComposer`** ✅ ИСПРАВЛЕНО
+   - Было: Управлялся локально в каждом композере
+   - Стало: Централизованно в `useSimpleComposer`
+
+2. **Metadata fields не были в `useSimpleComposer`** ✅ ИСПРАВЛЕНО
+   - Было: Локальные states в композерах
+   - Стало: Все в `useSimpleComposer` (market, category, symbol, timeframe, risk)
+
+3. **Нет маппинга `isPaid` → `accessLevel`** ✅ ИСПРАВЛЕНО
+   - Было: `isPaid: boolean` без конвертации
+   - Стало: `isPaid ? "paid" : "public"` → `accessLevel`
+
+4. **Отсутствует поле `price` для paid постов** ✅ ИСПРАВЛЕНО
+   - Добавлено: `...(isPaid && { price: 5.0 })`
+
+### Обновленный `useSimpleComposer`
+
+```typescript
+// Новые states
+const [isPaid, setIsPaid] = useState<boolean>(false);
+const [postMarket, setPostMarket] = useState<string>('Crypto');
+const [postCategory, setPostCategory] = useState<string>('General');
+const [postSymbol, setPostSymbol] = useState<string>('');
+const [postTimeframe, setPostTimeframe] = useState<string>('');
+const [postRisk, setPostRisk] = useState<string>('');
+
+// Возвращает
+return {
+  // ... existing
+  isPaid,
+  postMarket,
+  postCategory,
+  postSymbol,
+  postTimeframe,
+  postRisk,
+  setIsPaid,
+  setPostMarket,
+  setPostCategory,
+  setPostSymbol,
+  setPostTimeframe,
+  setPostRisk,
+};
+```
+
+### Payload Structure (обновленный)
+
+```typescript
+const payload = {
+  text,
+  media: [...],
+  codeBlocks: [...],
+  replySetting,
+  sentiment,
+  metadata: {
+    market: postMarket,
+    category: postCategory,
+    symbol: postSymbol,
+    timeframe: postTimeframe,
+    risk: postRisk,
+  },
+  accessLevel: isPaid ? "paid" : "public", // ← Маппинг
+  isPaid,                                    // ← Для reference
+  ...(isPaid && { price: 5.0 }),            // ← Price для paid
+};
+```
+
+### Проверка всех полей ✅
+
+- ✅ `text` - управляется `useSimpleComposer`
+- ✅ `media` - управляется `useSimpleComposer`
+- ✅ `codeBlocks` - управляется `useSimpleComposer`
+- ✅ `sentiment` - управляется `useSimpleComposer`
+- ✅ `replySetting` - управляется `useSimpleComposer`
+- ✅ `isPaid` - **ИСПРАВЛЕНО** - теперь в `useSimpleComposer`
+- ✅ `postMarket` - **ИСПРАВЛЕНО** - теперь в `useSimpleComposer`
+- ✅ `postCategory` - **ИСПРАВЛЕНО** - теперь в `useSimpleComposer`
+- ✅ `postSymbol` - **ИСПРАВЛЕНО** - теперь в `useSimpleComposer`
+- ✅ `postTimeframe` - **ИСПРАВЛЕНО** - теперь в `useSimpleComposer`
+- ✅ `postRisk` - **ИСПРАВЛЕНО** - теперь в `useSimpleComposer`
+- ✅ `accessLevel` - **ДОБАВЛЕНО** - маппинг из `isPaid`
+- ✅ `price` - **ДОБАВЛЕНО** - для paid постов
+
+### Документация
+
+- `ARCHITECTURE.md` - Архитектурные решения
+- `POST_CREATION_LOGIC_REVIEW.md` - **НОВЫЙ** - Полный обзор логики создания постов
+- Этот файл - Резюме изменений
+
 ## 🐛 Известные проблемы
 
 Нет известных проблем на момент завершения рефакторинга.
@@ -264,8 +358,9 @@ Your post will not be saved.
 
 Если возникнут вопросы или проблемы:
 1. Проверьте ARCHITECTURE.md
-2. Проверьте резервные копии
-3. Откатите изменения если нужно
+2. Проверьте POST_CREATION_LOGIC_REVIEW.md
+3. Проверьте резервные копии
+4. Откатите изменения если нужно
 
 ## 🎉 Результат
 
@@ -275,5 +370,8 @@ Your post will not be saved.
 ✅ **Правильный рефакторинг** - инкрементальные ��зменения, резервные копии
 ✅ **Функционал не сокращен** - все фичи сохранены, добавлены новые
 ✅ **MediaEditor работает** - интеграция с существующим функционалом
+✅ **Все поля учтены** - isPaid, metadata, accessLevel, price - все на месте
+✅ **Централизованный state** - весь state в useSimpleComposer
+✅ **Правильный маппинг** - isPaid → accessLevel корректно реализован
 
 **Готово к тестированию и развертыванию!** 🚀
