@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { CARD_VARIANTS } from "@/features/feed/styles";
 import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";
 import PurchasedPostsWidget from "@/features/feed/components/widgets/PurchasedPostsWidget";
+import { Eye, Heart, MessageCircle } from "lucide-react";
 
 const sectionCardClass = cn(
   CARD_VARIANTS.widget.default,
@@ -295,7 +296,7 @@ const SocialOverview: FC = () => {
   const mockTopPosts = [
     {
       id: "1",
-      title: "Bitcoin достиг нового максимума! Анализ текущей ситуации",
+      title: "Bitcoin достиг новог�� максимума! Анализ текущей ситуации",
       likes: 342,
       comments: 87,
       views: 5420,
