@@ -7,6 +7,7 @@ interface ProfileData {
   name: string;
   username: string;
   bio?: string;
+  role?: string;
   location?: string;
   website?: string;
   joined: string;
