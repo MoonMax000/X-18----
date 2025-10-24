@@ -12,7 +12,6 @@ import Monetization from "@/components/Monetization/Monetization";
 import { cn } from "@/lib/utils";
 
 type Tab =
-  | "dashboard"
   | "profile"
   | "marketplace"
   | "streaming"
