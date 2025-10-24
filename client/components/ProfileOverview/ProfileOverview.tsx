@@ -1,5 +1,8 @@
 import { FC, useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
+import { updateProfile } from "@/store/profileSlice";
+import type { RootState } from "@/store/store";
 
 const SECTORS = [
   { id: "stock", label: "Stock Market" },
@@ -22,22 +25,51 @@ const ROLES = [
 ];
 
 const ProfileOverview: FC = () => {
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state: RootState) => state.profile.currentUser);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
-  const [location, setLocation] = useState("");
-  const [website, setWebsite] = useState("");
-  const [role, setRole] = useState("");
+  const [displayName, setDisplayName] = useState(currentUser.name);
+  const [username, setUsername] = useState(currentUser.username);
+  const [location, setLocation] = useState(currentUser.location || "");
+  const [website, setWebsite] = useState(currentUser.website || "");
+  const [role, setRole] = useState(currentUser.role || "");
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState(currentUser.bio);
   
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
   const [usernameVerified] = useState(true);
+
+  // Sync with Redux store when currentUser changes
+  useEffect(() => {
+    setDisplayName(currentUser.name);
+    setUsername(currentUser.username);
+    setBio(currentUser.bio);
+    setLocation(currentUser.location || "");
+    setWebsite(currentUser.website || "");
+    if (currentUser.role) setRole(currentUser.role);
+  }, [currentUser]);
+
+  // Auto-save to Redux (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(updateProfile({
+        name: displayName,
+        username,
+        bio,
+        role,
+        location: location || undefined,
+        website: website || undefined,
+      }));
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [displayName, username, bio, role, location, website, dispatch]);
 
   const handleReset = () => {
     setFirstName("");
