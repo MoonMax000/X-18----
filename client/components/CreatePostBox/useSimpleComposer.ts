@@ -39,7 +39,10 @@ export const useSimpleComposer = (
   const [codeBlocks, setCodeBlocks] = useState<Array<{ id: string; code: string; language: string }>>([]);
   const [replySetting, setReplySetting] = useState<ReplyPolicy>(DEFAULT_REPLY_POLICY);
   const [sentiment, setSentiment] = useState<ComposerSentiment>(DEFAULT_SENTIMENT);
-  const [isPaid, setIsPaid] = useState<boolean>(false);
+
+  // Monetization settings
+  const [accessType, setAccessType] = useState<"free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium">("free");
+  const [postPrice, setPostPrice] = useState<number>(5.0);
 
   // Post metadata for filtering and categorization
   const [postMarket, setPostMarket] = useState<string>('Crypto');
@@ -82,7 +85,8 @@ export const useSimpleComposer = (
       initialCodeBlocks?: Array<{ id: string; code: string; language: string }>,
       initialReplySetting?: ReplyPolicy,
       initialSentiment?: ComposerSentiment,
-      initialIsPaid?: boolean,
+      initialAccessType?: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium",
+      initialPostPrice?: number,
       initialMetadata?: {
         market?: string;
         category?: string;
@@ -98,7 +102,8 @@ export const useSimpleComposer = (
       setCodeBlocks(initialCodeBlocks || []);
       setReplySetting(initialReplySetting ?? DEFAULT_REPLY_POLICY);
       setSentiment(initialSentiment ?? DEFAULT_SENTIMENT);
-      setIsPaid(initialIsPaid ?? false);
+      setAccessType(initialAccessType ?? "free");
+      setPostPrice(initialPostPrice ?? 5.0);
       
       // Initialize metadata
       setPostMarket(initialMetadata?.market ?? 'Crypto');
@@ -217,7 +222,8 @@ export const useSimpleComposer = (
     codeBlocks,
     replySetting,
     sentiment,
-    isPaid,
+    accessType,
+    postPrice,
     postMarket,
     postCategory,
     postSymbol,
@@ -235,7 +241,8 @@ export const useSimpleComposer = (
     reorderMedia,
     setReplySetting,
     setSentiment,
-    setIsPaid,
+    setAccessType,
+    setPostPrice,
     setPostMarket,
     setPostCategory,
     setPostSymbol,
