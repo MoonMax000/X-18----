@@ -1,5 +1,13 @@
 # Complete Integration Summary
 
+## 🚀 Quick Start
+
+**Новичок?** Начните с **`GOTOSOCIAL_QUICKSTART.md`** - там план на 1 неделю!
+
+**Опытный разработчик?** Читайте дальше ⬇️
+
+---
+
 ## ✅ What Has Been Done
 
 Your frontend is now **fully prepared** for GoToSocial integration. Here's what was completed:
