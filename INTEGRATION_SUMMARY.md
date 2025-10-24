@@ -97,6 +97,20 @@ GoToSocial **DOES NOT** support these features out of the box. You MUST build a 
    - Subscription checks
    - Preview/teaser for locked content
 
+### ✅ **Easy to Add with Simple GoToSocial Customization**
+
+These features can be added by extending GoToSocial (no separate backend needed):
+
+3. **📈 Trading Signals & Market Data** ✅ **1-2 Days Work**
+   - Signal metadata (entry, stop loss, take profit)
+   - Market categorization (crypto, stocks, forex)
+   - Sentiment tracking (bullish/bearish)
+   - Post type taxonomy (signal, news, education, etc.)
+   - **Solution:** Add JSONB column + extend API (~350 lines of Go code)
+   - **See:** `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` for complete implementation
+
+### ⚠️ **Medium-High Priority (More Complex Development)**
+
 4. **📡 Discovery & Trending** (High Priority)
    - Trending hashtags
    - Trending posts
