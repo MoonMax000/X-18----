@@ -1128,8 +1128,8 @@ const ProfileNew: FC = () => {
           </div>
         )}
 
-        {/* Marketplace Sub-Navigation */}
-        {activeTab === "marketplace" && (
+        {/* MARKETPLACE SUB-NAVIGATION - DISABLED */}
+        {/* {activeTab === "marketplace" && (
           <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
             {marketplaceSubTabs.map((subTab) => (
               <button
