@@ -607,23 +607,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 Sign In
               </h2>
 
-              <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
-                <button
-                  onClick={() => {
-                    setAuthMethod('phone');
-                    setPhoneError('');
-                    setEmailError('');
-                    setAuthError('');
-                  }}
-                  className={cn(
-                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
-                    authMethod === 'phone'
-                      ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
-                      : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
-                  )}
-                >
-                  Phone
-                </button>
+              <div className="flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] w-full">
                 <button
                   onClick={() => {
                     setAuthMethod('email');
@@ -639,6 +623,22 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                   )}
                 >
                   Email
+                </button>
+                <button
+                  onClick={() => {
+                    setAuthMethod('phone');
+                    setPhoneError('');
+                    setEmailError('');
+                    setAuthError('');
+                  }}
+                  className={cn(
+                    'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                    authMethod === 'phone'
+                      ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-[58.333px]'
+                      : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[58.333px]'
+                  )}
+                >
+                  Phone
                 </button>
               </div>
 
