@@ -1,4 +1,4 @@
-import { type FC, type ReactNode } from "react";
+import { type FC, type ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
 import { CARD_VARIANTS } from "@/features/feed/styles";
 import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";
@@ -298,6 +298,8 @@ const SocialOverview: FC = () => {
     { title: "Ethereum: что ждет нас в ближайшие месяцы?", likes: 215, comments: 52, views: 3920 },
   ];
 
+  /* НЕ ДЛЯ MVP - Данные для отключенных виджетов */
+  /*
   const socialUpdates = [
     {
       avatar: "https://api.builder.io/api/v1/image/assets/TEMP/7746a2e8ebde2c6e52ec623079f09df3e63924fe?width=88",
@@ -346,6 +348,7 @@ const SocialOverview: FC = () => {
       subscribers: "72 подписчика",
     },
   ];
+  */
 
   const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
 
@@ -382,7 +385,7 @@ const SocialOverview: FC = () => {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
         <StatCard label="Посты за месяц" value={mockStats.posts} change={mockStats.postsChange} isPositive />
         <StatCard label="Лайки" value={mockStats.likes} change={mockStats.likesChange} isPositive />
-        <StatCard label="Ком��ентарии" value={mockStats.comments} change={mockStats.commentsChange} isPositive />
+        <StatCard label="Комментарии" value={mockStats.comments} change={mockStats.commentsChange} isPositive />
         <StatCard label="Подписчики" value={mockStats.followers} change={mockStats.followersChange} isPositive />
       </div>
 
@@ -481,6 +484,12 @@ const SocialOverview: FC = () => {
         </div>
       </SectionCard>
 
+      {/* ============================================
+          НЕ ДЛЯ MVP ВЕРСИИ
+          Следующие виджеты отключены для MVP:
+          - Социальные уведомления
+          - Группы, которые вы отслеживаете
+          ============================================
       <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
         <SectionCard>
           <div className="flex items-center justify-between">
@@ -510,7 +519,7 @@ const SocialOverview: FC = () => {
         </SectionCard>
 
         <SectionCard>
-          <h3 className={sectionTitleClass}>Гр��ппы, которые вы отслеживаете</h3>
+          <h3 className={sectionTitleClass}>Группы, которые вы отслеживаете</h3>
           <div className="mt-4 flex flex-col gap-3">
             {groupChats.map((chat, index) => (
               <div key={`${chat.name}-${index}`} className={listItemClass}>
@@ -530,6 +539,7 @@ const SocialOverview: FC = () => {
           </button>
         </SectionCard>
       </div>
+      ============================================ */}
 
       <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
         <div className="h-full">
