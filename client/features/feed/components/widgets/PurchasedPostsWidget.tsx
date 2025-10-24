@@ -1,5 +1,5 @@
 import React from "react";
-import { ShoppingBag, Lock, Calendar, Eye } from "lucide-react";
+import { ShoppingBag, Lock, Calendar, Eye, CheckCircle2, DollarSign } from "lucide-react";
 import WidgetCard, { WidgetHeader, WidgetShowMore } from "./WidgetCard";
 
 interface PurchasedPost {
@@ -41,16 +41,21 @@ export default function PurchasedPostsWidget({
   if (posts.length === 0) {
     return (
       <WidgetCard>
-        <WidgetHeader title="🔐 Purchased Posts" />
-        <div className="mt-4 text-center">
-          <div className="flex flex-col items-center gap-3 py-6">
-            <div className="rounded-full bg-white/5 p-4">
-              <ShoppingBag className="h-8 w-8 text-gray-400" />
+        <div className="flex items-center gap-2 mb-4">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#2EBD85] to-[#1A6A4A]">
+            <Lock className="h-4 w-4 text-white" />
+          </div>
+          <h3 className="text-sm font-bold text-white">Purchased Posts</h3>
+        </div>
+        <div className="text-center">
+          <div className="flex flex-col items-center gap-3 py-8">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2EBD85]/10 to-[#1A6A4A]/5">
+              <ShoppingBag className="h-8 w-8 text-[#2EBD85]" />
             </div>
             <div>
               <p className="text-sm font-semibold text-white">No purchases yet</p>
-              <p className="mt-1 text-xs text-gray-400">
-                Unlock premium posts from your favorite authors
+              <p className="mt-1 text-xs text-[#6C7280]">
+                Unlock premium posts from authors
               </p>
             </div>
           </div>
@@ -61,64 +66,83 @@ export default function PurchasedPostsWidget({
 
   return (
     <WidgetCard>
-      <WidgetHeader 
-        title={`🔐 Purchased Posts (${posts.length})`}
-        subtitle={`Total spent: $${totalSpent}`}
-      />
-      <div className="mt-4 space-y-3">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#2EBD85] to-[#1A6A4A]">
+            <Lock className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white">Purchased Posts</h3>
+            <p className="text-xs text-[#6C7280]">{posts.length} unlocked</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border border-[#2EBD85]/30 bg-[#2EBD85]/10 px-2 py-1">
+          <DollarSign className="h-3 w-3 text-[#2EBD85]" />
+          <span className="text-xs font-bold text-[#2EBD85]">{totalSpent}</span>
+        </div>
+      </div>
+      <div className="space-y-2">
         {posts.slice(0, 3).map((post) => (
           <div
             key={post.postId}
-            className="group cursor-pointer rounded-lg border border-widget-border bg-gradient-to-br from-white/[0.02] to-transparent p-3 transition-all hover:border-green-500/30 hover:bg-white/5"
+            className="group relative cursor-pointer rounded-xl border border-widget-border/80 bg-[#0C101480] p-3 backdrop-blur-xl transition-all hover:border-[#2EBD85]/50 hover:bg-[#2EBD85]/5"
           >
             <div className="flex items-start gap-3">
               {/* Thumbnail or Icon */}
               <div className="relative flex-shrink-0">
                 {post.thumbnail ? (
-                  <img
-                    src={post.thumbnail}
-                    alt={post.title}
-                    className="h-12 w-12 rounded-lg object-cover"
-                  />
+                  <div className="relative h-10 w-10 overflow-hidden rounded-lg">
+                    <img
+                      src={post.thumbnail}
+                      alt={post.title}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                      <CheckCircle2 className="h-4 w-4 text-[#2EBD85]" />
+                    </div>
+                  </div>
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10">
-                    <Lock className="h-5 w-5 text-green-400" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#2EBD85]/30 bg-gradient-to-br from-[#2EBD85]/10 to-transparent">
+                    <Lock className="h-4 w-4 text-[#2EBD85]" />
                   </div>
                 )}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h4 className="line-clamp-2 text-sm font-semibold text-white group-hover:text-green-400 transition-colors">
+                <h4 className="line-clamp-1 text-xs font-bold text-white transition-colors group-hover:text-[#2EBD85]">
                   {post.title}
                 </h4>
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-1 flex items-center gap-1.5">
                   <img
                     src={post.authorAvatar}
                     alt={post.authorName}
-                    className="h-4 w-4 rounded-full"
+                    className="h-3.5 w-3.5 rounded-full border border-widget-border/60"
                   />
-                  <p className="truncate text-xs text-gray-400">
+                  <p className="truncate text-[10px] text-[#6C7280]">
                     {post.authorHandle}
                   </p>
                 </div>
-                
+
                 {/* Stats */}
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(post.purchasedAt)}</span>
-                  </div>
+                <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[#6C7280]">
+                  <span>{formatDate(post.purchasedAt)}</span>
                   {post.views !== undefined && (
-                    <div className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      <span>{post.views}</span>
-                    </div>
+                    <>
+                      <span>•</span>
+                      <div className="flex items-center gap-0.5">
+                        <Eye className="h-2.5 w-2.5" />
+                        <span>{post.views}</span>
+                      </div>
+                    </>
                   )}
-                  <div className="ml-auto font-semibold text-green-400">
-                    ${post.price}
-                  </div>
                 </div>
+              </div>
+
+              {/* Price Badge */}
+              <div className="flex items-center gap-1 rounded-lg border border-[#2EBD85]/30 bg-[#2EBD85]/10 px-2 py-1">
+                <DollarSign className="h-3 w-3 text-[#2EBD85]" />
+                <span className="text-xs font-bold text-[#2EBD85]">{post.price}</span>
               </div>
             </div>
           </div>
