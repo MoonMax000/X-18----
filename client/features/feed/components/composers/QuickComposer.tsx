@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Code, X, ChevronDown, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, TrendingUp } from "lucide-react";
+import { Code, X, ChevronDown, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, TrendingUp, MessageCircle } from "lucide-react";
 import { EmojiPicker } from "@/components/CreatePostBox/EmojiPicker";
 import { CodeBlockModal } from "@/components/CreatePostBox/CodeBlockModal";
 import { MediaEditor } from "@/components/CreatePostBox/MediaEditor";
@@ -30,21 +30,21 @@ export default function QuickComposer({ onExpand }: Props) {
 
   // Post metadata for filtering
   const [postMarket, setPostMarket] = useState<string>('Crypto');
-  const [postCategory, setPostCategory] = useState<string>('Analysis');
+  const [postCategory, setPostCategory] = useState<string>('General');
   const [postSymbol, setPostSymbol] = useState<string>('');
   const [postTimeframe, setPostTimeframe] = useState<string>('');
   const [postRisk, setPostRisk] = useState<string>('');
 
-  // Category configuration with icons and colors
+  // Category configuration with icons and colors (aligned with feed tabs)
   const categoryConfig = {
+    'Signal': { icon: TrendingUp, color: '#2EBD85', bg: 'bg-[#2EBD85]/15' },
     'News': { icon: Newspaper, color: '#4D7CFF', bg: 'bg-[#4D7CFF]/15' },
     'Education': { icon: GraduationCap, color: '#F78DA7', bg: 'bg-[#F78DA7]/15' },
     'Analysis': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
     'Macro': { icon: Brain, color: '#FFD166', bg: 'bg-[#FFD166]/15' },
-    'On-chain': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
     'Code': { icon: Code2, color: '#64B5F6', bg: 'bg-[#64B5F6]/15' },
     'Video': { icon: Video, color: '#FF8A65', bg: 'bg-[#FF8A65]/20' },
-    'Signal': { icon: TrendingUp, color: '#2EBD85', bg: 'bg-[#2EBD85]/15' },
+    'General': { icon: MessageCircle, color: '#9CA3AF', bg: 'bg-[#9CA3AF]/15' },
   };
 
   const replyButtonRef = useRef<HTMLButtonElement>(null);
