@@ -222,9 +222,9 @@ const MyPosts: FC = () => {
                 className="group flex items-center gap-4 bg-black px-6 py-4 transition-colors hover:bg-white/[0.02]"
               >
                 {post.thumbnail && (
-                  <img src={post.thumbnail} alt="" className="h-14 w-20 flex-shrink-0 rounded-lg border border-[#181B22] object-cover" />
+                  <img src={post.thumbnail} alt="" className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] object-cover" />
                 )}
-                {!post.thumbnail && <div className="h-14 w-20 flex-shrink-0 rounded-lg border border-[#181B22] bg-[#0A0D12]" />}
+                {!post.thumbnail && <div className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] bg-[#0A0D12]" />}
 
                 <div className="flex min-w-0 flex-1 items-center gap-4">
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -259,10 +259,7 @@ const MyPosts: FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button className="rounded-lg p-2 text-[#6C7280] transition-colors hover:bg-white/5 hover:text-white" title="Edit">
-                      <Edit2 className="h-4 w-4" />
-                    </button>
+                  <div className="flex items-center gap-2">
                     <button className="rounded-lg p-2 text-[#6C7280] transition-colors hover:bg-white/5 hover:text-white" title="Analytics">
                       <BarChart3 className="h-4 w-4" />
                     </button>
@@ -285,16 +282,16 @@ const MyPosts: FC = () => {
                 className="group flex flex-col gap-3 rounded-2xl border border-[#181B22] bg-black p-4 transition-colors hover:border-[#A06AFF]/30 hover:bg-white/[0.02]"
               >
                 {post.thumbnail && (
-                  <img src={post.thumbnail} alt="" className="h-32 w-full rounded-xl border border-[#181B22] object-cover" />
+                  <img src={post.thumbnail} alt="" className="h-32 w-full rounded-2xl border border-[#181B22] object-cover" />
                 )}
-                {!post.thumbnail && <div className="h-32 w-full rounded-xl border border-[#181B22] bg-[#0A0D12]" />}
+                {!post.thumbnail && <div className="h-32 w-full rounded-2xl border border-[#181B22] bg-[#0A0D12]" />}
 
                 <div className="flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="line-clamp-2 flex-1 text-sm font-bold text-white">{post.title}</h3>
-                    <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <button className="rounded-lg p-1.5 text-[#6C7280] transition-colors hover:bg-white/5 hover:text-white" title="Edit">
-                        <Edit2 className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1">
+                      <button className="rounded-lg p-1.5 text-[#6C7280] transition-colors hover:bg-white/5 hover:text-white" title="Analytics">
+                        <BarChart3 className="h-3.5 w-3.5" />
                       </button>
                       <button className="rounded-lg p-1.5 text-[#6C7280] transition-colors hover:bg-red-500/10 hover:text-red-400" title="Delete">
                         <Trash2 className="h-3.5 w-3.5" />
