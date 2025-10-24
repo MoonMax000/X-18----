@@ -39,6 +39,16 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },
 });
 
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <p className="text-sm text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <Provider store={store}>
@@ -47,13 +57,14 @@ const App = () => (
           <Toaster />
           <Sonner />
         <BrowserRouter>
-          <Routes>
-            {/* Standard pages with ClientLayout */}
-            <Route
-              path="*"
-              element={
-                <ClientLayout>
-                  <Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Standard pages with ClientLayout */}
+              <Route
+                path="*"
+                element={
+                  <ClientLayout>
+                    <Routes>
                     <Route path="/" element={<FeedTest />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/home" element={<FeedTest />} />
@@ -108,7 +119,8 @@ const App = () => (
                 </ClientLayout>
               }
             />
-          </Routes>
+            </Routes>
+          </Suspense>
         </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
