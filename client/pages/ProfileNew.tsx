@@ -50,6 +50,13 @@ type StreamingSubTab =
   | "notifications"
   | "subscriptions";
 
+const DASHBOARD_WIDGET_VISIBILITY = {
+  myRevenue: false,
+  liveStreaming: false,
+  aiAssistant: false,
+  followingPortfolios: false,
+} as const;
+
 const tabs = [
   {
     id: "profile" as Tab,
