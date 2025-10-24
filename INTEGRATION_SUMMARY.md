@@ -171,7 +171,7 @@ These work out of the box:
 │          │   │                 │
 │ Social   │   │ - Monetization  │
 │ Features │   │ - Signals Data  │
-��� Posts    │   │ - Analytics     │
+│ Posts    │   │ - Analytics     │
 │ Follows  │   │ - Trending      │
 │ Timeline │   │ - Payments      │
 └──────────┘   └─────────────────┘
@@ -238,14 +238,14 @@ Use the testing checklist in `GOTOSOCIAL_PAGES_INTEGRATION.md`:
 
 ## 📋 Development Roadmap
 
-### **Phase 1: Core Integration (Week 1-2)**
-1. Set up GoToSocial instance
-2. Configure OAuth2
-3. Test authentication flow
-4. Integrate profile pages
-5. Integrate feed page
-6. Test post creation
-7. **Customize GoToSocial for trading signals** (1-2 days) - See `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md`
+### **Phase 1: Core Integration (Week 1)**
+1. Set up GoToSocial instance (Day 1)
+2. Configure OAuth2 (Day 1)
+3. Test authentication flow (Day 2)
+4. Integrate profile pages (Day 2-3)
+5. Integrate feed page (Day 3)
+6. Test post creation (Day 4)
+7. **Add custom metadata support** (Day 4, afternoon - всего 4 часа!) - See `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md`
 
 ### **Phase 2: Custom Backend (Week 3-6)**
 1. Design database schema for monetization
