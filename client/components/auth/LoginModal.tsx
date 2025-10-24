@@ -522,7 +522,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setConfirmNewPassword('');
       setShowNewPassword(false);
       setShowConfirmNewPassword(false);
-      setSignupAuthMethod('phone');
+      setSignupAuthMethod('email');
       setSignupEmail('');
       setSignupPhone('');
       setSignupPassword('');
