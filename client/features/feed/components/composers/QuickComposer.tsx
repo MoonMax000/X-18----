@@ -37,7 +37,8 @@ export default function QuickComposer({ onExpand }: Props) {
     codeBlocks,
     sentiment,
     replySetting,
-    isPaid,
+    accessType,
+    postPrice,
     postMarket,
     postCategory,
     postSymbol,
@@ -55,7 +56,8 @@ export default function QuickComposer({ onExpand }: Props) {
     reorderMedia,
     setSentiment,
     setReplySetting,
-    setIsPaid,
+    setAccessType,
+    setPostPrice,
     setPostMarket,
     setPostCategory,
     setPostSymbol,
@@ -163,6 +165,14 @@ export default function QuickComposer({ onExpand }: Props) {
 
   const handlePost = () => {
     // Build post payload with correct accessLevel mapping
+    const accessLevelMap: Record<typeof accessType, string> = {
+      "free": "public",
+      "pay-per-post": "paid",
+      "subscribers-only": "subscribers",
+      "followers-only": "followers",
+      "premium": "premium",
+    };
+
     const payload = {
       text,
       media: media.map((m) => ({
@@ -181,11 +191,11 @@ export default function QuickComposer({ onExpand }: Props) {
         timeframe: postTimeframe,
         risk: postRisk,
       },
-      // Map isPaid to accessLevel for post creation
-      accessLevel: isPaid ? "paid" : "public",
-      isPaid, // Keep for reference
+      accessLevel: accessLevelMap[accessType],
+      accessType, // Keep original value
+      ...(accessType === "pay-per-post" && { price: postPrice }),
     };
-    
+
     console.log('Posting from QuickComposer:', payload);
   };
 
@@ -291,8 +301,10 @@ export default function QuickComposer({ onExpand }: Props) {
             isBoldActive={isBoldActive}
             sentiment={sentiment}
             onSentimentChange={setSentiment}
-            isPaid={isPaid}
-            onPaidChange={setIsPaid}
+            accessType={accessType}
+            onAccessTypeChange={setAccessType}
+            postPrice={postPrice}
+            onPostPriceChange={setPostPrice}
           />
 
           {/* Footer */}

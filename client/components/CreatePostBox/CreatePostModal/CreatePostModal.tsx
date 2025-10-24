@@ -30,7 +30,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     codeBlocks,
     sentiment,
     replySetting,
-    isPaid,
+    accessType,
+    postPrice,
     postMarket,
     postCategory,
     postSymbol,
@@ -48,7 +49,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     reorderMedia,
     setSentiment,
     setReplySetting,
-    setIsPaid,
+    setAccessType,
+    setPostPrice,
     setPostMarket,
     setPostCategory,
     setPostSymbol,
@@ -119,6 +121,14 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
 
     try {
       // Build post payload with correct accessLevel mapping
+      const accessLevelMap: Record<typeof accessType, string> = {
+        "free": "public",
+        "pay-per-post": "paid",
+        "subscribers-only": "subscribers",
+        "followers-only": "followers",
+        "premium": "premium",
+      };
+
       const payload = {
         text,
         media: media.map((m) => ({
@@ -137,11 +147,9 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
           timeframe: postTimeframe,
           risk: postRisk,
         },
-        // Map isPaid to accessLevel for post creation
-        accessLevel: isPaid ? "paid" : "public",
-        isPaid, // Keep for reference
-        // Add price field if isPaid is true
-        ...(isPaid && { price: 5.0 }), // Default price, should be configurable
+        accessLevel: accessLevelMap[accessType],
+        accessType, // Keep original value
+        ...(accessType === "pay-per-post" && { price: postPrice }),
       };
 
       console.log('Posting from CreatePostModal:', payload);
@@ -154,7 +162,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     } finally {
       setIsPosting(false);
     }
-  }, [text, media, codeBlocks, replySetting, sentiment, postMarket, postCategory, postSymbol, postTimeframe, postRisk, isPaid, canPost, isPosting, onClose]);
+  }, [text, media, codeBlocks, replySetting, sentiment, postMarket, postCategory, postSymbol, postTimeframe, postRisk, accessType, postPrice, canPost, isPosting, onClose]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -294,8 +302,10 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             isBoldActive={isBoldActive}
             sentiment={sentiment}
             onSentimentChange={setSentiment}
-            isPaid={isPaid}
-            onPaidChange={setIsPaid}
+            accessType={accessType}
+            onAccessTypeChange={setAccessType}
+            postPrice={postPrice}
+            onPostPriceChange={setPostPrice}
           />
         </div>
 
