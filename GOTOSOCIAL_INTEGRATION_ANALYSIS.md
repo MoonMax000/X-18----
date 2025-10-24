@@ -35,36 +35,7 @@ This document identifies frontend functionalities that **cannot** be directly co
 
 ---
 
-### 2. **Trading Signals & Market Metadata**
-
-**Our Features:**
-- Signal posts with structured data:
-  - Entry price, Stop Loss, Take Profit
-  - Direction (Long/Short)
-  - Timeframe (15m, 1h, 4h, 1d, 1w)
-  - Risk level (Low, Medium, High)
-  - Ticker symbols ($BTC, $ETH, $AAPL)
-  - Accuracy metrics (85% accuracy over 90 days)
-  - Sample size tracking
-- Market categorization (crypto, stocks, forex, commodities, indices)
-- Post categories (signal, news, education, analysis, macro, onchain, video, code)
-- Sentiment tracking (bullish/bearish)
-
-**GoToSocial Status:** ❌ **NOT SUPPORTED**
-- No structured metadata beyond basic ActivityPub fields
-- No custom post types or taxonomies
-- No financial/trading-specific features
-
-**Required Development:**
-- Custom post metadata schema
-- Database tables: signal_data, post_metadata, market_categories
-- API endpoints to create/update/query structured signal data
-- Signal performance tracking system
-- Market data integration (optional: real-time price validation)
-
----
-
-### 3. **Advanced Content Gating & Access Control**
+### 2. **Advanced Content Gating & Access Control**
 
 **Our Features:**
 - Multi-tier access levels:
@@ -374,7 +345,7 @@ This document identifies frontend functionalities that **cannot** be directly co
 | Advanced Notifications | ⚠️ Partial | Low - Enhanced preferences |
 | Drafts System | ⚠️ Partial | Low - Separate draft storage |
 | Hover Cards | ❌ None | Low - Lightweight profile API |
-| Widgets & Discovery | ❌ None | High - Trending algorithms, APIs |
+| Widgets & Discovery | �� None | High - Trending algorithms, APIs |
 | Advanced Search | ⚠️ Partial | High - Enhanced search engine |
 | Analytics & Metrics | ⚠️ Partial | Medium - View tracking, aggregation |
 | Poll Enhancements | ⚠️ Partial | Low - Sentiment aggregation |
