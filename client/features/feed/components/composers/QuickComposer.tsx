@@ -23,15 +23,6 @@ export default function QuickComposer({ onExpand }: Props) {
   const [isBoldActive, setIsBoldActive] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
-  const [isPaid, setIsPaid] = useState(false);
-  const [replySetting, setLocalReplySetting] = useState<"everyone" | "following" | "verified" | "mentioned">("everyone");
-
-  // Post metadata for filtering
-  const [postMarket, setPostMarket] = useState<string>('Crypto');
-  const [postCategory, setPostCategory] = useState<string>('General');
-  const [postSymbol, setPostSymbol] = useState<string>('');
-  const [postTimeframe, setPostTimeframe] = useState<string>('');
-  const [postRisk, setPostRisk] = useState<string>('');
 
   const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
@@ -45,6 +36,13 @@ export default function QuickComposer({ onExpand }: Props) {
     media,
     codeBlocks,
     sentiment,
+    replySetting,
+    isPaid,
+    postMarket,
+    postCategory,
+    postSymbol,
+    postTimeframe,
+    postRisk,
     charRatio,
     remainingChars,
     isNearLimit,
@@ -56,6 +54,13 @@ export default function QuickComposer({ onExpand }: Props) {
     replaceMedia,
     reorderMedia,
     setSentiment,
+    setReplySetting,
+    setIsPaid,
+    setPostMarket,
+    setPostCategory,
+    setPostSymbol,
+    setPostTimeframe,
+    setPostRisk,
     insertEmoji,
     insertCodeBlock,
     removeCodeBlock,
@@ -157,8 +162,31 @@ export default function QuickComposer({ onExpand }: Props) {
   }, [text, sentiment, setSentiment]);
 
   const handlePost = () => {
-    // Post logic here
-    console.log('Posting:', { text, media, codeBlocks, sentiment, isPaid, postMarket, postCategory, postSymbol, postTimeframe, postRisk });
+    // Build post payload with correct accessLevel mapping
+    const payload = {
+      text,
+      media: media.map((m) => ({
+        id: m.id,
+        transform: m.transform,
+        alt: m.alt,
+        sensitiveTags: m.sensitiveTags,
+      })),
+      codeBlocks,
+      replySetting,
+      sentiment,
+      metadata: {
+        market: postMarket,
+        category: postCategory,
+        symbol: postSymbol,
+        timeframe: postTimeframe,
+        risk: postRisk,
+      },
+      // Map isPaid to accessLevel for post creation
+      accessLevel: isPaid ? "paid" : "public",
+      isPaid, // Keep for reference
+    };
+    
+    console.log('Posting from QuickComposer:', payload);
   };
 
   return (
@@ -283,7 +311,7 @@ export default function QuickComposer({ onExpand }: Props) {
             <h3 className="mb-2 text-xs font-semibold text-white">Who can reply?</h3>
             <div className="space-y-1.5">
               {replyOptions.map(opt => (
-                <button key={opt.id} onClick={() => { setLocalReplySetting(opt.id); setIsReplyMenuOpen(false); }} className="flex w-full items-start gap-2.5 rounded-lg bg-white/5 p-2 text-left transition-colors hover:bg-white/10 text-xs">
+                <button key={opt.id} onClick={() => { setReplySetting(opt.id); setIsReplyMenuOpen(false); }} className="flex w-full items-start gap-2.5 rounded-lg bg-white/5 p-2 text-left transition-colors hover:bg-white/10 text-xs">
                   <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill={replySetting === opt.id ? "#1D9BF0" : "none"} stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     {replySetting === opt.id && <circle cx="12" cy="12" r="4" fill="#1D9BF0" />}

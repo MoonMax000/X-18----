@@ -30,6 +30,12 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     codeBlocks,
     sentiment,
     replySetting,
+    isPaid,
+    postMarket,
+    postCategory,
+    postSymbol,
+    postTimeframe,
+    postRisk,
     charRatio,
     remainingChars,
     isNearLimit,
@@ -42,6 +48,12 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     reorderMedia,
     setSentiment,
     setReplySetting,
+    setIsPaid,
+    setPostMarket,
+    setPostCategory,
+    setPostSymbol,
+    setPostTimeframe,
+    setPostRisk,
     insertEmoji,
     insertCodeBlock,
     removeCodeBlock,
@@ -55,14 +67,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const [mounted, setMounted] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
-
-  // Post metadata
-  const [postMarket, setPostMarket] = useState<string>('Crypto');
-  const [postCategory, setPostCategory] = useState<string>('General');
-  const [postSymbol, setPostSymbol] = useState<string>('');
-  const [postTimeframe, setPostTimeframe] = useState<string>('');
-  const [postRisk, setPostRisk] = useState<string>('');
 
   const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiMenuRef = useRef<HTMLDivElement>(null);
@@ -114,6 +118,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     setIsPosting(true);
 
     try {
+      // Build post payload with correct accessLevel mapping
       const payload = {
         text,
         media: media.map((m) => ({
@@ -132,10 +137,14 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
           timeframe: postTimeframe,
           risk: postRisk,
         },
-        isPaid,
+        // Map isPaid to accessLevel for post creation
+        accessLevel: isPaid ? "paid" : "public",
+        isPaid, // Keep for reference
+        // Add price field if isPaid is true
+        ...(isPaid && { price: 5.0 }), // Default price, should be configurable
       };
 
-      console.log('Posting:', payload);
+      console.log('Posting from CreatePostModal:', payload);
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 

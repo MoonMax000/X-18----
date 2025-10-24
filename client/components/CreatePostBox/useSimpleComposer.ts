@@ -39,6 +39,14 @@ export const useSimpleComposer = (
   const [codeBlocks, setCodeBlocks] = useState<Array<{ id: string; code: string; language: string }>>([]);
   const [replySetting, setReplySetting] = useState<ReplyPolicy>(DEFAULT_REPLY_POLICY);
   const [sentiment, setSentiment] = useState<ComposerSentiment>(DEFAULT_SENTIMENT);
+  const [isPaid, setIsPaid] = useState<boolean>(false);
+
+  // Post metadata for filtering and categorization
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('General');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
 
   const objectUrlsRef = useRef<Map<string, string>>(new Map());
 
@@ -74,6 +82,14 @@ export const useSimpleComposer = (
       initialCodeBlocks?: Array<{ id: string; code: string; language: string }>,
       initialReplySetting?: ReplyPolicy,
       initialSentiment?: ComposerSentiment,
+      initialIsPaid?: boolean,
+      initialMetadata?: {
+        market?: string;
+        category?: string;
+        symbol?: string;
+        timeframe?: string;
+        risk?: string;
+      }
     ) => {
       cleanupObjectUrls();
       
@@ -82,6 +98,14 @@ export const useSimpleComposer = (
       setCodeBlocks(initialCodeBlocks || []);
       setReplySetting(initialReplySetting ?? DEFAULT_REPLY_POLICY);
       setSentiment(initialSentiment ?? DEFAULT_SENTIMENT);
+      setIsPaid(initialIsPaid ?? false);
+      
+      // Initialize metadata
+      setPostMarket(initialMetadata?.market ?? 'Crypto');
+      setPostCategory(initialMetadata?.category ?? 'General');
+      setPostSymbol(initialMetadata?.symbol ?? '');
+      setPostTimeframe(initialMetadata?.timeframe ?? '');
+      setPostRisk(initialMetadata?.risk ?? '');
     },
     [cleanupObjectUrls],
   );
@@ -193,6 +217,12 @@ export const useSimpleComposer = (
     codeBlocks,
     replySetting,
     sentiment,
+    isPaid,
+    postMarket,
+    postCategory,
+    postSymbol,
+    postTimeframe,
+    postRisk,
     charRatio,
     remainingChars,
     isNearLimit,
@@ -205,6 +235,12 @@ export const useSimpleComposer = (
     reorderMedia,
     setReplySetting,
     setSentiment,
+    setIsPaid,
+    setPostMarket,
+    setPostCategory,
+    setPostSymbol,
+    setPostTimeframe,
+    setPostRisk,
     insertEmoji,
     insertCodeBlock,
     removeCodeBlock,
