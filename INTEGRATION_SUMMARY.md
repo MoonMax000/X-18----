@@ -148,7 +148,7 @@ These work out of the box:
 ### **Option A: GoToSocial + Custom Backend** (Recommended)
 
 ```
-┌─────────────────────────────────────────┐
+┌──────────────────────────────────────���──┐
 │         Frontend (React)                │
 │  - All your UI components               │
 │  - Uses both APIs                       │
@@ -236,13 +236,14 @@ Use the testing checklist in `GOTOSOCIAL_PAGES_INTEGRATION.md`:
 4. Integrate profile pages
 5. Integrate feed page
 6. Test post creation
+7. **Customize GoToSocial for trading signals** (1-2 days) - See `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md`
 
 ### **Phase 2: Custom Backend (Week 3-6)**
 1. Design database schema for monetization
 2. Build payment integration (Stripe)
-3. Create custom API endpoints
-4. Implement signal metadata system
-5. Build access control middleware
+3. Create custom API endpoints for payments
+4. Build access control middleware
+5. Implement subscription management
 
 ### **Phase 3: Discovery & Analytics (Week 7-8)**
 1. Implement trending algorithm
