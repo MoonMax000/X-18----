@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, Search, BarChart3, Trash2, Eye, Heart, MessageCircle, Plus, LayoutList, LayoutGrid } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BUTTON_VARIANTS } from "@/features/feed/styles";
+import { LAB_CATEGORY_CONFIG, type LabCategory, LAB_CATEGORY_MAP } from "@/components/testLab/categoryConfig";
 
 type PostStatus = "published" | "draft";
-type PostCategory = "analysis" | "tutorial" | "review" | "opinion" | "news";
 type PostType = "all" | "premium" | "free";
 type DateSort = "newest" | "oldest";
 type ViewMode = "list" | "cards";
@@ -17,7 +17,7 @@ interface Post {
   thumbnail?: string;
   date: string;
   status: PostStatus;
-  category: PostCategory;
+  category: LabCategory;
   isPremium: boolean;
   views: number;
   likes: number;
@@ -33,7 +33,7 @@ const mockPosts: Post[] = [
     thumbnail: "https://api.builder.io/api/v1/image/assets/TEMP/dbe2cb77af13e1f5ccc8611b585b1172d4491793",
     date: "2h ago",
     status: "published",
-    category: "analysis",
+    category: "analytics",
     isPremium: true,
     views: 12450,
     likes: 320,
@@ -47,7 +47,7 @@ const mockPosts: Post[] = [
     thumbnail: "https://api.builder.io/api/v1/image/assets/TEMP/6c1636b94ab2935c85143c790d37c26781b4f015",
     date: "5h ago",
     status: "published",
-    category: "tutorial",
+    category: "education",
     isPremium: false,
     views: 9872,
     likes: 124,
@@ -60,7 +60,7 @@ const mockPosts: Post[] = [
     text: "A comprehensive review of the most promising DeFi projects in 2025, with analysis of their technology...",
     date: "1d ago",
     status: "published",
-    category: "review",
+    category: "forecasts",
     isPremium: true,
     views: 7345,
     likes: 63,
@@ -73,7 +73,7 @@ const mockPosts: Post[] = [
     text: "An opinion piece on the current state of the NFT market, recent trends, and predictions for the future...",
     date: "2d ago",
     status: "draft",
-    category: "opinion",
+    category: "text",
     isPremium: false,
     views: 0,
     likes: 0,
@@ -86,18 +86,8 @@ const MyPosts: FC = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
   const [typeFilter, setTypeFilter] = useState<PostType>("all");
   const [dateSort, setDateSort] = useState<DateSort>("newest");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | PostCategory>("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | LabCategory>("all");
 
-  const getCategoryBadge = (category: PostCategory) => {
-    const badges = {
-      analysis: { bg: "#4FC3F7", label: "Idea" },
-      tutorial: { bg: "#6B6BFF", label: "Tutorial" },
-      review: { bg: "#F7A350", label: "Review" },
-      opinion: { bg: "#FF6B6B", label: "Opinion" },
-      news: { bg: "#F7A350", label: "News" },
-    };
-    return badges[category];
-  };
 
   const formatNumber = (num: number) => (num >= 1000 ? `${(num / 1000).toFixed(1)}K` : num);
 
@@ -119,12 +109,11 @@ const MyPosts: FC = () => {
   ];
 
   const categoryOptions = [
-    { value: "all" as const, label: "All" },
-    { value: "analysis" as const, label: "Analysis" },
-    { value: "tutorial" as const, label: "Tutorial" },
-    { value: "review" as const, label: "Review" },
-    { value: "opinion" as const, label: "Opinion" },
-    { value: "news" as const, label: "News" },
+    { value: "all" as const, label: "Все" },
+    ...LAB_CATEGORY_CONFIG.map((cat) => ({
+      value: cat.value,
+      label: cat.label,
+    })),
   ];
 
   return (
@@ -289,7 +278,8 @@ const MyPosts: FC = () => {
       {viewMode === "list" ? (
         <div className="flex flex-col divide-y divide-[#181B22]">
           {mockPosts.map((post) => {
-            const badge = getCategoryBadge(post.category);
+            const categoryConfig = LAB_CATEGORY_MAP[post.category];
+            const CategoryIcon = categoryConfig.icon;
             return (
               <article
                 key={post.id}
@@ -304,8 +294,9 @@ const MyPosts: FC = () => {
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <h3 className="truncate text-sm font-bold text-white">{post.title}</h3>
-                      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: badge.bg }}>
-                        {badge.label}
+                      <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold", categoryConfig.badgeClassName)}>
+                        <CategoryIcon className="h-3 w-3" />
+                        {categoryConfig.label}
                       </span>
                       {post.isPremium && (
                         <span className="rounded bg-[#A06AFF]/20 px-1.5 py-0.5 text-xs font-bold text-[#A06AFF]">
@@ -354,7 +345,8 @@ const MyPosts: FC = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {mockPosts.map((post) => {
-            const badge = getCategoryBadge(post.category);
+            const categoryConfig = LAB_CATEGORY_MAP[post.category];
+            const CategoryIcon = categoryConfig.icon;
             return (
               <article
                 key={post.id}
@@ -379,8 +371,9 @@ const MyPosts: FC = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: badge.bg }}>
-                      {badge.label}
+                    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold", categoryConfig.badgeClassName)}>
+                      <CategoryIcon className="h-3 w-3" />
+                      {categoryConfig.label}
                     </span>
                     {post.isPremium && (
                       <span className="rounded bg-[#A06AFF]/20 px-1.5 py-0.5 text-xs font-bold text-[#A06AFF]">
