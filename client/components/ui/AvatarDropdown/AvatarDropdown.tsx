@@ -1,8 +1,10 @@
-import { FC, useState, useRef, useEffect } from "react";
+import { FC, useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import LoginModal from "@/components/auth/LoginModal";
 import { useTheme } from "@/contexts/ThemeContext";
+
+// Lazy load LoginModal to reduce initial bundle size
+const LoginModal = lazy(() => import("@/components/auth/LoginModal"));
 
 interface MenuItem {
   id: string;
