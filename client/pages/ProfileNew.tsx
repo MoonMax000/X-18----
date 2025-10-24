@@ -1220,10 +1220,10 @@ const ProfileNew: FC = () => {
 
       {/* Tab content */}
       <div className="mt-4">
-        {activeSocialSubTab === "overview" && <SocialOverview />}
-        {activeSocialSubTab === "posts" && <MyPosts />}
-        {activeSocialSubTab === "subscriptions" && <Subscriptions />}
-        {activeSocialSubTab === "monetization" && <Monetization />}
+        {activeTab === "social" && activeSocialSubTab === "overview" && <SocialOverview />}
+        {activeTab === "social" && activeSocialSubTab === "posts" && <MyPosts />}
+        {activeTab === "social" && activeSocialSubTab === "subscriptions" && <Subscriptions />}
+        {activeTab === "social" && activeSocialSubTab === "monetization" && <Monetization />}
 
         {false && (
           <div className="flex flex-col gap-6">
