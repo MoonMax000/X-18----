@@ -10,9 +10,12 @@ import TabListClassic, { type ProfilePostsFilter, type ProfileSection, type Prof
 import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
+import type { GTSAccount, GTSStatus } from "@/services/api/gotosocial";
 
 interface ProfileContentClassicProps {
   isOwnProfile?: boolean;
+  profile?: GTSAccount | null;
+  posts?: GTSStatus[];
 }
 
 const normalizeHandle = (value?: string) =>
@@ -56,6 +59,8 @@ const LIKED_POST_IDS = ["crypto-video", "john-premium-1", "john-premium-2", "tyr
 
 export default function ProfileContentClassic({
   isOwnProfile = true,
+  profile: externalProfile,
+  posts: externalPosts,
 }: ProfileContentClassicProps) {
   const navigate = useNavigate();
   const currentUser = useSelector((state: RootState) => state.profile.currentUser);
@@ -70,12 +75,60 @@ export default function ProfileContentClassic({
 
   useEffect(() => {
     const loadProfile = async () => {
-      setIsLoading(true);
+      // If external data provided, use it directly
+      if (externalProfile && externalPosts) {
+        setIsLoading(true);
 
-      // Simulate API call
+        // Convert GTSAccount to SocialProfileData
+        const profileData: SocialProfileData = {
+          id: externalProfile.id,
+          name: externalProfile.display_name,
+          username: externalProfile.username,
+          bio: externalProfile.note.replace(/<[^>]*>/g, ''), // Strip HTML tags
+          location: externalProfile.fields.find(f => f.name.toLowerCase() === 'location')?.value || undefined,
+          website: externalProfile.fields.find(f => f.name.toLowerCase() === 'website')
+            ? { label: externalProfile.fields.find(f => f.name.toLowerCase() === 'website')!.value, url: externalProfile.url }
+            : undefined,
+          joined: new Date(externalProfile.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }),
+          avatar: externalProfile.avatar,
+          cover: externalProfile.header,
+          stats: {
+            tweets: externalProfile.statuses_count,
+            following: externalProfile.following_count,
+            followers: externalProfile.followers_count,
+            likes: 0, // Not available in GoToSocial
+          },
+        };
+
+        setProfile(profileData);
+
+        // Convert GTSStatus[] to SocialPost[]
+        const convertedPosts: SocialPost[] = externalPosts.map(status => ({
+          id: status.id,
+          title: status.content.substring(0, 100).replace(/<[^>]*>/g, ''),
+          preview: status.content.replace(/<[^>]*>/g, ''),
+          author: {
+            name: status.account.display_name,
+            handle: `@${status.account.username}`,
+            avatar: status.account.avatar,
+          },
+          timestamp: new Date(status.created_at).toISOString(),
+          likes: status.favourites_count,
+          comments: status.replies_count,
+          shares: status.reblogs_count,
+          category: status.custom_metadata?.post_type || 'General',
+        }));
+
+        setPosts(convertedPosts);
+        setLikedPosts([]); // Liked posts not available yet
+        setIsLoading(false);
+        return;
+      }
+
+      // Fallback to mock data if no external data
+      setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // Use Redux data for own profile, defaultProfile for others
       const profileData = isOwnProfile
         ? {
             ...defaultProfile,
@@ -109,12 +162,11 @@ export default function ProfileContentClassic({
 
       setPosts(userPosts);
       setLikedPosts(liked);
-
       setIsLoading(false);
     };
 
     loadProfile();
-  }, [handle, user_id, isOwnProfile, currentUser]);
+  }, [handle, user_id, isOwnProfile, currentUser, externalProfile, externalPosts]);
 
   const postFilterCounts = useMemo(() => {
     const counts: Record<ProfilePostsFilter, number> = {
