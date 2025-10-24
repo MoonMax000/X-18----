@@ -1,4 +1,5 @@
 import { FC } from "react";
+import type { FC } from "react";
 import { cn } from "@/lib/utils";
 import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";
 import PurchasedPostsWidget from "@/features/feed/components/widgets/PurchasedPostsWidget";
