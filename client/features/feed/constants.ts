@@ -1,6 +1,6 @@
 // features/feed/constants.ts
 import { FeedTab } from "./types";
-import { LayoutGrid, Lightbulb, MessageCircle, BarChart3, Code, Heart } from "lucide-react";
+import { LayoutGrid, TrendingUp, Newspaper, GraduationCap, BarChart3, Brain, Code, Video, Heart } from "lucide-react";
 
 export const FILTERS_CONFIG = {
   // Тема (Topic) - независимый фильтр
@@ -24,56 +24,65 @@ export const FILTERS_CONFIG = {
   verified: { type: 'toggle' as const }
 } as const;
 
-// Табы теперь определяют Type (вид контента)
-// Topic - это ортогональный фильтр (тематика)
+// Табы напрямую соответствуют типам контента (категориям)
 export const TABS_CONFIG = {
   all: {
     type: 'all' as const,
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
+    visible: ['market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
   },
-  ideas: {
-    type: 'idea' as const,
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
+  signal: {
+    type: 'signal' as const,
+    visible: ['market', 'direction', 'timeframe', 'risk', 'period', 'symbol', 'verified'] as const,
+    defaults: { market: 'All', period: 'All time', verified: false }
   },
-  opinions: {
-    type: 'opinion' as const,
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
+  news: {
+    type: 'news' as const,
+    visible: ['market', 'period', 'symbol', 'verified'] as const,
+    defaults: { market: 'All', period: 'All time', verified: false }
   },
-  analytics: {
+  education: {
+    type: 'education' as const,
+    visible: ['market', 'price', 'period', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+  },
+  analysis: {
     type: 'analysis' as const,
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', period: 'All time', verified: false }
+    visible: ['market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
   },
-  soft: {
+  macro: {
+    type: 'macro' as const,
+    visible: ['market', 'price', 'period', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+  },
+  code: {
     type: 'code' as const,
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
+    visible: ['market', 'price', 'period', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
+  },
+  video: {
+    type: 'video' as const,
+    visible: ['market', 'price', 'period', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
   },
   liked: {
-    type: 'all' as const, // Liked показывает все типы
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
-  },
-  following: {
-    type: 'all' as const, // NEW: Following показывает все типы от подписок
-    visible: ['topic', 'market', 'price', 'period', 'symbol', 'verified'] as const,
-    defaults: { topic: 'All', market: 'All', price: 'All', period: 'All time', verified: false }
+    type: 'all' as const,
+    visible: ['market', 'price', 'period', 'symbol', 'verified'] as const,
+    defaults: { market: 'All', price: 'All', period: 'All time', verified: false }
   }
 } as const;
 
-import { Users } from "lucide-react";
-
 export const FEED_TABS = [
   { key: "all" as FeedTab, label: "All", icon: LayoutGrid },
-  { key: "ideas" as FeedTab, label: "Ideas", icon: Lightbulb },
-  { key: "opinions" as FeedTab, label: "Opinions", icon: MessageCircle },
-  { key: "analytics" as FeedTab, label: "Analytics", icon: BarChart3 },
-  { key: "soft" as FeedTab, label: "Soft", icon: Code },
-  { key: "liked" as FeedTab, label: "Liked", icon: Heart },
-  { key: "following" as FeedTab, label: "Following", icon: Users }
+  { key: "signal" as FeedTab, label: "Signal", icon: TrendingUp },
+  { key: "news" as FeedTab, label: "News", icon: Newspaper },
+  { key: "education" as FeedTab, label: "Education", icon: GraduationCap },
+  { key: "analysis" as FeedTab, label: "Analysis", icon: BarChart3 },
+  { key: "macro" as FeedTab, label: "Macro", icon: Brain },
+  { key: "code" as FeedTab, label: "Code", icon: Code },
+  { key: "video" as FeedTab, label: "Video", icon: Video },
+  { key: "liked" as FeedTab, label: "Liked", icon: Heart }
 ];
 
 export const SIGNAL_PRESETS = [
