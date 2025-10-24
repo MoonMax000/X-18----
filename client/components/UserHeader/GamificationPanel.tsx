@@ -129,7 +129,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
       </div>
 
       {/* Badges Section */}
-      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+      <div className="rounded-2xl border border-widget-border bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-3">Achievements</h3>
         <div className="grid grid-cols-2 gap-2">
           {gamificationData.badges.map((badge) => {
@@ -137,16 +137,16 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
             return (
               <div
                 key={badge.id}
-                className={`group relative rounded-lg border p-2.5 transition-all duration-200 ${
+                className={`group relative rounded-2xl border p-2.5 transition-all duration-200 ${
                   badge.earned
                     ? "border-[#16C784] bg-[#16C784]/10 hover:bg-[#16C784]/20"
-                    : "border-[#181B22] bg-[#0C1014] opacity-60"
+                    : "border-widget-border bg-[#0C1014] opacity-60"
                 }`}
               >
                 <div className="flex items-start gap-2">
                   <div
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                      badge.earned ? "bg-[#16C784]/20 text-[#16C784]" : "bg-[#181B22] text-[#8B98A5]"
+                      badge.earned ? "bg-[#16C784]/20 text-[#16C784]" : "bg-widget-bg text-[#8B98A5]"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -156,7 +156,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
                       {badge.name}
                     </p>
                     {!badge.earned && badge.progress !== undefined && (
-                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#181B22]">
+                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-widget-bg">
                         <div
                           className="h-full bg-gradient-to-r from-[#A06AFF] to-[#482090]"
                           style={{ width: `${badge.progress}%` }}
@@ -176,7 +176,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
       </div>
 
       {/* Next Milestone */}
-      <div className="rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
+      <div className="rounded-2xl border border-widget-border bg-[rgba(12,16,20,0.5)] backdrop-blur-xl p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[#8B98A5] mb-2">Next Milestone</h3>
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-700 text-white font-bold text-xs">

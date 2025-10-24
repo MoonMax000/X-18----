@@ -241,7 +241,7 @@ const UserHeader: FC<Props> = ({
           {/* Action buttons panel */}
           <div className={cn(
             "flex items-start gap-2 sm:gap-3 py-3",
-            isOwn ? "justify-start" : "justify-end"
+            isOwn ? "justify-start ml-24 sm:ml-32 md:ml-36" : "justify-end"
           )}>
             {isOwn ? (
               <button
