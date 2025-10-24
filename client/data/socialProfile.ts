@@ -18,6 +18,7 @@ export interface SocialProfileData {
   name: string;
   username: string;
   bio: string;
+  role?: string;
   location?: string;
   website?: SocialProfileLink;
   joined: string;
@@ -32,6 +33,7 @@ export const defaultProfile: SocialProfileData = {
   name: "Tyrian Trade",
   username: "tyrian_trade",
   bio: "Аналитика рынков, алгоритмические сделки и макроэкономика в формате коротких постов.",
+  role: "Crypto Analyst",
   location: "Dubai, UAE",
   website: {
     label: "tyrian.trade",
