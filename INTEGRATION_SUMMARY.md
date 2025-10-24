@@ -373,19 +373,18 @@ Your frontend is **100% ready** for GoToSocial integration. All the groundwork i
 
 **What you need to do:**
 
-1. **Read** `GOTOSOCIAL_INTEGRATION_ANALYSIS.md` - Understand feature gaps
-2. **Read** `GOTOSOCIAL_PAGES_INTEGRATION.md` - Follow integration steps
-3. **Read** `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` - Learn how to add trading signals support
-4. **Set up** GoToSocial instance
-5. **Customize** GoToSocial for trading signals (1-2 days)
-6. **Build** custom backend for monetization
-7. **Test** each page integration
-8. **Deploy** to production
+1. **Read** `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` - Как добавить метаданные (4 часа работы)
+2. **Read** `GOTOSOCIAL_PAGES_INTEGRATION.md` - Интеграция страниц
+3. **Set up** GoToSocial instance
+4. **Add metadata support** - просто добавить JSONB колонку (~50 строк кода на Go)
+5. **Build** custom backend for monetization (отдельная задача)
+6. **Test** each page integration
+7. **Deploy** to production
 
 **Estimated Timeline:**
-- Basic integration (social features): 1-2 weeks
-- GoToSocial customization (trading signals): 1-2 days ✅
+- Basic integration (social features): 1 week ✅
+- Post metadata support (categories, market, symbol): **4 hours** ✅✅✅
 - Custom backend (monetization): 3-4 weeks
-- Full feature parity: 8-10 weeks
+- Full feature parity: 6-8 weeks
 
 Good luck! 🚀
