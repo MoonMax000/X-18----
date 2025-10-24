@@ -78,7 +78,7 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
   const inProgressBadges = gamificationData.badges.filter((b) => !b.earned);
 
   return (
-    <div className={cn("flex flex-col gap-8", className)}>
+    <div className={cn("flex flex-col space-y-6", className)}>
       <div className="rounded-3xl border border-widget-border/80 bg-[#0C101480] p-6 backdrop-blur-xl transition-colors hover:border-[#A06AFF]/40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
