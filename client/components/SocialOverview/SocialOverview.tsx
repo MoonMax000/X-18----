@@ -1,5 +1,7 @@
 import { FC } from "react";
 import { cn } from "@/lib/utils";
+import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";
+import PurchasedPostsWidget from "@/features/feed/components/widgets/PurchasedPostsWidget";
 
 const StatCard: FC<{
   label: string;
@@ -123,6 +125,75 @@ const SocialOverview: FC = () => {
     followersChange: "15%",
   };
 
+  // Mock data for private widgets
+  const mockSubscriptions = [
+    {
+      authorId: "1",
+      authorName: "CryptoWhale",
+      authorHandle: "@cryptowhale",
+      authorAvatar: "https://i.pravatar.cc/120?img=12",
+      subscribedAt: "2024-01-15",
+      price: 29,
+      totalPosts: 156,
+      newPostsThisWeek: 3,
+    },
+    {
+      authorId: "2",
+      authorName: "Market Maven",
+      authorHandle: "@marketmaven",
+      authorAvatar: "https://i.pravatar.cc/120?img=23",
+      subscribedAt: "2024-02-01",
+      price: 49,
+      totalPosts: 234,
+      newPostsThisWeek: 5,
+    },
+    {
+      authorId: "3",
+      authorName: "Tech Trader",
+      authorHandle: "@techtrader",
+      authorAvatar: "https://i.pravatar.cc/120?img=34",
+      subscribedAt: "2024-01-20",
+      price: 19,
+      totalPosts: 89,
+      newPostsThisWeek: 2,
+    },
+  ];
+
+  const mockPurchasedPosts = [
+    {
+      postId: "p1",
+      title: "Bitcoin 2024 Outlook: Why $100K is Conservative",
+      authorName: "CryptoWhale",
+      authorHandle: "@cryptowhale",
+      authorAvatar: "https://i.pravatar.cc/120?img=12",
+      purchasedAt: "2024-03-10",
+      price: 9,
+      views: 5,
+      thumbnail: "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=200&h=200&fit=crop",
+    },
+    {
+      postId: "p2",
+      title: "Advanced Options Trading: Iron Condor Strategy Deep Dive",
+      authorName: "Market Maven",
+      authorHandle: "@marketmaven",
+      authorAvatar: "https://i.pravatar.cc/120?img=23",
+      purchasedAt: "2024-03-08",
+      price: 15,
+      views: 12,
+      thumbnail: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=200&h=200&fit=crop",
+    },
+    {
+      postId: "p3",
+      title: "AI Stocks: The Next Wave of Tech Dominance",
+      authorName: "Tech Trader",
+      authorHandle: "@techtrader",
+      authorAvatar: "https://i.pravatar.cc/120?img=34",
+      purchasedAt: "2024-03-05",
+      price: 12,
+      views: 8,
+    },
+  ];
+
   const mockActivity = [
     { type: "follow" as const, user: "Maria_Crypto", action: "подписался на вас", time: "5 мин назад" },
     { type: "like" as const, user: "TraderAlex", action: "лайкнул ваш пост о Bitcoin", time: "12 мин назад" },
@@ -220,7 +291,7 @@ const SocialOverview: FC = () => {
               <div className="h-full bg-gradient-to-r from-[#2EBD85] to-[#1a8f63]" style={{ width: '84%' }} />
             </div>
           </div>
-          
+
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
@@ -232,7 +303,7 @@ const SocialOverview: FC = () => {
               <div className="h-full bg-gradient-to-r from-[#A06AFF] to-[#482090]" style={{ width: '127%' }} />
             </div>
           </div>
-          
+
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
@@ -244,6 +315,25 @@ const SocialOverview: FC = () => {
               <div className="h-full bg-gradient-to-r from-[#FFB84D] to-[#FF8C42]" style={{ width: '95%' }} />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Private Widgets Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Subscriptions Widget */}
+        <div className="w-full">
+          <SubscriptionsWidget
+            subscriptions={mockSubscriptions}
+            onViewAll={() => console.log('View all subscriptions')}
+          />
+        </div>
+
+        {/* Purchased Posts Widget */}
+        <div className="w-full">
+          <PurchasedPostsWidget
+            posts={mockPurchasedPosts}
+            onViewAll={() => console.log('View all purchased posts')}
+          />
         </div>
       </div>
     </div>

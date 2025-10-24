@@ -170,10 +170,11 @@ export default function ProfilePageLayout({ isOwnProfile }: ProfilePageLayoutPro
         topTickers={topTickers}
         showEarnings={isOwnProfile}
         earnings={earnings}
-        showSubscriptions={isOwnProfile}
-        subscriptions={subscriptions}
-        showPurchasedPosts={isOwnProfile}
-        purchasedPosts={purchasedPosts}
+        // Subscriptions and Purchased Posts moved to Social Network → Overview
+        showSubscriptions={false}
+        subscriptions={[]}
+        showPurchasedPosts={false}
+        purchasedPosts={[]}
       />
     </div>
   );
