@@ -1,99 +1,84 @@
-import { FC, useEffect, useRef, useState, useCallback, ChangeEvent } from 'react';
+import { FC, useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { TweetBlock } from '../TweetBlock';
+import { X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { MediaEditor } from '../MediaEditor';
-import { DraftsList } from '../DraftsList';
 import { CodeBlockModal } from '../CodeBlockModal';
-import { useAdvancedComposer } from '../useAdvancedComposer';
-import {
-  MediaItem,
-  ReplyPolicy,
-  ComposerDraft,
-  ComposerBlockState,
-  ComposerSentiment,
-  REPLY_SUMMARY_TEXT,
-} from '../types';
-import {
-  useModalKeyboardShortcuts,
-  useClickOutside,
-  useMenuPositioning,
-  useDraftManagement,
-} from './hooks';
-import {
-  CreatePostModalHeader,
-  CreatePostModalToolbar,
-  CreatePostModalFooter,
-  ReplySettingsMenu,
-  EmojiPickerOverlay,
-} from './components';
+import { MediaGrid } from '../MediaGrid';
+import { EmojiPicker } from '../EmojiPicker';
+import { useSimpleComposer } from '../useSimpleComposer';
+import { MediaItem } from '../types';
+import { ComposerMetadata, ComposerToolbar, ComposerFooter } from '@/features/feed/components/composers/shared';
 
 interface CreatePostModalProps {
   isOpen: boolean;
-  onClose: (blocks?: ComposerBlockState[]) => void;
-  initialBlocks?: ComposerBlockState[];
-  initialReplySetting?: ReplyPolicy;
-  initialSentiment?: ComposerSentiment;
-  onBlocksChange?: (blocks: ComposerBlockState[]) => void;
+  onClose: () => void;
+  initialText?: string;
+  initialSentiment?: "bullish" | "bearish" | null;
 }
 
 const CreatePostModal: FC<CreatePostModalProps> = ({
   isOpen,
   onClose,
-  initialBlocks,
-  initialReplySetting,
+  initialText,
   initialSentiment,
-  onBlocksChange,
 }) => {
   const {
-    blocks,
-    activeBlockId,
-    setActiveBlockId,
-    replySetting,
-    setReplySetting,
+    text,
+    media,
+    codeBlocks,
     sentiment,
-    setSentiment,
+    replySetting,
     charRatio,
     remainingChars,
     isNearLimit,
     isOverLimit,
     canPost,
-    canAddBlock,
-    initialize,
-    ensureActiveBlock,
-    updateBlockText,
+    updateText,
     addMedia,
     removeMedia,
     replaceMedia,
     reorderMedia,
-    deleteBlock,
-    addBlock,
+    setSentiment,
+    setReplySetting,
     insertEmoji,
     insertCodeBlock,
     removeCodeBlock,
-  } = useAdvancedComposer();
+    initialize,
+  } = useSimpleComposer();
 
   const [isReplyMenuOpen, setIsReplyMenuOpen] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
-  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const [isBoldActive, setIsBoldActive] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+
+  // Post metadata
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('General');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
 
   const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiMenuRef = useRef<HTMLDivElement>(null);
+  const replyButtonRef = useRef<HTMLButtonElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    position: replyMenuPosition,
-    setPositionFromElement: setReplyMenuPosition,
-    clearPosition: clearReplyMenuPosition,
-  } = useMenuPositioning();
+  const replyOptions = [
+    { id: "everyone" as const, label: "Everyone", description: "Anyone can reply." },
+    { id: "following" as const, label: "Accounts you follow", description: "Only people you follow can reply." },
+    { id: "verified" as const, label: "Verified accounts", description: "Only verified users can reply." },
+    { id: "mentioned" as const, label: "Only accounts you mention", description: "Only people you mention can reply." }
+  ];
 
-  const { saveDraftWithConfirmation, loadDraft } = useDraftManagement({
-    isOpen,
-    blocks,
-    replySetting,
-  });
+  const replySummary = replyOptions.find(opt => opt.id === replySetting)?.label || "Everyone";
 
   useEffect(() => {
     setMounted(true);
@@ -103,75 +88,25 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      initialize(initialText, [], [], undefined, initialSentiment || undefined);
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      const timeout = window.setTimeout(() => {
-        initialize(initialBlocks, initialReplySetting, initialSentiment);
-        setIsEmojiPickerOpen(false);
-        setIsReplyMenuOpen(false);
-        setIsCodeBlockOpen(false);
-      }, 200);
-
-      return () => window.clearTimeout(timeout);
-    }
-
-    initialize(initialBlocks, initialReplySetting, initialSentiment);
-  }, [isOpen, initialize, initialBlocks, initialReplySetting, initialSentiment]);
-
-  useClickOutside({
-    ref: replyMenuRef,
-    isOpen: isReplyMenuOpen,
-    onClose: () => {
-      setIsReplyMenuOpen(false);
-      clearReplyMenuPosition();
-    },
-  });
-
-  useClickOutside({
-    ref: emojiMenuRef,
-    isOpen: isEmojiPickerOpen,
-    onClose: () => setIsEmojiPickerOpen(false),
-  });
-
-  const onBlocksChangeRef = useRef<typeof onBlocksChange | null>(null);
-
-  useEffect(() => {
-    onBlocksChangeRef.current = onBlocksChange ?? null;
-  }, [onBlocksChange]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let mounted = true;
-    const handle = setTimeout(() => {
-      if (!mounted) return;
-      if (onBlocksChangeRef.current) {
-        try {
-          onBlocksChangeRef.current(blocks);
-        } catch (e) {
-          console.error('onBlocksChange handler failed:', e);
-        }
-      }
-    }, 120);
-
-    return () => {
-      mounted = false;
-      clearTimeout(handle);
-    };
-  }, [blocks, isOpen]);
+  }, [isOpen, initialize, initialText, initialSentiment]);
 
   const handleClose = useCallback(() => {
-    saveDraftWithConfirmation();
-    onClose(blocks);
-  }, [blocks, onClose, saveDraftWithConfirmation]);
+    // Warning if there's unsaved content
+    if (text.trim().length > 0 || media.length > 0 || codeBlocks.length > 0) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to close? Your post will not be saved.'
+      );
+      if (!confirmed) return;
+    }
+    onClose();
+  }, [text, media, codeBlocks, onClose]);
 
   const handlePost = useCallback(async () => {
     if (!canPost || isPosting) return;
@@ -180,204 +115,68 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
 
     try {
       const payload = {
-        blocks: blocks.map((b) => ({
-          text: b.text,
-          mediaIds: b.media.map((m) => m.id),
-          media: b.media.map((m) => ({
-            id: m.id,
-            transform: m.transform,
-            alt: m.alt,
-            sensitiveTags: m.sensitiveTags,
-          })),
-          codeBlocks: b.codeBlocks,
+        text,
+        media: media.map((m) => ({
+          id: m.id,
+          transform: m.transform,
+          alt: m.alt,
+          sensitiveTags: m.sensitiveTags,
         })),
-        replyPolicy: replySetting,
+        codeBlocks,
+        replySetting,
         sentiment,
+        metadata: {
+          market: postMarket,
+          category: postCategory,
+          symbol: postSymbol,
+          timeframe: postTimeframe,
+          risk: postRisk,
+        },
+        isPaid,
       };
 
       console.log('Posting:', payload);
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      handleClose();
+      onClose();
     } catch (error) {
       console.error('Post failed:', error);
     } finally {
       setIsPosting(false);
     }
-  }, [blocks, replySetting, sentiment, canPost, isPosting, handleClose]);
+  }, [text, media, codeBlocks, replySetting, sentiment, postMarket, postCategory, postSymbol, postTimeframe, postRisk, isPaid, canPost, isPosting, onClose]);
 
-  useModalKeyboardShortcuts({
-    isOpen,
-    onClose: handleClose,
-    onSubmit: handlePost,
-    canSubmit: canPost,
-  });
-
-  const handleBlockTextChange = useCallback(
-    (blockId: string, text: string) => {
-      updateBlockText(blockId, text);
-    },
-    [updateBlockText]
-  );
-
-  const handleMediaAdd = useCallback(
-    (blockId: string, files: FileList) => {
-      addMedia(blockId, files);
-    },
-    [addMedia]
-  );
-
-  const handleMediaRemove = useCallback(
-    (blockId: string, mediaId: string) => {
-      removeMedia(blockId, mediaId);
-    },
-    [removeMedia]
-  );
-
-  const handleMediaEdit = useCallback(
-    (blockId: string, media: MediaItem) => {
-      setActiveBlockId(blockId);
-      setEditingMedia(media);
-    },
-    [setActiveBlockId]
-  );
-
-  const handleMediaSave = useCallback(
-    (updatedMedia: MediaItem) => {
-      if (!activeBlockId) return;
-
-      replaceMedia(activeBlockId, updatedMedia);
-      setEditingMedia(null);
-      setActiveBlockId(null);
-    },
-    [activeBlockId, replaceMedia, setActiveBlockId]
-  );
-
-  const handleMediaReorder = useCallback(
-    (blockId: string, fromIndex: number, toIndex: number) => {
-      reorderMedia(blockId, fromIndex, toIndex);
-    },
-    [reorderMedia]
-  );
-
-  const handleToolbarMediaPick = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (!files || files.length === 0) {
-        return;
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
       }
-
-      const targetId = ensureActiveBlock();
-      if (!targetId) {
-        event.target.value = '';
-        return;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        if (canPost) {
+          handlePost();
+        }
       }
+    };
 
-      addMedia(targetId, files);
-      event.target.value = '';
-    },
-    [ensureActiveBlock, addMedia]
-  );
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, canPost, handleClose, handlePost]);
 
-  const handleToolbarEmojiToggle = useCallback(() => {
-    const targetId = ensureActiveBlock();
-    if (!targetId) return;
-    setIsEmojiPickerOpen((prev) => !prev);
-  }, [ensureActiveBlock]);
+  const handleReplyButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setIsReplyMenuOpen(prev => !prev);
+  };
 
-  const handleCodeBlockInsert = useCallback(
-    (code: string, language: string) => {
-      if (!activeBlockId) return;
-
-      const inserted = insertCodeBlock(activeBlockId, code, language);
-      if (inserted) {
-        setIsCodeBlockOpen(false);
-      }
-    },
-    [activeBlockId, insertCodeBlock]
-  );
-
-  const handleCodeBlockRemove = useCallback(
-    (blockId: string, codeBlockId: string) => {
-      removeCodeBlock(blockId, codeBlockId);
-    },
-    [removeCodeBlock]
-  );
-
-  const handleBlockDelete = useCallback(
-    (blockId: string) => {
-      deleteBlock(blockId);
-    },
-    [deleteBlock]
-  );
-
-  const handleAddBlock = useCallback(() => {
-    addBlock();
-  }, [addBlock]);
-
-  const handleEmojiSelect = useCallback(
-    (emoji: string) => {
-      const targetId = activeBlockId ?? ensureActiveBlock();
-      if (!targetId) return;
-
-      const inserted = insertEmoji(targetId, emoji);
-      if (inserted) {
-        setIsEmojiPickerOpen(false);
-        setActiveBlockId(targetId);
-      }
-    },
-    [activeBlockId, ensureActiveBlock, insertEmoji, setActiveBlockId]
-  );
-
-  const handleEmojiClick = useCallback(
-    (blockId: string) => {
-      setActiveBlockId(blockId);
-      setIsEmojiPickerOpen((prev) => !prev);
-    },
-    [setActiveBlockId]
-  );
-
-  const handleCodeBlockClick = useCallback(
-    (blockId: string) => {
-      setActiveBlockId(blockId);
-      setIsCodeBlockOpen(true);
-    },
-    [setActiveBlockId]
-  );
-
-  const handleReplyButtonClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      setReplyMenuPosition(event.currentTarget, { offsetY: -10 });
-      setIsReplyMenuOpen((prev) => !prev);
-    },
-    [setReplyMenuPosition]
-  );
-
-  const handleReplySelect = useCallback(
-    (policy: ReplyPolicy) => {
-      setReplySetting(policy);
-      setIsReplyMenuOpen(false);
-      clearReplyMenuPosition();
-    },
-    [setReplySetting, clearReplyMenuPosition]
-  );
-
-  const handleOpenDraft = useCallback(
-    (draft: ComposerDraft) => {
-      const restoredBlocks = loadDraft(draft);
-      if (restoredBlocks.length > 0) {
-        initialize(restoredBlocks, draft.replyPolicy, sentiment);
-        setIsDraftsOpen(false);
-      }
-    },
-    [loadDraft, initialize, sentiment]
-  );
+  const handleBoldToggle = () => {
+    const boldText = `**${text}**`;
+    updateText(boldText);
+    setIsBoldActive(!isBoldActive);
+  };
 
   if (!mounted || !isOpen) return null;
-
-  const isThread = blocks.length > 1;
-  const replySummary = REPLY_SUMMARY_TEXT[replySetting];
 
   return createPortal(
     <div
@@ -388,112 +187,175 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         className="relative w-full max-w-[720px] max-h-[calc(100vh-120px)] overflow-hidden rounded-3xl border border-[#181B22] bg-black shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[100px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <CreatePostModalHeader
-          onClose={handleClose}
-          onDraftsClick={() => setIsDraftsOpen(true)}
-          isPosting={isPosting}
-        />
-
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6 scrollbar">
-          {blocks.map((block, index) => (
-            <TweetBlock
-              key={block.id}
-              id={block.id}
-              text={block.text}
-              media={block.media}
-              codeBlocks={block.codeBlocks}
-              isFirst={index === 0}
-              isLast={index === blocks.length - 1}
-              canDelete={blocks.length > 1}
-              isActive={
-                activeBlockId === block.id ||
-                (activeBlockId === null && index === 0)
-              }
-              onClick={() => setActiveBlockId(block.id)}
-              onChange={(text) => handleBlockTextChange(block.id, text)}
-              onMediaAdd={(files) => handleMediaAdd(block.id, files)}
-              onMediaRemove={(mediaId) => handleMediaRemove(block.id, mediaId)}
-              onMediaEdit={(media) => handleMediaEdit(block.id, media)}
-              onMediaReorder={(from, to) =>
-                handleMediaReorder(block.id, from, to)
-              }
-              onDelete={() => handleBlockDelete(block.id)}
-              onEmojiClick={() => handleEmojiClick(block.id)}
-              onCodeBlockClick={() => handleCodeBlockClick(block.id)}
-              onCodeBlockRemove={(codeBlockId) =>
-                handleCodeBlockRemove(block.id, codeBlockId)
-              }
-            />
-          ))}
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#181B22] px-5 py-4">
+          <button
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[#808283] transition-colors hover:bg-white/10 hover:text-white"
+            disabled={isPosting}
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <h2 className="text-lg font-semibold text-white">Create Post</h2>
+          <div className="w-8" /> {/* Spacer for centering */}
         </div>
 
-        <CreatePostModalToolbar
-          onMediaClick={() => {}}
-          onEmojiClick={handleToolbarEmojiToggle}
-          onCodeBlockClick={() =>
-            handleCodeBlockClick(activeBlockId || blocks[0]?.id)
-          }
-          onMediaChange={handleToolbarMediaPick}
-          sentiment={sentiment}
-          onSentimentChange={setSentiment}
-          disabled={blocks.length === 0}
-          isPosting={isPosting}
-        />
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar">
+          <div className="flex gap-3">
+            <Avatar className="h-12 w-12 shrink-0">
+              <AvatarImage src="https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87" />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
 
-        <CreatePostModalFooter
-          onReplyClick={handleReplyButtonClick}
-          onPost={handlePost}
-          replySummary={replySummary}
-          charRatio={charRatio}
-          remainingChars={remainingChars}
-          isNearLimit={isNearLimit}
-          isOverLimit={isOverLimit}
-          canPost={canPost}
-          canAddBlock={canAddBlock}
-          onAddBlock={handleAddBlock}
-          isPosting={isPosting}
-          isThread={isThread}
-        />
+            <div className="flex-1">
+              <Textarea
+                placeholder="What's happening in the markets?"
+                value={text}
+                onChange={e => updateText(e.target.value)}
+                className="!min-h-[120px] !resize-none !border-none !bg-transparent !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0 !p-0"
+                autoFocus
+              />
 
-        <div ref={replyMenuRef}>
-          <ReplySettingsMenu
-            isOpen={isReplyMenuOpen}
-            position={replyMenuPosition}
-            currentSetting={replySetting}
-            onSelect={handleReplySelect}
+              {media.length > 0 && (
+                <div className="mt-3">
+                  <MediaGrid
+                    media={media}
+                    onEdit={m => setEditingMedia(m)}
+                    onRemove={mediaId => removeMedia(mediaId)}
+                    onReorder={(from, to) => reorderMedia(from, to)}
+                    readOnly={false}
+                  />
+                </div>
+              )}
+
+              {codeBlocks.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {codeBlocks.map((cb) => (
+                    <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg">
+                      <div className="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] border-b border-[#6B46C1]/20">
+                        <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCodeBlock(cb.id)}
+                          className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#6B46C1]/20 rounded-lg text-[#9F7AEA]"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <pre className="px-4 py-3 text-xs text-[#D4B5FD] overflow-x-auto max-h-40 font-mono bg-[#05030A]">
+                        <code>{cb.code}</code>
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Metadata */}
+          {text.length > 0 && (
+            <div className="mt-4">
+              <ComposerMetadata
+                visible={true}
+                market={postMarket}
+                category={postCategory}
+                symbol={postSymbol}
+                timeframe={postTimeframe}
+                risk={postRisk}
+                onMarketChange={setPostMarket}
+                onCategoryChange={setPostCategory}
+                onSymbolChange={setPostSymbol}
+                onTimeframeChange={setPostTimeframe}
+                onRiskChange={setPostRisk}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Toolbar */}
+        <div className="border-t border-[#181B22] px-5 py-3">
+          <ComposerToolbar
+            onMediaClick={() => mediaInputRef.current?.click()}
+            onDocumentClick={() => documentInputRef.current?.click()}
+            onVideoClick={() => videoInputRef.current?.click()}
+            onCodeBlockClick={() => setIsCodeBlockOpen(true)}
+            onEmojiClick={() => setIsEmojiPickerOpen(prev => !prev)}
+            onBoldClick={handleBoldToggle}
+            isBoldActive={isBoldActive}
+            sentiment={sentiment}
+            onSentimentChange={setSentiment}
+            isPaid={isPaid}
+            onPaidChange={setIsPaid}
           />
         </div>
 
-        <EmojiPickerOverlay
-          ref={emojiMenuRef}
-          isOpen={isEmojiPickerOpen}
-          onSelect={handleEmojiSelect}
-        />
+        {/* Footer */}
+        <div className="border-t border-[#181B22] px-5 py-4">
+          <ComposerFooter
+            charRatio={charRatio}
+            remainingChars={remainingChars}
+            isNearLimit={isNearLimit}
+            isOverLimit={isOverLimit}
+            canPost={canPost}
+            onPost={handlePost}
+            showReplySettings={true}
+            replySummary={replySummary}
+            onReplyClick={handleReplyButtonClick}
+            isPosting={isPosting}
+          />
+        </div>
+
+        {/* Reply Settings Menu */}
+        {isReplyMenuOpen && (
+          <div ref={replyMenuRef} className="absolute bottom-20 left-5 z-50 w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3">
+            <h3 className="mb-2 text-xs font-semibold text-white">Who can reply?</h3>
+            <div className="space-y-1.5">
+              {replyOptions.map(opt => (
+                <button 
+                  key={opt.id} 
+                  onClick={() => { setReplySetting(opt.id); setIsReplyMenuOpen(false); }} 
+                  className="flex w-full items-start gap-2.5 rounded-lg bg-white/5 p-2 text-left transition-colors hover:bg-white/10 text-xs"
+                >
+                  <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill={replySetting === opt.id ? "#1D9BF0" : "none"} stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    {replySetting === opt.id && <circle cx="12" cy="12" r="4" fill="#1D9BF0" />}
+                  </svg>
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-white">{opt.label}</div>
+                    <div className="text-[11px] text-[#808283]">{opt.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Emoji Picker */}
+        {isEmojiPickerOpen && (
+          <div ref={emojiMenuRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]">
+            <EmojiPicker onSelect={(emoji) => { insertEmoji(emoji); setIsEmojiPickerOpen(false); }} />
+          </div>
+        )}
       </div>
 
       {editingMedia && (
         <MediaEditor
           media={editingMedia}
-          onSave={handleMediaSave}
-          onClose={() => {
-            setEditingMedia(null);
-            setActiveBlockId(null);
-          }}
+          onSave={(updated) => { replaceMedia(updated); setEditingMedia(null); }}
+          onClose={() => setEditingMedia(null)}
         />
       )}
 
       <CodeBlockModal
         isOpen={isCodeBlockOpen}
         onClose={() => setIsCodeBlockOpen(false)}
-        onInsert={handleCodeBlockInsert}
+        onInsert={(code, language) => { insertCodeBlock(code, language); setIsCodeBlockOpen(false); }}
       />
 
-      <DraftsList
-        isOpen={isDraftsOpen}
-        onClose={() => setIsDraftsOpen(false)}
-        onOpen={handleOpenDraft}
-        onDelete={() => {}}
-      />
+      <input ref={mediaInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
+      <input ref={documentInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
+      <input ref={videoInputRef} type="file" accept=".mp4,.webm,.mov,.avi,video/*" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
     </div>,
     document.body
   );
