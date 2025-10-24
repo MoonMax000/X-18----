@@ -115,7 +115,7 @@ const MyPosts: FC = () => {
             <h2 className="text-xl font-bold text-white">My Posts</h2>
             <p className="text-sm text-[#6C7280]">Manage your content</p>
           </div>
-          <button className={cn(BUTTON_VARIANTS.primary, "gap-2 px-4 py-2.5 text-sm")}>
+          <button className={cn(BUTTON_VARIANTS.primary, "flex items-center gap-2 px-4 py-2.5 text-sm")}>
             <Plus className="h-4 w-4" />
             New Post
           </button>
