@@ -567,25 +567,6 @@ export default function QuickComposer({ onExpand }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="14" fill="none" stroke="#2F3336" strokeWidth="4" />
-                <circle cx="16" cy="16" r="14" fill="none" stroke={isOverLimit ? "#EF454A" : isNearLimit ? "#FFD400" : "#A06AFF"} strokeWidth="4" strokeDasharray={`${circumference} ${circumference}`} strokeDashoffset={dashOffset} strokeLinecap="round" className="transition-all duration-300" />
-              </svg>
-              <span className={cn("absolute text-sm font-medium tabular-nums", isOverLimit ? "text-[#EF454A]" : isNearLimit ? "text-[#FFD400]" : "text-[#808283]")}>
-                {remainingChars < 20 ? remainingChars : ""}
-              </span>
-            </div>
-
-            {canAddBlock && (
-              <button type="button" onClick={handleAddBlock} className="flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10" title="Add another post">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="none">
-                  <path d="M12 8V16M16 12H8" stroke="#A06AFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" stroke="#A06AFF" strokeWidth="1.5" />
-                </svg>
-              </button>
-            )}
-
             <button className={cn("group relative inline-flex h-8 items-center justify-center gap-1.5 overflow-hidden rounded-full px-3 text-xs font-semibold transition-all duration-200 transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/40 focus-visible:ring-offset-0", text.length > 0 ? "bg-gradient-to-r from-[#A06AFF] via-[#7F57FF] to-[#482090] text-white shadow-[0_20px_44px_-20px_rgba(160,106,255,0.9)] hover:shadow-[0_24px_50px_-18px_rgba(160,106,255,1)] hover:-translate-y-0.5 active:scale-[0.98]" : "cursor-not-allowed bg-[#6C7280]/20 text-[#6C7280]")} disabled={text.length === 0}>
               {text.length > 0 && (
                 <span aria-hidden className="absolute inset-0 bg-[linear-gradient(120deg,_rgba(255,255,255,0.18)_0%,_rgba(255,255,255,0.05)_40%,_rgba(255,255,255,0)_100%)] opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
@@ -597,6 +578,16 @@ export default function QuickComposer({ onExpand }: Props) {
                 <span className="hidden sm:inline">Post</span>
               </span>
             </button>
+
+            <div className="relative flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="14" fill="none" stroke="#2F3336" strokeWidth="4" />
+                <circle cx="16" cy="16" r="14" fill="none" stroke={isOverLimit ? "#EF454A" : isNearLimit ? "#FFD400" : "#A06AFF"} strokeWidth="4" strokeDasharray={`${circumference} ${circumference}`} strokeDashoffset={dashOffset} strokeLinecap="round" className="transition-all duration-300" />
+              </svg>
+              <span className={cn("absolute text-sm font-medium tabular-nums", isOverLimit ? "text-[#EF454A]" : isNearLimit ? "text-[#FFD400]" : "text-[#808283]")}>
+                {remainingChars < 20 ? remainingChars : ""}
+              </span>
+            </div>
           </div>
 
           {isReplyMenuOpen && replyMenuPosition && createPortal(
