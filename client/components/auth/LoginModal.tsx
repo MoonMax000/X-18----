@@ -499,7 +499,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     if (!isOpen) {
       // Reset to initial state
       setCurrentScreen('login');
-      setAuthMethod('phone');
+      setAuthMethod('email');
       setShowPassword(false);
       setPhoneNumber('');
       setEmail('');
