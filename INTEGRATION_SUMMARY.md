@@ -114,7 +114,7 @@ GoToSocial **DOES NOT** support these features out of the box. You MUST build a 
    - Возвращать JSON в ответе
    - **Итого: ~50 строк кода на Go**
 
-   **Время:** ⏱️ 30 ми��ут базовая реализация + 3 часа фильтрация и тесты = **4 часа**
+   **Время:** ⏱️ 30 минут базовая реализация + 3 часа фильтрация и тесты = **4 часа**
 
    **См. детали:** `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` (с примерами кода)
 
@@ -171,7 +171,7 @@ These work out of the box:
 │          │   │                 │
 │ Social   │   │ - Monetization  │
 │ Features │   │ - Signals Data  │
-│ Posts    │   │ - Analytics     │
+��� Posts    │   │ - Analytics     │
 │ Follows  │   │ - Trending      │
 │ Timeline │   │ - Payments      │
 └──────────┘   └─────────────────┘
@@ -277,7 +277,8 @@ Use the testing checklist in `GOTOSOCIAL_PAGES_INTEGRATION.md`:
 - ✅ `client/hooks/useGTSNotifications.ts` - Notifications hook
 - ✅ `GOTOSOCIAL_INTEGRATION_ANALYSIS.md` - Feature analysis
 - ✅ `GOTOSOCIAL_PAGES_INTEGRATION.md` - Integration guide
-- ✅ `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` - **NEW** Guide to customize GoToSocial (Go code examples)
+- ✅ `GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md` - **ОБНОВЛЁННЫЙ** Простой гайд (4 часа работы, ~50 строк кода)
+- ✅ `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` - Детальный гайд (для справки)
 - ✅ `INTEGRATION_SUMMARY.md` - This file
 
 ### Previously Created (from optimization):
