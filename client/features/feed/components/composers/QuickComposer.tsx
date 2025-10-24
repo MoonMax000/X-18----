@@ -153,12 +153,18 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
         mentioned: 'direct',
       };
 
-      await createStatus({
+      // Note: custom_metadata requires GoToSocial customization
+      // See GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md for implementation
+      const statusData: any = {
         status: text,
         media_ids: mediaIds,
         visibility: visibilityMap[replySetting],
         sensitive: false,
-        custom_metadata: {
+      };
+
+      // Only add custom_metadata if at least one field is set
+      if (postCategory || postMarket || postSymbol || sentiment) {
+        statusData.custom_metadata = {
           post_type: postCategory.toLowerCase(),
           market: postMarket.toLowerCase(),
           category: postCategory.toLowerCase(),
@@ -168,8 +174,10 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           risk: postRisk.toLowerCase(),
           access_level: accessType,
           ...(accessType === 'pay-per-post' && { price: postPrice }),
-        },
-      } as any);
+        };
+      }
+
+      await createStatus(statusData);
 
       toast({ title: "Post created!", description: "Your post has been published successfully." });
       reset();
