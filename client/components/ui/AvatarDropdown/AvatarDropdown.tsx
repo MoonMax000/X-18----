@@ -100,6 +100,20 @@ export const AvatarDropdown: FC = () => {
       dividerAfter: true
     },
     {
+      id: "login",
+      label: "Вход",
+      onClick: () => {
+        setIsLoginModalOpen(true);
+      },
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#B0B0B0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.833 2.5L11.3852 2.69487C13.5341 3.45333 14.6086 3.83257 15.2208 4.69785C15.833 5.56313 15.833 6.70258 15.833 8.9815V11.0185C15.833 13.2974 15.833 14.4368 15.2208 15.3022C14.6086 16.1674 13.5341 16.5467 11.3852 17.3052L10.833 17.5"/>
+          <path d="M2.49967 9.99996H10.833M2.49967 9.99996C2.49967 9.41646 4.16161 8.32623 4.58301 7.91663M2.49967 9.99996C2.49967 10.5835 4.16161 11.6737 4.58301 12.0833"/>
+        </svg>
+      ),
+      dividerAfter: false
+    },
+    {
       id: "logout",
       label: "Log out",
       onClick: () => {
