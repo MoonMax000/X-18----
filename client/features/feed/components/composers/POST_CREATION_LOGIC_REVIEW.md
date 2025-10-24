@@ -1,7 +1,9 @@
 # Post Creation Logic Review and Fixes
 
 ## Date: 2024
-## Status: ✅ FIXED
+## Status: ✅ FIXED & ENHANCED
+
+**Latest Update**: Replaced simple `isPaid` toggle with full monetization system supporting 5 access types.
 
 ---
 
@@ -297,6 +299,57 @@ The `FeedPost` component displays badges based on `accessLevel`:
 - **Logic**: Only included when `isPaid === true`
 - **Default**: `5.0` (should be configurable in future)
 - **Status**: ✅ **FIXED**
+
+---
+
+## 🚀 Enhanced Monetization System (NEW)
+
+### Replaced Simple Toggle with Full System
+
+#### Before
+- ❌ Simple `isPaid: boolean` toggle
+- ❌ Hardcoded $5 price
+- ❌ Only 2 options: Free or Paid
+
+#### After
+- ✅ 5 access types: Free, Pay-per-post, Subscribers-only, Followers-only, Premium
+- ✅ Custom pricing for pay-per-post
+- ✅ Visual dropdown with icons and descriptions
+- ✅ Inline price input (only shown for pay-per-post)
+
+### Access Types
+
+| Type | Icon | Mapping | Price |
+|------|------|---------|-------|
+| Free | Sparkles ✨ | `public` | - |
+| Pay-per-post | DollarSign 💵 | `paid` | User sets |
+| Subscribers Only | Users 👥 | `subscribers` | - |
+| Followers Only | UserCheck ✓ | `followers` | - |
+| Premium | Lock 🔒 | `premium` | - |
+
+### State Management
+
+```typescript
+// useSimpleComposer.ts
+const [accessType, setAccessType] = useState<
+  "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium"
+>("free");
+const [postPrice, setPostPrice] = useState<number>(5.0);
+```
+
+### Payload Example
+
+```typescript
+{
+  text: "My analysis",
+  accessLevel: "paid",           // Mapped from accessType
+  accessType: "pay-per-post",    // Original value
+  price: 9.99                     // Only if pay-per-post
+}
+```
+
+### Documentation
+See `PAID_POST_SYSTEM.md` for complete details.
 
 ---
 
