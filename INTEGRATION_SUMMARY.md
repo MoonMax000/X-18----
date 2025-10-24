@@ -91,14 +91,7 @@ GoToSocial **DOES NOT** support these features out of the box. You MUST build a 
    - Revenue tracking
    - Purchased posts history
 
-2. **📈 Trading Signals & Market Data** (Critical)
-   - Signal metadata (entry, stop loss, take profit)
-   - Market categorization (crypto, stocks, forex)
-   - Sentiment tracking (bullish/bearish)
-   - Accuracy metrics
-   - Post type taxonomy (signal, news, education, etc.)
-
-3. **🔒 Advanced Access Control** (High Priority)
+2. **🔒 Advanced Access Control** (High Priority)
    - Premium content tiers
    - Purchase verification
    - Subscription checks
