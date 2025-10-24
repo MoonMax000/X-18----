@@ -188,88 +188,90 @@ const UserHeader: FC<Props> = ({
         </div>
 
         {/* Avatar and action buttons container */}
-        <div className="relative px-3 sm:px-4 md:px-6">
-          {/* Avatar positioned to overlap banner */}
-          <div className="absolute -top-12 sm:-top-14 md:-top-16 left-3 sm:left-4 md:left-4">
-            <div className={`group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full ${getAvatarBorderClass(data.level)} ${getAvatarGlowClass(data.level)}`}>
-              <img
-                src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500"
-                alt="Profile"
-                className="h-full w-full object-cover scale-110"
-              />
-              <button
-                type="button"
-                onClick={handleAvatarClick}
-                aria-label="Update profile picture"
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 text-white transition-all duration-200 group-hover:bg-black/55 group-hover:backdrop-blur-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              >
-                <svg
-                  className="h-5 w-5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5.83268 5C4.81548 5.00305 4.25254 5.02738 3.78995 5.22154C3.14201 5.4935 2.61435 5.99586 2.3061 6.63425C2.0545 7.15532 2.01333 7.82292 1.93098 9.15813L1.80195 11.2504C1.59717 14.5707 1.49478 16.2309 2.46909 17.2819C3.44339 18.3329 5.08479 18.3329 8.36761 18.3329H11.6311C14.9139 18.3329 16.5553 18.3329 17.5296 17.2819C18.5039 16.2309 18.4015 14.5707 18.1968 11.2504L18.0677 9.15813C17.9854 7.82292 17.9442 7.15532 17.6926 6.63425C17.3844 5.99586 16.8567 5.4935 16.2088 5.22154C15.7462 5.02738 15.1832 5.00305 14.166 5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M14.1673 5.83366L13.4292 3.98818C13.1107 3.19196 12.8335 2.28874 12.0145 1.88328C11.5777 1.66699 11.052 1.66699 10.0007 1.66699C8.94932 1.66699 8.42365 1.66699 7.98678 1.88328C7.16782 2.28874 6.89066 3.19196 6.57218 3.98818L5.83398 5.83366"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12.9173 11.6667C12.9173 13.2775 11.6115 14.5833 10.0007 14.5833C8.38982 14.5833 7.08398 13.2775 7.08398 11.6667C7.08398 10.0558 8.38982 8.75 10.0007 8.75C11.6115 8.75 12.9173 10.0558 12.9173 11.6667Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path
-                    d="M10 5H10.0075"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+        <div className="px-3 sm:px-4 md:px-6 pt-3 sm:pt-4">
+          <div className="flex items-start justify-between gap-4">
+            {/* Avatar with negative margin to overlap banner */}
+            <div className="relative -mt-12 sm:-mt-14 md:-mt-16">
+              <div className={`group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full ${getAvatarBorderClass(data.level)} ${getAvatarGlowClass(data.level)}`}>
+                <img
+                  src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500"
+                  alt="Profile"
+                  className="h-full w-full object-cover scale-110"
+                />
+                {isOwn && (
+                  <button
+                    type="button"
+                    onClick={handleAvatarClick}
+                    aria-label="Update profile picture"
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 text-white transition-all duration-200 group-hover:bg-black/55 group-hover:backdrop-blur-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  >
+                    <svg
+                      className="h-5 w-5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M5.83268 5C4.81548 5.00305 4.25254 5.02738 3.78995 5.22154C3.14201 5.4935 2.61435 5.99586 2.3061 6.63425C2.0545 7.15532 2.01333 7.82292 1.93098 9.15813L1.80195 11.2504C1.59717 14.5707 1.49478 16.2309 2.46909 17.2819C3.44339 18.3329 5.08479 18.3329 8.36761 18.3329H11.6311C14.9139 18.3329 16.5553 18.3329 17.5296 17.2819C18.5039 16.2309 18.4015 14.5707 18.1968 11.2504L18.0677 9.15813C17.9854 7.82292 17.9442 7.15532 17.6926 6.63425C17.3844 5.99586 16.8567 5.4935 16.2088 5.22154C15.7462 5.02738 15.1832 5.00305 14.166 5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M14.1673 5.83366L13.4292 3.98818C13.1107 3.19196 12.8335 2.28874 12.0145 1.88328C11.5777 1.66699 11.052 1.66699 10.0007 1.66699C8.94932 1.66699 8.42365 1.66699 7.98678 1.88328C7.16782 2.28874 6.89066 3.19196 6.57218 3.98818L5.83398 5.83366"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12.9173 11.6667C12.9173 13.2775 11.6115 14.5833 10.0007 14.5833C8.38982 14.5833 7.08398 13.2775 7.08398 11.6667C7.08398 10.0558 8.38982 8.75 10.0007 8.75C11.6115 8.75 12.9173 10.0558 12.9173 11.6667Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <path
+                        d="M10 5H10.0075"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
 
-
-              <span className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100">
-                Update profile picture
-              </span>
-              <input
-                ref={avatarInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
+                {isOwn && (
+                  <span className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100">
+                    Update profile picture
+                  </span>
+                )}
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Action buttons panel */}
-          <div className={cn(
-            "flex items-start gap-2 sm:gap-3 py-3",
-            isOwn ? "justify-start ml-24 sm:ml-32 md:ml-36" : "justify-end"
-          )}>
-            {!isOwn && (
-              <button type="button" className={primaryActionButtonClass}>
-                <span className="relative z-10 text-center font-semibold leading-5">
-                  Follow
-                </span>
-              </button>
-            )}
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 sm:gap-3 pt-2">
+              {!isOwn && (
+                <button type="button" className={primaryActionButtonClass}>
+                  <span className="relative z-10 text-center font-semibold leading-5">
+                    Follow
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* User info section */}
-        <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-3 sm:pt-4">
+        <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4">
           {/* Name and username */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
