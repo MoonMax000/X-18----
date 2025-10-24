@@ -1,4 +1,4 @@
-import { type FC, type ReactNode, useState } from "react";
+import { type FC, type ReactNode, useState, memo } from "react";
 import { cn } from "@/lib/utils";
 import { CARD_VARIANTS } from "@/features/feed/styles";
 import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";

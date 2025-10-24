@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, memo } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Search, BarChart3, Trash2, Eye, Heart, MessageCircle, Plus, LayoutList, LayoutGrid } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
