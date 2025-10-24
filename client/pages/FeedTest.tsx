@@ -71,6 +71,7 @@ export default function FeedTest() {
     newCount,
     loadNew,
     refresh,
+    error,
   } = useGTSTimeline({
     type: feedMode === 'all' ? 'public' : feedMode === 'following' ? 'home' : 'public',
     limit: 20,
