@@ -71,6 +71,12 @@ export default function ProfilePageLayout({ isOwnProfile }: ProfilePageLayoutPro
       }
     : undefined;
 
+  const sidebarTrendingTickers = isOwnProfile ? [] : TRENDING_TICKERS;
+  const sidebarTopAuthors = isOwnProfile ? [] : TOP_AUTHORS;
+  const sidebarFollowRecommendations = isOwnProfile ? [] : DEFAULT_FOLLOW_RECOMMENDATIONS;
+  const sidebarSuggestedProfiles: typeof DEFAULT_SUGGESTED_PROFILES = [];
+  const sidebarNewsItems: NewsItem[] = [];
+
   // Mock data for subscriptions
   const subscriptions = isOwnProfile
     ? [
