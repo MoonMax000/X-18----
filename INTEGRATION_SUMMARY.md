@@ -148,7 +148,7 @@ These work out of the box:
 ### **Option A: GoToSocial + Custom Backend** (Recommended)
 
 ```
-┌──────────────────────────────────────���──┐
+┌─────────────────────────────────────────┐
 │         Frontend (React)                │
 │  - All your UI components               │
 │  - Uses both APIs                       │
@@ -268,6 +268,7 @@ Use the testing checklist in `GOTOSOCIAL_PAGES_INTEGRATION.md`:
 - ✅ `client/hooks/useGTSNotifications.ts` - Notifications hook
 - ✅ `GOTOSOCIAL_INTEGRATION_ANALYSIS.md` - Feature analysis
 - ✅ `GOTOSOCIAL_PAGES_INTEGRATION.md` - Integration guide
+- ✅ `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` - **NEW** Guide to customize GoToSocial (Go code examples)
 - ✅ `INTEGRATION_SUMMARY.md` - This file
 
 ### Previously Created (from optimization):
