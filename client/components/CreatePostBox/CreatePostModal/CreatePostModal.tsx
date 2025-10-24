@@ -308,7 +308,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
 
         {/* Reply Settings Menu */}
         {isReplyMenuOpen && (
-          <div ref={replyMenuRef} className="absolute bottom-20 left-5 z-50 w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3">
+          <div ref={replyMenuRef} className="absolute bottom-20 left-5 z-[2100] w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3">
             <h3 className="mb-2 text-xs font-semibold text-white">Who can reply?</h3>
             <div className="space-y-1.5">
               {replyOptions.map(opt => (
