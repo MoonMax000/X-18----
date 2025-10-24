@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Search, Edit2, BarChart3, Trash2, Eye, Heart, MessageCircle, Plus, LayoutList, LayoutGrid } from "lucide-react";
+import { ChevronDown, Search, BarChart3, Trash2, Eye, Heart, MessageCircle, Plus, LayoutList, LayoutGrid } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BUTTON_VARIANTS } from "@/features/feed/styles";
 
