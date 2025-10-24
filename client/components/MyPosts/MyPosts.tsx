@@ -6,6 +6,8 @@ import { BUTTON_VARIANTS } from "@/features/feed/styles";
 
 type PostStatus = "published" | "draft";
 type PostCategory = "analysis" | "tutorial" | "review" | "opinion" | "news";
+type PostType = "all" | "premium" | "free";
+type DateSort = "newest" | "oldest";
 type ViewMode = "list" | "cards";
 
 interface Post {
@@ -16,6 +18,7 @@ interface Post {
   date: string;
   status: PostStatus;
   category: PostCategory;
+  isPremium: boolean;
   views: number;
   likes: number;
   comments: number;
@@ -31,6 +34,7 @@ const mockPosts: Post[] = [
     date: "2h ago",
     status: "published",
     category: "analysis",
+    isPremium: true,
     views: 12450,
     likes: 320,
     comments: 85,
@@ -44,6 +48,7 @@ const mockPosts: Post[] = [
     date: "5h ago",
     status: "published",
     category: "tutorial",
+    isPremium: false,
     views: 9872,
     likes: 124,
     comments: 287,
@@ -56,6 +61,7 @@ const mockPosts: Post[] = [
     date: "1d ago",
     status: "published",
     category: "review",
+    isPremium: true,
     views: 7345,
     likes: 63,
     comments: 195,
@@ -68,6 +74,7 @@ const mockPosts: Post[] = [
     date: "2d ago",
     status: "draft",
     category: "opinion",
+    isPremium: false,
     views: 0,
     likes: 0,
     comments: 0,
@@ -77,6 +84,8 @@ const mockPosts: Post[] = [
 const MyPosts: FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const [typeFilter, setTypeFilter] = useState<PostType>("all");
+  const [dateSort, setDateSort] = useState<DateSort>("newest");
   const [categoryFilter, setCategoryFilter] = useState<"all" | PostCategory>("all");
 
   const getCategoryBadge = (category: PostCategory) => {
@@ -96,6 +105,17 @@ const MyPosts: FC = () => {
     { value: "all" as const, label: "All" },
     { value: "published" as const, label: "Published" },
     { value: "draft" as const, label: "Draft" },
+  ];
+
+  const typeOptions = [
+    { value: "all" as const, label: "Все" },
+    { value: "premium" as const, label: "Премиум" },
+    { value: "free" as const, label: "Бесплатные" },
+  ];
+
+  const dateOptions = [
+    { value: "newest" as const, label: "Сначала новые" },
+    { value: "oldest" as const, label: "Сначала старые" },
   ];
 
   const categoryOptions = [
@@ -153,6 +173,60 @@ const MyPosts: FC = () => {
                     >
                       {option.label}
                       {statusFilter === option.value && <div className="h-1.5 w-1.5 rounded-full bg-[#A06AFF]" />}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="inline-flex h-10 items-center gap-2 rounded-full border border-[#181B22] bg-black px-4 text-sm font-semibold text-white transition-colors hover:border-[#A06AFF]/50">
+                  <span className="text-[#6C7280]">Тип:</span>
+                  {typeOptions.find((o) => o.value === typeFilter)?.label}
+                  <ChevronDown className="h-4 w-4 text-[#6C7280]" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" sideOffset={8} className="w-[180px] rounded-2xl border border-[#181B22] bg-[#0F131A]/95 p-2 shadow-2xl backdrop-blur-xl">
+                <div className="flex flex-col gap-1">
+                  {typeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setTypeFilter(option.value)}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors",
+                        typeFilter === option.value ? "bg-[#A06AFF]/20 text-white" : "text-[#B0B0B0] hover:bg-white/5 hover:text-white"
+                      )}
+                    >
+                      {option.label}
+                      {typeFilter === option.value && <div className="h-1.5 w-1.5 rounded-full bg-[#A06AFF]" />}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="inline-flex h-10 items-center gap-2 rounded-full border border-[#181B22] bg-black px-4 text-sm font-semibold text-white transition-colors hover:border-[#A06AFF]/50">
+                  <span className="text-[#6C7280]">Дата:</span>
+                  {dateOptions.find((o) => o.value === dateSort)?.label}
+                  <ChevronDown className="h-4 w-4 text-[#6C7280]" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" sideOffset={8} className="w-[200px] rounded-2xl border border-[#181B22] bg-[#0F131A]/95 p-2 shadow-2xl backdrop-blur-xl">
+                <div className="flex flex-col gap-1">
+                  {dateOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setDateSort(option.value)}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors",
+                        dateSort === option.value ? "bg-[#A06AFF]/20 text-white" : "text-[#B0B0B0] hover:bg-white/5 hover:text-white"
+                      )}
+                    >
+                      {option.label}
+                      {dateSort === option.value && <div className="h-1.5 w-1.5 rounded-full bg-[#A06AFF]" />}
                     </button>
                   ))}
                 </div>
@@ -233,6 +307,11 @@ const MyPosts: FC = () => {
                       <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: badge.bg }}>
                         {badge.label}
                       </span>
+                      {post.isPremium && (
+                        <span className="rounded bg-[#A06AFF]/20 px-1.5 py-0.5 text-xs font-bold text-[#A06AFF]">
+                          Premium
+                        </span>
+                      )}
                       <span
                         className={cn(
                           "rounded px-1.5 py-0.5 text-xs font-bold",
@@ -303,6 +382,11 @@ const MyPosts: FC = () => {
                     <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: badge.bg }}>
                       {badge.label}
                     </span>
+                    {post.isPremium && (
+                      <span className="rounded bg-[#A06AFF]/20 px-1.5 py-0.5 text-xs font-bold text-[#A06AFF]">
+                        Premium
+                      </span>
+                    )}
                     <span
                       className={cn(
                         "rounded px-1.5 py-0.5 text-xs font-bold",

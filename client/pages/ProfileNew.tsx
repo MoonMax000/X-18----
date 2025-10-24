@@ -8,6 +8,7 @@ import KycSettings from "@/components/KycSettings/KycSettings";
 import LiveStreamingSettings from "@/components/LiveStreamingSettings/LiveStreamingSettings";
 import SocialOverview from "@/components/SocialOverview/SocialOverview";
 import MyPosts from "@/components/MyPosts/MyPosts";
+import Subscriptions from "@/components/Subscriptions/Subscriptions";
 import Monetization from "@/components/Monetization/Monetization";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ type ProfileSubTab =
 type SocialSubTab =
   | "overview"
   | "posts"
+  | "subscriptions"
   | "monetization";
 
 type PortfolioSubTab = "my" | "following";
@@ -462,6 +464,56 @@ const socialSubTabs = [
           d="M11.543 17.356V18.3337H12.5208C12.862 18.3337 13.0326 18.3337 13.1859 18.2702C13.3393 18.2066 13.4599 18.086 13.7011 17.8448L17.7208 13.8248C17.9483 13.5973 18.0621 13.4836 18.1229 13.3609C18.2386 13.1274 18.2386 12.8533 18.1229 12.6198C18.0621 12.4971 17.9483 12.3833 17.7208 12.1558C17.4932 11.9283 17.3795 11.8146 17.2567 11.7537C17.0232 11.6381 16.7491 11.6381 16.5156 11.7537C16.3929 11.8146 16.2791 11.9283 16.0516 12.1558L12.0319 16.1758C11.7906 16.417 11.6701 16.5376 11.6066 16.6909C11.543 16.8443 11.543 17.0148 11.543 17.356Z"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "subscriptions" as SocialSubTab,
+    label: "Мои подписки",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+        <path
+          d="M13.4154 9.16667C13.4154 7.55583 12.1095 6.25 10.4987 6.25C8.88786 6.25 7.58203 7.55583 7.58203 9.16667C7.58203 10.7775 8.88786 12.0833 10.4987 12.0833C12.1095 12.0833 13.4154 10.7775 13.4154 9.16667Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M13.4022 9.45825C13.6705 9.53958 13.9551 9.58333 14.2499 9.58333C15.8607 9.58333 17.1666 8.2775 17.1666 6.66667C17.1666 5.05583 15.8607 3.75 14.2499 3.75C12.7375 3.75 11.4939 4.90117 11.3477 6.37511"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9.65095 6.37511C9.5047 4.90117 8.26113 3.75 6.7487 3.75C5.13786 3.75 3.83203 5.05583 3.83203 6.66667C3.83203 8.2775 5.13786 9.58333 6.7487 9.58333C7.04354 9.58333 7.32816 9.53958 7.59642 9.45825"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M18.8333 13.7499C18.8333 11.4488 16.7813 9.58325 14.25 9.58325"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M15.0846 16.2499C15.0846 13.9488 13.0326 12.0833 10.5013 12.0833C7.96999 12.0833 5.91797 13.9488 5.91797 16.2499"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M6.7513 9.58325C4.21999 9.58325 2.16797 11.4488 2.16797 13.7499"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
@@ -1168,6 +1220,11 @@ const ProfileNew: FC = () => {
 
       {/* Tab content */}
       <div className="mt-4">
+        {activeSocialSubTab === "overview" && <SocialOverview />}
+        {activeSocialSubTab === "posts" && <MyPosts />}
+        {activeSocialSubTab === "subscriptions" && <Subscriptions />}
+        {activeSocialSubTab === "monetization" && <Monetization />}
+
         {false && (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

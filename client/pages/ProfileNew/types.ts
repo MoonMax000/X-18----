@@ -18,8 +18,7 @@ export type ProfileSubTab =
 export type SocialSubTab =
   | 'overview'
   | 'posts'
-  | 'channels'
-  | 'chats'
+  | 'subscriptions'
   | 'monetization';
 
 export type PortfolioSubTab = 'my' | 'following';
