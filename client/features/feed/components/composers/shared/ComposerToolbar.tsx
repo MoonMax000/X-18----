@@ -15,6 +15,7 @@ export interface ComposerToolbarProps {
   accessType: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium";
   onAccessTypeClick: () => void;
   postPrice: number;
+  disabled?: boolean;
 }
 
 const accessTypeConfig = {
@@ -68,6 +69,7 @@ export function ComposerToolbar({
   accessType,
   onAccessTypeClick,
   postPrice,
+  disabled = false,
 }: ComposerToolbarProps) {
   const currentConfig = accessTypeConfig[accessType];
   const CurrentIcon = currentConfig.icon;
@@ -76,10 +78,11 @@ export function ComposerToolbar({
   return (
     <div className="flex items-center gap-2">
       {/* Media Buttons */}
-      <button 
-        type="button" 
-        onClick={onMediaClick} 
-        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]" 
+      <button
+        type="button"
+        onClick={onMediaClick}
+        disabled={disabled}
+        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:opacity-50 disabled:cursor-not-allowed"
         title="Add photos or images"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -89,10 +92,11 @@ export function ComposerToolbar({
         </svg>
       </button>
 
-      <button 
-        type="button" 
-        onClick={onDocumentClick} 
-        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]" 
+      <button
+        type="button"
+        onClick={onDocumentClick}
+        disabled={disabled}
+        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:opacity-50 disabled:cursor-not-allowed"
         title="Add documents (PDF, DOCX, PPTX, etc.)"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -103,10 +107,11 @@ export function ComposerToolbar({
         </svg>
       </button>
 
-      <button 
-        type="button" 
-        onClick={onVideoClick} 
-        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]" 
+      <button
+        type="button"
+        onClick={onVideoClick}
+        disabled={disabled}
+        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:opacity-50 disabled:cursor-not-allowed"
         title="Add videos (MP4, WebM, MOV, etc.)"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -116,10 +121,11 @@ export function ComposerToolbar({
         </svg>
       </button>
 
-      <button 
-        type="button" 
-        onClick={onCodeBlockClick} 
-        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
+      <button
+        type="button"
+        onClick={onCodeBlockClick}
+        disabled={disabled}
+        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:opacity-50 disabled:cursor-not-allowed"
         title="Add code block"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -129,10 +135,11 @@ export function ComposerToolbar({
 
       <div className="ml-2 h-6 w-px bg-[#1B1F27]" />
 
-      <button 
-        type="button" 
-        onClick={onEmojiClick} 
-        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] relative"
+      <button
+        type="button"
+        onClick={onEmojiClick}
+        disabled={disabled}
+        className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:opacity-50 disabled:cursor-not-allowed relative"
         title="Add emoji"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -140,13 +147,14 @@ export function ComposerToolbar({
         </svg>
       </button>
 
-      <button 
-        type="button" 
-        onClick={onBoldClick} 
+      <button
+        type="button"
+        onClick={onBoldClick}
+        disabled={disabled}
         className={cn(
-          "flex h-8 items-center justify-center gap-1.5 transition-colors", 
+          "flex h-8 items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
           isBoldActive ? "text-[#A06AFF]" : "text-[#6C7280] hover:text-[#A06AFF]"
-        )} 
+        )}
         aria-label="Bold"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
