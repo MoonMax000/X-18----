@@ -3,8 +3,8 @@ import { FeedTab } from "./types";
 import { LayoutGrid, TrendingUp, Newspaper, GraduationCap, BarChart3, Brain, Code, Video, Heart } from "lucide-react";
 
 export const FILTERS_CONFIG = {
-  // Тема (Topic) - независимый фильтр
-  topic: { type: 'select' as const, opts: ['All', 'News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'] },
+  // Тема (Topic) - дополнительный фильтр для таба All
+  topic: { type: 'select' as const, opts: ['All', 'Signal', 'News', 'Education', 'Analysis', 'Macro', 'Code', 'Video', 'General'] },
 
   // Остальные фильтры
   market: { type: 'select' as const, opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
