@@ -196,7 +196,7 @@ const SocialOverview: FC = () => {
 
   const mockActivity = [
     { type: "follow" as const, user: "Maria_Crypto", action: "подписался на вас", time: "5 мин назад" },
-    { type: "like" as const, user: "TraderAlex", action: "лайкнул ваш пост о Bitcoin", time: "12 мин назад" },
+    { type: "like" as const, user: "TraderAlex", action: "лайкнул ваш пос�� о Bitcoin", time: "12 мин назад" },
     { type: "comment" as const, user: "CryptoGuru", action: "прокомментировал ваш анализ", time: "1 час назад" },
     { type: "follow" as const, user: "ETH_investor", action: "подписался на вас", time: "2 часа назад" },
     { type: "like" as const, user: "DayTrader_Pro", action: "лайкнул ваш пост", time: "3 часа назад" },
@@ -206,6 +206,55 @@ const SocialOverview: FC = () => {
     { title: "Bitcoin достиг нового максимума! Анализ текущей ситуации", likes: 342, comments: 87, views: 5420 },
     { title: "5 правил успешного трейдинга в 2024 году", likes: 289, comments: 64, views: 4850 },
     { title: "Ethereum: что ждет нас в ближайшие месяцы?", likes: 215, comments: 52, views: 3920 },
+  ];
+
+  const socialUpdates = [
+    {
+      avatar: "https://api.builder.io/api/v1/image/assets/TEMP/7746a2e8ebde2c6e52ec623079f09df3e63924fe?width=88",
+      title: "Sophia Light",
+      subtitle: "Check out new ETH Analysis...",
+      timestamp: "5 мин назад",
+    },
+    {
+      avatar: "https://api.builder.io/api/v1/image/assets/TEMP/23996870cb880292839824f9010dd522308f5fac?width=88",
+      title: "Market Chat",
+      subtitle: "3 новых сообщения в группе",
+      timestamp: "12 мин назад",
+    },
+    {
+      avatar: "https://api.builder.io/api/v1/image/assets/TEMP/68682742732be9f94522a43dd137511874548bb4?width=88",
+      title: "Macro Outlook 2025",
+      subtitle: "17 новых сообщений",
+      timestamp: "1 час назад",
+    },
+  ];
+
+  const groupChats = [
+    {
+      image: "https://api.builder.io/api/v1/image/assets/TEMP/a41932045d11fb04b12ef9336587c545788a4897?width=88",
+      name: "Crypto Basics - Live Q&A",
+      subscribers: "72 подписчика",
+    },
+    {
+      image: "https://api.builder.io/api/v1/image/assets/TEMP/2fed6ad136bda82afad8c1217f85da48694cef42?width=88",
+      name: "Macro Outlook 2025",
+      subscribers: "2 369 подписчиков",
+    },
+    {
+      image: "https://api.builder.io/api/v1/image/assets/TEMP/5eb00142623d95405333abe65d6e36c1831036f7?width=88",
+      name: "Ask Jane: Portfolio Diversification",
+      subscribers: "86 подписчиков",
+    },
+    {
+      image: "https://api.builder.io/api/v1/image/assets/TEMP/128f58d068f62f85b2902e36565aaef59e190b49?width=88",
+      name: "Fed Policy & Inflation",
+      subscribers: "823 подписчика",
+    },
+    {
+      image: "https://api.builder.io/api/v1/image/assets/TEMP/193725c84dab4dcd05d7a90347c68161b6a82c94?width=88",
+      name: "ETH ETF Approval: What's Next?",
+      subscribers: "72 подписчика",
+    },
   ];
 
   return (
@@ -315,6 +364,74 @@ const SocialOverview: FC = () => {
               <div className="h-full bg-gradient-to-r from-[#FFB84D] to-[#FF8C42]" style={{ width: '95%' }} />
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+              Социальные уведомления
+            </h3>
+            <span className="text-xs font-semibold text-[#A06AFF]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+              19 новых взаимодействий
+            </span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {socialUpdates.map((update, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <img
+                  src={update.avatar}
+                  alt={update.title}
+                  className="w-11 h-11 rounded-full object-cover"
+                />
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-bold text-white" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                      {update.title}
+                    </span>
+                    <span className="text-xs font-semibold text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                      {update.timestamp}
+                    </span>
+                  </div>
+                  <span className="text-sm text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                    {update.subtitle}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-4 h-9 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-sm font-semibold text-[#A06AFF] hover:text-white transition-colors" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+            Открыть сообщения →
+          </button>
+        </div>
+
+        <div className="p-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
+          <h3 className="text-xl font-bold text-white mb-4" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+            Группы, которые вы отслеживаете
+          </h3>
+          <div className="flex flex-col gap-3">
+            {groupChats.map((chat, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <img
+                  src={chat.image}
+                  alt={chat.name}
+                  className="w-11 h-11 rounded-full object-cover"
+                />
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="text-sm font-bold text-primary" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                    {chat.name}
+                  </span>
+                  <span className="text-xs font-semibold text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                    {chat.subscribers}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-4 h-9 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-sm font-bold text-white transition-opacity hover:opacity-90" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+            Посмотреть все группы →
+          </button>
         </div>
       </div>
 
