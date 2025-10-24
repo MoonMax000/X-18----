@@ -239,12 +239,6 @@ const UserHeader: FC<Props> = ({
                 </svg>
               </button>
 
-              {/* Level Badge */}
-              {data.level && data.level > 0 && (
-                <div className={`absolute -bottom-1 -right-1 flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full border-2 border-[#0B0E13] bg-gradient-to-br ${getLevelColor(data.level)} text-white font-bold text-[10px] sm:text-xs shadow-lg`}>
-                  {data.level}
-                </div>
-              )}
 
               <span className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100">
                 Update profile picture
@@ -275,7 +269,7 @@ const UserHeader: FC<Props> = ({
         </div>
 
         {/* User info section */}
-        <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-4">
+        <div className="flex flex-col gap-3 px-3 sm:px-4 md:px-6 pb-4 pt-12 sm:pt-16 md:pt-20">
           {/* Name and username */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
