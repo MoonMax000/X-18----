@@ -78,40 +78,39 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
   const inProgressBadges = gamificationData.badges.filter((b) => !b.earned);
 
   return (
-    <div className={cn("flex flex-col space-y-6", className)}>
-      <div className="rounded-3xl border border-widget-border/80 bg-[#0C101480] p-6 backdrop-blur-xl transition-colors hover:border-[#A06AFF]/40">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div className={cn("flex flex-col space-y-4", className)}>
+      {/* Compact Level Card */}
+      <div className="rounded-2xl border border-widget-border/80 bg-[#0C101480] p-4 backdrop-blur-xl">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
             <div className={cn(
-              "flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-xl",
+              "flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg",
               `${getLevelColor(gamificationData.level)}`
             )}>
-              <span className="text-2xl font-bold">{gamificationData.level}</span>
+              <span className="text-lg font-bold">{gamificationData.level}</span>
             </div>
-            <div className="flex flex-col gap-1">
-              <h3 className="text-lg font-bold text-white">{getLevelTitle(gamificationData.level)}</h3>
-              <p className="text-sm text-[#B0B0B0]">Level {gamificationData.level}</p>
+            <div className="flex flex-col gap-0.5">
+              <h3 className="text-sm font-bold text-white">{getLevelTitle(gamificationData.level)}</h3>
+              <p className="text-xs text-[#B0B0B0]">Level {gamificationData.level}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-widget-border/60 bg-black/40 px-4 py-2">
-            <Star className="h-5 w-5 fill-[#FFD700] text-[#FFD700]" />
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-white">{gamificationData.rating}</span>
-              <span className="text-sm text-[#B0B0B0]">({gamificationData.totalRatings})</span>
-            </div>
+          <div className="flex items-center gap-1.5 rounded-xl border border-widget-border/60 bg-black/40 px-3 py-1.5">
+            <Star className="h-4 w-4 fill-[#FFD700] text-[#FFD700]" />
+            <span className="text-sm font-bold text-white">{gamificationData.rating}</span>
+            <span className="text-xs text-[#B0B0B0]">({gamificationData.totalRatings})</span>
           </div>
         </div>
 
-        <div className="mt-6 space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-white">
+            <span className="text-xs font-medium text-white">
               {gamificationData.currentXP.toLocaleString()} / {gamificationData.xpToNextLevel.toLocaleString()} XP
             </span>
-            <span className="text-sm font-bold text-[#2EBD85]">
+            <span className="text-xs font-bold text-[#2EBD85]">
               {Math.floor(progressPercentage)}%
             </span>
           </div>
-          <div className="relative h-3 w-full overflow-hidden rounded-full bg-widget-border/60">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-widget-border/60">
             <div
               className={cn(
                 "h-full rounded-full bg-gradient-to-r transition-all duration-300",
@@ -126,72 +125,78 @@ const GamificationPanel: FC<Props> = ({ data, className }) => {
         </div>
       </div>
 
-      {earnedBadges.length > 0 && (
-        <div className="rounded-3xl border border-widget-border/80 bg-[#0C101480] p-6 backdrop-blur-xl transition-colors hover:border-[#A06AFF]/40">
-          <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#B0B0B0]">
-            Achievements ({earnedBadges.length})
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            {earnedBadges.map((badge) => {
-              const Icon = getBadgeIcon(badge.icon);
-              return (
-                <div
-                  key={badge.id}
-                  className="group relative flex items-center gap-3 rounded-2xl border border-[#A06AFF]/30 bg-gradient-to-br from-[#A06AFF]/10 to-transparent p-3 transition-all hover:border-[#A06AFF]/50 hover:from-[#A06AFF]/20"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#A06AFF] to-[#482090]">
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-white">{badge.name}</p>
-                  </div>
-                  <div className="pointer-events-none absolute -top-12 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-xl border border-widget-border/80 bg-black px-3 py-2 text-xs text-white opacity-0 shadow-2xl transition-opacity group-hover:opacity-100">
-                    {badge.description}
-                  </div>
-                </div>
-              );
-            })}
+      {/* Combined Achievements & Progress Card */}
+      {(earnedBadges.length > 0 || inProgressBadges.length > 0) && (
+        <div className="rounded-2xl border border-widget-border/80 bg-[#0C101480] p-4 backdrop-blur-xl">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-[#B0B0B0]">
+              Achievements ({earnedBadges.length})
+            </h3>
+            {inProgressBadges.length > 0 && (
+              <span className="text-xs font-semibold text-[#6C7280]">
+                {inProgressBadges.length} In Progress
+              </span>
+            )}
           </div>
-        </div>
-      )}
 
-      {inProgressBadges.length > 0 && (
-        <div className="rounded-3xl border border-widget-border/80 bg-[#0C101480] p-6 backdrop-blur-xl transition-colors hover:border-[#A06AFF]/40">
-          <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#B0B0B0]">
-            In Progress
-          </h3>
-          <div className="flex flex-col gap-3">
-            {inProgressBadges.map((badge) => {
-              const Icon = getBadgeIcon(badge.icon);
-              return (
-                <div
-                  key={badge.id}
-                  className="group relative flex items-center gap-3 rounded-2xl border border-widget-border/60 bg-black/40 p-3 transition-all hover:border-widget-border"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-widget-border/40">
-                    <Icon className="h-5 w-5 text-[#B0B0B0]" />
+          {/* Earned Badges - Compact Grid */}
+          {earnedBadges.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {earnedBadges.map((badge) => {
+                const Icon = getBadgeIcon(badge.icon);
+                return (
+                  <div
+                    key={badge.id}
+                    className="group relative flex items-center gap-2 rounded-xl border border-[#A06AFF]/30 bg-gradient-to-br from-[#A06AFF]/10 to-transparent p-2 transition-all hover:border-[#A06AFF]/50"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#A06AFF] to-[#482090]">
+                      <Icon className="h-4 w-4 text-white" />
+                    </div>
+                    <p className="truncate text-xs font-semibold text-white">{badge.name}</p>
+                    <div className="pointer-events-none absolute -top-10 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg border border-widget-border/80 bg-black px-2 py-1 text-xs text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                      {badge.description}
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#B0B0B0]">{badge.name}</p>
-                    {badge.progress !== undefined && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-widget-border/60">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090]"
-                            style={{ width: `${badge.progress}%` }}
-                          />
+                );
+              })}
+            </div>
+          )}
+
+          {/* In Progress Badges - Compact */}
+          {inProgressBadges.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {inProgressBadges.map((badge) => {
+                const Icon = getBadgeIcon(badge.icon);
+                return (
+                  <div
+                    key={badge.id}
+                    className="group relative flex items-center gap-2 rounded-xl border border-widget-border/60 bg-black/40 p-2"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-widget-border/40">
+                      <Icon className="h-4 w-4 text-[#B0B0B0]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-[#B0B0B0]">{badge.name}</p>
+                      {badge.progress !== undefined && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <div className="h-1 flex-1 overflow-hidden rounded-full bg-widget-border/60">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090]"
+                              style={{ width: `${badge.progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-[#B0B0B0]">{badge.progress}%</span>
                         </div>
-                        <span className="text-xs font-bold text-[#B0B0B0]">{badge.progress}%</span>
-                      </div>
-                    )}
+                      )}
+                    </div>
+                    <div className="pointer-events-none absolute -top-10 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg border border-widget-border/80 bg-black px-2 py-1 text-xs text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                      {badge.description}
+                    </div>
                   </div>
-                  <div className="pointer-events-none absolute -top-12 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-xl border border-widget-border/80 bg-black px-3 py-2 text-xs text-white opacity-0 shadow-2xl transition-opacity group-hover:opacity-100">
-                    {badge.description}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
