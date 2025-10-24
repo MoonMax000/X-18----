@@ -333,7 +333,7 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
 
         {/* Emoji Picker */}
         {isEmojiPickerOpen && (
-          <div ref={emojiMenuRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]">
+          <div ref={emojiMenuRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[2100] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]">
             <EmojiPicker onSelect={(emoji) => { insertEmoji(emoji); setIsEmojiPickerOpen(false); }} />
           </div>
         )}
