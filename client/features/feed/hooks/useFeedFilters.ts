@@ -37,15 +37,14 @@ export function useFeedFilters(initialTab: FeedTab = "all") {
   const applyToPosts = useCallback((posts: Post[], followingHandles?: Set<string>) => {
     let res = [...posts];
 
-    // Following tab: show only posts from followed users
-    if (activeTab === "following" && followingHandles) {
-      res = res.filter(p => followingHandles.has(p.author.handle));
-    }
-
-    if (activeTab === "ideas") res = res.filter(p => ["education", "analysis", "news"].includes(p.type));
-    if (activeTab === "opinions") res = res.filter(p => ["general", "macro"].includes(p.type));
-    if (activeTab === "analytics") res = res.filter(p => ["analysis", "macro", "onchain"].includes(p.type));
-    if (activeTab === "soft") res = res.filter(p => p.type === "code");
+    // Filter by tab (direct mapping to post types)
+    if (activeTab === "signal") res = res.filter(p => p.type === "signal");
+    if (activeTab === "news") res = res.filter(p => p.type === "news");
+    if (activeTab === "education") res = res.filter(p => p.type === "education");
+    if (activeTab === "analysis") res = res.filter(p => p.type === "analysis" || p.type === "onchain");
+    if (activeTab === "macro") res = res.filter(p => p.type === "macro");
+    if (activeTab === "code") res = res.filter(p => p.type === "code");
+    if (activeTab === "video") res = res.filter(p => p.type === "video");
     if (activeTab === "liked") res = res.filter(p => (p as any).__liked);
 
     if (filters.market && filters.market !== "All") {
