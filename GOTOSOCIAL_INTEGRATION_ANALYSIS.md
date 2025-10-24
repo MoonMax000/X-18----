@@ -62,7 +62,7 @@ This document identifies frontend functionalities that **cannot** be directly co
 
 ---
 
-### 4. **Code Snippets with Syntax Highlighting**
+### 3. **Code Snippets with Syntax Highlighting**
 
 **Our Features:**
 - Code block insertion in posts
@@ -345,7 +345,7 @@ This document identifies frontend functionalities that **cannot** be directly co
 | Advanced Notifications | ⚠️ Partial | Low - Enhanced preferences |
 | Drafts System | ⚠️ Partial | Low - Separate draft storage |
 | Hover Cards | ❌ None | Low - Lightweight profile API |
-| Widgets & Discovery | �� None | High - Trending algorithms, APIs |
+| Widgets & Discovery | ❌ None | High - Trending algorithms, APIs |
 | Advanced Search | ⚠️ Partial | High - Enhanced search engine |
 | Analytics & Metrics | ⚠️ Partial | Medium - View tracking, aggregation |
 | Poll Enhancements | ⚠️ Partial | Low - Sentiment aggregation |
