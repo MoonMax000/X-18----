@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
 import ContinuousFeedTimeline from "@/components/testLab/ContinuousFeedTimeline";
-import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
+import { DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { useFeedFilters } from "@/features/feed/hooks/useFeedFilters";
 import { useFeedTimeline } from "@/features/feed/hooks/useFeedTimeline";
