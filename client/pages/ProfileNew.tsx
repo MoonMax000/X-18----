@@ -2086,13 +2086,9 @@ const ProfileNew: FC = () => {
           </div>
         )}
 
-        {activeTab === "profile" && activeProfileSubTab === "profile" && (
-          <ProfileOverview />
-        )}
-
-        {false && activeTab === "profile" && activeProfileSubTab === "profile" && (
+        {false && (
           <div className="flex flex-col gap-6">
-            {/* Profile Form */}
+            {/* Old profile form - kept for reference */}
             <div className="flex flex-col gap-6">
               {/* Display Name and Username */}
               <div className="flex flex-col md:flex-row gap-4">
@@ -2626,21 +2622,6 @@ const ProfileNew: FC = () => {
           </div>
         )}
 
-        {activeTab === "profile" && activeProfileSubTab === "notifications" && (
-          <NotificationsSettings />
-        )}
-
-        {activeTab === "profile" && activeProfileSubTab === "billing" && (
-          <BillingSettings />
-        )}
-
-        {activeTab === "profile" && activeProfileSubTab === "referrals" && (
-          <ReferralsSettings />
-        )}
-
-        {activeTab === "profile" && activeProfileSubTab === "kyc" && (
-          <KycSettings />
-        )}
 
         {activeTab === "profile" &&
           activeProfileSubTab !== "profile" &&
@@ -2668,10 +2649,6 @@ const ProfileNew: FC = () => {
             </p>
           </div>
         )} */}
-
-        {activeTab === "streaming" && (
-          <LiveStreamingSettings activeTab={activeStreamingSubTab} />
-        )}
 
         {activeTab === "portfolios" && (
           <div className="container-card p-6">
