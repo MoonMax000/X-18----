@@ -2581,14 +2581,15 @@ const ProfileNew: FC = () => {
             </div>
           )}
 
-        {activeTab === "marketplace" && (
+        {/* MARKETPLACE CONTENT - DISABLED */}
+        {/* {activeTab === "marketplace" && (
           <div className="container-card p-6">
             <h2 className="text-2xl font-bold text-white">Marketplace</h2>
             <p className="mt-2 text-sm text-webGray">
               Browse and purchase trading tools, indicators, and strategies.
             </p>
           </div>
-        )}
+        )} */}
 
         {activeTab === "streaming" && (
           <LiveStreamingSettings activeTab={activeStreamingSubTab} />
