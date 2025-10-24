@@ -142,68 +142,19 @@ const ActivityItem: FC<{
   );
 };
 
-const TopPostCard: FC<{
-  title: string;
-  likes: number;
-  comments: number;
-  views: number;
-}> = ({ title, likes, comments, views }) => (
-  <article className="rounded-2xl border border-widget-border/75 bg-[#0C101480] p-4 transition-colors hover:border-[#A06AFF]/35 hover:bg-white/10">
-    <h4 className="mb-3 line-clamp-2 text-sm font-bold text-white">{title}</h4>
-    <div className="flex items-center gap-4 text-xs text-[#B0B0B0]">
-      <div className="flex items-center gap-1">
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-          <path
-            d="M10.5163 16.3915C10.2335 16.5416 9.76653 16.5416 9.48369 16.3915C7.30036 15.2582 1.66699 11.6665 1.66699 6.24984C1.66699 4.08317 3.41699 2.33317 5.58366 2.33317C7.08366 2.33317 8.39199 3.1415 9.16699 4.33317C9.55433 3.74984 10.0668 3.25817 10.666 2.89984C11.2652 2.5415 11.9335 2.33317 12.6337 2.33317C14.8003 2.33317 16.5503 4.08317 16.5503 6.24984C16.5503 11.6665 10.917 15.2582 10.5163 16.3915Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span>{likes}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-          <path
-            d="M6.66699 9.16667H6.67533M10.0003 9.16667H10.0087M13.3337 9.16667H13.342"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10C2.5 11.0929 2.74139 12.1287 3.17382 13.0547C3.28701 13.2956 3.34361 13.4161 3.36655 13.5183C3.38799 13.6144 3.39515 13.6888 3.39452 13.7877C3.39388 13.8904 3.37407 14.0015 3.33446 14.2239L2.71549 17.4855C2.64012 17.8863 2.60243 18.0867 2.67921 18.2204C2.74606 18.3371 2.86291 18.4139 2.99647 18.4288C3.14972 18.4457 3.33996 18.3459 3.72044 18.1463L6.7118 16.6509C6.89638 16.5586 6.98866 16.5125 7.07581 16.4914C7.15422 16.4727 7.21622 16.4641 7.29634 16.4621C7.38547 16.46 7.48194 16.4749 7.67488 16.5047C8.73964 16.6702 9.85251 16.6766 10.9397 16.5134"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span>{comments}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-          <path
-            d="M2.5 10C2.5 10 5 4.16667 10 4.16667C15 4.16667 17.5 10 17.5 10C17.5 10 15 15.8333 10 15.8333C5 15.8333 2.5 10 2.5 10Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span>{views}</span>
-      </div>
-    </div>
-  </article>
-);
+const getCategoryBadge = (category: "crypto" | "trading" | "analysis") => {
+  const badges = {
+    crypto: { label: "Crypto", bg: "#A06AFF" },
+    trading: { label: "Trading", bg: "#2EBD85" },
+    analysis: { label: "Analysis", bg: "#FFB84D" },
+  };
+  return badges[category];
+};
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
+  return num.toString();
+};
 
 const SocialOverview: FC = () => {
   const mockStats = {
@@ -296,7 +247,7 @@ const SocialOverview: FC = () => {
   const mockTopPosts = [
     {
       id: "1",
-      title: "Bitcoin достиг новог�� максимума! Анализ текущей ситуации",
+      title: "Bitcoin достиг новог�� максимума! Анализ текущей ��итуации",
       likes: 342,
       comments: 87,
       views: 5420,
@@ -484,10 +435,45 @@ const SocialOverview: FC = () => {
 
         <SectionCard>
           <h3 className={sectionTitleClass}>Популярные посты</h3>
-          <div className="mt-4 flex flex-col gap-4">
-            {mockTopPosts.map((post, index) => (
-              <TopPostCard key={`${post.title}-${index}`} {...post} />
-            ))}
+          <div className="mt-4 flex flex-col divide-y divide-[#181B22]">
+            {mockTopPosts.map((post) => {
+              const badge = getCategoryBadge(post.category);
+              return (
+                <article
+                  key={post.id}
+                  className="group flex items-center gap-4 py-4 transition-colors hover:bg-white/[0.02] first:pt-0"
+                >
+                  {post.thumbnail && (
+                    <img src={post.thumbnail} alt="" className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] object-cover" />
+                  )}
+                  {!post.thumbnail && <div className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] bg-[#0A0D12]" />}
+
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate text-sm font-bold text-white">{post.title}</h3>
+                      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: badge.bg }}>
+                        {badge.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-[#6C7280]">
+                      <span>{post.date}</span>
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        <span>{formatNumber(post.views)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        <span>{formatNumber(post.likes)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageCircle className="h-3 w-3" />
+                        <span>{formatNumber(post.comments)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </SectionCard>
       </div>
