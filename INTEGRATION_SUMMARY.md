@@ -365,14 +365,16 @@ Your frontend is **100% ready** for GoToSocial integration. All the groundwork i
 
 1. **Read** `GOTOSOCIAL_INTEGRATION_ANALYSIS.md` - Understand feature gaps
 2. **Read** `GOTOSOCIAL_PAGES_INTEGRATION.md` - Follow integration steps
-3. **Decide** on architecture (Option A, B, or C)
+3. **Read** `GOTOSOCIAL_CUSTOMIZATION_GUIDE.md` - Learn how to add trading signals support
 4. **Set up** GoToSocial instance
-5. **Build** custom backend for monetization & signals
-6. **Test** each page integration
-7. **Deploy** to production
+5. **Customize** GoToSocial for trading signals (1-2 days)
+6. **Build** custom backend for monetization
+7. **Test** each page integration
+8. **Deploy** to production
 
 **Estimated Timeline:**
 - Basic integration (social features): 1-2 weeks
+- GoToSocial customization (trading signals): 1-2 days ✅
 - Custom backend (monetization): 3-4 weeks
 - Full feature parity: 8-10 weeks
 
