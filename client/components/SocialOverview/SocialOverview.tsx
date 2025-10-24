@@ -478,26 +478,6 @@ const SocialOverview: FC = () => {
         </SectionCard>
       </div>
 
-      <SectionCard>
-        <h3 className={sectionTitleClass}>Метрики вовлеченности</h3>
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {engagementMetrics.map((metric) => (
-            <div key={metric.label} className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#B0B0B0]">{metric.label}</span>
-                <span className="text-lg font-bold text-white">{metric.value}</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-widget-border/60">
-                <div
-                  className={cn("h-full rounded-full", `bg-gradient-to-r ${metric.gradient}`)}
-                  style={{ width: `${metric.progress}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </SectionCard>
-
       {/* ============================================
           НЕ ДЛЯ MVP ВЕРСИИ
           Следующие виджеты отключены для MVP:
