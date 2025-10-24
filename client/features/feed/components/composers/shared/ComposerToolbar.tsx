@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DollarSign, Users, UserCheck, Lock, Sparkles, ChevronDown } from "lucide-react";
 
 export interface ComposerToolbarProps {
   onMediaClick: () => void;
@@ -11,9 +13,59 @@ export interface ComposerToolbarProps {
   isBoldActive: boolean;
   sentiment: "bullish" | "bearish" | null;
   onSentimentChange: (sentiment: "bullish" | "bearish" | null) => void;
-  isPaid: boolean;
-  onPaidChange: (isPaid: boolean) => void;
+  accessType: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium";
+  onAccessTypeChange: (accessType: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium") => void;
+  postPrice: number;
+  onPostPriceChange: (price: number) => void;
 }
+
+const accessOptions = [
+  {
+    id: "free" as const,
+    label: "Free",
+    description: "Anyone can see this post",
+    icon: Sparkles,
+    color: "#6CA8FF",
+    bg: "bg-[#14243A]",
+    border: "border-[#3B82F6]/40",
+  },
+  {
+    id: "pay-per-post" as const,
+    label: "Pay-per-post",
+    description: "Users pay once to unlock",
+    icon: DollarSign,
+    color: "#A06AFF",
+    bg: "bg-[#2A1C3F]",
+    border: "border-[#A06AFF]/50",
+  },
+  {
+    id: "subscribers-only" as const,
+    label: "Subscribers Only",
+    description: "Only your subscribers can see",
+    icon: Users,
+    color: "#2EBD85",
+    bg: "bg-[#1A3A30]",
+    border: "border-[#2EBD85]/40",
+  },
+  {
+    id: "followers-only" as const,
+    label: "Followers Only",
+    description: "Only your followers can see",
+    icon: UserCheck,
+    color: "#FFD166",
+    bg: "bg-[#3A3420]",
+    border: "border-[#FFD166]/40",
+  },
+  {
+    id: "premium" as const,
+    label: "Premium",
+    description: "Premium tier subscribers only",
+    icon: Lock,
+    color: "#FF6B6B",
+    bg: "bg-[#3A2020]",
+    border: "border-[#FF6B6B]/40",
+  },
+];
 
 export function ComposerToolbar({
   onMediaClick,
@@ -25,9 +77,25 @@ export function ComposerToolbar({
   isBoldActive,
   sentiment,
   onSentimentChange,
-  isPaid,
-  onPaidChange,
+  accessType,
+  onAccessTypeChange,
+  postPrice,
+  onPostPriceChange,
 }: ComposerToolbarProps) {
+  const [isAccessMenuOpen, setIsAccessMenuOpen] = useState(false);
+  const priceInputRef = useRef<HTMLInputElement>(null);
+
+  const currentAccess = accessOptions.find(opt => opt.id === accessType) || accessOptions[0];
+  const CurrentIcon = currentAccess.icon;
+  const isPaid = accessType !== "free";
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value >= 0) {
+      onPostPriceChange(value);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2">
       {/* Media Buttons */}
@@ -150,22 +218,85 @@ export function ComposerToolbar({
         </button>
       </div>
 
-      {/* Paid Toggle */}
-      <button 
-        type="button" 
-        onClick={() => onPaidChange(!isPaid)} 
-        className={cn(
-          "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all", 
-          isPaid 
-            ? "bg-gradient-to-l from-[#A06AFF] to-[#6B46C1]" 
-            : "bg-transparent border border-[#A06AFF]/40"
+      {/* Access Type Dropdown */}
+      <div className="ml-2 inline-flex items-center gap-2">
+        <Popover open={isAccessMenuOpen} onOpenChange={setIsAccessMenuOpen}>
+          <PopoverTrigger asChild>
+            <button 
+              type="button" 
+              className={cn(
+                "flex h-6 items-center gap-1 rounded-full px-2 transition-all border", 
+                isPaid 
+                  ? `bg-gradient-to-l ${currentAccess.bg}` 
+                  : `bg-transparent ${currentAccess.border}`
+              )}
+            >
+              <CurrentIcon className="h-3.5 w-3.5" style={{ color: isPaid ? "white" : currentAccess.color }} />
+              <span className={cn("text-xs font-bold", isPaid ? "text-white" : "")} style={{ color: !isPaid ? currentAccess.color : undefined }}>
+                {currentAccess.label}
+              </span>
+              <ChevronDown className={cn("h-3 w-3 transition-transform", isAccessMenuOpen && "rotate-180")} style={{ color: isPaid ? "white" : currentAccess.color }} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="z-[2100] w-72 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-2 text-white shadow-xl backdrop-blur-xl">
+            <div className="mb-2 px-2 py-1">
+              <h3 className="text-xs font-semibold text-white">Post Access</h3>
+              <p className="text-[10px] text-[#808283]">Choose who can see this post</p>
+            </div>
+            <div className="grid gap-1 text-xs">
+              {accessOptions.map((opt) => {
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      onAccessTypeChange(opt.id);
+                      setIsAccessMenuOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-start gap-2.5 rounded-lg p-2 text-left transition-colors",
+                      accessType === opt.id
+                        ? `${opt.bg} ${opt.border} border`
+                        : "hover:bg-white/5"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+                      accessType === opt.id ? opt.bg : "bg-[#2F3336]"
+                    )}>
+                      <Icon className="h-4 w-4" style={{ color: opt.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold" style={{ color: accessType === opt.id ? opt.color : "#FFFFFF" }}>
+                        {opt.label}
+                      </div>
+                      <div className="text-[10px] text-[#808283] mt-0.5">{opt.description}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Price Input (only for pay-per-post) */}
+        {accessType === "pay-per-post" && (
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-[#808283]">$</span>
+            <input
+              ref={priceInputRef}
+              type="number"
+              min="0"
+              step="0.5"
+              value={postPrice}
+              onChange={handlePriceChange}
+              className="w-16 rounded-lg border border-[#1B1F27] bg-[#000000] px-2 py-1 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+              placeholder="5.00"
+            />
+          </div>
         )}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke={isPaid ? "white" : "#A06AFF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span className={cn("text-xs font-bold", isPaid ? "text-white" : "text-[#A06AFF]")}>Paid</span>
-      </button>
+      </div>
     </div>
   );
 }
