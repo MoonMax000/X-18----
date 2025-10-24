@@ -264,24 +264,7 @@ const UserHeader: FC<Props> = ({
             "flex items-start gap-2 sm:gap-3 py-3",
             isOwn ? "justify-start ml-24 sm:ml-32 md:ml-36" : "justify-end"
           )}>
-            {isOwn ? (
-              <button
-                type="button"
-                onClick={onEditProfile}
-                className="group relative flex items-center justify-center overflow-hidden rounded-full border border-widget-border px-5 py-2.5 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] backdrop-blur-xl transition-all duration-300 hover:border-white/40 hover:bg-[rgba(35,35,35,0.75)] hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mr-2" aria-hidden="true">
-                  <path d="M11.3327 2.00065C11.5078 1.82554 11.716 1.68704 11.9451 1.59329C12.1743 1.49954 12.4198 1.45215 12.6673 1.45215C12.9149 1.45215 13.1604 1.49954 13.3896 1.59329C13.6187 1.68704 13.8269 1.82554 14.002 2.00065C14.1771 2.17576 14.3156 2.38399 14.4093 2.61312C14.5031 2.84225 14.5505 3.08775 14.5505 3.33532C14.5505 3.58288 14.5031 3.82838 14.4093 4.05751C14.3156 4.28664 14.1771 4.49487 14.002 4.66998L5.00065 13.6713L1.33398 14.6673L2.33065 11.0007L11.3327 2.00065Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"/>
-                </svg>
-                <span className="relative z-10 text-center font-semibold leading-5">
-                  Edit profile
-                </span>
-              </button>
-            ) : (
+            {!isOwn && (
               <button type="button" className={primaryActionButtonClass}>
                 <span className="relative z-10 text-center font-semibold leading-5">
                   Follow
