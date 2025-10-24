@@ -4,12 +4,15 @@ import { RightSidebar } from "@/features/feed/components";
 import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import { TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
 import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
+import type { GTSAccount, GTSStatus } from "@/services/api/gotosocial";
 
 interface ProfilePageLayoutProps {
   isOwnProfile: boolean;
+  profile?: GTSAccount | null;
+  posts?: GTSStatus[];
 }
 
-export default function ProfilePageLayout({ isOwnProfile }: ProfilePageLayoutProps) {
+export default function ProfilePageLayout({ isOwnProfile, profile, posts }: ProfilePageLayoutProps) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
   const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(
     new Set(["@cryptowhale", "@marketnews"])
@@ -154,7 +157,11 @@ export default function ProfilePageLayout({ isOwnProfile }: ProfilePageLayoutPro
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
       <div className="flex-1 w-full sm:max-w-[720px]">
-        <ProfileContentClassic isOwnProfile={isOwnProfile} />
+        <ProfileContentClassic
+          isOwnProfile={isOwnProfile}
+          profile={profile}
+          posts={posts}
+        />
       </div>
 
       {/* Optimized Right Sidebar with widgets */}
