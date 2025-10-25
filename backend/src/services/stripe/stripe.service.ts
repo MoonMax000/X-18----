@@ -1,6 +1,5 @@
 import Stripe from 'stripe';
 import { prisma } from '../../database/client';
-import { encrypt, decrypt } from '../../utils/crypto';
 
 interface StripeSettingsUpdate {
   secretKey?: string;
@@ -11,115 +10,66 @@ interface StripeSettingsUpdate {
 class StripeServiceClass {
   /**
    * Get Stripe settings for user
+   * NOTE: StripeSettings model doesn't exist in schema
+   * Using StripeConnectAccount instead
    */
   async getSettings(userId: string) {
-    const settings = await prisma.stripeSettings.findUnique({
+    const account = await prisma.stripeConnectAccount.findUnique({
       where: { userId },
     });
     
-    if (!settings) {
+    if (!account) {
       return null;
     }
     
-    // Decrypt keys if they exist
     return {
-      ...settings,
-      secretKey: settings.secretKey ? decrypt(settings.secretKey) : null,
-      publishableKey: settings.publishableKey,
-      webhookSecret: settings.webhookSecret ? decrypt(settings.webhookSecret) : null,
+      stripeAccountId: account.stripeAccountId,
+      isActive: account.isActive,
     };
   }
 
   /**
    * Update Stripe settings
+   * NOTE: This is a placeholder since StripeSettings doesn't exist
    */
   async updateSettings(userId: string, data: StripeSettingsUpdate) {
-    // Encrypt sensitive keys
-    const encryptedData: any = {};
-    
-    if (data.secretKey) {
-      encryptedData.secretKey = encrypt(data.secretKey);
-    }
-    
-    if (data.publishableKey) {
-      encryptedData.publishableKey = data.publishableKey;
-    }
-    
-    if (data.webhookSecret) {
-      encryptedData.webhookSecret = encrypt(data.webhookSecret);
-    }
-    
-    // Test connection before saving
-    if (data.secretKey) {
-      await this.testStripeKey(data.secretKey);
-    }
-    
-    // Upsert settings
-    const settings = await prisma.stripeSettings.upsert({
-      where: { userId },
-      create: {
-        userId,
-        ...encryptedData,
-        isActive: true,
-      },
-      update: {
-        ...encryptedData,
-        isActive: true,
-        updatedAt: new Date(),
-      },
-    });
-    
-    return {
-      ...settings,
-      secretKey: data.secretKey || null,
-      publishableKey: data.publishableKey || settings.publishableKey,
-      webhookSecret: data.webhookSecret || null,
-    };
+    throw new Error('Stripe settings update not implemented - use StripeConnectAccount instead');
   }
 
   /**
    * Delete Stripe settings
    */
   async deleteSettings(userId: string) {
-    await prisma.stripeSettings.delete({
-      where: { userId },
-    });
+    throw new Error('Stripe settings deletion not implemented - use StripeConnectAccount instead');
   }
 
   /**
    * Test Stripe connection
    */
   async testConnection(userId: string) {
-    const settings = await this.getSettings(userId);
+    const account = await prisma.stripeConnectAccount.findUnique({
+      where: { userId },
+    });
     
-    if (!settings?.secretKey) {
-      throw new Error('Stripe secret key not configured');
+    if (!account?.stripeAccountId) {
+      throw new Error('Stripe account not connected');
     }
     
     try {
-      const stripe = new Stripe(settings.secretKey, {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
         apiVersion: '2023-10-16',
       });
       
-      // Test API call
-      const account = await stripe.account.retrieve();
-      
-      // Update stripe account ID
-      await prisma.stripeSettings.update({
-        where: { userId },
-        data: {
-          stripeAccountId: account.id,
-          onboardingComplete: true,
-        },
-      });
+      // Retrieve the Connect account
+      const stripeAccount = await stripe.accounts.retrieve(account.stripeAccountId);
       
       return {
         success: true,
-        accountId: account.id,
-        email: account.email,
-        country: account.country,
-        chargesEnabled: account.charges_enabled,
-        payoutsEnabled: account.payouts_enabled,
+        accountId: stripeAccount.id,
+        email: stripeAccount.email,
+        country: stripeAccount.country,
+        chargesEnabled: stripeAccount.charges_enabled,
+        payoutsEnabled: stripeAccount.payouts_enabled,
       };
     } catch (error: any) {
       return {
@@ -133,26 +83,28 @@ class StripeServiceClass {
    * Get Stripe account info
    */
   async getAccountInfo(userId: string) {
-    const settings = await this.getSettings(userId);
+    const account = await prisma.stripeConnectAccount.findUnique({
+      where: { userId },
+    });
     
-    if (!settings?.secretKey) {
+    if (!account?.stripeAccountId) {
       throw new Error('Stripe not configured');
     }
     
-    const stripe = new Stripe(settings.secretKey, {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: '2023-10-16',
     });
     
-    const account = await stripe.account.retrieve();
+    const stripeAccount = await stripe.accounts.retrieve(account.stripeAccountId);
     
     return {
-      id: account.id,
-      email: account.email,
-      country: account.country,
-      currency: account.default_currency,
-      chargesEnabled: account.charges_enabled,
-      payoutsEnabled: account.payouts_enabled,
-      detailsSubmitted: account.details_submitted,
+      id: stripeAccount.id,
+      email: stripeAccount.email,
+      country: stripeAccount.country,
+      currency: stripeAccount.default_currency,
+      chargesEnabled: stripeAccount.charges_enabled,
+      payoutsEnabled: stripeAccount.payouts_enabled,
+      detailsSubmitted: stripeAccount.details_submitted,
     };
   }
 
@@ -165,7 +117,7 @@ class StripeServiceClass {
         apiVersion: '2023-10-16',
       });
       
-      await stripe.account.retrieve();
+      await stripe.balance.retrieve();
       return true;
     } catch (error: any) {
       throw new Error(`Invalid Stripe key: ${error.message}`);
@@ -173,16 +125,16 @@ class StripeServiceClass {
   }
 
   /**
-   * Get Stripe client for user
+   * Get Stripe client for platform
    */
-  async getStripeClient(userId: string): Promise<Stripe> {
-    const settings = await this.getSettings(userId);
+  async getStripeClient(): Promise<Stripe> {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
     
-    if (!settings?.secretKey) {
-      throw new Error('Stripe not configured for this user');
+    if (!secretKey) {
+      throw new Error('Stripe not configured - missing STRIPE_SECRET_KEY');
     }
     
-    return new Stripe(settings.secretKey, {
+    return new Stripe(secretKey, {
       apiVersion: '2023-10-16',
     });
   }
