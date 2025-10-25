@@ -67,11 +67,14 @@ class MonetizationController {
         }
       }
 
+      const totalAmount = Number(earnings._sum.amount || 0);
+      const totalFees = Number(earnings._sum.fee || 0);
+
       res.json({
         earnings: {
-          totalEarnings: earnings._sum.amount || 0,
-          platformFees: earnings._sum.fee || 0,
-          netEarnings: (earnings._sum.amount || 0) - (earnings._sum.fee || 0),
+          totalEarnings: totalAmount,
+          platformFees: totalFees,
+          netEarnings: totalAmount - totalFees,
           transactionCount: earnings._count,
           availableBalance,
           earningsByType: earningsByType.map(e => ({
@@ -169,6 +172,7 @@ class MonetizationController {
           amount,
           currency,
           method,
+          destination: stripeAccount.stripeAccountId,
           status: 'pending',
         },
       });
