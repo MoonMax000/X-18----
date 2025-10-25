@@ -47,7 +47,8 @@ model User {
   
   // Relations
   settings            UserSettings?
-  stripeSettings      StripeSettings?
+  stripeConnectAccount StripeConnectAccount?
+  stripeCustomer      StripeCustomer?
   notificationSettings NotificationSettings?
   apiKeys             ApiKey[]
   kycVerification     KycVerification?
@@ -89,28 +90,94 @@ model UserSettings {
 // STRIPE INTEGRATION
 // ============================================
 
-model StripeSettings {
+// Stripe Connect для авторов (продавцов)
+model StripeConnectAccount {
   id     String @id @default(uuid())
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Stripe Keys (encrypted)
-  secretKey      String? @map("secret_key") @db.Text
-  publishableKey String? @map("publishable_key") @db.Text
-  webhookSecret  String? @map("webhook_secret") @db.Text
-  
-  // Stripe Account
-  stripeAccountId    String? @unique @map("stripe_account_id")
-  stripeCustomerId   String? @unique @map("stripe_customer_id")
-  
+
+  // Stripe Connect Account ID
+  stripeAccountId String @unique @map("stripe_account_id")
+
+  // Account details
+  email              String?
+  country            String?
+  defaultCurrency    String? @map("default_currency")
+
+  // Capabilities
+  chargesEnabled     Boolean @default(false) @map("charges_enabled")
+  payoutsEnabled     Boolean @default(false) @map("payouts_enabled")
+  detailsSubmitted   Boolean @default(false) @map("details_submitted")
+
+  // OAuth
+  accessToken        String? @map("access_token") @db.Text
+  refreshToken       String? @map("refresh_token") @db.Text
+  scope              String?
+
   // Status
-  isActive           Boolean @default(false) @map("is_active")
-  onboardingComplete Boolean @default(false) @map("onboarding_complete")
-  
+  isActive           Boolean @default(true) @map("is_active")
+
+  // Metadata
+  metadata           Json?
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
-  @@map("stripe_settings")
+
+  @@map("stripe_connect_accounts")
+}
+
+// Stripe Customer для покупателей
+model StripeCustomer {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe Customer ID
+  stripeCustomerId String @unique @map("stripe_customer_id")
+
+  // Customer details
+  email           String?
+  name            String?
+
+  // Default payment method
+  defaultPaymentMethodId String? @map("default_payment_method_id")
+
+  // Status
+  isActive        Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  paymentMethods PaymentMethod[]
+
+  @@map("stripe_customers")
+}
+
+// Payment Methods (карты покупателей)
+model PaymentMethod {
+  id               String @id @default(uuid())
+  stripeCustomerId String @map("stripe_customer_id")
+  customer         StripeCustomer @relation(fields: [stripeCustomerId], references: [id], onDelete: Cascade)
+
+  // Stripe Payment Method ID
+  paymentMethodId String @unique @map("payment_method_id")
+
+  // Card details
+  type            String // card, bank_account
+  brand           String? // visa, mastercard, etc.
+  last4           String?
+  expMonth        Int? @map("exp_month")
+  expYear         Int? @map("exp_year")
+
+  // Status
+  isDefault       Boolean @default(false) @map("is_default")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([stripeCustomerId])
+  @@map("payment_methods")
 }
 
 // ============================================
