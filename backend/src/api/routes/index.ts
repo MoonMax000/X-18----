@@ -10,11 +10,15 @@ import kycRoutes from './kyc.routes';
 import referralsRoutes from './referrals.routes';
 import monetizationRoutes from './monetization.routes';
 import billingRoutes from './billing.routes';
+import socialRoutes from './social.routes';
 
 const router = Router();
 
 // Auth routes (public)
 router.use('/auth', authRoutes);
+
+// Social/GoToSocial routes (public timeline, with optional auth)
+router.use('/', socialRoutes);
 
 // All other routes require authentication (see individual route files)
 router.use('/profile', profileRoutes);
