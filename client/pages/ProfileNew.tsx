@@ -10,6 +10,7 @@ const NotificationsSettings = lazy(() => import("@/components/NotificationsSetti
 const BillingSettings = lazy(() => import("@/components/BillingSettings/BillingSettings"));
 const ReferralsSettings = lazy(() => import("@/components/ReferralsSettings/ReferralsSettings"));
 const KycSettings = lazy(() => import("@/components/KycSettings/KycSettings"));
+const ApiSettings = lazy(() => import("@/components/ApiSettings/ApiSettings"));
 const LiveStreamingSettings = lazy(() => import("@/components/LiveStreamingSettings/LiveStreamingSettings"));
 const ProfileOverview = lazy(() => import("@/components/ProfileOverview/ProfileOverview"));
 const SocialOverview = lazy(() => import("@/components/SocialOverview/SocialOverview"));
@@ -369,6 +370,56 @@ const profileSubTabs = [
         />
         <path
           d="M15.416 7.5V12.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "api" as ProfileSubTab,
+    label: "API & Integrations",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path
+          d="M5.83398 10.833H3.33398C2.41351 10.833 1.66732 10.0868 1.66732 9.16634V5.83301C1.66732 4.91253 2.41351 4.16634 3.33398 4.16634H5.83398C6.75446 4.16634 7.50065 4.91253 7.50065 5.83301V9.16634C7.50065 10.0868 6.75446 10.833 5.83398 10.833Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M16.6673 10.833H14.1673C13.2468 10.833 12.5007 10.0868 12.5007 9.16634V5.83301C12.5007 4.91253 13.2468 4.16634 14.1673 4.16634H16.6673C17.5878 4.16634 18.334 4.91253 18.334 5.83301V9.16634C18.334 10.0868 17.5878 10.833 16.6673 10.833Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M16.6673 18.333H14.1673C13.2468 18.333 12.5007 17.5868 12.5007 16.6663V13.333C12.5007 12.4125 13.2468 11.6663 14.1673 11.6663H16.6673C17.5878 11.6663 18.334 12.4125 18.334 13.333V16.6663C18.334 17.5868 17.5878 18.333 16.6673 18.333Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5.83398 18.333H3.33398C2.41351 18.333 1.66732 17.5868 1.66732 16.6663V13.333C1.66732 12.4125 2.41351 11.6663 3.33398 11.6663H5.83398C6.75446 11.6663 7.50065 12.4125 7.50065 13.333V16.6663C7.50065 17.5868 6.75446 18.333 5.83398 18.333Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M7.5 7.5H12.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M7.5 15H12.5"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
@@ -1258,6 +1309,7 @@ const ProfileNew: FC = () => {
           {activeTab === "profile" && activeProfileSubTab === "notifications" && <NotificationsSettings />}
           {activeTab === "profile" && activeProfileSubTab === "billing" && <BillingSettings />}
           {activeTab === "profile" && activeProfileSubTab === "referrals" && <ReferralsSettings />}
+          {activeTab === "profile" && activeProfileSubTab === "api" && <ApiSettings />}
           {activeTab === "profile" && activeProfileSubTab === "kyc" && <KycSettings />}
 
           {activeTab === "streaming" && <LiveStreamingSettings activeTab={activeStreamingSubTab} />}
