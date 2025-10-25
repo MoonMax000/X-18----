@@ -47,14 +47,14 @@ class StripeConnectService {
       const scope = response.scope;
 
       // Get account details
-      const account = await stripe.accounts.retrieve(stripeAccountId);
+      const account = await stripe.accounts.retrieve(stripeAccountId as string);
 
       // Save to database
       const connectAccount = await prisma.stripeConnectAccount.upsert({
         where: { userId },
         create: {
           userId,
-          stripeAccountId,
+          stripeAccountId: stripeAccountId as string,
           accessToken,
           refreshToken,
           scope,
