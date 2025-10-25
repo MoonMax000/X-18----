@@ -61,6 +61,10 @@ const App = () => (
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Standalone pages without ClientLayout */}
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+
               {/* Standard pages with ClientLayout */}
               <Route
                 path="*"
