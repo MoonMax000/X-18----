@@ -47,7 +47,7 @@ backend/src/api/validators/
 ```
 client/components/
 ├── NotificationsSettings/
-│   └── NotificationsSettings.tsx    ❌ СОЗДАТЬ
+│   └── NotificationsSettings.tsx    ✅ EXISTS (needs backend integration)
 ├── KycSettings/
 │   └── KycSettings.tsx              ✅ СУЩЕСТВУЕТ (проверить)
 ├── ReferralsSettings/
