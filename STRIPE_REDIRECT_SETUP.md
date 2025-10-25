@@ -6,7 +6,8 @@ Your backend is now configured with:
 - **Stripe Client ID**: `ca_T79vAXmyMeRCfLB7JH9A80KplW3sRJs7`
 - **Publishable Key**: `pk_test_51SAAyA5L1ldpQtHX...`
 - **Secret Key**: `sk_test_51SAAyA5L1ldpQtHX...`
-- **Frontend URL**: `https://social.tyriantrade.ngrok.pro`
+- **Backend URL (ngrok)**: `https://social.tyriantrade.ngrok.pro`
+- **Frontend URL**: `http://localhost:8080`
 
 ## 🔧 Next Step: Configure Stripe Dashboard
 
@@ -19,8 +20,8 @@ Visit: https://dashboard.stripe.com/test/connect/accounts/settings
 In the **Redirects** section, add these two URIs:
 
 ```
-https://social.tyriantrade.ngrok.pro/api/stripe/connect/callback
-http://localhost:8080/api/stripe/connect/callback
+https://social.tyriantrade.ngrok.pro/api/v1/stripe-connect/callback
+http://localhost:3001/api/v1/stripe-connect/callback
 ```
 
 ### 3. Save Changes
@@ -30,9 +31,10 @@ Click **Save** in the Stripe Dashboard.
 
 1. **ngrok tunnel** (`https://social.tyriantrade.ngrok.pro`) tunnels to your local backend on `http://localhost:3001`
 2. When users click "Connect with Stripe", they're redirected to Stripe OAuth
-3. After authorization, Stripe redirects back to: `https://social.tyriantrade.ngrok.pro/api/stripe/connect/callback`
-4. Your backend receives the authorization code and exchanges it for connected account credentials
+3. After authorization, Stripe redirects back to: `https://social.tyriantrade.ngrok.pro/api/v1/stripe-connect/callback`
+4. Your backend (GET endpoint) receives the authorization code and exchanges it for connected account credentials
 5. The encrypted credentials are stored in your database
+6. The user is redirected back to the frontend at `/settings?tab=monetization&connected=true`
 
 ## 🔐 About ngrok API Keys
 
@@ -65,16 +67,18 @@ Once you've added the redirect URIs in Stripe Dashboard:
 - Check backend logs for errors
 
 **Common Issues:**
-- **"redirect_uri_mismatch"**: The URI in Stripe Dashboard doesn't exactly match the callback URL
+- **"redirect_uri_mismatch"**: The URI in Stripe Dashboard doesn't exactly match the callback URL. Make sure it's exactly: `https://social.tyriantrade.ngrok.pro/api/v1/stripe-connect/callback`
 - **ngrok tunnel expired**: Free ngrok tunnels expire; paid accounts have persistent domains (you have this ✅)
 - **Port mismatch**: Ensure ngrok tunnels to the same port your backend runs on (3001)
+- **CORS errors**: Make sure `FRONTEND_URL` in backend/.env matches your frontend dev server URL
 
 ## 📝 Environment Variables Summary
 
 ### Backend (`backend/.env`):
 ```env
 PORT=3001
-FRONTEND_URL="https://social.tyriantrade.ngrok.pro"
+BACKEND_URL="https://social.tyriantrade.ngrok.pro"  # ngrok tunnel to backend
+FRONTEND_URL="http://localhost:8080"  # Frontend dev server
 STRIPE_SECRET_KEY="sk_test_51SAAyA5L1ldpQtHX..."
 STRIPE_PUBLISHABLE_KEY="pk_test_51SAAyA5L1ldpQtHXqPMjNzmJgC66HaczmaGiBFvvqMbdjeGyTsEJAo740wyBphurUdTn7nWJLoscP48ICxklGRLp00tOkeCiOE"
 STRIPE_CLIENT_ID="ca_T79vAXmyMeRCfLB7JH9A80KplW3sRJs7"
