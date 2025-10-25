@@ -61,16 +61,6 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
 
-  // Social media relations
-  posts                Post[]         @relation("UserPosts")
-  favourites           Favourite[]    @relation("UserFavourites")
-  reblogs              Reblog[]       @relation("UserReblogs")
-  bookmarks            Bookmark[]     @relation("UserBookmarks")
-  followers            Follow[]       @relation("Followers")
-  following            Follow[]       @relation("Following")
-  notifications        Notification[] @relation("UserNotifications")
-  notificationsFrom    Notification[] @relation("NotificationsFrom")
-
   @@map("users")
 }
 
