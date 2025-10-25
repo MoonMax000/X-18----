@@ -11,7 +11,7 @@ tyrian-trade/
 ├── backend/                    ← Node.js + Express API
 │   ├── src/
 │   │   ├── api/
-│   │   │   ├── controllers/   ← Бизнес-логика endpoints
+│   │   │   ├── controllers/   ← Бизнес-логик�� endpoints
 │   │   │   ├── routes/        ← API routes (REST)
 │   │   │   ├── validators/    ← Zod validation schemas
 │   │   │   └── middleware/    ← Auth, validation, errors
@@ -93,6 +93,33 @@ tyrian-trade/
 - `uploadCover(file, fileName, mimeType)` → URL
 - `deleteFile(url)` → void
 - `isConfigured()` → boolean
+
+---
+
+### Email Service (Resend)
+**Локация:** `backend/src/services/email/email.service.ts`
+
+**Методы:**
+- `sendVerificationEmail({ email, username, verificationToken })` → void
+- `sendPasswordResetEmail({ email, username, resetToken })` → void
+- `sendWelcomeEmail({ email, username })` → void
+- `sendNotificationEmail({ email, subject, message })` → void
+- `isConfigured()` → boolean
+
+**Environment variables:**
+```env
+RESEND_API_KEY=re_3Vuw1VvN_2crqhyc6fEtPHHU7rqnwjRGh
+EMAIL_FROM=noreply@tyriantrade.com
+```
+
+**Как работает email verification:**
+1. User регистрируется
+2. Backend создаёт random token (32 bytes)
+3. Token со��раняется в DB (`email_verification_tokens`)
+4. Email отправляется через Resend с verification link
+5. User кликает link → `/verify-email?token=...`
+6. Backend проверяет token, обновляет `user.emailVerified = true`
+7. Отправляется welcome email
 
 **Environment variables:**
 ```env
@@ -270,7 +297,7 @@ Frontend                         Backend                      Database
    │                                ├──verify JWT (middleware)    │
    │                                ├──find user─────────────────>│
    │                                │<────user data───────────────┤
-   │<─────{ user }──────────────────┤                             │
+   ���<─────{ user }──────────────────┤                             │
 ```
 
 ---
@@ -514,7 +541,7 @@ const handleCreate = async () => {
 - [ ] Прочитал `PHASE_1_IMPLEMENTATION.md` для контекста
 - [ ] Понял где Backend (`backend/src/`) и Frontend (`client/`)
 - [ ] Знаю где искать controllers, routes, validators
-- [ ] Понял flow: Request → Validator �� Controller → Service → DB
+- [ ] Понял flow: Request → Validator → Controller → Service → DB
 - [ ] Знаю как работает Auth (JWT в `Authorization` header)
 - [ ] Понял как работает file upload (Multer → S3)
 - [ ] Знаю environment variables (`backend/.env`)

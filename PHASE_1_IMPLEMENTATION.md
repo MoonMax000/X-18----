@@ -151,7 +151,7 @@ curl -X POST http://localhost:3001/api/v1/profile/avatar \
 **Методы:**
 - `uploadFile(params)` - Общий метод загрузки
 - `uploadAvatar(file, fileName, mimeType)` - Загрузка avatar
-- `uploadCover(file, fileName, mimeType)` - Загрузка cover
+- `uploadCover(file, fileName, mimeType)` - Загру��ка cover
 - `uploadKycDocument(file, fileName, mimeType)` - Загрузка KYC документов
 - `deleteFile(url)` - Удаление файла по URL
 - `isConfigured()` - Проверка наличия credentials
@@ -334,20 +334,26 @@ curl -X POST http://localhost:3001/api/v1/profile/avatar \
 
 ---
 
-## ⚠️ Что еще нужно доделать (TODO)
+## ✅ Email Service - COMPLETED!
 
-### Email Service (Phase 2)
-- Создать `backend/src/services/email/email.service.ts`
-- Интегрировать SendGrid или AWS SES
-- Реализовать email verification
-- Реализовать password reset emails
+### Email Service Implementation
+- ✅ Created `backend/src/services/email/email.service.ts`
+- ✅ Integrated **Resend** (modern email provider)
+- ✅ Implemented email verification
+- ✅ Implemented password reset emails
+- ✅ HTML email templates with Tyrian Trade branding
+- ✅ Token-based security (24h expiry)
+
+**See:** [EMAIL_SERVICE_SETUP.md](./EMAIL_SERVICE_SETUP.md) for full documentation
+
+## ⚠️ Что еще нужно доделать (TODO)
 
 ### Refresh Token Mechanism
 - Добавить `RefreshToken` model в Prisma
 - Обновить `auth.controller.ts` для работы с refresh tokens
-- Реализовать rotation и blacklisting
+- Реализова��ь rotation и blacklisting
 
-### Ос��альные контроллеры
+### Остальные контроллеры
 - Notifications controller
 - Billing controller
 - KYC controller (уже есть routes, нужен controller)
@@ -409,7 +415,7 @@ backend/
 Zod schemas используются для валидации всех входящих данных через `validateRequest` middleware.
 
 ### 3. Authentication
-JWT токены проверяются через `authenticate` middleware. Все protected routes используют этот middleware.
+JWT токены ��роверяются через `authenticate` middleware. Все protected routes используют этот middleware.
 
 ### 4. Logging
 Все важные операции логируются через `logger` utility (winston).
@@ -485,4 +491,4 @@ AWS_REGION="us-east-1"
 
 **Статус:** Phase 1 ✅ **ЗАВЕРШЕНА**
 
-**Сле��ующий шаг:** Phase 2 - Payment Methods UI + Email Service
+**Следующий шаг:** Phase 2 - Payment Methods UI + Email Service
