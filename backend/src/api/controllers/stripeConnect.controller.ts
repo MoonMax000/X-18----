@@ -18,7 +18,37 @@ class StripeConnectController {
   }
 
   /**
-   * Handle OAuth callback
+   * Handle OAuth callback (GET - from Stripe redirect)
+   */
+  async handleCallbackGet(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { code, state, error } = req.query;
+
+      // Handle authorization errors from Stripe
+      if (error) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+        return res.redirect(`${frontendUrl}/settings?tab=monetization&error=${error}`);
+      }
+
+      if (!code) {
+        return res.status(400).json({ error: 'Authorization code required' });
+      }
+
+      // State parameter contains userId for CSRF protection
+      const userId = state as string;
+
+      const account = await stripeConnectService.completeOAuth(userId, code as string);
+
+      // Redirect back to frontend with success
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      res.redirect(`${frontendUrl}/settings?tab=monetization&connected=true`);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Handle OAuth callback (POST - deprecated, kept for compatibility)
    */
   async handleCallback(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -35,7 +65,7 @@ class StripeConnectController {
       }
 
       const account = await stripeConnectService.completeOAuth(userId, code);
-      
+
       res.json({
         message: 'Stripe account connected successfully',
         account: {

@@ -15,8 +15,15 @@ router.use(authenticate);
 router.get('/oauth-url', stripeConnectController.getOAuthUrl);
 
 /**
+ * @route   GET /api/v1/stripe-connect/callback
+ * @desc    Handle Stripe Connect OAuth callback (from Stripe redirect)
+ * @access  Public (uses state parameter for user identification)
+ */
+router.get('/callback', stripeConnectController.handleCallbackGet);
+
+/**
  * @route   POST /api/v1/stripe-connect/callback
- * @desc    Handle Stripe Connect OAuth callback
+ * @desc    Handle Stripe Connect OAuth callback (legacy)
  * @access  Private
  */
 router.post('/callback', stripeConnectController.handleCallback);

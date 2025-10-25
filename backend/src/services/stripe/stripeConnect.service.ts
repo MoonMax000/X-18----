@@ -4,7 +4,7 @@ import { prisma } from '../../database/client';
 // Master Stripe client (platform account)
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
 const STRIPE_CLIENT_ID = process.env.STRIPE_CLIENT_ID!;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
@@ -16,11 +16,13 @@ class StripeConnectService {
    * Пользователь будет перенаправлен на Stripe для подключения аккаунта
    */
   generateOAuthUrl(userId: string, state?: string): string {
+    const redirectUri = `${BACKEND_URL}/api/v1/stripe-connect/callback`;
+
     const params = new URLSearchParams({
       client_id: STRIPE_CLIENT_ID,
       state: state || userId, // State для защиты от CSRF
       scope: 'read_write', // Полные права на аккаунт
-      redirect_uri: `${FRONTEND_URL}/stripe-connect/callback`,
+      redirect_uri: redirectUri,
       'stripe_user[email]': '', // Можно передать email пользователя
     });
 
