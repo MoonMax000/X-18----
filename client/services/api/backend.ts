@@ -1,7 +1,7 @@
 // Backend API client - все запросы к нашему backend серверу
-// После переноса backend на отдельный сервер, просто обнови BACKEND_URL
+// После пе��еноса backend на отдельный сервер, просто обнови BACKEND_URL
 
-const BACKEND_URL = process.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const API_BASE = `${BACKEND_URL}/api/v1`;
 
 class BackendApiClient {
