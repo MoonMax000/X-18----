@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { prisma } from '../../database/client';
 import { generateToken } from '../middleware/auth';
+import { emailService } from '../../services/email/email.service';
 import { logger } from '../../utils/logger';
 
 const SALT_ROUNDS = 10;
+const TOKEN_EXPIRY_HOURS = 24; // Verification and reset tokens expire after 24 hours
 
 class AuthController {
   /**
@@ -63,6 +66,35 @@ class AuthController {
         email: user.email,
         username: user.username,
       });
+
+      // Send verification email (if email service is configured)
+      if (emailService.isConfigured()) {
+        try {
+          const verificationToken = crypto.randomBytes(32).toString('hex');
+          const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
+
+          // Store verification token in database
+          await prisma.emailVerificationToken.create({
+            data: {
+              userId: user.id,
+              token: verificationToken,
+              expiresAt,
+            },
+          });
+
+          // Send email
+          await emailService.sendVerificationEmail({
+            email: user.email,
+            username: user.username,
+            verificationToken,
+          });
+
+          logger.info(`Verification email sent to: ${user.email}`);
+        } catch (emailError) {
+          logger.error('Failed to send verification email:', emailError);
+          // Don't fail registration if email fails
+        }
+      }
 
       logger.info(`New user registered: ${user.email}`);
 
@@ -202,27 +234,53 @@ class AuthController {
       // Find user
       const user = await prisma.user.findUnique({
         where: { email },
-        select: { id: true, email: true },
+        select: { id: true, email: true, username: true },
       });
 
       // Always return success to prevent email enumeration
       if (!user) {
-        return res.json({ 
-          message: 'If the email exists, a password reset link has been sent' 
+        return res.json({
+          message: 'If the email exists, a password reset link has been sent'
         });
       }
 
-      // TODO: Implement email service
-      // 1. Generate reset token
-      // 2. Store token in DB with expiry
-      // 3. Send email with reset link
-      
-      logger.info(`Password reset requested for: ${email}`);
+      // Check if email service is configured
+      if (!emailService.isConfigured()) {
+        return res.status(503).json({
+          error: 'Email service not configured',
+          message: 'Password reset is currently unavailable'
+        });
+      }
 
-      res.json({ 
-        message: 'If the email exists, a password reset link has been sent',
-        // TODO: Remove this in production
-        debug: 'Email service not implemented yet'
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
+
+      // Delete any existing reset tokens for this user
+      await prisma.passwordResetToken.deleteMany({
+        where: { userId: user.id },
+      });
+
+      // Store new reset token
+      await prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          token: resetToken,
+          expiresAt,
+        },
+      });
+
+      // Send email
+      await emailService.sendPasswordResetEmail({
+        email: user.email,
+        username: user.username,
+        resetToken,
+      });
+
+      logger.info(`Password reset email sent to: ${email}`);
+
+      res.json({
+        message: 'If the email exists, a password reset link has been sent'
       });
     } catch (error) {
       logger.error('Forgot password error:', error);
@@ -238,15 +296,40 @@ class AuthController {
     try {
       const { token, password } = req.body;
 
-      // TODO: Implement password reset
-      // 1. Verify reset token
-      // 2. Check token expiry
-      // 3. Update password
-      // 4. Invalidate token
+      // Find reset token
+      const resetToken = await prisma.passwordResetToken.findUnique({
+        where: { token },
+        include: { user: true },
+      });
 
-      res.status(501).json({ 
-        error: 'Password reset not implemented yet',
-        message: 'Email service required for password reset'
+      if (!resetToken) {
+        return res.status(400).json({ error: 'Invalid or expired reset token' });
+      }
+
+      // Check if token is expired
+      if (resetToken.expiresAt < new Date()) {
+        await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+        return res.status(400).json({ error: 'Reset token has expired' });
+      }
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+
+      // Update user password
+      await prisma.user.update({
+        where: { id: resetToken.userId },
+        data: { passwordHash },
+      });
+
+      // Delete reset token
+      await prisma.passwordResetToken.delete({
+        where: { id: resetToken.id },
+      });
+
+      logger.info(`Password reset successful for user: ${resetToken.user.email}`);
+
+      res.json({
+        message: 'Password reset successful. You can now log in with your new password.'
       });
     } catch (error) {
       logger.error('Reset password error:', error);
@@ -262,14 +345,54 @@ class AuthController {
     try {
       const { token } = req.body;
 
-      // TODO: Implement email verification
-      // 1. Verify token
-      // 2. Update user.emailVerified
-      // 3. Invalidate token
+      // Find verification token
+      const verificationToken = await prisma.emailVerificationToken.findUnique({
+        where: { token },
+        include: { user: true },
+      });
 
-      res.status(501).json({ 
-        error: 'Email verification not implemented yet',
-        message: 'Email service required for email verification'
+      if (!verificationToken) {
+        return res.status(400).json({ error: 'Invalid or expired verification token' });
+      }
+
+      // Check if token is expired
+      if (verificationToken.expiresAt < new Date()) {
+        await prisma.emailVerificationToken.delete({ where: { id: verificationToken.id } });
+        return res.status(400).json({ error: 'Verification token has expired' });
+      }
+
+      // Update user email verified status
+      await prisma.user.update({
+        where: { id: verificationToken.userId },
+        data: { emailVerified: true },
+      });
+
+      // Delete verification token
+      await prisma.emailVerificationToken.delete({
+        where: { id: verificationToken.id },
+      });
+
+      // Send welcome email
+      if (emailService.isConfigured()) {
+        try {
+          await emailService.sendWelcomeEmail({
+            email: verificationToken.user.email,
+            username: verificationToken.user.username,
+          });
+        } catch (emailError) {
+          logger.error('Failed to send welcome email:', emailError);
+        }
+      }
+
+      logger.info(`Email verified for user: ${verificationToken.user.email}`);
+
+      res.json({
+        message: 'Email verified successfully!',
+        user: {
+          id: verificationToken.user.id,
+          email: verificationToken.user.email,
+          emailVerified: true,
+        }
       });
     } catch (error) {
       logger.error('Verify email error:', error);
