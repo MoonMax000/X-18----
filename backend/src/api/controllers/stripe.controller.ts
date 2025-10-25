@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { stripeService } from '../../services/stripe/stripe.service';
 import { AuthRequest } from '../middleware/auth';
 
@@ -12,13 +12,8 @@ class StripeController {
       const settings = await stripeService.getSettings(userId);
       
       res.json({
-        hasSecretKey: !!settings?.secretKey,
-        hasPublishableKey: !!settings?.publishableKey,
-        hasWebhookSecret: !!settings?.webhookSecret,
-        publishableKey: settings?.publishableKey || null,
         stripeAccountId: settings?.stripeAccountId || null,
         isActive: settings?.isActive || false,
-        onboardingComplete: settings?.onboardingComplete || false,
       });
     } catch (error) {
       next(error);
@@ -27,25 +22,13 @@ class StripeController {
 
   /**
    * Update Stripe keys
+   * NOTE: Not implemented - use StripeConnectAccount instead
    */
   async updateSettings(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
-      const { secretKey, publishableKey, webhookSecret } = req.body;
-      
-      const settings = await stripeService.updateSettings(userId, {
-        secretKey,
-        publishableKey,
-        webhookSecret,
-      });
-      
-      res.json({
-        message: 'Stripe settings updated successfully',
-        hasSecretKey: !!settings.secretKey,
-        hasPublishableKey: !!settings.publishableKey,
-        hasWebhookSecret: !!settings.webhookSecret,
-        publishableKey: settings.publishableKey,
-        isActive: settings.isActive,
+      res.status(501).json({
+        error: 'Not implemented',
+        message: 'Use Stripe Connect integration instead'
       });
     } catch (error) {
       next(error);
