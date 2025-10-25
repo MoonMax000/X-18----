@@ -1,5 +1,8 @@
-import { FC, useState, memo } from "react";
+import { FC, useState, memo, lazy, Suspense } from "react";
 import { cn } from "@/lib/utils";
+import TabLoader from "@/components/common/TabLoader";
+
+const StripeConnectSettings = lazy(() => import("./StripeConnectSettings"));
 
 interface StatCardProps {
   title: string;
@@ -33,6 +36,21 @@ const StatCard: FC<StatCardProps> = ({ title, amount, change, changePercent }) =
 
 const Monetization: FC = () => {
   const [activeTimeRange, setActiveTimeRange] = useState<"1M" | "3M" | "1Y">("1M");
+
+  return (
+    <div className="space-y-6">
+      {/* Stripe Connect - Primary payment method */}
+      <Suspense fallback={<TabLoader />}>
+        <StripeConnectSettings />
+      </Suspense>
+
+      {/* Rest of monetization UI (stats, charts, etc.) */}
+      <MonetizationStats activeTimeRange={activeTimeRange} setActiveTimeRange={setActiveTimeRange} />
+    </div>
+  );
+};
+
+const MonetizationStats: FC<{ activeTimeRange: "1M" | "3M" | "1Y"; setActiveTimeRange: (val: "1M" | "3M" | "1Y") => void }> = ({ activeTimeRange, setActiveTimeRange }) => {
 
   const revenueChartData = {
     "1M": [280, 320, 290, 350, 310, 380, 340, 360, 330, 370, 350, 400, 380, 390, 360, 410, 390, 420, 400, 430, 410, 440, 420, 450, 430, 460, 440, 470, 450, 480],
