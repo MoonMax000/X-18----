@@ -19,8 +19,9 @@ class StripeConnectController {
 
   /**
    * Handle OAuth callback (GET - from Stripe redirect)
+   * Note: This is a public endpoint - authentication is via state parameter
    */
-  async handleCallbackGet(req: AuthRequest, res: Response, next: NextFunction) {
+  async handleCallbackGet(req: any, res: Response, next: NextFunction) {
     try {
       const { code, state, error } = req.query;
 
