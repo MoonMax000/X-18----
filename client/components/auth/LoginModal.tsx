@@ -50,6 +50,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [signupPhoneError, setSignupPhoneError] = useState('');
   const [signupPasswordError, setSignupPasswordError] = useState('');
   const [signupConfirmPasswordError, setSignupConfirmPasswordError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const inputRefs = [
@@ -357,6 +358,11 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
   // Handle login - calls backend API
   const handleLogin = async () => {
+    console.log('=== Login Button Clicked ===');
+    console.log('Auth method:', authMethod);
+    console.log('Email:', email);
+    console.log('Phone:', phoneNumber);
+
     setAuthError('');
     setAttemptsRemaining(null);
 
@@ -376,33 +382,44 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      console.log('Backend URL:', BACKEND_URL);
+
+      const payload = {
+        email: authMethod === 'email' ? email : `${phoneNumber}@phone.temp`,
+        password,
+      };
+
+      console.log('Sending login request:', { email: payload.email });
 
       const response = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: authMethod === 'email' ? email : `${phoneNumber}@phone.temp`,
-          password,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log('Response status:', response.status);
+
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (response.ok) {
         // Store token in localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        console.log('Login successful:', data);
+        console.log('✅ Login successful:', data);
 
         // Close modal and refresh page to load user data
         onClose();
         window.location.reload();
       } else {
+        console.error('❌ Login failed:', data);
         // Handle errors
         const newFailedAttempts = failedAttempts + 1;
         setFailedAttempts(newFailedAttempts);
@@ -420,8 +437,10 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
         }
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error (network):', error);
       setAuthError('Connection error. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
