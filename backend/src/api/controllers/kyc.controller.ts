@@ -19,10 +19,10 @@ class KycController {
           id: true,
           status: true,
           documentType: true,
-          submittedAt: true,
-          reviewedAt: true,
           rejectionReason: true,
           verifiedAt: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
 
@@ -66,39 +66,36 @@ class KycController {
       }
 
       // Upload document to S3
-      const documentUrl = await s3Service.uploadKycDocument(
+      const documentFront = await s3Service.uploadKycDocument(
         file.buffer,
         file.originalname,
         file.mimetype
       );
 
       // Create or update KYC verification
+      const fullName = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName;
+
       const kyc = await prisma.kycVerification.upsert({
         where: { userId },
         create: {
           userId,
           status: 'pending',
           documentType,
-          documentUrl,
-          firstName,
-          lastName,
+          documentFront,
+          fullName,
           dateOfBirth: new Date(dateOfBirth),
           country,
           address,
-          submittedAt: new Date(),
         },
         update: {
           status: 'pending',
           documentType,
-          documentUrl,
-          firstName,
-          lastName,
+          documentFront,
+          fullName,
           dateOfBirth: new Date(dateOfBirth),
           country,
           address,
-          submittedAt: new Date(),
           rejectionReason: null,
-          reviewedAt: null,
         },
       });
 
@@ -109,7 +106,7 @@ class KycController {
         kyc: {
           id: kyc.id,
           status: kyc.status,
-          submittedAt: kyc.submittedAt,
+          createdAt: kyc.createdAt,
         },
       });
     } catch (error: any) {
@@ -131,14 +128,15 @@ class KycController {
         select: {
           id: true,
           documentType: true,
-          documentUrl: true,
-          firstName: true,
-          lastName: true,
+          documentFront: true,
+          documentBack: true,
+          selfieUrl: true,
+          fullName: true,
           dateOfBirth: true,
           country: true,
           address: true,
           status: true,
-          submittedAt: true,
+          createdAt: true,
         },
       });
 
@@ -172,8 +170,6 @@ class KycController {
         data: {
           status,
           rejectionReason: status === 'rejected' ? rejectionReason : null,
-          notes,
-          reviewedAt: new Date(),
           verifiedAt: status === 'approved' ? new Date() : null,
         },
       });
@@ -185,7 +181,7 @@ class KycController {
         kyc: {
           id: kyc.id,
           status: kyc.status,
-          reviewedAt: kyc.reviewedAt,
+          verifiedAt: kyc.verifiedAt,
         },
       });
     } catch (error) {
