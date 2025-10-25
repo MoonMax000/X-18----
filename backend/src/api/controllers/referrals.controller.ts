@@ -34,11 +34,11 @@ class ReferralsController {
         },
       });
 
-      // Get active referrals (users who completed verification)
+      // Get active referrals (users who signed up)
       const activeReferrals = await prisma.referral.count({
         where: {
           referrerId: userId,
-          status: 'completed',
+          referredId: { not: null },
         },
       });
 
@@ -46,10 +46,10 @@ class ReferralsController {
       const earnings = await prisma.referral.aggregate({
         where: {
           referrerId: userId,
-          status: 'completed',
+          referredId: { not: null },
         },
         _sum: {
-          reward: true,
+          revenueShared: true,
         },
       });
 
@@ -57,7 +57,7 @@ class ReferralsController {
       const totalClicks = await prisma.referral.aggregate({
         where: { referrerId: userId },
         _sum: {
-          clickCount: true,
+          clicks: true,
         },
       });
 
@@ -66,10 +66,10 @@ class ReferralsController {
           totalReferrals,
           activeReferrals,
           pendingReferrals: totalReferrals - activeReferrals,
-          totalEarnings: earnings._sum.reward || 0,
-          totalClicks: totalClicks._sum.clickCount || 0,
-          conversionRate: totalClicks._sum.clickCount
-            ? (activeReferrals / (totalClicks._sum.clickCount || 1)) * 100
+          totalEarnings: earnings._sum.revenueShared || 0,
+          totalClicks: totalClicks._sum.clicks || 0,
+          conversionRate: totalClicks._sum.clicks
+            ? (activeReferrals / (totalClicks._sum.clicks || 1)) * 100
             : 0,
         },
       });
@@ -90,7 +90,7 @@ class ReferralsController {
       const referrals = await prisma.referral.findMany({
         where: { referrerId: userId },
         include: {
-          referredUser: {
+          referred: {
             select: {
               id: true,
               username: true,
@@ -119,21 +119,23 @@ class ReferralsController {
       const userId = req.user!.id;
       const { campaign, expiresAt } = req.body;
 
-      // Check if user already has a referral code
-      let existingReferral = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { referralCode: true },
+      // Find or create a referral for this user
+      let existingReferral = await prisma.referral.findFirst({
+        where: { referrerId: userId },
+        select: { code: true },
       });
 
-      let referralCode = existingReferral?.referralCode;
+      let referralCode = existingReferral?.code;
 
       // Generate new code if doesn't exist
       if (!referralCode) {
         referralCode = this.generateReferralCode();
 
-        await prisma.user.update({
-          where: { id: userId },
-          data: { referralCode },
+        await prisma.referral.create({
+          data: {
+            referrerId: userId,
+            code: referralCode,
+          },
         });
       }
 
@@ -162,21 +164,21 @@ class ReferralsController {
     try {
       const { referralCode, source, metadata } = req.body;
 
-      // Find referrer by code
-      const referrer = await prisma.user.findUnique({
-        where: { referralCode },
-        select: { id: true },
+      // Find referral by code
+      const referral = await prisma.referral.findUnique({
+        where: { code: referralCode },
+        select: { referrerId: true, id: true },
       });
 
-      if (!referrer) {
+      if (!referral) {
         return res.status(404).json({ error: 'Invalid referral code' });
       }
 
-      // Increment click count for existing referrals
-      await prisma.referral.updateMany({
-        where: { referrerId: referrer.id },
+      // Increment click count
+      await prisma.referral.update({
+        where: { id: referral.id },
         data: {
-          clickCount: {
+          clicks: {
             increment: 1,
           },
         },
