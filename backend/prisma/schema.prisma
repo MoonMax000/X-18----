@@ -58,8 +58,34 @@ model User {
   payouts             Payout[]
   subscriptions       Subscription[]   @relation("UserSubscriptions")
   subscribers         Subscription[]   @relation("SubscribedTo")
-  
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+
   @@map("users")
+}
+
+// Email verification tokens
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("email_verification_tokens")
+}
+
+// Password reset tokens
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
 }
 
 model UserSettings {
