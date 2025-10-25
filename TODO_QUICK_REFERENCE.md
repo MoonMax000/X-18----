@@ -2,6 +2,9 @@
 
 > Краткий список всех задач по категориям
 
+**⚠️ CURRENT STATUS:** Backend Complete → Database Setup Required
+**📖 ACTION:** See [СЛЕДУЮЩИЕ_ШАГИ.md](СЛЕДУЮЩИЕ_ШАГИ.md) or [QUICK_ACTION_CARD.md](QUICK_ACTION_CARD.md)
+
 ---
 
 ## ✅ BACKEND (18 файлов - COMPLETE!)
@@ -65,7 +68,7 @@ client/components/
 ├── monetization/
 │   └── PaymentModal.tsx             ⚠️ ОБНОВИТЬ (использует mock)
 ├── Subscriptions/
-│   ├── Subscriptions.tsx            ⚠️ ОБНОВИТЬ (использует mock)
+��   ├── Subscriptions.tsx            ⚠️ ОБНОВИТЬ (использует mock)
 │   ├── SubscriptionPlans.tsx        ❌ СОЗДАТЬ
 │   ├── ChangePlanModal.tsx          ❌ СОЗДАТЬ
 │   └── CancelSubscriptionModal.tsx  ❌ СОЗДАТЬ
