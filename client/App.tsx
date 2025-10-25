@@ -34,6 +34,8 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const FeedTest = lazy(() => import("./pages/FeedTest"));
 const ProfileConnections = lazy(() => import("./pages/ProfileConnections"));
 const HomePostDetail = lazy(() => import("./pages/HomePostDetail"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },
