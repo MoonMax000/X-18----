@@ -85,33 +85,66 @@ export const VerificationModal: FC<VerificationModalProps> = ({
     inputRefs.current[focusIndex]?.focus();
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const fullCode = code.join('');
-    
+
     if (fullCode.length !== 6) {
       setError('invalid');
       return;
     }
 
-    // Mock verification logic
-    if (fullCode === '111111') {
+    try {
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+      const response = await fetch(`${BACKEND_URL}/api/v1/auth/verify-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: fullCode }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success - close modal
+        console.log('Verification successful!', data);
+        onClose();
+      } else {
+        // Handle errors
+        if (data.error?.includes('expired')) {
+          setError('expired');
+        } else if (data.error?.includes('Invalid')) {
+          setError('invalid');
+        } else {
+          setError('invalid');
+        }
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
       setError('invalid');
-    } else if (fullCode === '222222') {
-      setError('expired');
-    } else if (fullCode === '333333') {
-      setError('too_many_attempts');
-    } else {
-      // Success - close modal or navigate
-      console.log('Verification successful!');
-      onClose();
     }
   };
 
-  const handleResendCode = () => {
+  const handleResendCode = async () => {
     setCode(['', '', '', '', '', '']);
     setError(null);
     inputRefs.current[0]?.focus();
-    console.log('Resending verification code...');
+
+    // TODO: Call resend email API endpoint
+    console.log('Resending verification code to:', contact);
+
+    // For now, just log. Backend needs a resend endpoint
+    // try {
+    //   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    //   await fetch(`${BACKEND_URL}/api/v1/auth/resend-verification`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ email: contact }),
+    //   });
+    // } catch (error) {
+    //   console.error('Resend error:', error);
+    // }
   };
 
   // Auto-verify when all 6 digits are entered
