@@ -49,6 +49,7 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [showVerification, setShowVerification] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getRequirementStatus = (requirement: PasswordRequirement) => {
     if (!password) return 'neutral';
@@ -103,6 +104,11 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
   const canSubmit = allRequirementsMet && passwordsMatch && (authMethod === 'email' ? email && !emailError : phone && !phoneError);
 
   const handleSignUp = async () => {
+    console.log('=== SignUp Button Clicked ===');
+    console.log('Auth method:', authMethod);
+    console.log('Email:', email);
+    console.log('Phone:', phone);
+
     // Validate all fields
     const emailErr = authMethod === 'email' ? validateEmail(email) : '';
     const phoneErr = authMethod === 'phone' ? validatePhone(phone) : '';
@@ -114,32 +120,46 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
     setPasswordError(passErr);
     setConfirmPasswordError(confirmErr);
 
-    if (emailErr || phoneErr || passErr || confirmErr) return;
+    if (emailErr || phoneErr || passErr || confirmErr) {
+      console.log('Validation errors:', { emailErr, phoneErr, passErr, confirmErr });
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      console.log('Backend URL:', BACKEND_URL);
+
+      const payload = {
+        email: authMethod === 'email' ? email : `${phone}@phone.temp`,
+        password,
+        username: authMethod === 'email' ? email.split('@')[0] : phone.replace(/\D/g, ''),
+        firstName: '',
+        lastName: '',
+      };
+
+      console.log('Sending registration request:', payload);
 
       const response = await fetch(`${BACKEND_URL}/api/v1/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: authMethod === 'email' ? email : `${phone}@phone.temp`,
-          password,
-          username: authMethod === 'email' ? email.split('@')[0] : phone.replace(/\D/g, ''),
-          firstName: '',
-          lastName: '',
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log('Response status:', response.status);
+
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (response.ok) {
-        console.log('Registration successful:', data);
+        console.log('✅ Registration successful:', data);
         // Show verification modal
         setShowVerification(true);
       } else {
+        console.error('❌ Registration failed:', data);
         // Handle errors
         if (data.error?.includes('Email already registered')) {
           setEmailError('This email is already registered');
@@ -150,8 +170,10 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
         }
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ Registration error (network):', error);
       setEmailError('Connection error. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -400,15 +422,25 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
             <div className="flex flex-col items-center gap-4 w-full">
               <button
                 onClick={handleSignUp}
-                disabled={!canSubmit}
+                disabled={!canSubmit || isLoading}
                 className={cn(
                   "w-full py-[10px] flex items-center justify-center gap-2 rounded-[8px] text-[15px] font-bold transition-all duration-300",
-                  canSubmit
+                  canSubmit && !isLoading
                     ? "bg-gradient-to-l from-[#482090] to-[#A06AFF] text-white hover:shadow-xl hover:shadow-primary/40"
                     : "bg-gradient-to-l from-[#482090] to-[#A06AFF] text-[#B0B0B0] opacity-50 cursor-not-allowed"
                 )}
               >
-                Create account
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Creating account...
+                  </>
+                ) : (
+                  'Create account'
+                )}
               </button>
               
               <p className="text-[15px] text-center">
