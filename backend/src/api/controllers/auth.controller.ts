@@ -70,7 +70,8 @@ class AuthController {
       // Send verification email (if email service is configured)
       if (emailService.isConfigured()) {
         try {
-          const verificationToken = crypto.randomBytes(32).toString('hex');
+          // Generate 6-digit verification code
+          const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
           const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
 
           // Store verification token in database

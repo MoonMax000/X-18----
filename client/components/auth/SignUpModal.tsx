@@ -102,7 +102,7 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
   const canSubmit = allRequirementsMet && passwordsMatch && (authMethod === 'email' ? email && !emailError : phone && !phoneError);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     // Validate all fields
     const emailErr = authMethod === 'email' ? validateEmail(email) : '';
     const phoneErr = authMethod === 'phone' ? validatePhone(phone) : '';
@@ -116,9 +116,43 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
 
     if (emailErr || phoneErr || passErr || confirmErr) return;
 
-    console.log('Sign up:', { authMethod, email, phone, password });
-    // API call here - on success, show verification
-    setShowVerification(true);
+    try {
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+      const response = await fetch(`${BACKEND_URL}/api/v1/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: authMethod === 'email' ? email : `${phone}@phone.temp`,
+          password,
+          username: authMethod === 'email' ? email.split('@')[0] : phone.replace(/\D/g, ''),
+          firstName: '',
+          lastName: '',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Registration successful:', data);
+        // Show verification modal
+        setShowVerification(true);
+      } else {
+        // Handle errors
+        if (data.error?.includes('Email already registered')) {
+          setEmailError('This email is already registered');
+        } else if (data.error?.includes('Username already taken')) {
+          setEmailError('This username is already taken');
+        } else {
+          setEmailError(data.error || 'Registration failed');
+        }
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setEmailError('Connection error. Please try again.');
+    }
   };
 
   const handleEmailChange = (value: string) => {
