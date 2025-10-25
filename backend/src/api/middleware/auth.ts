@@ -83,6 +83,7 @@ export async function authenticate(
  * Generate JWT token
  */
 export function generateToken(user: { id: string; email: string; username: string }): string {
+  const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
   return jwt.sign(
     {
       userId: user.id,
@@ -90,8 +91,6 @@ export function generateToken(user: { id: string; email: string; username: strin
       username: user.username,
     },
     JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    }
+    { expiresIn }
   );
 }
