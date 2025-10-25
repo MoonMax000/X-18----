@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
-import { profileController } from '../controllers/profile.controller';
-import { updateProfileSchema, uploadAvatarSchema } from '../validators/profile.validator';
+import {
+  profileController,
+  uploadAvatar as uploadAvatarMiddleware,
+  uploadCover as uploadCoverMiddleware
+} from '../controllers/profile.controller';
+import { updateProfileSchema, updateSettingsSchema } from '../validators/profile.validator';
 
 const router = Router();
 
@@ -34,7 +38,7 @@ router.put(
  */
 router.post(
   '/avatar',
-  validateRequest(uploadAvatarSchema),
+  uploadAvatarMiddleware,
   profileController.uploadAvatar
 );
 
@@ -50,7 +54,7 @@ router.delete('/avatar', profileController.deleteAvatar);
  * @desc    Upload cover image
  * @access  Private
  */
-router.post('/cover', profileController.uploadCover);
+router.post('/cover', uploadCoverMiddleware, profileController.uploadCover);
 
 /**
  * @route   DELETE /api/v1/profile/cover
@@ -71,6 +75,10 @@ router.get('/settings', profileController.getSettings);
  * @desc    Update user settings
  * @access  Private
  */
-router.put('/settings', profileController.updateSettings);
+router.put(
+  '/settings',
+  validateRequest(updateSettingsSchema),
+  profileController.updateSettings
+);
 
 export default router;
