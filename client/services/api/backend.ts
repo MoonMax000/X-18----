@@ -1,5 +1,5 @@
 // Backend API client - все запросы к нашему backend серверу
-// После переноса backend на отдельный сервер, просто ��бнови BACKEND_URL
+// После переноса backend на отдельный сервер, просто обнови BACKEND_URL
 
 const BACKEND_URL = process.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const API_BASE = `${BACKEND_URL}/api/v1`;
@@ -230,25 +230,53 @@ class BackendApiClient {
   }
 
   // ============================================
-  // BILLING
+  // PAYMENT METHODS
   // ============================================
 
-  async getPaymentMethods() {
-    return this.request('/billing/payment-methods');
+  async createSetupIntent() {
+    return this.request<{ clientSecret: string; setupIntentId: string }>(
+      '/payment-methods/setup-intent',
+      { method: 'POST' }
+    );
   }
 
-  async addPaymentMethod(paymentMethodId: string) {
-    return this.request('/billing/payment-methods', {
+  async getPaymentMethods() {
+    return this.request<{
+      paymentMethods: Array<{
+        id: string;
+        type: string;
+        brand?: string;
+        last4?: string;
+        expMonth?: number;
+        expYear?: number;
+        isDefault: boolean;
+        createdAt: string;
+      }>;
+    }>('/payment-methods');
+  }
+
+  async addPaymentMethod(data: { paymentMethodId?: string; setupIntentId?: string }) {
+    return this.request('/payment-methods', {
       method: 'POST',
-      body: JSON.stringify({ paymentMethodId }),
+      body: JSON.stringify(data),
     });
   }
 
   async deletePaymentMethod(id: string) {
-    return this.request(`/billing/payment-methods/${id}`, {
+    return this.request(`/payment-methods/${id}`, {
       method: 'DELETE',
     });
   }
+
+  async setDefaultPaymentMethod(id: string) {
+    return this.request(`/payment-methods/${id}/default`, {
+      method: 'PUT',
+    });
+  }
+
+  // ============================================
+  // BILLING
+  // ============================================
 
   async getInvoices() {
     return this.request('/billing/invoices');
