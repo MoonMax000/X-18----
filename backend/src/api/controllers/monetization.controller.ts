@@ -21,7 +21,7 @@ class MonetizationController {
       const { startDate, endDate, groupBy = 'day' } = req.query;
 
       // Get transactions for this user
-      const where: any = { recipientId: userId };
+      const where: any = { userId: userId };
       
       if (startDate && endDate) {
         where.createdAt = {
@@ -35,7 +35,7 @@ class MonetizationController {
         where,
         _sum: {
           amount: true,
-          platformFee: true,
+          fee: true,
         },
         _count: true,
       });
@@ -70,8 +70,8 @@ class MonetizationController {
       res.json({
         earnings: {
           totalEarnings: earnings._sum.amount || 0,
-          platformFees: earnings._sum.platformFee || 0,
-          netEarnings: (earnings._sum.amount || 0) - (earnings._sum.platformFee || 0),
+          platformFees: earnings._sum.fee || 0,
+          netEarnings: (earnings._sum.amount || 0) - (earnings._sum.fee || 0),
           transactionCount: earnings._count,
           availableBalance,
           earningsByType: earningsByType.map(e => ({
@@ -97,7 +97,7 @@ class MonetizationController {
       // Subscriber count
       const subscriberCount = await prisma.subscription.count({
         where: {
-          creatorId: userId,
+          subscribedToId: userId,
           status: 'active',
         },
       });
@@ -105,7 +105,7 @@ class MonetizationController {
       // Post purchases
       const postPurchases = await prisma.transaction.count({
         where: {
-          recipientId: userId,
+          userId: userId,
           type: 'post_purchase',
         },
       });
@@ -113,7 +113,7 @@ class MonetizationController {
       // Tips received
       const tipsReceived = await prisma.transaction.aggregate({
         where: {
-          recipientId: userId,
+          userId: userId,
           type: 'tip',
         },
         _sum: { amount: true },
