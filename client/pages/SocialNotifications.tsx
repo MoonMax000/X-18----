@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Repeat2, MessageCircle, UserPlus } from "lucide-react";
+import { Heart, Repeat2, MessageCircle, UserPlus, Bell, Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
+import { useGTSNotifications } from "@/hooks/useGTSNotifications";
+import type { GTSNotification } from "@/services/api/gotosocial";
 
 interface NotificationItem {
   id: string;
@@ -36,83 +38,80 @@ const notificationFilters = [
 
 type NotificationFilterId = (typeof notificationFilters)[number]["id"];
 
-const notifications: NotificationItem[] = [
-  {
-    id: "n-follow-01",
-    type: "follow",
+// Convert GTSNotification to UI NotificationItem
+function convertGTSNotification(gtsNotification: GTSNotification): NotificationItem {
+  const { id, type, created_at, account, status } = gtsNotification;
+  
+  // Calculate relative time
+  const getRelativeTime = (dateString: string): string => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "только что";
+    if (diffMins < 60) return `${diffMins} мин назад`;
+    if (diffHours < 24) return `${diffHours} ч назад`;
+    if (diffDays < 7) return `${diffDays} д назад`;
+    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  };
+
+  // Get status preview text
+  const getStatusPreview = (): string => {
+    if (!status) return "";
+    const text = status.content.replace(/<[^>]*>/g, ""); // Remove HTML
+    return text.length > 50 ? `«${text.substring(0, 50)}...»` : `«${text}»`;
+  };
+
+  // Map GoToSocial types to UI types
+  let uiType: NotificationItem["type"];
+  let message: string;
+
+  switch (type) {
+    case "follow":
+      uiType = "follow";
+      message = "подписался на ваши обновления";
+      break;
+    case "favourite":
+      uiType = "like";
+      message = status ? `лайкнул ваш пост ${getStatusPreview()}` : "лайкнул ваш пост";
+      break;
+    case "reblog":
+      uiType = "repost";
+      message = status ? `поделился вашим постом ${getStatusPreview()}` : "поде��ился вашим постом";
+      break;
+    case "mention":
+      uiType = "mention";
+      message = status ? `упомянул вас в посте ${getStatusPreview()}` : "упомянул вас";
+      break;
+    case "status":
+      uiType = "mention";
+      message = "опубликовал новый пост";
+      break;
+    default:
+      uiType = "mention";
+      message = "новое уведомление";
+  }
+
+  return {
+    id,
+    type: uiType,
     actor: {
-      name: "Eva Nakamura",
-      handle: "@quantumflow",
-      avatar: "https://i.pravatar.cc/120?img=47",
-      verified: true,
+      name: account.display_name || account.username,
+      handle: `@${account.acct}`,
+      avatar: account.avatar,
+      verified: account.verified,
     },
-    message: "подписалась на ваши обновления",
-    timestamp: "2 мин назад",
-  },
-  {
-    id: "n-like-01",
-    type: "like",
-    actor: {
-      name: "Macro Sensei",
-      handle: "@macroSensei",
-      avatar: "https://i.pravatar.cc/120?img=41",
-    },
-    message: "лайкнул ваш тред «Ликвидность в азиатскую сессию»",
-    timestamp: "12 мин назад",
-  },
-  {
-    id: "n-mention-01",
-    type: "mention",
-    actor: {
-      name: "Tyrian Research",
-      handle: "@tyrianresearch",
-      avatar: "https://i.pravatar.cc/120?img=56",
-      verified: true,
-    },
-    message: "упомянул вас в обзоре «Как фонды хеджируют риск перед CPI»",
-    timestamp: "33 мин назад",
-  },
-  {
-    id: "n-repost-01",
-    type: "repost",
-    actor: {
-      name: "Мария Козина",
-      handle: "@delta_maria",
-      avatar: "https://i.pravatar.cc/120?img=28",
-    },
-    message: "поделилась вашим постом «AI-индикаторы для фьючерсов на индекс»",
-    timestamp: "1 ч назад",
-    meta: "+687 показов",
-  },
-  {
-    id: "n-like-02",
-    type: "like",
-    actor: {
-      name: "Crypto Scout",
-      handle: "@scout_io",
-      avatar: "https://i.pravatar.cc/120?img=33",
-    },
-    message: "лайкнул ваш ответ в треде про staking",
-    timestamp: "2 ч назад",
-  },
-  {
-    id: "n-mention-02",
-    type: "mention",
-    actor: {
-      name: "Gamma Insider",
-      handle: "@gamma_io",
-      avatar: "https://i.pravatar.cc/120?img=15",
-    },
-    message: "отметил вас в аналитике по волатильности опционов",
-    timestamp: "5 ч назад",
-    meta: "+42 перехода",
-  },
-];
+    message,
+    timestamp: getRelativeTime(created_at),
+  };
+}
 
 const SocialNotifications: FC = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<NotificationFilterId>("all");
-  const [readNotifications, setReadNotifications] = useState<Set<string>>(new Set());
   const [attentionDialogOpen, setAttentionDialogOpen] = useState(false);
   
   // Attention control settings
@@ -126,52 +125,51 @@ const SocialNotifications: FC = () => {
   // Newsletter settings
   const [emailNotifications, setEmailNotifications] = useState(false);
 
-  const filteredNotifications = useMemo(() => {
-    if (activeFilter === "mentions") {
-      return notifications.filter((notification) => notification.type === "mention");
-    }
+  // Fetch notifications from GoToSocial
+  const {
+    notifications: gtsNotifications,
+    isLoading,
+    error,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    loadMore,
+    hasMore,
+    isLoadingMore,
+  } = useGTSNotifications({
+    filter: activeFilter === "mentions" ? "mention" : "all",
+    limit: 20,
+    autoRefresh: true,
+    refreshInterval: 60000, // 1 minute
+  });
 
-    return notifications;
-  }, [activeFilter]);
+  // Convert GTS notifications to UI format
+  const notifications = useMemo(() => {
+    return gtsNotifications.map(convertGTSNotification);
+  }, [gtsNotifications]);
 
   const filterCounts = useMemo(() => ({
-    all: notifications.length,
-    mentions: notifications.filter((notification) => notification.type === "mention").length,
-  }), []);
-
-  const filteredUnreadCount = useMemo(
-    () => filteredNotifications.filter((notification) => !readNotifications.has(notification.id)).length,
-    [filteredNotifications, readNotifications],
-  );
-
-  const unreadTotal = useMemo(
-    () => notifications.filter((notification) => !readNotifications.has(notification.id)).length,
-    [readNotifications],
-  );
+    all: gtsNotifications.length,
+    mentions: gtsNotifications.filter((n) => n.type === "mention").length,
+  }), [gtsNotifications]);
 
   const handleToggleRead = useCallback((id: string) => {
-    setReadNotifications((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
+    markAsRead(id);
+  }, [markAsRead]);
 
   const handleMarkAllAsRead = useCallback(() => {
-    setReadNotifications((prev) => {
-      const next = new Set(prev);
-      filteredNotifications.forEach((notification) => next.add(notification.id));
-      return next;
-    });
-  }, [filteredNotifications]);
+    markAllAsRead();
+  }, [markAllAsRead]);
 
   const handleBack = () => {
     navigate(-1);
   };
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore) {
+      loadMore();
+    }
+  }, [loadMore, isLoadingMore, hasMore]);
 
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
@@ -202,15 +200,15 @@ const SocialNotifications: FC = () => {
             </button>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-white">Уведомления</h1>
-              <p className="text-sm text-[#8E92A0]">{unreadTotal} непрочитанных</p>
+              <p className="text-sm text-[#8E92A0]">{unreadCount} непрочитанных</p>
             </div>
             <button
               type="button"
               onClick={handleMarkAllAsRead}
-              disabled={filteredUnreadCount === 0}
+              disabled={unreadCount === 0}
               className={cn(
                 "text-sm font-semibold transition-colors",
-                filteredUnreadCount === 0
+                unreadCount === 0
                   ? "text-[#8E92A0] cursor-not-allowed"
                   : "text-[#A06AFF] hover:text-[#B87AFF]"
               )}
@@ -260,20 +258,76 @@ const SocialNotifications: FC = () => {
           </div>
         </div>
 
-        <div className="divide-y divide-[#1A1A1A]">
-          {filteredNotifications.length === 0 ? (
-            <EmptyNotificationsState activeFilter={activeFilter} />
-          ) : (
-            filteredNotifications.map((notification) => (
-              <NotificationItemRow
-                key={notification.id}
-                notification={notification}
-                isRead={readNotifications.has(notification.id)}
-                onToggleRead={() => handleToggleRead(notification.id)}
-              />
-            ))
-          )}
-        </div>
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#A06AFF] border-t-transparent" />
+              <p className="text-sm text-[#8E92A0]">Загружаем уведомления...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[#5E5E5E] bg-[rgba(12,16,20,0.4)] p-10 text-center mx-4 my-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20 text-red-500">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-white">Ошибка загрузки</h3>
+            <p className="max-w-[360px] text-sm text-[#B0B0B0]">{error}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition-all hover:shadow-[0_0_20px_rgba(160,106,255,0.4)]"
+            >
+              Попробовать снова
+            </button>
+          </div>
+        )}
+
+        {/* Notifications List */}
+        {!isLoading && !error && (
+          <div className="divide-y divide-[#1A1A1A]">
+            {notifications.length === 0 ? (
+              <EmptyNotificationsState activeFilter={activeFilter} />
+            ) : (
+              <>
+                {notifications.map((notification) => (
+                  <NotificationItemRow
+                    key={notification.id}
+                    notification={notification}
+                    isRead={false}
+                    onToggleRead={() => handleToggleRead(notification.id)}
+                  />
+                ))}
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="flex items-center justify-center py-8">
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      disabled={isLoadingMore}
+                      className="rounded-full border border-[#5E5E5E] bg-[#000000] px-6 py-2 text-sm font-semibold text-white transition-all hover:border-[#A06AFF] hover:bg-[#A06AFF]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingMore ? (
+                        <span className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          Загрузка...
+                        </span>
+                      ) : (
+                        "Загрузить еще"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <aside className="hidden h-fit w-[340px] flex-col gap-4 lg:flex">
@@ -477,7 +531,7 @@ const EmptyNotificationsState: FC<EmptyNotificationsStateProps> = ({ activeFilte
     <p className="max-w-[360px] text-sm text-[#B0B0B0]">
       {activeFilter === "mentions"
         ? "Упоминаний пока нет. Поделитесь новой идеей — и коллеги обязательно отметят вас."
-        : "Вы в курсе всех событий. Новые уведомления появятся сразу после активн��сти."}
+        : "Вы в курсе всех событий. Новые уведомления появятся сразу после активности."}
     </p>
   </div>
 );
