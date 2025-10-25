@@ -355,8 +355,8 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle login - simulates different error scenarios
-  const handleLogin = () => {
+  // Handle login - calls backend API
+  const handleLogin = async () => {
     setAuthError('');
     setAttemptsRemaining(null);
 
@@ -376,35 +376,53 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    console.log('Login attempt:', { authMethod, phoneNumber, email, password });
+    try {
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-    // Mock login validation - simulate different scenarios
-    // For demo: password 'wrongpassword' triggers attempt counter
-    if (password === 'wrongpassword') {
-      const newFailedAttempts = failedAttempts + 1;
-      setFailedAttempts(newFailedAttempts);
+      const response = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: authMethod === 'email' ? email : `${phoneNumber}@phone.temp`,
+          password,
+        }),
+      });
 
-      if (newFailedAttempts >= 10) {
-        setIsBlocked(true);
-        setAuthError('Too many failed attempts. Account locked for 30 minutes.');
-        return;
-      } else if (newFailedAttempts >= 5) {
-        setAuthError('Too many failed attempts. IP blocked for 15 minutes.');
-        setIsBlocked(true);
-        return;
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token in localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        console.log('Login successful:', data);
+
+        // Close modal and refresh page to load user data
+        onClose();
+        window.location.reload();
       } else {
-        const remaining = 10 - newFailedAttempts;
-        setAttemptsRemaining(remaining);
-        setAuthError('Invalid login or password.');
-        return;
-      }
-    }
+        // Handle errors
+        const newFailedAttempts = failedAttempts + 1;
+        setFailedAttempts(newFailedAttempts);
 
-    // Mock: Show 2FA screen on successful login
-    const userEmail = authMethod === 'email' ? email : 'example@gmail.com';
-    const masked = userEmail.replace(/(.{1})(.*)(@.*)/, '$1***$3');
-    setMaskedEmail(masked);
-    setCurrentScreen('2fa');
+        if (newFailedAttempts >= 10) {
+          setIsBlocked(true);
+          setAuthError('Too many failed attempts. Account locked for 30 minutes.');
+        } else if (newFailedAttempts >= 5) {
+          setAuthError('Too many failed attempts. IP blocked for 15 minutes.');
+          setIsBlocked(true);
+        } else {
+          const remaining = 10 - newFailedAttempts;
+          setAttemptsRemaining(remaining);
+          setAuthError(data.error || 'Invalid login or password.');
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setAuthError('Connection error. Please try again.');
+    }
   };
 
   useEffect(() => {
