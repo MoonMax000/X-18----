@@ -6,7 +6,8 @@ const API_BASE = `${BACKEND_URL}/api/v1`;
 
 class BackendApiClient {
   private getAuthHeader(): HeadersInit {
-    const token = localStorage.getItem('auth_token');
+    // Use 'token' key instead of 'auth_token' to match LoginModal
+    const token = localStorage.getItem('token');
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -120,7 +121,7 @@ class BackendApiClient {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE}/profile/avatar`, {
       method: 'POST',
       headers: {
@@ -140,7 +141,7 @@ class BackendApiClient {
     const formData = new FormData();
     formData.append('cover', file);
 
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE}/profile/cover`, {
       method: 'POST',
       headers: {
@@ -306,7 +307,7 @@ class BackendApiClient {
     formData.append('document', file);
     formData.append('type', type);
 
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE}/kyc/documents/upload`, {
       method: 'POST',
       headers: {
