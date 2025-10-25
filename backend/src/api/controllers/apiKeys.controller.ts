@@ -139,13 +139,11 @@ class ApiKeysController {
       }
 
       const newKey = this.generateKey();
-      const keyPrefix = newKey.substring(0, 12) + '...';
 
       const updated = await prisma.apiKey.update({
         where: { id: keyId },
         data: {
           key: newKey,
-          keyPrefix,
         },
       });
 
@@ -157,7 +155,7 @@ class ApiKeysController {
         apiKey: {
           id: updated.id,
           name: updated.name,
-          keyPrefix: updated.keyPrefix,
+          key: updated.key.substring(0, 12) + '...',
           createdAt: updated.createdAt,
         },
       });
