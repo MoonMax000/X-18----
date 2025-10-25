@@ -6,10 +6,13 @@ A production-ready full-stack React application template with integrated Express
 
 **For AI/Developers working on this project:**
 - **[FOR_AI_REFERENCE.md](./FOR_AI_REFERENCE.md)** - Quick reference guide (архитектура, где что искать)
-- **[PHASE_1_IMPLEMENTATION.md](./PHASE_1_IMPLEMENTATION.md)** - Phase 1 implementation details (Auth, Profile, S3)
+- **[PHASE_1_IMPLEMENTATION.md](./PHASE_1_IMPLEMENTATION.md)** - Phase 1 implementation details (Auth, Profile, S3, Email)
 - **[PHASE_1_SUMMARY.md](./PHASE_1_SUMMARY.md)** - Executive summary Phase 1
+- **[TODO_COMPLETE_LIST.md](./TODO_COMPLETE_LIST.md)** - ⭐ Complete TODO list (~80 tasks)
+- **[TODO_QUICK_REFERENCE.md](./TODO_QUICK_REFERENCE.md)** - ⭐ Quick TODO overview
 
-**Current Status:** Phase 1 ✅ Complete (Auth, Profile Management, File Uploads via S3)
+**Current Status:** Phase 1 ✅ Complete (Auth, Profile Management, File Uploads, Email Service)
+**Next:** Phase 2 - Backend Controllers + Payment UI (~50 hours remaining)
 
 ---
 
