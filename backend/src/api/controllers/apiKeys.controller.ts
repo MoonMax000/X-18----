@@ -25,8 +25,7 @@ class ApiKeysController {
         select: {
           id: true,
           name: true,
-          description: true,
-          keyPrefix: true,
+          key: true,
           lastUsedAt: true,
           expiresAt: true,
           createdAt: true,
@@ -34,7 +33,13 @@ class ApiKeysController {
         orderBy: { createdAt: 'desc' },
       });
 
-      res.json({ keys });
+      // Mask keys for security
+      const maskedKeys = keys.map(k => ({
+        ...k,
+        key: k.key.substring(0, 12) + '...',
+      }));
+
+      res.json({ keys: maskedKeys });
     } catch (error) {
       logger.error('Get API keys error:', error);
       next(error);
@@ -48,19 +53,18 @@ class ApiKeysController {
   async createKey(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user!.id;
-      const { name, description, permissions, expiresAt } = req.body;
+      const { name, scopes, expiresAt } = req.body;
 
       const key = this.generateKey();
-      const keyPrefix = key.substring(0, 12) + '...';
+      const keyHash = await require('bcrypt').hash(key, 10);
 
       const apiKey = await prisma.apiKey.create({
         data: {
           userId,
           name,
-          description,
           key,
-          keyPrefix,
-          permissions,
+          keyHash,
+          scopes: scopes || [],
           expiresAt: expiresAt ? new Date(expiresAt) : null,
         },
       });
@@ -73,8 +77,7 @@ class ApiKeysController {
         apiKey: {
           id: apiKey.id,
           name: apiKey.name,
-          description: apiKey.description,
-          keyPrefix: apiKey.keyPrefix,
+          key: apiKey.key.substring(0, 12) + '...',
           createdAt: apiKey.createdAt,
         },
       });
