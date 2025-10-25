@@ -21,14 +21,19 @@ class NotificationsController {
         settings = await prisma.notificationSettings.create({
           data: {
             userId,
-            emailNotifications: true,
-            pushNotifications: true,
-            newFollower: true,
-            newComment: true,
-            newLike: true,
-            newPost: true,
-            systemUpdates: true,
-            securityAlerts: true,
+            enableSound: true,
+            showDesktop: true,
+            emailOnFollow: false,
+            emailOnMention: true,
+            emailOnComment: true,
+            emailOnLike: true,
+            emailOnNewPost: true,
+            emailSuspiciousLogin: true,
+            webOnFollow: true,
+            webOnMention: true,
+            webOnComment: true,
+            webOnLike: true,
+            webOnNewPost: true,
           },
         });
       }
