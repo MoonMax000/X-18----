@@ -34,8 +34,6 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const FeedTest = lazy(() => import("./pages/FeedTest"));
 const ProfileConnections = lazy(() => import("./pages/ProfileConnections"));
 const HomePostDetail = lazy(() => import("./pages/HomePostDetail"));
-const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },
@@ -61,10 +59,6 @@ const App = () => (
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Standalone pages without ClientLayout */}
-              <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-
               {/* Standard pages with ClientLayout */}
               <Route
                 path="*"
