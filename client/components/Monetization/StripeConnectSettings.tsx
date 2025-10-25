@@ -38,7 +38,7 @@ export default function StripeConnectSettings() {
     }
   };
 
-  const handleOAuthCallback = async (code: string, state: string | null) {
+  const handleOAuthCallback = async (code: string, state: string | null) => {
     try {
       setIsConnecting(true);
       await stripeConnectApi.handleCallback(code, state || undefined);
@@ -66,7 +66,7 @@ export default function StripeConnectSettings() {
     }
   };
 
-  const handleDisconnect = async () {
+  const handleDisconnect = async () => {
     if (!confirm('Are you sure you want to disconnect your Stripe account? You will no longer be able to receive payments.')) {
       return;
     }
@@ -84,8 +84,8 @@ export default function StripeConnectSettings() {
 
   const handleOpenDashboard = async () => {
     try {
-      const { url } = await stripeConnectApi.getDashboardLink();
-      window.open(url, '_blank');
+      const dashLink = await stripeConnectApi.getDashboardLink();
+      window.open(dashLink.url, '_blank');
     } catch (err: any) {
       setError(err.message);
     }
@@ -165,7 +165,7 @@ export default function StripeConnectSettings() {
             <h4 className="text-sm font-semibold text-white mb-2">Platform Fee</h4>
             <p className="text-sm text-[#8E92A0]">
               We charge <span className="text-white font-semibold">10%</span> platform fee on all transactions.
-              You'll receive <span className="text-white font-semibold">90%</span> of every sale.
+              You will receive <span className="text-white font-semibold">90%</span> of every sale.
             </p>
           </div>
 
