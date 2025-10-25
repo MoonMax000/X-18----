@@ -80,6 +80,56 @@ export async function authenticate(
 }
 
 /**
+ * Optional authentication middleware
+ * Attaches user to request if token is provided, but doesn't fail if not
+ */
+export async function optionalAuthenticate(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader?.startsWith('Bearer ')) {
+      return next();
+    }
+
+    const token = authHeader.substring(7);
+
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      email: string;
+      username: string;
+    };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        isActive: true,
+        isBanned: true,
+      },
+    });
+
+    if (user && user.isActive && !user.isBanned) {
+      req.user = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      };
+    }
+
+    next();
+  } catch (error: any) {
+    // If token is invalid, just continue without user
+    next();
+  }
+}
+
+/**
  * Generate JWT token
  */
 export function generateToken(user: { id: string; email: string; username: string }): string {
