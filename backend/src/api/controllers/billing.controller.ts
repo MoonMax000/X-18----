@@ -70,7 +70,7 @@ class BillingController {
           status: 'active',
         },
         include: {
-          creator: {
+          subscribedTo: {
             select: {
               id: true,
               username: true,
