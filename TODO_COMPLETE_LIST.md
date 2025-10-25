@@ -36,32 +36,32 @@
 ### 1. Missing Route Files (6 файлов)
 **Статус:** Объявлены в `index.ts`, но файлы НЕ существуют
 
-- [ ] **`backend/src/api/routes/notifications.routes.ts`**
+- [x] **`backend/src/api/routes/notifications.routes.ts`** ✅
   - Route: `/api/v1/notification-settings`
   - Methods: GET, PUT
   - Description: User notification preferences
 
-- [ ] **`backend/src/api/routes/apiKeys.routes.ts`**
+- [x] **`backend/src/api/routes/apiKeys.routes.ts`** ✅
   - Route: `/api/v1/api-keys`
   - Methods: GET, POST, DELETE
   - Description: API key management for integrations
 
-- [ ] **`backend/src/api/routes/kyc.routes.ts`**
+- [x] **`backend/src/api/routes/kyc.routes.ts`** ✅
   - Route: `/api/v1/kyc`
   - Methods: GET, POST (upload documents), PUT (update status)
   - Description: KYC verification workflow
 
-- [ ] **`backend/src/api/routes/referrals.routes.ts`**
+- [x] **`backend/src/api/routes/referrals.routes.ts`** ✅
   - Route: `/api/v1/referrals`
   - Methods: GET (stats), GET (list), POST (generate link)
   - Description: Referral program management
 
-- [ ] **`backend/src/api/routes/monetization.routes.ts`**
+- [x] **`backend/src/api/routes/monetization.routes.ts`** ✅
   - Route: `/api/v1/monetization`
   - Methods: GET (earnings), GET (analytics), POST (payout)
   - Description: Creator earnings and payouts
 
-- [ ] **`backend/src/api/routes/billing.routes.ts`**
+- [x] **`backend/src/api/routes/billing.routes.ts`** ✅
   - Route: `/api/v1/billing`
   - Methods: GET (invoices), GET (subscription), POST (update plan)
   - Description: Billing history and subscription management
@@ -462,9 +462,9 @@
 ## 📊 PROGRESS SUMMARY
 
 ### Backend
-- **Completed:** 5 controllers, 4 routes, 2 services, auth, email ✅
-- **TODO:** 6 controllers, 6 routes, 6 validators, webhooks, refresh tokens ⚠️
-- **Progress:** ~40% complete
+- **Completed:** 11 controllers, 10 routes, 8 validators, 2 services, auth, email ✅
+- **TODO:** Webhooks, refresh tokens, admin middleware ⚠️
+- **Progress:** ~85% complete (Phase 2A DONE)
 
 ### Frontend
 - **Completed:** Basic UI, modals, layouts ✅

@@ -64,6 +64,23 @@ model User {
   @@map("users")
 }
 
+// API Keys for integrations
+model ApiKey {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  key         String    @unique
+  keyPrefix   String    @map("key_prefix")
+  permissions Json?
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("api_keys")
+}
+
 // Email verification tokens
 model EmailVerificationToken {
   id        String   @id @default(uuid())
