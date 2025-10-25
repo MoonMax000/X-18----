@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../database/client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
+const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key-change-this';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -83,14 +83,14 @@ export async function authenticate(
  * Generate JWT token
  */
 export function generateToken(user: { id: string; email: string; username: string }): string {
-  const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
+  const expiresIn: string = process.env.JWT_EXPIRES_IN || '7d';
   return jwt.sign(
     {
       userId: user.id,
       email: user.email,
       username: user.username,
     },
-    JWT_SECRET,
-    { expiresIn }
+    JWT_SECRET as string,
+    { expiresIn: expiresIn as string }
   );
 }
