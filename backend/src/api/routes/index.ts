@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
 import profileRoutes from './profile.routes';
+import stripeRoutes from './stripe.routes';
 import stripeConnectRoutes from './stripeConnect.routes';
 import paymentMethodsRoutes from './paymentMethods.routes';
 import notificationsRoutes from './notifications.routes';
@@ -17,6 +18,7 @@ router.use('/auth', authRoutes);
 
 // All other routes require authentication (see individual route files)
 router.use('/profile', profileRoutes);
+router.use('/stripe-settings', stripeRoutes);
 router.use('/stripe-connect', stripeConnectRoutes);
 router.use('/payment-methods', paymentMethodsRoutes);
 router.use('/notification-settings', notificationsRoutes);
