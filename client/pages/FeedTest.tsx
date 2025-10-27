@@ -7,50 +7,69 @@ import type { ComposerData } from "@/features/feed/types";
 import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 import { TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
 import { QuickComposer, FeedTabs, FeedFilters, RightSidebar, NewPostsBanner } from "@/features/feed/components";
-import { useGTSTimeline } from "@/hooks/useGTSTimeline";
-import type { GTSStatus } from "@/services/api/gotosocial";
+import { useCustomTimeline } from "@/hooks/useCustomTimeline";
+import type { Post as CustomPost } from "@/services/api/custom-backend";
+import { getAvatarUrl } from "@/lib/avatar-utils";
+import { formatTimeAgo } from "@/lib/time-utils";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Convert GoToSocial status to our Post format
-function gtsStatusToPost(status: GTSStatus): any {
+// Convert Custom Backend post to feed post format
+function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
+  // Use centralized avatar utility for consistency
+  const avatarUrl = getAvatarUrl(post.user);
+  const postAuthorHandle = `@${post.user?.username || 'unknown'}`;
+  const currentUserHandle = currentUsername ? `@${currentUsername}` : null;
+  const isCurrentUser = currentUserHandle && postAuthorHandle 
+    ? postAuthorHandle.toLowerCase() === currentUserHandle.toLowerCase()
+    : false;
+  
   return {
-    id: status.id,
-    type: status.custom_metadata?.post_type || 'general',
-    text: status.content,
+    id: post.id,
+    type: post.metadata?.post_type || 'general',
+    text: post.content,
     author: {
-      name: status.account.display_name,
-      handle: `@${status.account.username}`,
-      avatar: status.account.avatar,
-      verified: status.account.verified || false,
+      name: post.user?.display_name || 'Unknown',
+      handle: postAuthorHandle,
+      avatar: avatarUrl,
+      verified: post.user?.verified || false,
       tier: 'free',
       isFollowing: false,
+      isCurrentUser: isCurrentUser,
     },
-    timestamp: status.created_at,
-    engagement: {
-      likes: status.favourites_count,
-      comments: status.replies_count,
-      reposts: status.reblogs_count,
-      bookmarks: 0,
-    },
-    media: status.media_attachments.map(m => ({
-      id: m.id,
-      url: m.url,
-      type: m.type,
-      alt: m.description,
-    })),
-    ticker: status.custom_metadata?.ticker,
-    sentiment: status.custom_metadata?.sentiment,
-    direction: status.custom_metadata?.direction,
-    timeframe: status.custom_metadata?.timeframe,
-    risk: status.custom_metadata?.risk,
-    entry: status.custom_metadata?.entry,
-    stopLoss: status.custom_metadata?.stop_loss,
-    takeProfit: status.custom_metadata?.take_profit,
-    market: status.custom_metadata?.market,
-    category: status.custom_metadata?.post_type,
+    timestamp: formatTimeAgo(post.created_at),
+    // Use flat properties instead of nested engagement object
+    likes: post.likes_count || 0,
+    comments: post.replies_count || 0,
+    reposts: post.retweets_count || 0,
+    views: 0,
+    // Include interaction states from API
+    isLiked: post.is_liked || false,
+    isRetweeted: post.is_retweeted || false,
+    isBookmarked: post.is_bookmarked || false,
+    media: post.media?.map((mediaItem) => ({
+      id: mediaItem.id,
+      url: mediaItem.url,
+      type: mediaItem.type as 'image' | 'video' | 'gif',
+      alt: mediaItem.alt_text || '',
+      thumbnail_url: mediaItem.thumbnail_url,
+      width: mediaItem.width,
+      height: mediaItem.height,
+    })) || [],
+    ticker: post.metadata?.ticker,
+    sentiment: post.metadata?.sentiment,
+    direction: post.metadata?.direction,
+    timeframe: post.metadata?.timeframe,
+    risk: post.metadata?.risk,
+    entry: post.metadata?.entry,
+    stopLoss: post.metadata?.stop_loss,
+    takeProfit: post.metadata?.take_profit,
+    market: post.metadata?.market,
+    category: post.metadata?.post_type,
   };
 }
 
 export default function FeedTest() {
+  const { user } = useAuth();
   const {
     activeTab,
     setActiveTab,
@@ -63,21 +82,34 @@ export default function FeedTest() {
     applyToPosts
   } = useFeedFilters("all");
 
-  // Use real GoToSocial timeline
+  // Use Custom Backend timeline
+  // Always use explore for now (public timeline)
   const {
-    statuses,
+    posts: customPosts,
     isLoading,
     loadMore,
     newCount,
     loadNew,
     refresh,
     error,
-  } = useGTSTimeline({
-    type: feedMode === 'all' ? 'public' : feedMode === 'following' ? 'home' : 'public',
+  } = useCustomTimeline({
+    type: 'explore',
     limit: 20,
     autoRefresh: true,
     refreshInterval: 60000,
   });
+
+  // Auto-refresh when returning to page
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refresh();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refresh]);
 
   const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(new Set());
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
@@ -97,8 +129,8 @@ export default function FeedTest() {
   }, []);
 
   const posts = useMemo(
-    () => Array.isArray(statuses) ? statuses.map(gtsStatusToPost) : [],
-    [statuses]
+    () => Array.isArray(customPosts) ? customPosts.map(post => customPostToFeedPost(post, user?.username)) : [],
+    [customPosts, user?.username]
   );
 
   const filteredPosts = useMemo(
@@ -190,19 +222,10 @@ export default function FeedTest() {
 
       <CreatePostModal
         isOpen={isAdvancedComposerOpen}
-        onClose={() => setIsAdvancedComposerOpen(false)}
-        initialBlocks={advancedComposerData.text ? [{
-          id: '1',
-          text: advancedComposerData.text,
-          media: [],
-          codeBlocks: advancedComposerData.codeSnippet ? [{
-            id: 'code-1',
-            code: advancedComposerData.codeSnippet,
-            language: advancedComposerData.language || 'javascript',
-          }] : [],
-        }] : undefined}
-        initialSentiment={advancedComposerData.sentiment || 'neutral'}
-        onPostCreated={refresh}
+        onClose={() => {
+          setIsAdvancedComposerOpen(false);
+          refresh();
+        }}
       />
     </div>
   );

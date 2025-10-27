@@ -40,6 +40,17 @@ export interface ComposerData {
   commentsEnabled: boolean;
 }
 
+export interface MediaItem {
+  id: string;
+  url: string;
+  type: 'image' | 'video' | 'gif';
+  thumbnail_url?: string;
+  alt_text?: string;
+  width?: number;
+  height?: number;
+  size_bytes?: number;
+}
+
 export interface Post {
   id: string;
   author: {
@@ -76,11 +87,15 @@ export interface Post {
   takeProfit?: string;
   language?: string;
   codeSnippet?: string;
-  mediaUrl?: string;
+  mediaUrl?: string; // Legacy field
+  media?: MediaItem[]; // New field from backend
   likes: number;
   comments: number;
   reposts: number;
   views: number;
+  isLiked?: boolean;
+  isRetweeted?: boolean;
+  isBookmarked?: boolean;
   isEditorPick?: boolean;
   tags?: string[];
 }
