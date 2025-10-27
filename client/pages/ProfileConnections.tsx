@@ -7,13 +7,13 @@ import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
 import { cn } from "@/lib/utils";
-import { useGTSProfile } from "@/hooks/useGTSProfile";
-import { getCurrentAccount } from "@/services/api/gotosocial";
-import type { GTSAccount } from "@/services/api/gotosocial";
+import { getAvatarUrl } from "@/lib/avatar-utils";
+import { useCustomBackendProfile } from "@/hooks/useCustomBackendProfile";
+import { customBackendAPI, type User } from "@/services/api/custom-backend";
 
 type TabType = "verified" | "followers" | "following";
 
-// Convert GTSAccount to UI user format
+// Convert Custom Backend User to UI user format
 interface UIUser {
   id: string;
   name: string;
@@ -25,16 +25,16 @@ interface UIUser {
   following: number;
 }
 
-function convertGTSAccountToUIUser(account: GTSAccount): UIUser {
+function convertCustomUserToUIUser(user: User): UIUser {
   return {
-    id: account.id,
-    name: account.display_name || account.username,
-    handle: account.acct,
-    avatar: account.avatar,
-    verified: account.verified,
-    bio: account.note?.replace(/<[^>]*>/g, "") || "", // Remove HTML tags
-    followers: account.followers_count,
-    following: account.following_count,
+    id: user.id,
+    name: user.display_name || user.username,
+    handle: user.username,
+    avatar: getAvatarUrl(user),
+    verified: user.verified || false,
+    bio: user.bio || "",
+    followers: user.followers_count || 0,
+    following: user.following_count || 0,
   };
 }
 
@@ -46,21 +46,21 @@ const ProfileConnections: FC = () => {
   const initialTab = (searchParams.get("tab") as TabType) || "followers";
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
-  const [currentUser, setCurrentUser] = useState<GTSAccount | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // Get current user
   useEffect(() => {
-    getCurrentAccount().then(setCurrentUser).catch(console.error);
+    customBackendAPI.getCurrentUser().then(setCurrentUser).catch(console.error);
   }, []);
 
   // Fetch profile data based on active tab
   const {
     profile,
-    followers: gtsFollowers,
-    following: gtsFollowing,
+    followers: customFollowers,
+    following: customFollowing,
     isLoading,
     error,
-  } = useGTSProfile({
+  } = useCustomBackendProfile({
     username: handle,
     fetchFollowers: activeTab === "followers" || activeTab === "verified",
     fetchFollowing: activeTab === "following",
@@ -75,15 +75,15 @@ const ProfileConnections: FC = () => {
     setSearchParams({ tab });
   };
 
-  // Convert GTS accounts to UI format
+  // Convert Custom Backend users to UI format
   const followers = useMemo(
-    () => gtsFollowers.map(convertGTSAccountToUIUser),
-    [gtsFollowers]
+    () => customFollowers.map(convertCustomUserToUIUser),
+    [customFollowers]
   );
 
   const following = useMemo(
-    () => gtsFollowing.map(convertGTSAccountToUIUser),
-    [gtsFollowing]
+    () => customFollowing.map(convertCustomUserToUIUser),
+    [customFollowing]
   );
 
   const verifiedFollowers = useMemo(
@@ -138,7 +138,7 @@ const ProfileConnections: FC = () => {
               </svg>
             </button>
             <div>
-              <h1 className="text-xl font-bold text-white">{profile?.display_name || handle}</h1>
+              <h1 className="text-xl font-bold text-white">{profile?.display_name || profile?.username || handle}</h1>
               <p className="text-sm text-[#8E92A0]">@{handle}</p>
             </div>
           </div>
@@ -162,10 +162,7 @@ const ProfileConnections: FC = () => {
                   >
                     <span className="flex items-center justify-center gap-1.5">
                       {tab.id === "verified" && (
-                        <VerifiedBadge
-                          size={16}
-                          variant={isActive ? "white" : "gradient"}
-                        />
+                        <VerifiedBadge size={16} />
                       )}
                       {tab.label}
                     </span>
@@ -228,6 +225,16 @@ const ProfileConnections: FC = () => {
                 const isFollowing = followingState[user.id] ?? false;
                 const isCurrentUser = currentUser?.id === user.id;
                 
+                const handleAvatarClick = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  navigate(`/social/profile/${user.handle}`);
+                };
+
+                const handleNameClick = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  navigate(`/social/profile/${user.handle}`);
+                };
+
                 return (
                   <div
                     key={user.id}
@@ -236,7 +243,7 @@ const ProfileConnections: FC = () => {
                     <UserHoverCard
                       author={{
                         name: user.name,
-                        handle: user.handle,
+                        handle: `@${user.handle}`,
                         avatar: user.avatar,
                         verified: user.verified,
                         followers: user.followers,
@@ -247,26 +254,37 @@ const ProfileConnections: FC = () => {
                       onFollowToggle={(nextState) => setFollowingState(prev => ({ ...prev, [user.id]: nextState }))}
                       showFollowButton={!isCurrentUser}
                     >
-                      <div className="flex items-start gap-3 flex-1 min-w-0 cursor-pointer">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback>{user.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1">
-                            <span className="font-semibold text-white hover:underline">
-                              {user.name}
-                            </span>
-                            {user.verified && <VerifiedBadge size={16} />}
-                          </div>
-                          {user.bio && (
-                            <p className="mt-1 text-sm text-white/80 line-clamp-2">{user.bio}</p>
-                          )}
-                        </div>
-                      </div>
+                      <Avatar 
+                        className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={handleAvatarClick}
+                      >
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                      </Avatar>
                     </UserHoverCard>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={handleNameClick}
+                          className="font-semibold text-white hover:underline cursor-pointer transition-all"
+                        >
+                          {user.name}
+                        </button>
+                        {user.verified && <VerifiedBadge size={16} />}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleNameClick}
+                        className="text-sm text-[#8E92A0] hover:text-[#A06AFF] cursor-pointer transition-colors text-left"
+                      >
+                        @{user.handle}
+                      </button>
+                      {user.bio && (
+                        <p className="mt-1 text-sm text-white/80 line-clamp-2">{user.bio}</p>
+                      )}
+                    </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="text-sm text-[#8E92A0]">@{user.handle}</span>
                       {!isCurrentUser && (
                         <FollowButton
                           profileId={user.id}

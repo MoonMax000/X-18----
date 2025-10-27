@@ -4,11 +4,28 @@ import AvatarWithHoverCard from "@/components/common/AvatarWithHoverCard";
 import UserAvatar from "@/components/ui/Avatar/UserAvatar";
 import { cn } from "@/lib/utils";
 import type { SocialComment } from "@/data/socialComments";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAvatarUrl } from "@/lib/avatar-utils";
+import { formatTimeAgo } from "@/lib/time-utils";
 
 import VerifiedBadge from "./VerifiedBadge";
 
-interface ExtendedComment extends SocialComment {
+interface ExtendedComment {
+  id: string;
+  postId: string;
+  author: {
+    name: string;
+    handle?: string;
+    avatar?: string;
+    verified?: boolean;
+    followers?: number;
+    following?: number;
+    bio?: string;
+  };
+  timestamp: string;
+  content: string;
   text?: string;
+  likes: number;
   replyCount?: number;
   replies?: ExtendedComment[];
 }
@@ -21,6 +38,7 @@ interface CommentCardProps {
 }
 
 const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false, onReply }) => {
+  const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [showReplies, setShowReplies] = useState(false);
@@ -55,12 +73,13 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
           <AvatarWithHoverCard
             author={{
               ...comment.author,
+              handle: comment.author.handle || `@${comment.author.name.toLowerCase()}`,
               followers: comment.author.followers ?? 0,
               following: comment.author.following ?? 0,
             }}
           >
             <UserAvatar
-              src={comment.author.avatar}
+              src={getAvatarUrl(comment.author)}
               alt={comment.author.name}
               size={40}
               accent={false}
@@ -80,7 +99,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
               {comment.author.handle}
             </span>
             <span className="text-sm text-[#6C7080]">·</span>
-            <span className="text-sm text-[#6C7080]">{comment.timestamp}</span>
+            <span className="text-sm text-[#6C7080]">{formatTimeAgo(comment.timestamp)}</span>
           </div>
 
           <p className="whitespace-pre-line text-[15px] leading-relaxed text-white/90">
@@ -92,7 +111,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
               <button
                 type="button"
                 onClick={() => setShowReplyForm(!showReplyForm)}
-                className="group flex items-center gap-1.5 transition-colors hover:text-[#1D9BF0]"
+                className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
                 aria-label="Reply"
               >
               <svg
@@ -180,8 +199,8 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
           {showReplyForm && (
             <div className="mt-3 flex gap-2">
               <UserAvatar
-                src="https://i.pravatar.cc/120?img=45"
-                alt="You"
+                src={getAvatarUrl(user)}
+                alt={user?.display_name || user?.username || "You"}
                 size={32}
                 accent={false}
               />
@@ -190,7 +209,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder={`Reply to ${comment.author.name}...`}
-                  className="w-full resize-none rounded-lg border border-[#2F3336] bg-transparent px-3 py-2 text-sm text-white placeholder-[#6C7080] focus:border-[#1D9BF0] focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-[#2F3336] bg-transparent px-3 py-2 text-sm text-white placeholder-[#6C7080] focus:border-[#A06AFF] focus:outline-none"
                   rows={2}
                 />
                 <div className="mt-2 flex justify-end gap-2">
@@ -215,7 +234,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
                       }
                     }}
                     disabled={!replyText.trim()}
-                    className="rounded-full bg-[#1D9BF0] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#1A8CD8] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-full bg-[#A06AFF] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#8B52E6] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Reply
                   </button>
@@ -228,7 +247,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
             <button
               type="button"
               onClick={() => setShowReplies(true)}
-              className="mt-2 flex items-center gap-2 text-sm text-[#1D9BF0] hover:underline"
+              className="mt-2 flex items-center gap-2 text-sm text-[#A06AFF] hover:underline"
             >
               <div className="h-px w-8 bg-[#2F3336]" />
               <span>Show {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}</span>

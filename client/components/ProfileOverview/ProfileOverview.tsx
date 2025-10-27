@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
 import { updateProfile } from "@/store/profileSlice";
 import type { RootState } from "@/store/store";
+import { customAuth } from "@/services/auth/custom-backend-auth";
 
 const SECTORS = [
   { id: "stock", label: "Stock Market" },
@@ -85,7 +86,53 @@ const ProfileOverview: FC = () => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Prepare update data
+      const updateData: any = {};
+      
+      if (firstName) updateData.first_name = firstName;
+      if (lastName) updateData.last_name = lastName;
+      if (displayName) updateData.display_name = displayName;
+      if (bio) updateData.bio = bio;
+      if (location) updateData.location = location;
+      if (website) updateData.website = website;
+      if (role) updateData.role = role;
+      if (selectedSectors.length > 0) {
+        updateData.sectors = JSON.stringify(selectedSectors);
+      }
+      
+      // Send to backend
+      const token = customAuth.getAccessToken();
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+      
+      const response = await fetch('http://localhost:8080/api/users/me', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update profile');
+      }
+      
+      const updatedUser = await response.json();
+      
+      // Update Redux store
+      dispatch(updateProfile({
+        name: updatedUser.display_name,
+        username: updatedUser.username,
+        bio: updatedUser.bio,
+        role: updatedUser.role,
+        location: updatedUser.location || undefined,
+        website: updatedUser.website || undefined,
+      }));
+      
       alert("Profile updated successfully!");
     } catch (error: any) {
       console.error("Failed to save profile:", error);

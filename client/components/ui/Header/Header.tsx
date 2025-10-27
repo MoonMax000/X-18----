@@ -4,6 +4,8 @@ import RightBarButton from "../RightBar/RightBarButton";
 import { AnimatedLogo } from "../AnimatedLogo/AnimatedLogo";
 import { AvatarDropdown } from "../AvatarDropdown/AvatarDropdown";
 import { NotificationBell } from "./NotificationBell";
+import { useCustomNotifications } from "@/hooks/useCustomNotifications";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   rightMenuOpen?: boolean;
@@ -18,6 +20,15 @@ export const Header: FC<HeaderProps> = ({
   leftMenuOpen = false,
   setLeftMenuOpen,
 }) => {
+  const { user } = useAuth();
+  
+  // Fetch unread notifications count
+  const { unreadCount } = useCustomNotifications({
+    limit: 10,
+    autoRefresh: true,
+    refreshInterval: 60000, // Refresh every minute
+  });
+
   return (
     <header className="pb-1 pt-3 w-full px-3 sm:px-4 md:pl-[30px] md:pr-[24px] bg-background items-center gap-2 mb-6">
       {/* Mobile Layout */}
@@ -158,9 +169,11 @@ export const Header: FC<HeaderProps> = ({
 
         {/* Right actions */}
         <div className="flex items-center justify-end w-full sm:max-w-[300px] md:max-w-[350px] gap-2 sm:gap-3 md:gap-4 justify-self-end">
-          <div className="hidden md:block">
-            <NotificationBell count={4} />
-          </div>
+          {user && (
+            <div className="hidden md:block">
+              <NotificationBell count={unreadCount} />
+            </div>
+          )}
         <AvatarDropdown />
           {setRightMenuOpen && (
             <RightBarButton

@@ -1,13 +1,15 @@
 import { FC } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface NotificationBellProps {
   count?: number;
 }
 
 export const NotificationBell: FC<NotificationBellProps> = ({ count = 0 }) => {
+  const navigate = useNavigate();
+
   const handleClick = () => {
-    console.log("Notifications clicked");
-    // Add notification logic here
+    navigate('/social/notifications');
   };
 
   const accessibleCount = count > 99 ? "99 plus" : count.toString();

@@ -1,17 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
-import { X, DollarSign, Users, UserCheck, Lock, Sparkles } from "lucide-react";
+import { X, DollarSign, Users, UserCheck, Lock, Sparkles, Globe, UserPlus, BadgeCheck, AtSign } from "lucide-react";
 
 type AccessType = "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium";
+type ReplyPolicy = "everyone" | "following" | "verified" | "mentioned";
 
 interface AccessTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentAccessType: AccessType;
   currentPrice: number;
-  onSave: (accessType: AccessType, price: number) => void;
+  currentReplyPolicy: ReplyPolicy;
+  onSave: (accessType: AccessType, price: number, replyPolicy: ReplyPolicy) => void;
 }
+
+const replyOptions = [
+  {
+    id: "everyone" as const,
+    label: "Everyone",
+    description: "Anyone can reply to this post",
+    icon: Globe,
+    color: "#1D9BF0",
+  },
+  {
+    id: "following" as const,
+    label: "People you follow",
+    description: "Only accounts you follow",
+    icon: UserPlus,
+    color: "#2EBD85",
+  },
+  {
+    id: "verified" as const,
+    label: "Verified accounts",
+    description: "Only verified users can reply",
+    icon: BadgeCheck,
+    color: "#FFD166",
+  },
+  {
+    id: "mentioned" as const,
+    label: "Only mentioned",
+    description: "Only people you mention",
+    icon: AtSign,
+    color: "#A06AFF",
+  },
+];
 
 const accessOptions = [
   {
@@ -71,10 +104,12 @@ export function AccessTypeModal({
   onClose,
   currentAccessType,
   currentPrice,
+  currentReplyPolicy,
   onSave,
 }: AccessTypeModalProps) {
   const [selectedType, setSelectedType] = useState<AccessType>(currentAccessType);
   const [price, setPrice] = useState<number>(currentPrice);
+  const [selectedReplyPolicy, setSelectedReplyPolicy] = useState<ReplyPolicy>(currentReplyPolicy);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -86,6 +121,7 @@ export function AccessTypeModal({
     if (isOpen) {
       setSelectedType(currentAccessType);
       setPrice(currentPrice);
+      setSelectedReplyPolicy(currentReplyPolicy);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -93,10 +129,10 @@ export function AccessTypeModal({
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen, currentAccessType, currentPrice]);
+  }, [isOpen, currentAccessType, currentPrice, currentReplyPolicy]);
 
   const handleSave = () => {
-    onSave(selectedType, price);
+    onSave(selectedType, price, selectedReplyPolicy);
     onClose();
   };
 
@@ -121,8 +157,8 @@ export function AccessTypeModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#181B22] px-6 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-white">Post Access</h2>
-            <p className="text-sm text-[#808283] mt-0.5">Choose who can see this post</p>
+            <h2 className="text-lg font-semibold text-white">Post Settings</h2>
+            <p className="text-sm text-[#808283] mt-0.5">Configure access and reply permissions</p>
           </div>
           <button
             onClick={onClose}
@@ -134,7 +170,10 @@ export function AccessTypeModal({
 
         {/* Content */}
         <div className="overflow-y-auto px-6 py-5 max-h-[calc(100vh-240px)] scrollbar">
-          <div className="space-y-3">
+          {/* Access Type Section */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-white mb-3">Who can see this post</h3>
+            <div className="space-y-3">
             {accessOptions.map((option) => {
               const Icon = option.icon;
               const isSelected = selectedType === option.id;
@@ -206,6 +245,64 @@ export function AccessTypeModal({
                 </button>
               );
             })}
+            </div>
+          </div>
+
+          {/* Reply Policy Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-3">Who can reply</h3>
+            <div className="space-y-2">
+              {replyOptions.map((option) => {
+                const Icon = option.icon;
+                const isSelected = selectedReplyPolicy === option.id;
+                
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedReplyPolicy(option.id)}
+                    className={cn(
+                      "group relative w-full overflow-hidden rounded-xl border-2 p-3 text-left transition-all",
+                      isSelected
+                        ? "border-[#1D9BF0]/50 bg-[#1D9BF0]/10"
+                        : "border-[#1B1F27] hover:border-[#2F3336] bg-[#0A0D12]"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Icon */}
+                      <div
+                        className={cn(
+                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all",
+                          isSelected ? "bg-[#1D9BF0]/20" : "bg-[#1B1F27] group-hover:bg-[#2F3336]"
+                        )}
+                      >
+                        <Icon className="h-5 w-5" style={{ color: isSelected ? option.color : "#808283" }} />
+                      </div>
+
+                      {/* Text */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-white mb-0.5">
+                          {option.label}
+                        </h4>
+                        <p className="text-xs text-[#808283]">
+                          {option.description}
+                        </p>
+                      </div>
+
+                      {/* Radio indicator */}
+                      <div className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                        isSelected ? "border-[#1D9BF0]" : "border-[#2F3336]"
+                      )}>
+                        {isSelected && (
+                          <div className="h-2.5 w-2.5 rounded-full bg-[#1D9BF0]" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

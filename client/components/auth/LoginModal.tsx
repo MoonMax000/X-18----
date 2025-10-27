@@ -1,15 +1,17 @@
 import { FC, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
+import { customAuth } from '@/services/auth/custom-backend-auth';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialScreen?: 'login' | 'signup';
 }
 
 type ScreenType = 'login' | '2fa' | 'forgot-email' | 'forgot-sent' | 'create-password' | 'password-reset' | 'signup';
 
-const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('login');
+const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'login' }) => {
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialScreen);
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [showPassword, setShowPassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -356,7 +358,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle login - calls backend API
+  // Handle login - uses GoToSocial API
   const handleLogin = async () => {
     console.log('=== Login Button Clicked ===');
     console.log('Auth method:', authMethod);
@@ -385,60 +387,34 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      console.log('Backend URL:', BACKEND_URL);
-
-      const payload = {
+      // Use Custom Backend Auth Service
+      const authData = await customAuth.login({
         email: authMethod === 'email' ? email : `${phoneNumber}@phone.temp`,
         password,
-      };
-
-      console.log('Sending login request:', { email: payload.email });
-
-      const response = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
       });
 
-      console.log('Response status:', response.status);
+      console.log('✅ Login successful:', authData.user.username);
 
-      const data = await response.json();
-      console.log('Response data:', data);
-
-      if (response.ok) {
-        // Store token in localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        console.log('✅ Login successful:', data);
-
-        // Close modal and refresh page to load user data
-        onClose();
-        window.location.reload();
-      } else {
-        console.error('❌ Login failed:', data);
-        // Handle errors
-        const newFailedAttempts = failedAttempts + 1;
-        setFailedAttempts(newFailedAttempts);
-
-        if (newFailedAttempts >= 10) {
-          setIsBlocked(true);
-          setAuthError('Too many failed attempts. Account locked for 30 minutes.');
-        } else if (newFailedAttempts >= 5) {
-          setAuthError('Too many failed attempts. IP blocked for 15 minutes.');
-          setIsBlocked(true);
-        } else {
-          const remaining = 10 - newFailedAttempts;
-          setAttemptsRemaining(remaining);
-          setAuthError(data.error || 'Invalid login or password.');
-        }
-      }
+      // Close modal and refresh page to load user data
+      onClose();
+      window.location.reload();
     } catch (error) {
-      console.error('❌ Login error (network):', error);
-      setAuthError('Connection error. Please try again.');
+      console.error('❌ Login error:', error);
+      
+      const newFailedAttempts = failedAttempts + 1;
+      setFailedAttempts(newFailedAttempts);
+
+      if (newFailedAttempts >= 10) {
+        setIsBlocked(true);
+        setAuthError('Too many failed attempts. Account locked for 30 minutes.');
+      } else if (newFailedAttempts >= 5) {
+        setAuthError('Too many failed attempts. IP blocked for 15 minutes.');
+        setIsBlocked(true);
+      } else {
+        const remaining = 10 - newFailedAttempts;
+        setAttemptsRemaining(remaining);
+        setAuthError(error instanceof Error ? error.message : 'Invalid login or password.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -535,7 +511,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       // Reset to initial state
-      setCurrentScreen('login');
+      setCurrentScreen(initialScreen);
       setAuthMethod('email');
       setShowPassword(false);
       setPhoneNumber('');
@@ -589,7 +565,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     !signupConfirmPasswordError
   );
 
-  const handleSignupSubmit = () => {
+  const handleSignupSubmit = async () => {
     if (!isSignupFormComplete) {
       if (signupAuthMethod === 'email' && !signupEmail) {
         setSignupEmailError('Email is required');
@@ -609,11 +585,46 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    console.log('Creating account', {
-      authMethod: signupAuthMethod,
-      email: signupAuthMethod === 'email' ? signupEmail : undefined,
-      phone: signupAuthMethod === 'phone' ? signupPhone : undefined,
-    });
+    console.log('=== SignUp Button Clicked (LoginModal) ===');
+    console.log('Auth method:', signupAuthMethod);
+    console.log('Email:', signupEmail);
+    console.log('Phone:', signupPhone);
+
+    setIsLoading(true);
+
+    try {
+      // Generate username from email or phone
+      const username = signupAuthMethod === 'email'
+        ? signupEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '')
+        : `user_${signupPhone.replace(/\D/g, '').slice(-8)}`;
+
+      console.log('🔄 Registering and logging in...');
+      
+      // Register and login using Custom Backend
+      const authData = await customAuth.register({
+        username,
+        email: signupAuthMethod === 'email' ? signupEmail : `${signupPhone}@phone.temp`,
+        password: signupPassword,
+      });
+
+      console.log('✅ User authenticated:', authData.user.username);
+
+      // Close modal and refresh page
+      onClose();
+      window.location.reload();
+    } catch (error) {
+      console.error('❌ Registration/Login error:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      
+      if (errorMessage.includes('already') || errorMessage.includes('taken') || errorMessage.includes('exists')) {
+        setSignupEmailError('This email or username is already registered');
+      } else {
+        setSignupEmailError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderBackButton = () => {

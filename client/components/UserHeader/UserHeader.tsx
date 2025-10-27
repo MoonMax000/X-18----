@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { type RootState } from "@/store/store";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
+import { getAvatarUrl, getCoverUrl } from "@/lib/avatar-utils";
 
 interface ProfileData {
   name: string;
@@ -46,6 +47,11 @@ const UserHeader: FC<Props> = ({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const currentUser = useSelector((state: RootState) => state.profile.currentUser);
+  
+  // Debug logs
+  console.log('👤 UserHeader - currentUser from Redux:', currentUser);
+  console.log('📸 UserHeader - avatar from Redux:', currentUser.avatar);
+  console.log('🖼️ UserHeader - cover from Redux:', currentUser.cover);
 
   const handleAvatarClick = () => {
     if (isOwn) {
@@ -74,22 +80,10 @@ const UserHeader: FC<Props> = ({
   };
 
   // Use Redux data for own profile, provided data or defaults for others
-  const defaultData = {
-    name: "Jane Doe",
-    username: "beautydoe",
-    bio: "Designing Products that Users Love",
-    role: "Crypto Trader",
-    location: "United States",
-    website: "https://beautydoe.com",
-    joined: "November 2010",
-    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500",
-    cover: "https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118",
-    stats: { tweets: 0, following: 143, followers: 149 },
-    isVerified: true,
-    isPremium: false,
-    level: 42,
-  };
-
+  console.log('🔧 UserHeader - isOwn:', isOwn);
+  console.log('📦 UserHeader - profileData prop:', profileData);
+  
+  // Use centralized avatar utilities for consistency
   const data = profileData || (isOwn ? {
     name: currentUser.name,
     username: currentUser.username,
@@ -98,13 +92,31 @@ const UserHeader: FC<Props> = ({
     location: currentUser.location,
     website: currentUser.website,
     joined: currentUser.joined,
-    avatar: currentUser.avatar,
-    cover: currentUser.cover,
-    stats: currentUser.stats || defaultData.stats,
+    avatar: getAvatarUrl(currentUser),
+    cover: getCoverUrl(currentUser.cover),
+    stats: currentUser.stats || { tweets: 0, following: 0, followers: 0 },
     isVerified: currentUser.isVerified,
     isPremium: currentUser.isPremium,
     level: currentUser.level,
-  } : defaultData);
+  } : {
+    name: "User",
+    username: "user",
+    bio: "",
+    role: "",
+    location: "",
+    website: "",
+    joined: "Recently",
+    avatar: getAvatarUrl(null),
+    cover: getCoverUrl(null),
+    stats: { tweets: 0, following: 0, followers: 0 },
+    isVerified: false,
+    isPremium: false,
+    level: 1,
+  });
+  
+  console.log('✅ UserHeader - final data object:', data);
+  console.log('📸 UserHeader - final avatar URL:', data.avatar);
+  console.log('🖼️ UserHeader - final cover URL:', data.cover);
 
   const primaryActionButtonClass =
     "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
@@ -139,7 +151,7 @@ const UserHeader: FC<Props> = ({
         {/* Cover/Banner image */}
         <div className="group relative w-full overflow-hidden rounded-3xl border border-widget-border bg-[#16181C]">
           <img
-            src="https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118"
+            src={data.cover}
             alt="Profile cover"
             className="h-[120px] sm:h-[160px] md:h-[180px] w-full object-cover"
           />
@@ -194,7 +206,7 @@ const UserHeader: FC<Props> = ({
             <div className="relative -mt-12 sm:-mt-14 md:-mt-16">
               <div className={`group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full ${getAvatarBorderClass(data.level)} ${getAvatarGlowClass(data.level)}`}>
                 <img
-                  src="https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500"
+                  src={data.avatar}
                   alt="Profile"
                   className="h-full w-full object-cover scale-110"
                 />

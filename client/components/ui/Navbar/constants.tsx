@@ -20,7 +20,7 @@ export interface NavElementProps {
 }
 
 export const navElements: NavElementProps[] = [
-  { icon: <DashboardNavIcon />, title: "Dashboard", route: "/dashboard" },
+  { icon: <DashboardNavIcon />, title: "Dashboard", route: "/profile" },
   {
     icon: <SocialIcon className="h-5 w-5" />,
     title: "Social Network",
@@ -28,33 +28,18 @@ export const navElements: NavElementProps[] = [
     children: [
       {
         icon: <ActivityIcon className="h-5 w-5" />,
-        title: "Market Stream",
+        title: "Home",
         route: "/feedtest",
       },
       {
         icon: <BoxIcon className="h-5 w-5" />,
-        title: "My Profile",
+        title: "Profile",
         route: "/profile-page",
-      },
-      {
-        icon: <BoxIcon className="h-5 w-5" />,
-        title: "Чужой профиль",
-        route: "/other-profile",
-      },
-      {
-        icon: <BoxIcon className="h-5 w-5" />,
-        title: "Dashboard",
-        route: "/profile",
       },
       {
         icon: <ExploreIcon className="h-5 w-5" />,
         title: "Explore",
         route: "/social/explore",
-      },
-      {
-        icon: <NotificationIcon className="h-5 w-5" />,
-        title: "Notifications",
-        route: "/social/notifications",
       },
       {
         icon: <MessageIcon className="h-5 w-5" />,
@@ -75,5 +60,4 @@ export const navElements: NavElementProps[] = [
       { icon: <BoxIcon className="h-5 w-5" />, title: "Cart", route: "#" },
     ],
   },
-  { icon: <BoxIcon className="h-5 w-5" />, title: "Tyrian Trade", route: "/" },
 ];

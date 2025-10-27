@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Тест функционала кропа изображений</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0C1014;
+            color: #E7E9EA;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #808283;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #181B22;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: #808283;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #181B22;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .upload-area {
+            border: 2px dashed #1D9BF0;
+            border-radius: 12px;
+            background: rgba(29, 155, 240, 0.1);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            background: rgba(29, 155, 240, 0.2);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            color: #1D9BF0;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: #808283;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .media-item {
+            position: relative;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #181B22;
+        }
+
+        .media-item.single {
+            grid-column: 1 / -1;
+            max-height: 500px;
+        }
+
+        .media-item img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .media-item.single img {
+            object-fit: contain;
+        }
+
+        .media-item:not(.single) img {
+            object-fit: cover;
+            aspect-ratio: 16/9;
+        }
+
+        .media-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: rgba(0, 0, 0, 0.72);
+            color: white;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .btn-danger {
+            background: rgba(239, 69, 74, 0.2);
+            color: #EF454A;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 69, 74, 0.3);
+        }
+
+        .logs-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #181B22;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .logs-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .instructions {
+            background: rgba(160, 106, 255, 0.1);
+            border: 1px solid rgba(160, 106, 255, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .instructions h3 {
+            margin-bottom: 16px;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #000;
+            border: 1px solid #181B22;
+            border-radius: 24px;
+            max-width: 920px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #181B22;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .crop-container {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            background: #000;
+            border-radius: 16px;
+            border: 2px solid #1D9BF0;
+            overflow: hidden;
+            cursor: grab;
+            margin-bottom: 24px;
+        }
+
+        .crop-container:active {
+            cursor: grabbing;
+        }
+
+        .crop-container img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: center;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .crop-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .preset-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #71767B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+        }
+
+        .preset-btn.active {
+            color: #1D9BF0;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #71767B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: #2F3336;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1D9BF0;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #181B22;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #181B22;
+            color: #E7E9EA;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-save {
+            background: linear-gradient(to right, #A06AFF, #482090);
+            color: white;
+        }
+
+        .btn-save:hover {
+            box-shadow: 0 12px 30px -18px rgba(160, 106, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Тестирование функционала кропа изображений</h1>
+            <p class="subtitle">Standalone тест без React/Vite - работает напрямую в браузере</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">Автовыбор пресета</div>
+                <div class="feature-desc">
+                    Пейзаж (≥1.5) → Wide<br>
+                    Портрет (≤0.8) → Original<br>
+                    Квадрат → Square
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <div class="feature-title">Сохранение состояния</div>
+                <div class="feature-desc">
+                    Каждый пресет хранит свой zoom и позицию независимо
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🖼️</div>
+                <div class="feature-title">Адаптивный preview</div>
+                <div class="feature-desc">
+                    1 фото: полное<br>
+                    Несколько: сетка 16:9
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h2 style="margin-bottom: 16px;">📤 Загрузка изображений</h2>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Выберите изображения для тестирования</div>
+                <div class="upload-hint">Можно выбрать несколько файлов одновременно</div>
+            </div>
+            <div id="mediaGrid" class="media-grid"></div>
+        </div>
+
+        <div class="logs-section">
+            <div class="logs-header">
+                <h2>📋 Логи (<span id="logCount">0</span>)</h2>
+                <button class="btn btn-primary" onclick="clearLogs()">🧹 Очистить</button>
+            </div>
+            <div class="logs-container" id="logsContainer">
+                <div style="text-align: center; color: #808283;">
+                    Логи пусты. Загрузите изображения для начала тестирования.
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>💡 Как тестировать:</h3>
+            <ol>
+                <li>Загрузите изображения разных форматов (пейзаж, портрет, квадрат)</li>
+                <li>Проверьте, что автовыбор пресета работает (смотрите логи)</li>
+                <li>Нажмите "Edit" на любом изображении</li>
+                <li>В редакторе: переключайтесь между пресетами, меняйте zoom и позицию</li>
+                <li>Проверьте, что каждый пресет сохраняет свои настройки независимо</li>
+                <li>Сохраните и проверьте preview</li>
+                <li>Все действия логируются для анализа</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Crop Editor Modal -->
+    <div class="modal" id="cropModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crop media</h2>
+                <button class="btn btn-primary" onclick="closeCropModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="crop-container" id="cropContainer">
+                    <img id="cropImage" src="" alt="Crop preview">
+                </div>
+                <div class="crop-controls">
+                    <div class="preset-buttons">
+                        <button class="preset-btn" id="btn-original" onclick="changePreset('original')" title="Original">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 7.5C3 6.119 4.119 5 5.5 5h13C19.881 5 21 6.119 21 7.5v9c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 19 3 17.881 3 16.5v-9zM5.5 7c-.276 0-.5.224-.5.5v9c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-9c0-.276-.224-.5-.5-.5h-13z"/>
+                            </svg>
+                        </button>
+                        <button class="preset-btn" id="btn-wide" onclick="changePreset('wide')" title="Wide (16:9)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9.5C3 8.119 4.119 7 5.5 7h13C19.881 7 21 8.119 21 9.5v5c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 17 3 15.881 3 14.5v-5zM5.5 9c-.276 0-.5.224-.5.5v5c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-5c0-.276-.224-.5-.5-.5h-13z"/>
+                            </svg>
+                        </button>
+                        <button class="preset-btn" id="btn-square" onclick="changePreset('square')" title="Square (1:1)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 5.5C3 4.119 4.119 3 5.5 3h13C19.881 3 21 4.119 21 5.5v13c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v13c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-13c0-.276-.224-.5-.5-.5h-13z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div style="width: 1px; height: 24px; background: #2F3336;"></div>
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="adjustZoom(-0.1)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 4c-3.87 0-7 3.13-7 7s3.13 7 7 7c1.93 0 3.68-.78 4.95-2.05C17.21 14.68 18 12.93 18 11c0-3.87-3.14-7-7-7zm-9 7c0-4.97 4.03-9 9-9s9 4.03 9 9c0 2.12-.74 4.08-1.97 5.62l3.68 3.67-1.42 1.42-3.67-3.68C15.08 19.26 13.12 20 11 20c-4.97 0-9-4.03-9-9zm12.5 1h-7v-2h7v2z"/>
+                            </svg>
+                        </button>
+                        <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1">
+                        <button class="zoom-btn" onclick="adjustZoom(0.1)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 4c-3.87 0-7 3.13-7 7s3.13 7 7 7c1.93 0 3.68-.78 4.95-2.05C17.21 14.68 18 12.93 18 11c0-3.87-3.14-7-7-7zm-9 7c0-4.97 4.03-9 9-9s9 4.03 9 9c0 2.12-.74 4.08-1.97 5.62l3.68 3.67-1.42 1.42-3.67-3.68C15.08 19.26 13.12 20 11 20c-4.97 0-9-4.03-9-9zm8-1V7.5h2V10h2.5v2H12v2.5h-2V12H7.5v-2H10z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCropModal()">Отмена</button>
+                <button class="btn btn-save" onclick="saveCrop()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let media = [];
+        let logs = [];
+        let currentEditIndex = null;
+        let currentPreset = 'original';
+        let zoom = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0, tx: 0, ty: 0 };
+        
+        // Store transform state for each preset
+        let presetTransforms = {
+            original: { zoom: 1, x: 0, y: 0 },
+            wide: { zoom: 1, x: 0, y: 0 },
+            square: { zoom: 1, x: 0, y: 0 }
+        };
+
+        // Add log
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push(`[${timestamp}] ${message}`);
+            console.log(`[CROP TEST] ${message}`);
+            updateLogsDisplay();
+        }
+
+        function updateLogsDisplay() {
+            const container = document.getElementById('logsContainer');
+            document.getElementById('logCount').textContent = logs.length;
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #808283;">Логи пусты. Загрузите изображения для начала тестирования.</div>';
+            } else {
+                container.innerHTML = logs.map(log => `<div class="log-entry">${log}</div>`).join('');
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function clearLogs() {
+            logs = [];
+            addLog('🧹 Логи очищены');
+        }
+
+        // File upload
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            addLog(`📤 Загружено файлов: ${files.length}`);
+
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    addLog(`❌ Файл ${file.name} не является изображением`);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const url = event.target.result;
+                    const img = new Image();
+                    
+                    img.onload = function() {
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        let autoPreset = 'square';
+                        
+                        if (aspectRatio >= 1.5) {
+                            autoPreset = 'wide';
+                            addLog(`📐 ${file.name}: ${img.naturalWidth}×${img.naturalHeight} (пейзаж) → auto-preset: Wide`);
+                        } else if (aspectRatio <= 0.8) {
+                            autoPreset = 'original';
+                            addLog(`📐 ${file.name}: ${img.naturalWidth}×${img.naturalHeight} (портрет) → auto-preset: Original`);
+                        } else {
+                            autoPreset = 'square';
+                            addLog(`📐 ${file.name}: ${img.naturalWidth}×${img.naturalHeight} (квадрат) → auto-preset: Square`);
+                        }
+
+                        media.push({
+                            id: Date.now() + Math.random(),
+                            url: url,
+                            name: file.name,
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight,
+                            transform: null
+                        });
+
+                        addLog(`✅ Изображение ${file.name} добавлено`);
+                        renderMediaGrid();
+                    };
+
+                    img.src = url;
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            e.target.value = '';
+        });
+
+        function renderMediaGrid() {
+            const grid = document.getElementById('mediaGrid');
+            if (media.length === 0) {
+                grid.innerHTML = '';
+                return;
+            }
+
+            grid.innerHTML = media.map((item, index) => `
+                <div class="media-item ${media.length === 1 ? 'single' : ''}">
+                    <img src="${item.url}" alt="${item.name}">
+                    <div class="media-controls">
+                        <button class="btn btn-primary" onclick="openCropModal(${index})">Edit</button>
+                        <button class="btn btn-danger" onclick="removeMedia(${index})">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeMedia(index) {
+            addLog(`🗑️ Удаление изображения ${media[index].name}`);
+            media.splice(index, 1);
+            renderMediaGrid();
+        }
+
+        function openCropModal(index) {
+            currentEditIndex = index;
+            const item = media[index];
+            
+            addLog(`✏️ Открыт редактор для ${item.name}`);
+            
+            // Reset state
+            currentPreset = 'original';
+            zoom = 1;
+            translateX = 0;
+            translateY = 0;
+            presetTransforms = {
+                original: { zoom: 1, x: 0, y: 0 },
+                wide: { zoom: 1, x: 0, y: 0 },
+                square: { zoom: 1, x: 0, y: 0 }
+            };
+            
+            document.getElementById('cropImage').src = item.url;
+            document.getElementById('cropModal').classList.add('active');
+            document.getElementById('zoomSlider').value = zoom;
+            updatePresetButtons();
+            updateImageTransform();
+        }
+
+        function closeCropModal() {
+            addLog(`❌ Редактор закрыт без сохранения`);
+            document.getElementById('cropModal').classList.remove('active');
+            currentEditIndex = null;
+        }
+
+        function changePreset(preset) {
+            // Save current transform
+            presetTransforms[currentPreset] = { zoom, x: translateX, y: translateY };
+            addLog(`💾 Сохранены настройки пресета ${currentPreset}: zoom=${zoom.toFixed(2)}, x=${translateX.toFixed(0)}, y=${translateY.toFixed(0)}`);
+            
+            // Load saved transform
+            currentPreset = preset;
+            const saved = presetTransforms[preset];
+            zoom = saved.zoom;
+            translateX = saved.x;
+            translateY = saved.y;
+            
+            addLog(`📥 Загружены настройки пресета ${preset}: zoom=${zoom.toFixed(2)}, x=${translateX.toFixed(0)}, y=${translateY.toFixed(0)}`);
+            
+            document.getElementById('zoomSlider').value = zoom;
+            updatePresetButtons();
+            updateImageTransform();
+        }
+
+        function updatePresetButtons() {
+            ['original', 'wide', 'square'].forEach(p => {
+                document.getElementById(`btn-${p}`).classList.toggle('active', p === currentPreset);
+            });
+        }
+
+        function adjustZoom(delta) {
+            zoom = Math.max(0.5, Math.min(3, zoom + delta));
+            document.getElementById('zoomSlider').value = zoom;
+            updateImageTransform();
+            addLog(`🔍 Zoom изменен: ${zoom.toFixed(2)}`);
+        }
+
+        document.getElementById('zoomSlider').addEventListener('input', function(e) {
+            zoom = parseFloat(e.target.value);
+            updateImageTransform();
+        });
+
+        // Drag functionality
+        const cropContainer = document.getElementById('cropContainer');
+        
+        cropContainer.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            dragStart = {
+                x: e.clientX,
+                y: e.clientY,
+                tx: translateX,
+                ty: translateY
+            };
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            
+            const dx = e.clientX - dragStart.x;
+            const dy = e.clientY - dragStart.y;
+            translateX = dragStart.tx + dx;
+            translateY = dragStart.ty + dy;
+            
+            updateImageTransform();
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isDragging) {
+                addLog(`🖱️ Позиция изменена: x=${translateX.toFixed(0)}, y=${translateY.toFixed(0)}`);
+            }
+            isDragging = false;
+        });
+
+        function updateImageTransform() {
+            const img = document.getElementById('cropImage');
+            img.style.transform = `translate(-50%, -50%) translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+        }
+
+        function saveCrop() {
+            if (currentEditIndex === null) return;
+            
+            const item = media[currentEditIndex];
+            item.transform = {
+                zoom,
+                translateX,
+                translateY,
+                preset: currentPreset
+            };
+            
+            addLog(`💾 Сохранены изменения для ${item.name}`);
+            addLog(`   📊 Transform: zoom=${zoom.toFixed(2)}, x=${translateX.toFixed(0)}, y=${translateY.toFixed(0)}`);
+            addLog(`   📐 Preset: ${currentPreset}`);
+            addLog(`✅ Все настройки пресетов:`);
+            Object.keys(presetTransforms).forEach(p => {
+                const t = presetTransforms[p];
+                addLog(`   ${p}: zoom=${t.zoom.toFixed(2)}, x=${t.x.toFixed(0)}, y=${t.y.toFixed(0)}`);
+            });
+            
+            closeCropModal();
+            renderMediaGrid();
+        }

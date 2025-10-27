@@ -1,4 +1,4 @@
-import { type FC, type MouseEvent, type ReactNode } from "react";
+import { type FC, type MouseEvent, type ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import UserAvatar from "@/components/ui/Avatar/UserAvatar";
@@ -8,6 +8,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { cn } from "@/lib/utils";
+import { customBackendAPI } from "@/services/api/custom-backend";
 
 import FollowButton from "./FollowButton";
 import type { FeedPostProps } from "./VideoPost";
@@ -41,16 +42,76 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
   children,
 }) => {
   const navigate = useNavigate();
+  const [following, setFollowing] = useState(isFollowing);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Local state for follower counts to update after follow/unfollow
+  const [followersCount, setFollowersCount] = useState(
+    typeof author.followers === "number" ? author.followers : 0
+  );
+  const [followingCountState, setFollowingCountState] = useState(
+    typeof author.following === "number" ? author.following : 0
+  );
 
-  const followers =
-    typeof author.followers === "number" ? author.followers : undefined;
-  const following =
-    typeof author.following === "number" ? author.following : undefined;
+  // Always show counts, even if 0
+  const followers = followersCount;
+  const followingCount = followingCountState;
 
-  const followersLabel =
-    typeof followers === "number" ? formatCount(followers) : null;
-  const followingLabel =
-    typeof following === "number" ? formatCount(following) : null;
+  const handleFollowToggle = async (nextState: boolean) => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    const previousState = following;
+    
+    // Optimistic update
+    setFollowing(nextState);
+    
+    try {
+      // First get user by username to get their UUID
+      const username = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+      const user = await customBackendAPI.getUserByUsername(username);
+      
+      if (nextState) {
+        await customBackendAPI.followUser(user.id);
+        // Increment followers count on successful follow
+        setFollowersCount(prev => prev + 1);
+      } else {
+        await customBackendAPI.unfollowUser(user.id);
+        // Decrement followers count on successful unfollow
+        setFollowersCount(prev => Math.max(0, prev - 1));
+      }
+      
+      // Notify parent component
+      onFollowToggle?.(nextState);
+    } catch (error: any) {
+      // Handle 409 Conflict - Already following/unfollowing
+      const errorMessage = error?.message || String(error);
+      
+      if (errorMessage.includes('Already following')) {
+        // User is already following - update state to reflect this
+        console.log('[UserHoverCard] Already following, updating state to true');
+        setFollowing(true);
+        onFollowToggle?.(true);
+        // Don't update follower count - already counted
+      } else if (errorMessage.includes('Not following')) {
+        // User is not following - update state to reflect this
+        console.log('[UserHoverCard] Not following, updating state to false');
+        setFollowing(false);
+        onFollowToggle?.(false);
+        // Don't update follower count - already removed
+      } else {
+        // Other errors - revert to previous state
+        console.error('[UserHoverCard] Failed to toggle follow:', error);
+        setFollowing(previousState);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Always generate labels, even for 0
+  const followersLabel = formatCount(followers);
+  const followingLabel = formatCount(followingCount);
   const shouldRenderFollowButton = showFollowButton ?? !author.isCurrentUser;
   const headerClasses = cn(
     "flex items-start gap-4",
@@ -72,9 +133,13 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
     <HoverCard openDelay={150} closeDelay={200}>
       <HoverCardTrigger asChild onClick={handleProfileClick}>{children}</HoverCardTrigger>
       <HoverCardContent
+        side="bottom"
         align="start"
-        sideOffset={16}
-        className="w-[320px] rounded-[28px] border border-[#181B22] p-5 shadow-[0_24px_56px_rgba(2,6,18,0.58)]"
+        sideOffset={5}
+        alignOffset={-10}
+        avoidCollisions={true}
+        collisionPadding={16}
+        className="w-[320px] rounded-[28px] border border-[#181B22] p-5 shadow-[0_24px_56px_rgba(2,6,18,0.58)] z-[100]"
         style={{ backgroundColor: '#000000', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
       >
         <div className={headerClasses}>
@@ -110,10 +175,11 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
             <FollowButton
               size="compact"
               stopPropagation
-              isFollowing={isFollowing}
-              onToggle={onFollowToggle}
+              isFollowing={following}
+              onToggle={handleFollowToggle}
               profileId={author.handle ?? author.name}
               className="gap-2"
+              disabled={isLoading}
             />
           ) : null}
         </div>
@@ -124,46 +190,40 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
           </p>
         ) : null}
 
-        {followersLabel || followingLabel ? (
-          <div className="mt-4 flex flex-wrap gap-4 text-sm">
-            {followingLabel ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
-                  navigate(`/profile-connections/${profileHandle}?tab=following`);
-                }}
-                className="group cursor-pointer transition-colors hover:text-white"
-              >
-                <span className="font-semibold text-white">
-                  {followingLabel}
-                </span>{" "}
-                <span className="text-[#8E92A0] group-hover:text-white group-hover:underline transition-all">
-                  Following
-                </span>
-              </button>
-            ) : null}
-            {followersLabel ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
-                  navigate(`/profile-connections/${profileHandle}?tab=followers`);
-                }}
-                className="group cursor-pointer transition-colors hover:text-white"
-              >
-                <span className="font-semibold text-white">
-                  {followersLabel}
-                </span>{" "}
-                <span className="text-[#8E92A0] group-hover:text-white group-hover:underline transition-all">
-                  Followers
-                </span>
-              </button>
-            ) : null}
-          </div>
-        ) : null}
+        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+              navigate(`/profile-connections/${profileHandle}?tab=following`);
+            }}
+            className="group cursor-pointer transition-colors hover:text-white"
+          >
+            <span className="font-semibold text-white">
+              {followingLabel}
+            </span>{" "}
+            <span className="text-[#8E92A0] group-hover:text-white group-hover:underline transition-all">
+              Following
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+              navigate(`/profile-connections/${profileHandle}?tab=followers`);
+            }}
+            className="group cursor-pointer transition-colors hover:text-white"
+          >
+            <span className="font-semibold text-white">
+              {followersLabel}
+            </span>{" "}
+            <span className="text-[#8E92A0] group-hover:text-white group-hover:underline transition-all">
+              Followers
+            </span>
+          </button>
+        </div>
       </HoverCardContent>
     </HoverCard>
   );

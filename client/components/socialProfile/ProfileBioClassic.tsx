@@ -1,5 +1,6 @@
 import { Calendar, Mail, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import type { SocialProfileData } from "@/data/socialProfile";
 
 interface ProfileBioClassicProps {
@@ -15,6 +16,7 @@ const formatStringWithLink = (text?: string) => {
 };
 
 export default function ProfileBioClassic({ profile, isOwnProfile = false }: ProfileBioClassicProps) {
+  const navigate = useNavigate();
   const joinedDate = profile.joined || format(new Date(), "MMMM yyyy");
   const bio = formatStringWithLink(profile.bio);
 
@@ -66,14 +68,22 @@ export default function ProfileBioClassic({ profile, isOwnProfile = false }: Pro
         </div>
 
         <div className="flex text-[15px] mt-4">
-          <span className="flex items-center">
+          <button
+            type="button"
+            onClick={() => navigate(`/profile-connections/${profile.username}?tab=following`)}
+            className="flex items-center hover:underline cursor-pointer transition-colors"
+          >
             <b className="text-white">{profile.stats.following || 0}</b>
             <span className="ml-1">Following</span>
-          </span>
-          <span className="flex items-center ml-5">
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(`/profile-connections/${profile.username}?tab=followers`)}
+            className="flex items-center ml-5 hover:underline cursor-pointer transition-colors"
+          >
             <b className="text-white">{profile.stats.followers || 0}</b>
             <span className="ml-1">Followers</span>
-          </span>
+          </button>
         </div>
 
         <div className="text-[13px] mt-4">

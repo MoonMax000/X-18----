@@ -1,5 +1,8 @@
-import { FC, lazy, Suspense } from "react";
-import { useSearchParams } from "react-router-dom";
+import { FC, lazy, Suspense, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useAuth } from "@/contexts/AuthContext";
+import { setProfile } from "@/store/profileSlice";
 import UserHeader from "@/components/UserHeader/UserHeader";
 import GamificationPanel from "@/components/UserHeader/GamificationPanel";
 import TabLoader from "@/components/common/TabLoader";
@@ -1049,6 +1052,56 @@ const streamingSubTabs = [
 
 const ProfileNew: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+
+  // Redirect to /feedtest if user is not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log('⚠️ User not authenticated, redirecting to /feedtest');
+      navigate('/feedtest', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Sync AuthContext user data to Redux on mount
+  useEffect(() => {
+    console.log('🔍 ProfileNew useEffect - user from AuthContext:', user);
+    
+    if (user) {
+      console.log('📸 Avatar URL from AuthContext:', user.avatar_url);
+      console.log('🖼️ Header URL from AuthContext:', user.header_url);
+      
+      // Helper function to check if string is empty or whitespace
+      const isEmptyString = (str: string | undefined | null): boolean => {
+        return !str || str.trim() === '';
+      };
+      
+      const profileData = {
+        name: user.display_name || user.username,
+        username: user.username,
+        bio: user.bio || '',
+        avatar: isEmptyString(user.avatar_url) ? undefined : user.avatar_url,
+        cover: isEmptyString(user.header_url) ? undefined : user.header_url,
+        location: '',
+        website: '',
+        joined: new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        stats: {
+          tweets: user.posts_count || 0,
+          following: user.following_count || 0,
+          followers: user.followers_count || 0,
+        },
+        isVerified: user.verified,
+        isPremium: false,
+        level: 42,
+      };
+      
+      console.log('✅ Dispatching setProfile with data:', profileData);
+      console.log('📸 Avatar after processing:', profileData.avatar);
+      console.log('🖼️ Cover after processing:', profileData.cover);
+      dispatch(setProfile(profileData));
+    }
+  }, [user, dispatch]);
 
   // Get active tab from URL or default
   const activeTab = (searchParams.get('tab') as Tab) || 'social';

@@ -50,6 +50,9 @@ export interface GTSStatus {
   reblogs_count: number;
   favourites_count: number;
   edited_at: string | null;
+  favourited?: boolean; // Whether current user has favourited this status
+  reblogged?: boolean; // Whether current user has reblogged this status
+  bookmarked?: boolean; // Whether current user has bookmarked this status
   content: string; // HTML content
   reblog: GTSStatus | null;
   account: GTSAccount;
@@ -59,25 +62,8 @@ export interface GTSStatus {
   emojis: GTSEmoji[];
   card: GTSCard | null;
   poll: GTSPoll | null;
-  // Custom extensions
-  custom_metadata?: {
-    type?: 'signal' | 'news' | 'education' | 'analysis' | 'macro' | 'code' | 'video';
-    sentiment?: 'bullish' | 'bearish' | 'neutral';
-    access_level?: 'free' | 'paid' | 'subscribers' | 'premium' | 'followers';
-    price?: number;
-    signal_data?: {
-      ticker?: string;
-      direction?: 'long' | 'short';
-      timeframe?: string;
-      risk?: 'low' | 'medium' | 'high';
-      entry?: string;
-      stop_loss?: string;
-      take_profit?: string;
-      accuracy?: number;
-      sample_size?: number;
-    };
-    market?: 'crypto' | 'stocks' | 'forex' | 'commodities' | 'indices';
-  };
+  // Custom metadata for trading posts (supported by custom GoToSocial implementation)
+  custom_metadata?: Record<string, string>;
 }
 
 export interface GTSMediaAttachment {
@@ -306,13 +292,29 @@ export async function getAccountStatuses(
 }
 
 /**
- * Get home timeline
+ * Get home timeline with optional custom_metadata filtering
  */
-export async function getHomeTimeline(options?: { max_id?: string; min_id?: string; limit?: number }): Promise<GTSStatus[]> {
+export async function getHomeTimeline(options?: { 
+  max_id?: string; 
+  min_id?: string; 
+  limit?: number;
+  // Custom metadata filters
+  category?: string;
+  market?: string;
+  symbol?: string;
+  timeframe?: string;
+  risk?: string;
+}): Promise<GTSStatus[]> {
   const params = new URLSearchParams({
     ...(options?.max_id && { max_id: options.max_id }),
     ...(options?.min_id && { min_id: options.min_id }),
     ...(options?.limit && { limit: options.limit.toString() }),
+    // Add custom metadata filters
+    ...(options?.category && { category: options.category }),
+    ...(options?.market && { market: options.market }),
+    ...(options?.symbol && { symbol: options.symbol }),
+    ...(options?.timeframe && { timeframe: options.timeframe }),
+    ...(options?.risk && { risk: options.risk }),
   });
   return apiClient.get<GTSStatus[]>(`/api/v1/timelines/home?${params}`);
 }
@@ -347,7 +349,7 @@ export async function getStatusContext(id: string): Promise<GTSContext> {
 }
 
 /**
- * Create a new status
+ * Create a new status with optional custom_metadata
  */
 export async function createStatus(params: {
   status?: string;
@@ -364,6 +366,8 @@ export async function createStatus(params: {
   visibility?: 'public' | 'unlisted' | 'private' | 'direct';
   language?: string;
   scheduled_at?: string;
+  // Custom metadata for trading posts
+  custom_metadata?: Record<string, string>;
 }): Promise<GTSStatus> {
   return apiClient.post<GTSStatus>('/api/v1/statuses', params);
 }

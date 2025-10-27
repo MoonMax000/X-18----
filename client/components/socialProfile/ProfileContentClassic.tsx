@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { defaultProfile, getProfileTimeline } from "@/data/socialProfile";
 import type { SocialProfileData } from "@/data/socialProfile";
-import type { SocialPost } from "@/data/socialPosts";
+import type { SocialPost, SocialPostType, SentimentType } from "@/data/socialPosts";
 import type { RootState } from "@/store/store";
 import ProfileHero from "./ProfileHero";
 import TabListClassic, { type ProfilePostsFilter, type ProfileSection, type ProfileSortOption } from "./TabListClassic";
@@ -11,11 +11,14 @@ import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
 import type { GTSAccount, GTSStatus } from "@/services/api/gotosocial";
+import { convertGTSAccountToSocialProfile } from "@/lib/gts-converters";
 
 interface ProfileContentClassicProps {
   isOwnProfile?: boolean;
   profile?: GTSAccount | null;
   posts?: GTSStatus[];
+  isFollowing?: boolean;
+  onFollowToggle?: (userId: string, currentState: boolean) => Promise<void>;
 }
 
 const normalizeHandle = (value?: string) =>
@@ -55,12 +58,14 @@ const derivePostFilterKey = (post: SocialPost): ProfilePostsFilter => {
 const isMediaPost = (post: SocialPost) => Boolean(post.type === "video" || post.videoUrl || post.mediaUrl);
 const isPremiumPost = (post: SocialPost) => Boolean(post.isPremium || typeof post.price === "number" || typeof post.subscriptionPrice === "number");
 
-const LIKED_POST_IDS = ["crypto-video", "john-premium-1", "john-premium-2", "tyrian-followers-only"] as const;
+const LIKED_POST_IDS = ["crypto-video", "john-premium-1", "john-premium-2", "tyrian-followers-only"];
 
 export default function ProfileContentClassic({
   isOwnProfile = true,
   profile: externalProfile,
   posts: externalPosts,
+  isFollowing,
+  onFollowToggle,
 }: ProfileContentClassicProps) {
   const navigate = useNavigate();
   const currentUser = useSelector((state: RootState) => state.profile.currentUser);
@@ -79,27 +84,8 @@ export default function ProfileContentClassic({
       if (externalProfile && externalPosts) {
         setIsLoading(true);
 
-        // Convert GTSAccount to SocialProfileData
-        const profileData: SocialProfileData = {
-          id: externalProfile.id,
-          name: externalProfile.display_name,
-          username: externalProfile.username,
-          bio: externalProfile.note.replace(/<[^>]*>/g, ''), // Strip HTML tags
-          location: externalProfile.fields.find(f => f.name.toLowerCase() === 'location')?.value || undefined,
-          website: externalProfile.fields.find(f => f.name.toLowerCase() === 'website')
-            ? { label: externalProfile.fields.find(f => f.name.toLowerCase() === 'website')!.value, url: externalProfile.url }
-            : undefined,
-          joined: new Date(externalProfile.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }),
-          avatar: externalProfile.avatar,
-          cover: externalProfile.header,
-          stats: {
-            tweets: externalProfile.statuses_count,
-            following: externalProfile.following_count,
-            followers: externalProfile.followers_count,
-            likes: 0, // Not available in GoToSocial
-          },
-        };
-
+        // Convert GTSAccount to SocialProfileData using centralized converter
+        const profileData = convertGTSAccountToSocialProfile(externalProfile);
         setProfile(profileData);
 
         // Convert GTSStatus[] to SocialPost[]
@@ -112,10 +98,14 @@ export default function ProfileContentClassic({
             handle: `@${status.account.username}`,
             avatar: status.account.avatar,
           },
-          timestamp: new Date(status.created_at).toISOString(),
+          timestamp: status.created_at,
           likes: status.favourites_count,
           comments: status.replies_count,
           shares: status.reblogs_count,
+          isLiked: status.favourited || false,
+          isBookmarked: status.bookmarked || false,
+          type: (status.custom_metadata?.post_type as SocialPostType) || 'article',
+          sentiment: (status.custom_metadata?.sentiment as SentimentType) || 'bullish',
           category: status.custom_metadata?.post_type || 'General',
         }));
 
@@ -323,6 +313,9 @@ export default function ProfileContentClassic({
         profile={profile}
         tweetsCount={tweetsCount}
         isOwnProfile={isOwnProfile}
+        isFollowing={isFollowing}
+        onFollowToggle={onFollowToggle}
+        profileUserId={externalProfile?.id}
       />
       <main className="mt-4 sm:mt-5 md:mt-6">
         <div className="px-3 sm:px-4 md:px-6">
@@ -406,22 +399,30 @@ export default function ProfileContentClassic({
 
             {/* Following/Followers counts */}
             <div className="flex flex-wrap items-baseline gap-3">
-              <div className="flex items-baseline gap-1">
+              <button
+                type="button"
+                onClick={() => navigate(`/profile-connections/${profile.username}?tab=following`)}
+                className="flex items-baseline gap-1 hover:underline cursor-pointer transition-colors"
+              >
                 <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
                   {profile.stats.following}
                 </span>
                 <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
                   Following
                 </span>
-              </div>
-              <div className="flex items-baseline gap-1">
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/profile-connections/${profile.username}?tab=followers`)}
+                className="flex items-baseline gap-1 hover:underline cursor-pointer transition-colors"
+              >
                 <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
                   {profile.stats.followers}
                 </span>
                 <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
                   Followers
                 </span>
-              </div>
+              </button>
             </div>
           </div>
 

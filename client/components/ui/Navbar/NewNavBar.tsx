@@ -1,10 +1,11 @@
-import { FC, useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { FC, useState, useEffect, useMemo } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutVariant } from '../AppBackground/AppBackground';
 import { cn } from '@/lib/utils';
 import { navElements, NavElementProps } from './constants';
 import { ChevronDown, DoubleArrow, QuillPen } from './icons';
 import CreatePostModal from '@/components/CreatePostBox/CreatePostModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   variant?: LayoutVariant;
@@ -13,11 +14,55 @@ interface Props {
 }
 
 const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) => {
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [isPostComposerOpen, setIsPostComposerOpen] = useState(false);
 
-  const toggleGroup = (title: string) => setOpenGroup(openGroup === title ? null : title);
+  // Filter navigation elements for unauthenticated users
+  const filteredNavElements = useMemo(() => {
+    if (!isAuthenticated) {
+      return navElements
+        .map((el) => {
+          // Hide Dashboard for unauthenticated users
+          if (el.title === 'Dashboard') return null;
+
+          // Filter children in Social Network
+          if (el.title === 'Social Network' && el.children) {
+            const filteredChildren = el.children.filter(
+              (child) => child.title !== 'Messages' && child.title !== 'Profile'
+            );
+            return { ...el, children: filteredChildren };
+          }
+
+          return el;
+        })
+        .filter(Boolean) as NavElementProps[];
+    }
+    return navElements;
+  }, [isAuthenticated]);
+
+  // Определяем активную группу по текущему роуту
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Находим группу, которая содержит текущий роут
+    const activeGroup = navElements.find(el => 
+      el.children?.some(child => child.route && currentPath.startsWith(child.route))
+    );
+    
+    if (activeGroup && activeGroup.title !== openGroup) {
+      setOpenGroup(activeGroup.title);
+    }
+  }, [location.pathname]);
+
+  const toggleGroup = (title: string) => {
+    // В компактном режиме не разворачиваем группы
+    if (!isCollapsed) {
+      setOpenGroup(openGroup === title ? null : title);
+    }
+  };
 
   // Закрываем мобильное меню при навигации
   const handleNavClick = () => {
@@ -58,7 +103,6 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                 'text-[#B0B0B0]': !isGroupOpen,
                 'ml-[5px]': isCollapsed && !isMobile,
               })}
-              data-active={isGroupOpen ? 'true' : undefined}
             >
               <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
               <span
@@ -83,8 +127,10 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                 >
                   {({ isActive }) => (
                     <div
-                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', isActive ? 'text-white' : 'text-[#B0B0B0]')}
-                      data-active={isActive ? 'true' : undefined}
+                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
+                        'text-white border-l-[2px] border-purple': isActive,
+                        'text-[#B0B0B0]': !isActive,
+                      })}
                     >
                       <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{child.icon}</div>
                       <span
@@ -118,8 +164,10 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
         >
           {({ isActive }) => (
             <div
-              className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', isActive ? 'text-white' : 'text-[#B0B0B0]')}
-              data-active={isActive ? 'true' : undefined}
+              className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
+                'text-white border-l-[2px] border-purple': isActive,
+                'text-[#B0B0B0]': !isActive,
+              })}
             >
               <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
               <span
@@ -180,41 +228,43 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               </div>
 
               <div className='flex flex-col gap-1'>
-                {navElements.slice(0, 1).map((el) => renderElement(el, false))}
+                {filteredNavElements.slice(0, 1).map((el) => renderElement(el, false))}
                 <div
                   className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
                     'w-[190px]': !isCollapsed,
                     'w-[40px]': isCollapsed,
                   })}
                 />
-                {navElements.slice(1).map((el) => renderElement(el, false))}
+                {filteredNavElements.slice(1).map((el) => renderElement(el, false))}
               </div>
             </div>
           </div>
 
-          <div
-            className={cn(
-              'flex justify-center transition-all duration-300',
-              isCollapsed ? 'w-[72px]' : 'w-[222px]'
-            )}
-          >
-            <button
-              type='button'
-              onClick={() => setIsPostComposerOpen(true)}
+          {isAuthenticated && (
+            <div
               className={cn(
-                'relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
-                isCollapsed ? 'h-12 w-12' : 'h-12 w-full px-3'
+                'flex justify-center transition-all duration-300',
+                isCollapsed ? 'w-[72px]' : 'w-[222px]'
               )}
-              title="Open advanced Post composer"
             >
-              <span className={cn('flex items-center gap-3 text-sm font-semibold text-white', isCollapsed ? 'justify-center' : 'justify-center')}>
-                <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)]'>
-                  <QuillPen className='h-4 w-4' />
+              <button
+                type='button'
+                onClick={() => setIsPostComposerOpen(true)}
+                className={cn(
+                  'relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
+                  isCollapsed ? 'h-12 w-12' : 'h-12 w-full px-3'
+                )}
+                title="Open advanced Post composer"
+              >
+                <span className={cn('flex items-center gap-3 text-sm font-semibold text-white', isCollapsed ? 'justify-center' : 'justify-center')}>
+                  <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)]'>
+                    <QuillPen className='h-4 w-4' />
+                  </span>
+                  {!isCollapsed && <span>Tweet</span>}
                 </span>
-                {!isCollapsed && <span>Tweet</span>}
-              </span>
-            </button>
-          </div>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -246,9 +296,9 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
               {/* Navigation items */}
               <div className='flex flex-col gap-1'>
-                {navElements.slice(0, 1).map((el) => renderElement(el, true))}
+                {filteredNavElements.slice(0, 1).map((el) => renderElement(el, true))}
                 <div className='my-3 sidebar-divider-gradient h-[2px]' />
-                {navElements.slice(1).map((el) => renderElement(el, true))}
+                {filteredNavElements.slice(1).map((el) => renderElement(el, true))}
               </div>
             </div>
           </div>

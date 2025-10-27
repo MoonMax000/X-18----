@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { CalendarDays, Link2, MapPin } from "lucide-react";
 
@@ -18,6 +19,8 @@ const formatNumber = (value: number) => {
 };
 
 const ProfileDetails: FC<ProfileDetailsProps> = ({ profile, className }) => {
+  const navigate = useNavigate();
+  
   return (
     <section
       className={cn(
@@ -79,14 +82,22 @@ const ProfileDetails: FC<ProfileDetailsProps> = ({ profile, className }) => {
           <span className="text-base font-semibold text-white">{formatNumber(profile.stats.tweets)}</span>
           <span className="ml-2">Постов</span>
         </div>
-        <div>
+        <button
+          type="button"
+          onClick={() => navigate(`/profile-connections/${profile.username}?tab=following`)}
+          className="hover:underline cursor-pointer transition-colors"
+        >
           <span className="text-base font-semibold text-white">{formatNumber(profile.stats.following)}</span>
           <span className="ml-2">Подписок</span>
-        </div>
-        <div>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate(`/profile-connections/${profile.username}?tab=followers`)}
+          className="hover:underline cursor-pointer transition-colors"
+        >
           <span className="text-base font-semibold text-white">{formatNumber(profile.stats.followers)}</span>
           <span className="ml-2">Подписчиков</span>
-        </div>
+        </button>
         <div>
           <span className="text-base font-semibold text-white">{formatNumber(profile.stats.likes)}</span>
           <span className="ml-2">Лайков</span>

@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ClientLayout } from "./components/ClientLayout/ClientLayout";
 import { lazy, Suspense } from "react";
 
@@ -34,6 +35,14 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const FeedTest = lazy(() => import("./pages/FeedTest"));
 const ProfileConnections = lazy(() => import("./pages/ProfileConnections"));
 const HomePostDetail = lazy(() => import("./pages/HomePostDetail"));
+const CropTestPage = lazy(() => import("./pages/CropTestPage"));
+
+// Admin pages
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const AdminNews = lazy(() => import("./pages/admin/AdminNews").then(m => ({ default: m.AdminNews })));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers").then(m => ({ default: m.AdminUsers })));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports").then(m => ({ default: m.AdminReports })));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },
@@ -53,12 +62,25 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <Provider store={store}>
       <ThemeProvider>
-        <TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Public test page without ClientLayout */}
+              <Route path="/crop-test" element={<CropTestPage />} />
+              
+              {/* Admin panel with its own layout */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="news" element={<AdminNews />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="reports" element={<AdminReports />} />
+              </Route>
+              
               {/* Standard pages with ClientLayout */}
               <Route
                 path="*"
@@ -122,7 +144,8 @@ const App = () => (
             </Routes>
           </Suspense>
         </BrowserRouter>
-        </TooltipProvider>
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </Provider>
   </QueryClientProvider>

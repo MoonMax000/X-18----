@@ -1,17 +1,19 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import ContinuousFeedTimeline from "@/components/testLab/ContinuousFeedTimeline";
-import { DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
 import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { useFeedFilters } from "@/features/feed/hooks/useFeedFilters";
 import type { ComposerData } from "@/features/feed/types";
-import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
-import { TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
-import { QuickComposer, FeedTabs, FeedFilters, RightSidebar, NewPostsBanner } from "@/features/feed/components";
+import { QuickComposer, FeedTabs, FeedFilters, NewPostsBanner } from "@/features/feed/components";
 import { useCustomTimeline } from "@/hooks/useCustomTimeline";
 import type { Post as CustomPost } from "@/services/api/custom-backend";
 import { getAvatarUrl } from "@/lib/avatar-utils";
 import { formatTimeAgo } from "@/lib/time-utils";
 import { useAuth } from "@/contexts/AuthContext";
+import NewsWidget from "@/components/SocialFeedWidgets/NewsWidget";
+import TrendingTickersWidget from "@/components/SocialFeedWidgets/TrendingTickersWidget";
+import TopAuthorsWidget from "@/components/SocialFeedWidgets/TopAuthorsWidget";
+import MyEarningsWidget from "@/components/SocialFeedWidgets/MyEarningsWidget";
+import MyActivityWidget from "@/components/SocialFeedWidgets/MyActivityWidget";
 
 // Convert Custom Backend post to feed post format
 function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
@@ -23,7 +25,16 @@ function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
     ? postAuthorHandle.toLowerCase() === currentUserHandle.toLowerCase()
     : false;
   
-  return {
+  // Debug logging for code blocks
+  if (post.metadata?.code_blocks) {
+    console.log('[FeedTest] Converting post with code blocks:', {
+      postId: post.id,
+      metadata: post.metadata,
+      codeBlocks: post.metadata.code_blocks,
+    });
+  }
+  
+  const convertedPost = {
     id: post.id,
     type: post.metadata?.post_type || 'general',
     text: post.content,
@@ -35,6 +46,9 @@ function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
       tier: 'free',
       isFollowing: false,
       isCurrentUser: isCurrentUser,
+      followers: post.user?.followers_count ?? 0,
+      following: post.user?.following_count ?? 0,
+      bio: post.user?.bio || '',
     },
     timestamp: formatTimeAgo(post.created_at),
     // Use flat properties instead of nested engagement object
@@ -55,6 +69,7 @@ function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
       width: mediaItem.width,
       height: mediaItem.height,
     })) || [],
+    codeBlocks: post.metadata?.code_blocks || [],
     ticker: post.metadata?.ticker,
     sentiment: post.metadata?.sentiment,
     direction: post.metadata?.direction,
@@ -64,8 +79,19 @@ function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
     stopLoss: post.metadata?.stop_loss,
     takeProfit: post.metadata?.take_profit,
     market: post.metadata?.market,
-    category: post.metadata?.post_type,
+    category: post.metadata?.category,
   };
+  
+  // Debug log final converted post
+  if (convertedPost.codeBlocks && convertedPost.codeBlocks.length > 0) {
+    console.log('[FeedTest] Converted post with codeBlocks:', {
+      postId: convertedPost.id,
+      codeBlocksCount: convertedPost.codeBlocks.length,
+      codeBlocks: convertedPost.codeBlocks,
+    });
+  }
+  
+  return convertedPost;
 }
 
 export default function FeedTest() {
@@ -92,10 +118,11 @@ export default function FeedTest() {
     loadNew,
     refresh,
     error,
+    hasMore,
   } = useCustomTimeline({
     type: 'explore',
     limit: 20,
-    autoRefresh: true,
+    autoRefresh: false, // Временно отключаем auto-refresh для отладки
     refreshInterval: 60000,
   });
 
@@ -178,13 +205,15 @@ export default function FeedTest() {
 
   return (
     <div className="flex min-h-screen w-full gap-6">
-      <div className="flex-1 max-w-[720px]">
-        <div className="mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
-          <QuickComposer 
-            onExpand={handleExpandComposer}
-            onPostCreated={refresh}
-          />
-        </div>
+      <div className="flex-1 max-w-[720px] min-w-0">
+        {user && (
+          <div className="mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
+            <QuickComposer 
+              onExpand={handleExpandComposer}
+              onPostCreated={refresh}
+            />
+          </div>
+        )}
 
         <div className="sticky top-0 z-30 -mx-2 sm:-mx-4 md:-mx-6 px-2 sm:px-4 md:px-6 bg-black py-2">
           <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -204,21 +233,22 @@ export default function FeedTest() {
           onFollowToggle={toggleFollow}
           onLoadMore={loadMore}
           isLoading={isLoading}
+          hasMore={hasMore}
         />
       </div>
 
-      <RightSidebar
-        fearGreedScore={32}
-        communitySentiment={{ bullishPercent: 82, votesText: "1.9M votes" }}
-        trendingTickers={TRENDING_TICKERS}
-        selectedTicker={selectedTicker}
-        onTickerClick={setSelectedTicker}
-        suggestedProfiles={[]}
-        newsItems={DEFAULT_NEWS_ITEMS as NewsItem[]}
-        followRecommendations={DEFAULT_FOLLOW_RECOMMENDATIONS}
-        topAuthors={TOP_AUTHORS}
-        onAuthorFollowToggle={toggleFollow}
-      />
+      {/* Right Sidebar with Widgets */}
+      <div className="hidden lg:block w-[340px] space-y-4">
+        <NewsWidget limit={5} />
+        <TrendingTickersWidget limit={10} timeframe="24h" />
+        <TopAuthorsWidget limit={5} timeframe="7d" />
+        {user && (
+          <>
+            <MyEarningsWidget period="30d" />
+            <MyActivityWidget period="7d" />
+          </>
+        )}
+      </div>
 
       <CreatePostModal
         isOpen={isAdvancedComposerOpen}

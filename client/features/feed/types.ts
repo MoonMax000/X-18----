@@ -51,6 +51,11 @@ export interface MediaItem {
   size_bytes?: number;
 }
 
+export interface CodeBlock {
+  language: string;
+  code: string;
+}
+
 export interface Post {
   id: string;
   author: {
@@ -70,6 +75,7 @@ export interface Post {
   text: string;
   sentiment?: SentimentType;
   market?: MarketType;
+  category?: string; // Category from metadata (e.g., "crypto", "analysis", etc.)
   price?: PriceType;
   accessLevel?: AccessLevel;
   postPrice?: number;
@@ -89,6 +95,7 @@ export interface Post {
   codeSnippet?: string;
   mediaUrl?: string; // Legacy field
   media?: MediaItem[]; // New field from backend
+  codeBlocks?: CodeBlock[]; // New field for code blocks
   likes: number;
   comments: number;
   reposts: number;

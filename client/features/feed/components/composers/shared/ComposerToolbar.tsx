@@ -170,7 +170,7 @@ export function ComposerToolbar({
           type="button" 
           onClick={() => onSentimentChange(sentiment === "bullish" ? null : "bullish")} 
           className={cn(
-            "flex h-6 items-center gap-1 rounded-full px-2 transition-all", 
+            "flex h-6 items-center gap-1 rounded-full px-2 transition-all hover:opacity-80 active:scale-95", 
             sentiment === "bullish" 
               ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A]" 
               : "bg-transparent"
@@ -183,13 +183,13 @@ export function ComposerToolbar({
           <span className={cn("text-xs font-bold", sentiment === "bullish" ? "text-white" : "text-white")}>Bullish</span>
         </button>
 
-        <div className="h-5 w-px bg-white" />
+        <div className="h-5 w-px bg-[#1B1F27]" />
 
         <button 
           type="button" 
           onClick={() => onSentimentChange(sentiment === "bearish" ? null : "bearish")} 
           className={cn(
-            "flex h-6 items-center gap-1 rounded-full px-2 transition-all", 
+            "flex h-6 items-center gap-1 rounded-full px-2 transition-all hover:opacity-80 active:scale-95", 
             sentiment === "bearish" 
               ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414]" 
               : "bg-transparent"

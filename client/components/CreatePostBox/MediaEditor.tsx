@@ -3,11 +3,13 @@ import {
   useState,
   useEffect,
   useRef,
-  PointerEvent as ReactPointerEvent,
+  useCallback,
 } from "react";
 import { createPortal } from "react-dom";
 import classNames from "clsx";
+import Cropper from "react-easy-crop";
 import { MediaItem, CropTransform, createDefaultTransform } from "./types";
+import { getCroppedImg, revokeCroppedImg } from "../../lib/crop-utils";
 
 interface MediaEditorProps {
   media: MediaItem | null;
@@ -38,6 +40,14 @@ const WARNING_OPTIONS = [
   },
 ];
 
+// Типы для react-easy-crop
+interface CroppedAreaPixels {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export const MediaEditor: FC<MediaEditorProps> = ({
   media,
   onSave,
@@ -52,20 +62,52 @@ export const MediaEditor: FC<MediaEditorProps> = ({
   );
   const [showAltHelp, setShowAltHelp] = useState(false);
 
-  // Crop state
+  // Состояние для react-easy-crop
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [translateX, setTranslateX] = useState(0);
-  const [translateY, setTranslateY] = useState(0);
   const [aspectPreset, setAspectPreset] = useState<AspectPreset>("original");
-  const [isDragging, setIsDragging] = useState(false);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels | null>(null);
+  const [naturalDimensions, setNaturalDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+
+  const [hasChanges, setHasChanges] = useState(false);
+  const [initialState, setInitialState] = useState<{
+    crop: { x: number; y: number };
+    zoom: number;
+    aspect: AspectPreset;
+  } | null>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef<{
-    x: number;
-    y: number;
-    tx: number;
-    ty: number;
-  } | null>(null);
+
+  // Сохраняем состояние для каждого пресета
+  const presetStates = useRef<{
+    [key in AspectPreset]: { 
+      crop: { x: number; y: number }; 
+      zoom: number;
+    };
+  }>({
+    original: { crop: { x: 0, y: 0 }, zoom: 1 },
+    wide: { crop: { x: 0, y: 0 }, zoom: 1 },
+    square: { crop: { x: 0, y: 0 }, zoom: 1 },
+  });
+
+  // Получаем aspect ratio для текущего пресета
+  const getAspectRatio = (preset: AspectPreset): number | undefined => {
+    if (!naturalDimensions) return undefined;
+    
+    switch (preset) {
+      case 'original':
+        return naturalDimensions.width / naturalDimensions.height;
+      case 'square':
+        return 1;
+      case 'wide':
+        return 16 / 9;
+      default:
+        return 1;
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -78,64 +120,148 @@ export const MediaEditor: FC<MediaEditorProps> = ({
       setTransform(savedTransform);
       setAltText(media.alt || "");
       setWarnings(media.sensitiveTags || []);
+      
+      // Преобразуем сохраненные translateX, translateY в crop координаты
+      const savedCrop = {
+        x: savedTransform.translateX,
+        y: savedTransform.translateY
+      };
+      setCrop(savedCrop);
       setZoom(savedTransform.scale);
-      setTranslateX(savedTransform.translateX);
-      setTranslateY(savedTransform.translateY);
+      setHasChanges(false);
     }
   }, [media]);
+  
+  // Отслеживаем изменения
+  useEffect(() => {
+    if (initialState) {
+      const hasStateChanged = 
+        crop.x !== initialState.crop.x ||
+        crop.y !== initialState.crop.y ||
+        zoom !== initialState.zoom ||
+        aspectPreset !== initialState.aspect;
+      setHasChanges(hasStateChanged);
+    }
+  }, [crop, zoom, aspectPreset, initialState]);
 
-  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setIsDragging(true);
-    dragStartRef.current = {
-      x: event.clientX,
-      y: event.clientY,
-      tx: translateX,
-      ty: translateY,
+  // Callback когда crop завершен
+  const onCropComplete = useCallback((croppedArea: any, croppedAreaPx: CroppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPx);
+  }, []);
+
+  // Callback когда изображение загружено - заменяет ручную загрузку Image()
+  const onMediaLoaded = useCallback((mediaSize: { width: number; height: number; naturalWidth: number; naturalHeight: number }) => {
+    const natW = mediaSize.naturalWidth;
+    const natH = mediaSize.naturalHeight;
+    setNaturalDimensions({ width: natW, height: natH });
+
+    // По умолчанию всегда "original" (показывает фото целиком)
+    const selectedPreset: AspectPreset = "original";
+    
+    setAspectPreset(selectedPreset);
+    
+    // Сохраняем начальное состояние
+    const savedCrop = {
+      x: transform.translateX,
+      y: transform.translateY
     };
-  };
+    const initialStateData = {
+      crop: savedCrop,
+      zoom: transform.scale,
+      aspect: selectedPreset
+    };
+    setInitialState(initialStateData);
+  }, [transform]);
 
-  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!isDragging || !dragStartRef.current) return;
-    const dx = event.clientX - dragStartRef.current.x;
-    const dy = event.clientY - dragStartRef.current.y;
-    setTranslateX(dragStartRef.current.tx + dx);
-    setTranslateY(dragStartRef.current.ty + dy);
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-    dragStartRef.current = null;
-  };
-
-  const handleSave = () => {
-    if (!media) return;
+  const handleSave = async () => {
+    if (!media || !croppedAreaPixels) return;
 
     const updatedTransform: CropTransform = {
       ...transform,
       scale: zoom,
-      translateX,
-      translateY,
+      translateX: crop.x,
+      translateY: crop.y,
       aspectRatio:
         aspectPreset === "original"
           ? "original"
           : aspectPreset === "wide"
             ? "16:9"
             : "1:1",
+      grid: transform.grid || "thirds",
+      cropRect: {
+        x: Math.round(croppedAreaPixels.x),
+        y: Math.round(croppedAreaPixels.y),
+        w: Math.round(croppedAreaPixels.width),
+        h: Math.round(croppedAreaPixels.height),
+      },
     };
+
+    // Генерируем обрезанное превью-изображение
+    let croppedPreviewUrl: string | undefined;
+    try {
+      croppedPreviewUrl = await getCroppedImg(media.url, {
+        x: croppedAreaPixels.x,
+        y: croppedAreaPixels.y,
+        width: croppedAreaPixels.width,
+        height: croppedAreaPixels.height,
+      });
+    } catch (error) {
+      console.error('Failed to generate cropped preview:', error);
+    }
+
+    // Освобождаем старый blob URL если он существует
+    if (media.croppedPreviewUrl) {
+      revokeCroppedImg(media.croppedPreviewUrl);
+    }
 
     onSave({
       ...media,
       transform: updatedTransform,
       alt: altText,
       sensitiveTags: warnings,
+      croppedPreviewUrl,
     });
+  };
+
+  // Переключение пресетов
+  const handleAspectChange = (preset: AspectPreset) => {
+    // Сохраняем текущее состояние для текущего пресета
+    presetStates.current[aspectPreset] = {
+      crop: { ...crop },
+      zoom: zoom
+    };
+
+    // Переключаемся на новый пресет
+    setAspectPreset(preset);
+    
+    // Загружаем сохраненное состояние для нового пресета
+    const savedState = presetStates.current[preset];
+    setCrop(savedState.crop);
+    setZoom(savedState.zoom);
   };
 
   if (!mounted || !media) return null;
 
   const isImage = media.type === "image";
   const altChars = altText.length;
+  const currentAspect = getAspectRatio(aspectPreset);
+
+  // Проверка соответствия изображения пресету
+  const matchesPreset = (preset: AspectPreset): boolean => {
+    if (!naturalDimensions) return false;
+    const ratio = naturalDimensions.width / naturalDimensions.height;
+    
+    switch (preset) {
+      case "square":
+        return ratio >= 0.9 && ratio <= 1.1;
+      case "wide":
+        return ratio >= 1.6 && ratio <= 1.9;
+      case "original":
+        return true;
+      default:
+        return false;
+    }
+  };
 
   return createPortal(
     <div
@@ -247,33 +373,33 @@ export const MediaEditor: FC<MediaEditorProps> = ({
               </div>
             ) : (
               <>
-                <div
-                  className={classNames(
-                    "relative flex h-[420px] w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-[#1D9BF0] bg-black",
-                    isDragging ? "cursor-grabbing" : "cursor-grab",
-                  )}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onPointerLeave={handlePointerUp}
-                  onPointerCancel={handlePointerUp}
-                >
-                  <img
-                    src={media.url}
-                    alt="Crop preview"
-                    draggable={false}
-                    className="pointer-events-none select-none"
+                <div className="relative w-full h-[500px] rounded-2xl overflow-hidden border-2 border-[#1D9BF0] bg-black">
+                  <Cropper
+                    image={media.url}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={currentAspect}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                    onMediaLoaded={onMediaLoaded}
+                    minZoom={1}
+                    maxZoom={3}
+                    zoomSpeed={0.1}
+                    showGrid={true}
+                    objectFit={aspectPreset === "original" ? "contain" : "horizontal-cover"}
                     style={{
-                      transform: `translate(${translateX}px, ${translateY}px) scale(${zoom})`,
-                      maxWidth: "none",
-                      maxHeight: "none",
+                      containerStyle: {
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: '#000',
+                      },
+                      mediaStyle: {},
+                      cropAreaStyle: {
+                        border: '2px solid #1D9BF0',
+                      },
                     }}
                   />
-                  <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-40">
-                    {Array.from({ length: 9 }).map((_, idx) => (
-                      <div key={idx} className="border border-white/10" />
-                    ))}
-                  </div>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -281,12 +407,14 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                     <button
                       type="button"
                       title="Original"
-                      onClick={() => setAspectPreset("original")}
+                      onClick={() => handleAspectChange("original")}
                       className={classNames(
-                        "inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
+                        "relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
                         aspectPreset === "original"
                           ? "text-[#1D9BF0]"
-                          : "text-[#71767B] hover:text-white",
+                          : matchesPreset("original")
+                            ? "text-[#1D9BF0]/70"
+                            : "text-[#71767B] hover:text-white",
                       )}
                     >
                       <svg
@@ -296,16 +424,21 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       >
                         <path d="M3 7.5C3 6.119 4.119 5 5.5 5h13C19.881 5 21 6.119 21 7.5v9c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 19 3 17.881 3 16.5v-9zM5.5 7c-.276 0-.5.224-.5.5v9c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-9c0-.276-.224-.5-.5-.5h-13z" />
                       </svg>
+                      {matchesPreset("original") && aspectPreset !== "original" && (
+                        <div className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-[#1D9BF0]" />
+                      )}
                     </button>
                     <button
                       type="button"
                       title="Wide"
-                      onClick={() => setAspectPreset("wide")}
+                      onClick={() => handleAspectChange("wide")}
                       className={classNames(
-                        "inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
+                        "relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
                         aspectPreset === "wide"
                           ? "text-[#1D9BF0]"
-                          : "text-[#71767B] hover:text-white",
+                          : matchesPreset("wide")
+                            ? "text-[#1D9BF0]/70"
+                            : "text-[#71767B] hover:text-white",
                       )}
                     >
                       <svg
@@ -315,16 +448,21 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       >
                         <path d="M3 9.5C3 8.119 4.119 7 5.5 7h13C19.881 7 21 8.119 21 9.5v5c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 17 3 15.881 3 14.5v-5zM5.5 9c-.276 0-.5.224-.5.5v5c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-5c0-.276-.224-.5-.5-.5h-13z" />
                       </svg>
+                      {matchesPreset("wide") && aspectPreset !== "wide" && (
+                        <div className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-[#1D9BF0]" />
+                      )}
                     </button>
                     <button
                       type="button"
                       title="Square"
-                      onClick={() => setAspectPreset("square")}
+                      onClick={() => handleAspectChange("square")}
                       className={classNames(
-                        "inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
+                        "relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:backdrop-blur-sm focus-visible:outline-none",
                         aspectPreset === "square"
                           ? "text-[#1D9BF0]"
-                          : "text-[#71767B] hover:text-white",
+                          : matchesPreset("square")
+                            ? "text-[#1D9BF0]/70"
+                            : "text-[#71767B] hover:text-white",
                       )}
                     >
                       <svg
@@ -334,16 +472,20 @@ export const MediaEditor: FC<MediaEditorProps> = ({
                       >
                         <path d="M3 5.5C3 4.119 4.119 3 5.5 3h13C19.881 3 21 4.119 21 5.5v13c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v13c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-13c0-.276-.224-.5-.5-.5h-13z" />
                       </svg>
+                      {matchesPreset("square") && aspectPreset !== "square" && (
+                        <div className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-[#1D9BF0]" />
+                      )}
                     </button>
                   </div>
 
                   <div className="h-6 w-px bg-[#2F3336]" />
 
-                  <div className="flex flex-1 items-center gap-3">
+                  <div className="flex flex-1 items-center gap-3 rounded-full bg-black/40 px-3 py-2 backdrop-blur-sm">
                     <button
                       type="button"
-                      onClick={() => setZoom(Math.max(0.5, zoom * 0.9))}
+                      onClick={() => setZoom(Math.max(1, zoom * 0.9))}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[#71767B] transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:text-white hover:backdrop-blur-sm focus-visible:outline-none"
+                      aria-label="Zoom out"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -356,18 +498,33 @@ export const MediaEditor: FC<MediaEditorProps> = ({
 
                     <input
                       type="range"
-                      min={0.5}
+                      min={1}
                       max={3}
                       step={0.01}
                       value={zoom}
                       onChange={(e) => setZoom(parseFloat(e.target.value))}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowRight") {
+                          e.preventDefault();
+                          setZoom(Math.min(3, zoom + 0.1));
+                        } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
+                          e.preventDefault();
+                          setZoom(Math.max(1, zoom - 0.1));
+                        }
+                      }}
                       className="h-1 flex-1 cursor-pointer accent-[#1D9BF0]"
+                      aria-label="Zoom level"
+                      aria-valuemin={1}
+                      aria-valuemax={3}
+                      aria-valuenow={zoom}
+                      aria-valuetext={`${Math.round(zoom * 100)}%`}
                     />
 
                     <button
                       type="button"
                       onClick={() => setZoom(Math.min(3, zoom * 1.1))}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[#71767B] transition-all duration-200 hover:bg-[rgba(255,255,255,0.18)] hover:text-white hover:backdrop-blur-sm focus-visible:outline-none"
+                      aria-label="Zoom in"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -478,7 +635,13 @@ export const MediaEditor: FC<MediaEditorProps> = ({
           </button>
           <button
             onClick={handleSave}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-5 py-2 text-sm font-semibold text-white transition-all hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)]"
+            disabled={!hasChanges}
+            className={classNames(
+              "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all",
+              hasChanges
+                ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)]"
+                : "bg-gray-700 text-gray-400 cursor-not-allowed opacity-50"
+            )}
           >
             Save
           </button>

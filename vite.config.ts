@@ -1,13 +1,13 @@
 import { defineConfig, Plugin } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
-import { createServer } from "./server";
+import { createServer } from "./server/index";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: process.env.PORT ? Number(process.env.PORT) : 8080,
+    port: process.env.PORT ? Number(process.env.PORT) : 5173,
     // Configure HMR for environments where the app is proxied under a different hostname
     hmr: {
       protocol: process.env.HMR_PROTOCOL || "wss",
@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
       clientPort: process.env.HMR_CLIENT_PORT ? Number(process.env.HMR_CLIENT_PORT) : undefined,
     },
     fs: {
-      allow: ["./client", "./shared"],
+      allow: [".", "./client", "./shared"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
   },

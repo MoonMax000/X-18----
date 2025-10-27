@@ -1,6 +1,7 @@
 import { FC, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { VerificationModal } from './VerificationModal';
+import { customAuth } from '@/services/auth/custom-backend-auth';
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -128,50 +129,36 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      console.log('Backend URL:', BACKEND_URL);
+      // Generate username from email or phone
+      const username = authMethod === 'email'
+        ? email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '')
+        : `user_${phone.replace(/\D/g, '').slice(-8)}`;
 
-      const payload = {
+      console.log('🔄 Registering user with custom backend...');
+      
+      // Register using Custom Backend API
+      // This returns user data and tokens in one call
+      await customAuth.register({
+        username,
         email: authMethod === 'email' ? email : `${phone}@phone.temp`,
         password,
-        username: authMethod === 'email' ? email.split('@')[0] : phone.replace(/\D/g, ''),
-        firstName: '',
-        lastName: '',
-      };
-
-      console.log('Sending registration request:', payload);
-
-      const response = await fetch(`${BACKEND_URL}/api/v1/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        display_name: username,
       });
 
-      console.log('Response status:', response.status);
+      console.log('✅ Registration successful! User authenticated and tokens saved.');
 
-      const data = await response.json();
-      console.log('Response data:', data);
-
-      if (response.ok) {
-        console.log('✅ Registration successful:', data);
-        // Show verification modal
-        setShowVerification(true);
-      } else {
-        console.error('❌ Registration failed:', data);
-        // Handle errors
-        if (data.error?.includes('Email already registered')) {
-          setEmailError('This email is already registered');
-        } else if (data.error?.includes('Username already taken')) {
-          setEmailError('This username is already taken');
-        } else {
-          setEmailError(data.error || 'Registration failed');
-        }
-      }
+      // Show verification modal (for email confirmation if needed)
+      setShowVerification(true);
     } catch (error) {
-      console.error('❌ Registration error (network):', error);
-      setEmailError('Connection error. Please try again.');
+      console.error('❌ Registration error:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      
+      if (errorMessage.includes('already') || errorMessage.includes('taken') || errorMessage.includes('exists')) {
+        setEmailError('This email or username is already registered');
+      } else {
+        setEmailError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

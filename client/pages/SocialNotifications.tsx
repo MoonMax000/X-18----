@@ -1,7 +1,8 @@
 import type { FC } from "react";
 import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Repeat2, MessageCircle, UserPlus, Bell, Star } from "lucide-react";
+import { Heart, Repeat2, MessageCircle, UserPlus } from "lucide-react";
+import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +15,13 @@ import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
-import { useGTSNotifications } from "@/hooks/useGTSNotifications";
-import type { GTSNotification } from "@/services/api/gotosocial";
+import { useCustomNotifications } from "@/hooks/useCustomNotifications";
+import type { Notification } from "@/services/api/custom-backend";
+import { getAvatarUrl } from "@/lib/avatar-utils";
 
 interface NotificationItem {
   id: string;
-  type: "follow" | "like" | "mention" | "repost";
+  type: "follow" | "like" | "mention" | "retweet";
   actor: {
     name: string;
     handle: string;
@@ -29,6 +31,7 @@ interface NotificationItem {
   message: string;
   timestamp: string;
   meta?: string;
+  isRead: boolean;
 }
 
 const notificationFilters = [
@@ -38,9 +41,19 @@ const notificationFilters = [
 
 type NotificationFilterId = (typeof notificationFilters)[number]["id"];
 
-// Convert GTSNotification to UI NotificationItem
-function convertGTSNotification(gtsNotification: GTSNotification): NotificationItem {
-  const { id, type, created_at, account, status } = gtsNotification;
+// Convert Custom Backend Notification to UI NotificationItem
+function convertNotification(notification: Notification): NotificationItem {
+  const { id, type, created_at, post, is_read } = notification;
+  
+  // DEBUG: Log full notification object
+  console.log('[convertNotification] Full notification:', JSON.stringify(notification, null, 2));
+  console.log('[convertNotification] notification.actor:', notification.actor);
+  console.log('[convertNotification] notification type:', type);
+  
+  // Backend sends "from_user" in JSON, not "actor"
+  const actor = (notification as any).from_user || notification.actor;
+  
+  console.log('[convertNotification] Extracted actor:', actor);
   
   // Calculate relative time
   const getRelativeTime = (dateString: string): string => {
@@ -60,12 +73,12 @@ function convertGTSNotification(gtsNotification: GTSNotification): NotificationI
 
   // Get status preview text
   const getStatusPreview = (): string => {
-    if (!status) return "";
-    const text = status.content.replace(/<[^>]*>/g, ""); // Remove HTML
+    if (!post) return "";
+    const text = post.content.replace(/<[^>]*>/g, ""); // Remove HTML
     return text.length > 50 ? `«${text.substring(0, 50)}...»` : `«${text}»`;
   };
 
-  // Map GoToSocial types to UI types
+  // Map Custom Backend types to UI types
   let uiType: NotificationItem["type"];
   let message: string;
 
@@ -74,21 +87,25 @@ function convertGTSNotification(gtsNotification: GTSNotification): NotificationI
       uiType = "follow";
       message = "подписался на ваши обновления";
       break;
-    case "favourite":
-      uiType = "like";
-      message = status ? `лайкнул ваш пост ${getStatusPreview()}` : "лайкнул ваш пост";
+    case "unfollow":
+      uiType = "follow";
+      message = "отписался от ваших обновлений";
       break;
-    case "reblog":
-      uiType = "repost";
-      message = status ? `поделился вашим постом ${getStatusPreview()}` : "поде��ился вашим постом";
+    case "like":
+      uiType = "like";
+      message = post ? `лайкнул ваш пост ${getStatusPreview()}` : "лайкнул ваш пост";
+      break;
+    case "retweet":
+      uiType = "retweet";
+      message = post ? `поделился вашим постом ${getStatusPreview()}` : "поделился вашим постом";
       break;
     case "mention":
       uiType = "mention";
-      message = status ? `упомянул вас в посте ${getStatusPreview()}` : "упомянул вас";
+      message = post ? `упомянул вас в посте ${getStatusPreview()}` : "упомянул вас";
       break;
-    case "status":
+    case "reply":
       uiType = "mention";
-      message = "опубликовал новый пост";
+      message = post ? `ответил на ваш пост ${getStatusPreview()}` : "ответил на ваш пост";
       break;
     default:
       uiType = "mention";
@@ -99,13 +116,14 @@ function convertGTSNotification(gtsNotification: GTSNotification): NotificationI
     id,
     type: uiType,
     actor: {
-      name: account.display_name || account.username,
-      handle: `@${account.acct}`,
-      avatar: account.avatar,
-      verified: account.verified,
+      name: actor?.display_name || actor?.username || "Unknown",
+      handle: `@${actor?.username || 'unknown'}`,
+      avatar: actor ? getAvatarUrl(actor) : "/placeholder.svg",
+      verified: actor?.verified || false,
     },
     message,
     timestamp: getRelativeTime(created_at),
+    isRead: is_read,
   };
 }
 
@@ -125,9 +143,9 @@ const SocialNotifications: FC = () => {
   // Newsletter settings
   const [emailNotifications, setEmailNotifications] = useState(false);
 
-  // Fetch notifications from GoToSocial
+  // Fetch notifications from Custom Backend
   const {
-    notifications: gtsNotifications,
+    notifications: customNotifications,
     isLoading,
     error,
     unreadCount,
@@ -136,22 +154,45 @@ const SocialNotifications: FC = () => {
     loadMore,
     hasMore,
     isLoadingMore,
-  } = useGTSNotifications({
-    filter: activeFilter === "mentions" ? "mention" : "all",
+  } = useCustomNotifications({
     limit: 20,
     autoRefresh: true,
     refreshInterval: 60000, // 1 minute
   });
 
-  // Convert GTS notifications to UI format
-  const notifications = useMemo(() => {
-    return gtsNotifications.map(convertGTSNotification);
-  }, [gtsNotifications]);
+  // DEBUG: Log raw notifications from backend
+  console.log('[SocialNotifications] Raw customNotifications:', customNotifications);
+  console.log('[SocialNotifications] customNotifications length:', customNotifications?.length);
+  console.log('[SocialNotifications] isLoading:', isLoading);
+  console.log('[SocialNotifications] error:', error);
 
-  const filterCounts = useMemo(() => ({
-    all: gtsNotifications.length,
-    mentions: gtsNotifications.filter((n) => n.type === "mention").length,
-  }), [gtsNotifications]);
+  // Convert Custom Backend notifications to UI format
+  const notifications = useMemo(() => {
+    // Ensure customNotifications is an array
+    if (!Array.isArray(customNotifications)) {
+      return [];
+    }
+    
+    let filtered = customNotifications;
+    
+    // Apply filter
+    if (activeFilter === "mentions") {
+      filtered = filtered.filter((n) => n.type === "mention" || n.type === "reply");
+    }
+    
+    return filtered.map(convertNotification);
+  }, [customNotifications, activeFilter]);
+
+  const filterCounts = useMemo(() => {
+    if (!Array.isArray(customNotifications)) {
+      return { all: 0, mentions: 0 };
+    }
+    
+    return {
+      all: customNotifications.length,
+      mentions: customNotifications.filter((n) => n.type === "mention" || n.type === "reply").length,
+    };
+  }, [customNotifications]);
 
   const handleToggleRead = useCallback((id: string) => {
     markAsRead(id);
@@ -299,7 +340,7 @@ const SocialNotifications: FC = () => {
                   <NotificationItemRow
                     key={notification.id}
                     notification={notification}
-                    isRead={false}
+                    isRead={notification.isRead}
                     onToggleRead={() => handleToggleRead(notification.id)}
                   />
                 ))}
@@ -433,6 +474,31 @@ interface NotificationItemRowProps {
 
 const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRead, onToggleRead }) => {
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const navigate = useNavigate();
+
+  // Prepare author object for UserHoverCard
+  const author = {
+    name: notification.actor.name,
+    handle: notification.actor.handle,
+    avatar: notification.actor.avatar,
+    verified: notification.actor.verified,
+    bio: "", // Not available in notification
+    followers: 0, // Not available in notification
+    following: 0, // Not available in notification
+  };
+
+  // Extract username from handle
+  const username = notification.actor.handle.replace('@', '');
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/social/profile/${username}`);
+  };
+
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/social/profile/${username}`);
+  };
 
   return (
   <article
@@ -441,20 +507,35 @@ const NotificationItemRow: FC<NotificationItemRowProps> = ({ notification, isRea
       isRead ? "opacity-70" : "hover:bg-[#0A0A0A]"
     )}
   >
-    <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A1A1A]">
-      <img
-        src={notification.actor.avatar}
-        alt={notification.actor.name}
-        className="h-12 w-12 rounded-full object-cover"
-      />
+    <div className="mt-1">
+      <UserHoverCard author={author} showFollowButton={true}>
+        <img
+          src={notification.actor.avatar}
+          alt={notification.actor.name}
+          onClick={handleAvatarClick}
+          className="h-12 w-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+        />
+      </UserHoverCard>
     </div>
     <div className="grid grid-cols-[1fr_auto] gap-2 text-sm text-white">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2 text-[15px]">
           <NotificationIcon type={notification.type} />
-          <span className="font-semibold">{notification.actor.name}</span>
+          <button
+            type="button"
+            onClick={handleProfileClick}
+            className="font-semibold hover:underline cursor-pointer transition-all"
+          >
+            {notification.actor.name}
+          </button>
           {notification.actor.verified && <VerifiedBadge size={16} />}
-          <span className="text-xs text-[#6C7080]">{notification.actor.handle}</span>
+          <button
+            type="button"
+            onClick={handleProfileClick}
+            className="text-xs text-[#6C7080] hover:text-[#A06AFF] cursor-pointer transition-colors"
+          >
+            {notification.actor.handle}
+          </button>
         </div>
         <p className="mt-2 text-[15px] text-[#E3D8FF]">{notification.message}</p>
       </div>
@@ -548,7 +629,7 @@ const NotificationIcon: FC<NotificationIconProps> = ({ type }) => {
       {type === "follow" && <UserPlus className={iconClass} />}
       {type === "like" && <Heart className={iconClass} />}
       {type === "mention" && <MessageCircle className={iconClass} />}
-      {type === "repost" && <Repeat2 className={iconClass} />}
+      {type === "retweet" && <Repeat2 className={iconClass} />}
     </>
   );
 };

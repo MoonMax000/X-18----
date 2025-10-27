@@ -10,6 +10,9 @@ interface ProfileHeroProps {
   onEdit?: () => void;
   tweetsCount?: number;
   isOwnProfile?: boolean;
+  isFollowing?: boolean;
+  onFollowToggle?: (userId: string, currentState: boolean) => Promise<void>;
+  profileUserId?: string;
 }
 
 const ProfileHero: FC<ProfileHeroProps> = ({
@@ -17,12 +20,34 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   onEdit,
   tweetsCount = 0,
   isOwnProfile = true,
+  isFollowing: externalIsFollowing = false,
+  onFollowToggle,
+  profileUserId,
 }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [localIsFollowing, setLocalIsFollowing] = useState(externalIsFollowing);
+  const [isLoading, setIsLoading] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
 
-  const handleFollowClick = () => {
-    setIsFollowing(!isFollowing);
+  const isFollowing = externalIsFollowing !== undefined ? externalIsFollowing : localIsFollowing;
+
+  const handleFollowClick = async () => {
+    if (isLoading || !profileUserId) return;
+
+    try {
+      setIsLoading(true);
+      
+      if (onFollowToggle) {
+        await onFollowToggle(profileUserId, isFollowing);
+      } else {
+        // Fallback to local state if no callback provided
+        setLocalIsFollowing(!isFollowing);
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error);
+      toast.error('Failed to update follow status');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

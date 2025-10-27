@@ -95,6 +95,14 @@ export const useSimpleComposer = (
         risk?: string;
       }
     ) => {
+      console.log('[useSimpleComposer - initialize] Called with:', {
+        hasInitialText: !!initialText,
+        initialMediaLength: initialMedia?.length || 0,
+        initialCodeBlocksLength: initialCodeBlocks?.length || 0,
+        willResetCodeBlocks: !initialCodeBlocks || initialCodeBlocks.length === 0,
+      });
+      console.trace('[useSimpleComposer - initialize] Stack trace:');
+      
       cleanupObjectUrls();
       
       setText(initialText || "");
@@ -199,7 +207,20 @@ export const useSimpleComposer = (
   const insertCodeBlock = useCallback(
     (code: string, language: string) => {
       const id = `code-${Date.now()}`;
-      setCodeBlocks((prev) => [...prev, { id, code, language }]);
+      console.log('[useSimpleComposer - insertCodeBlock] Adding code block:', {
+        id,
+        language,
+        codeLength: code.length,
+      });
+      setCodeBlocks((prev) => {
+        const updated = [...prev, { id, code, language }];
+        console.log('[useSimpleComposer - insertCodeBlock] Updated codeBlocks:', {
+          previousLength: prev.length,
+          newLength: updated.length,
+          allBlocks: updated.map(cb => ({ id: cb.id, language: cb.language })),
+        });
+        return updated;
+      });
       return true;
     },
     [],

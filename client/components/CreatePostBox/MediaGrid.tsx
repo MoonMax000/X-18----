@@ -1,5 +1,6 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { MediaItem } from "./types";
+import { revokeCroppedImg } from "../../lib/crop-utils";
 
 interface MediaGridProps {
   media: MediaItem[];
@@ -18,9 +19,29 @@ export const MediaGrid: FC<MediaGridProps> = ({
 }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
+  // Очищаем blob URLs при размонтировании
+  useEffect(() => {
+    return () => {
+      media.forEach(item => {
+        if (item.croppedPreviewUrl) {
+          revokeCroppedImg(item.croppedPreviewUrl);
+        }
+      });
+    };
+  }, [media]);
+
   const gridClass = media.length === 1 ? "grid-cols-1" : "grid-cols-2";
-  const heightClass = media.length === 1 ? "max-h-[400px]" : "max-h-[280px]";
+  const heightClass = media.length === 1 ? "max-h-[500px]" : "max-h-[280px]";
   const isInteractive = !readOnly;
+  
+  // For single image: use auto aspect ratio to show full image
+  // For multiple images: use 16:9 for consistency
+  const getAspectRatio = (index: number) => {
+    if (media.length === 1) {
+      return "auto"; // Show full image without cropping
+    }
+    return "16/9"; // Consistent grid for multiple images
+  };
 
   return (
     <div className={`mt-3 grid gap-3 ${gridClass}`}>
@@ -57,14 +78,20 @@ export const MediaGrid: FC<MediaGridProps> = ({
             <video
               src={item.url}
               className="h-full w-full object-cover"
-              style={{ aspectRatio: media.length === 1 ? "auto" : "16/9" }}
+              style={{ 
+                aspectRatio: getAspectRatio(index),
+                objectFit: media.length === 1 ? "contain" : "cover",
+              }}
             />
           ) : (
             <img
-              src={item.url}
+              src={item.croppedPreviewUrl || item.url}
               alt={item.alt || `Media ${index + 1}`}
-              className="h-full w-full object-cover"
-              style={{ aspectRatio: media.length === 1 ? "auto" : "16/9" }}
+              className="h-full w-full"
+              style={{ 
+                aspectRatio: getAspectRatio(index),
+                objectFit: media.length === 1 ? "contain" : "cover",
+              }}
             />
           )}
 

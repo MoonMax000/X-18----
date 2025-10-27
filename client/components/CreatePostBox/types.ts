@@ -108,6 +108,8 @@ export type MediaItem = {
   transform?: CropTransform;
   sensitiveTags?: string[];
   file?: File;
+  // URL обрезанного превью (blob URL)
+  croppedPreviewUrl?: string;
 };
 
 export const CHAR_LIMIT = 280;

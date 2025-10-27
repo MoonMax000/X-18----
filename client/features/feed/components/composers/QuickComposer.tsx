@@ -12,8 +12,10 @@ import { useSimpleComposer } from "@/components/CreatePostBox/useSimpleComposer"
 import type { ComposerData } from "../../types";
 import type { MediaItem } from "@/components/CreatePostBox/types";
 import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from "./shared";
-import { createStatus, uploadMedia } from "@/services/api/gotosocial";
+import { customBackendAPI } from "@/services/api/custom-backend";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAvatarUrl } from "@/lib/avatar-utils";
 
 type Props = { 
   onExpand: (data: Partial<ComposerData>) => void;
@@ -22,8 +24,7 @@ type Props = {
 
 export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   const { toast } = useToast();
-  const [isReplyMenuOpen, setIsReplyMenuOpen] = useState(false);
-  const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const { user } = useAuth();
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
@@ -32,7 +33,6 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPosting, setIsPosting] = useState(false);
 
-  const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -50,21 +50,6 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   } = useSimpleComposer();
 
   const MAX_CHARS = 300;
-
-  const replyOptions = [
-    { id: "everyone" as const, label: "Everyone", description: "Anyone can reply." },
-    { id: "following" as const, label: "Accounts you follow", description: "Only people you follow can reply." },
-    { id: "verified" as const, label: "Verified accounts", description: "Only verified users can reply." },
-    { id: "mentioned" as const, label: "Only accounts you mention", description: "Only people you mention can reply." }
-  ];
-
-  const replySummary = replyOptions.find(opt => opt.id === replySetting)?.label || "Everyone";
-
-  const handleReplyButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
-    setIsReplyMenuOpen(prev => !prev);
-  };
 
   const handleEmojiToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (!isEmojiPickerOpen) {
@@ -139,54 +124,94 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
 
     try {
       const mediaIds: string[] = [];
+      const mediaIdMap: Map<string, string> = new Map(); // local id -> server id
+      
+      // Upload media files first
       for (const mediaItem of media) {
         if (mediaItem.file) {
-          const uploaded = await uploadMedia(mediaItem.file, { description: mediaItem.alt });
+          const uploaded = await customBackendAPI.uploadMedia(mediaItem.file);
           mediaIds.push(uploaded.id);
+          mediaIdMap.set(mediaItem.id, uploaded.id);
         }
       }
 
-      const visibilityMap: Record<typeof replySetting, 'public' | 'unlisted' | 'private' | 'direct'> = {
-        everyone: 'public',
-        following: 'unlisted',
-        verified: 'public',
-        mentioned: 'direct',
-      };
+      // Collect media transforms (crop data)
+      const mediaTransforms: Record<string, { x: number; y: number; w: number; h: number; src_w: number; src_h: number }> = {};
+      
+      for (const mediaItem of media) {
+        if (mediaItem.transform?.cropRect) {
+          const serverId = mediaIdMap.get(mediaItem.id);
+          if (serverId) {
+            // Need to get original image dimensions
+            // Create a temporary image to get natural dimensions
+            const img = new Image();
+            await new Promise<void>((resolve, reject) => {
+              img.onload = () => resolve();
+              img.onerror = () => reject(new Error('Failed to load image'));
+              img.src = mediaItem.url;
+            });
 
-      // Note: custom_metadata requires GoToSocial customization
-      // See GOTOSOCIAL_SIMPLE_METADATA_GUIDE.md for implementation
-      const statusData: any = {
-        status: text,
-        media_ids: mediaIds,
-        visibility: visibilityMap[replySetting],
-        sensitive: false,
-      };
-
-      // Only add custom_metadata if at least one field is set
-      if (postCategory || postMarket || postSymbol || sentiment) {
-        statusData.custom_metadata = {
-          post_type: postCategory.toLowerCase(),
-          market: postMarket.toLowerCase(),
-          category: postCategory.toLowerCase(),
-          ticker: postSymbol,
-          sentiment: sentiment || 'neutral',
-          timeframe: postTimeframe,
-          risk: postRisk.toLowerCase(),
-          access_level: accessType,
-          ...(accessType === 'pay-per-post' && { price: postPrice }),
-        };
+            const cropRect = mediaItem.transform.cropRect;
+            mediaTransforms[serverId] = {
+              x: cropRect.x,
+              y: cropRect.y,
+              w: cropRect.w,
+              h: cropRect.h,
+              src_w: img.naturalWidth,
+              src_h: img.naturalHeight,
+            };
+          }
+        }
       }
 
-      await createStatus(statusData);
+      const visibilityMap: Record<typeof replySetting, 'public' | 'followers' | 'private'> = {
+        everyone: 'public',
+        following: 'followers',
+        verified: 'public',
+        mentioned: 'private',
+      };
 
-      toast({ title: "Post created!", description: "Your post has been published successfully." });
+      // Build metadata object for custom backend
+      const metadata: Record<string, any> = {};
+      if (postCategory) metadata.category = postCategory;
+      if (postMarket) metadata.market = postMarket;
+      if (postSymbol) metadata.ticker = postSymbol;
+      if (sentiment) metadata.sentiment = sentiment;
+      if (postTimeframe) metadata.timeframe = postTimeframe;
+      if (postRisk) metadata.risk = postRisk;
+      if (accessType) metadata.access_level = accessType;
+      if (accessType === 'pay-per-post' && postPrice) metadata.price = postPrice.toString();
+      
+      // Add code blocks to metadata
+      if (codeBlocks.length > 0) {
+        metadata.code_blocks = codeBlocks.map(cb => ({
+          language: cb.language,
+          code: cb.code
+        }));
+      }
+
+      // Create post using custom backend API
+      await customBackendAPI.createPost({
+        content: text,
+        media_ids: mediaIds.length > 0 ? mediaIds : undefined,
+        media_transforms: Object.keys(mediaTransforms).length > 0 ? mediaTransforms : undefined,
+        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+        visibility: visibilityMap[replySetting],
+      });
+
+      toast({ 
+        title: "Пост создан!", 
+        description: "Ваш пост успешно опубликован." 
+      });
+      
+      // Reset all composer state
       reset();
       onPostCreated?.();
     } catch (error) {
       console.error('Failed to create post:', error);
       toast({
-        title: "Post failed",
-        description: error instanceof Error ? error.message : "Failed to publish post. Please try again.",
+        title: "Ошибка публикации",
+        description: error instanceof Error ? error.message : "Не удалось опубликовать пост. Попробуйте еще раз.",
         variant: "destructive",
       });
     } finally {
@@ -194,11 +219,14 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
     }
   };
 
+  const avatarUrl = getAvatarUrl(user);
+  const avatarFallback = user?.display_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U';
+
   return (
     <div className="flex gap-3">
       <Avatar className="h-12 w-12">
-        <AvatarImage src="https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87" />
-        <AvatarFallback>U</AvatarFallback>
+        <AvatarImage src={avatarUrl} />
+        <AvatarFallback>{avatarFallback}</AvatarFallback>
       </Avatar>
 
       <div className="flex-1 mb-[-1px]">
@@ -222,9 +250,9 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
         )}
 
         {codeBlocks.length > 0 && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-2 max-w-full overflow-hidden">
             {codeBlocks.map((cb) => (
-              <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all">
+              <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full min-w-0">
                 <div className="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] border-b border-[#6B46C1]/20">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
@@ -233,32 +261,17 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <pre className="px-4 py-3 text-xs text-[#D4B5FD] overflow-x-auto max-h-40 font-mono bg-[#05030A]">
-                  <code>{cb.code}</code>
+                <pre className="px-4 py-3 text-xs text-[#D4B5FD] max-h-40 font-mono bg-[#05030A] w-full max-w-full whitespace-pre-wrap break-words overflow-x-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
+                  <code className="block whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>{cb.code}</code>
                 </pre>
               </div>
             ))}
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
-          <div>
-            {text.length > 0 && (
-              <button ref={replyButtonRef} type="button" onClick={handleReplyButtonClick} className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10" disabled={isPosting}>
-                <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#1D9BF0]">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 13.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="text-xs">{replySummary}</span>
-              </button>
-            )}
-          </div>
-        </div>
 
         <ComposerMetadata
-          visible={text.length > 0}
+          visible={text.length > 0 || media.length > 0}
           market={postMarket}
           category={postCategory}
           symbol={postSymbol}
@@ -277,7 +290,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
             onDocumentClick={() => documentInputRef.current?.click()}
             onVideoClick={() => videoInputRef.current?.click()}
             onCodeBlockClick={() => setIsCodeBlockOpen(true)}
-            onEmojiClick={handleEmojiToggle}
+            onEmojiClick={() => setIsEmojiPickerOpen(prev => !prev)}
             onBoldClick={handleBoldToggle}
             isBoldActive={isBoldActive}
             sentiment={sentiment}
@@ -299,27 +312,6 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           />
         </div>
 
-        {isReplyMenuOpen && replyMenuPosition && createPortal(
-          <div className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3" style={{ top: `${replyMenuPosition.top - 200}px`, left: `${replyMenuPosition.left}px` }}>
-            <h3 className="mb-2 text-xs font-semibold text-white">Who can reply?</h3>
-            <div className="space-y-1.5">
-              {replyOptions.map(opt => (
-                <button key={opt.id} onClick={() => { setReplySetting(opt.id); setIsReplyMenuOpen(false); }} className="flex w-full items-start gap-2.5 rounded-lg bg-white/5 p-2 text-left transition-colors hover:bg-white/10 text-xs">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill={replySetting === opt.id ? "#1D9BF0" : "none"} stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    {replySetting === opt.id && <circle cx="12" cy="12" r="4" fill="#1D9BF0" />}
-                  </svg>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-white">{opt.label}</div>
-                    <div className="text-[11px] text-[#808283]">{opt.description}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>,
-          document.body
-        )}
-
         {isEmojiPickerOpen && emojiPickerPosition && createPortal(
           <div ref={emojiPickerRef} className="fixed z-[2300] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]" style={{ top: `${emojiPickerPosition.top}px`, left: `${emojiPickerPosition.left}px` }} onClick={e => e.stopPropagation()}>
             <EmojiPicker onSelect={handleEmojiSelect} />
@@ -335,9 +327,11 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           onClose={() => setIsAccessModalOpen(false)}
           currentAccessType={accessType}
           currentPrice={postPrice}
-          onSave={(newAccessType, newPrice) => {
+          currentReplyPolicy={replySetting}
+          onSave={(newAccessType, newPrice, newReplyPolicy) => {
             setAccessType(newAccessType);
             setPostPrice(newPrice);
+            setReplySetting(newReplyPolicy);
           }}
         />
 

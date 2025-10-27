@@ -1,37 +1,33 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProfilePageLayout from "@/components/socialProfile/ProfilePageLayout";
-import { useGTSProfile } from "@/hooks/useGTSProfile";
-import { getCurrentAccount } from "@/services/api/gotosocial";
-import type { GTSAccount } from "@/services/api/gotosocial";
+import { useCustomUserProfile } from "@/hooks/useCustomUserProfile";
+import { useAuth } from "@/contexts/AuthContext";
+import { convertUserToGTSAccount, convertPostToGTSStatus } from "@/lib/custom-to-gts-converters";
 
 export default function OtherProfilePage() {
   const { handle } = useParams<{ handle: string }>();
-  const [currentUser, setCurrentUser] = useState<GTSAccount | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-
-  // Get current user to check if this is own profile
-  useEffect(() => {
-    getCurrentAccount()
-      .then(setCurrentUser)
-      .catch(err => console.error('Failed to get current user:', err))
-      .finally(() => setIsLoadingUser(false));
-  }, []);
-
-  // Load profile data by username (from URL or fallback to static route)
-  const username = handle || 'tyrian_trade'; // Fallback for /other-profile without param
+  const { user: currentUser } = useAuth();
   
-  const { profile, statuses, isLoading, error } = useGTSProfile({
+  // Load profile data by username
+  const username = handle || '';
+  
+  const { profile, posts, isFollowing, isLoading, error } = useCustomUserProfile({
     username,
-    fetchStatuses: true,
+    fetchPosts: true,
+    fetchFollowers: true, // Needed to determine if current user is following this profile
   });
+
+  // Convert to GTS types for UI compatibility
+  const gtsProfile = profile ? convertUserToGTSAccount(profile) : null;
+  const gtsPosts = posts.map(post => convertPostToGTSStatus(post));
 
   // Determine if this is user's own profile
   const isOwnProfile = currentUser && profile 
     ? currentUser.id === profile.id || currentUser.username === profile.username
     : false;
 
-  if (isLoadingUser || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -62,5 +58,5 @@ export default function OtherProfilePage() {
     );
   }
 
-  return <ProfilePageLayout isOwnProfile={isOwnProfile} profile={profile} posts={statuses} />;
+  return <ProfilePageLayout isOwnProfile={isOwnProfile} profile={gtsProfile} posts={gtsPosts} initialFollowingState={isFollowing} />;
 }

@@ -2,12 +2,27 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TrendingUp, TrendingDown, DollarSign, Sparkles } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Sparkles, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, MessageCircle } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
 import PostMenu from "./PostMenu";
 import type { Post } from "../../types";
+import { customBackendAPI } from "@/services/api/custom-backend";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePostMenu } from "@/hooks/usePostMenu";
+
+// Category configuration with icons and colors (same as in ComposerMetadata)
+const categoryConfig = {
+  'Signal': { icon: TrendingUp, color: '#2EBD85' },
+  'News': { icon: Newspaper, color: '#4D7CFF' },
+  'Education': { icon: GraduationCap, color: '#F78DA7' },
+  'Analysis': { icon: BarChart3, color: '#A06AFF' },
+  'Macro': { icon: Brain, color: '#FFD166' },
+  'Code': { icon: Code2, color: '#64B5F6' },
+  'Video': { icon: Video, color: '#FF8A65' },
+  'General': { icon: MessageCircle, color: '#9CA3AF' },
+};
 
 interface FeedPostProps {
   post: Post;
@@ -18,13 +33,33 @@ interface FeedPostProps {
 
 export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBorder = false }: FeedPostProps) {
   const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { user } = useAuth();
+  const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
+  const [isLiked, setIsLiked] = useState(post.isLiked || false);
+  const [likesCount, setLikesCount] = useState(post.likes);
   const [isExpanded, setIsExpanded] = useState(false);
   const isSignal = post.type === "signal";
 
-  // TODO: Replace with actual user authentication check
-  const currentUserHandle = "@tyriantrade"; // This should come from auth context
-  const isOwnPost = post.author.handle?.toLowerCase() === currentUserHandle.toLowerCase();
+  // Check if this is the current user's post
+  const currentUserHandle = user ? `@${user.username}` : null;
+  const isOwnPost = currentUserHandle && post.author.handle 
+    ? post.author.handle.toLowerCase() === currentUserHandle.toLowerCase()
+    : false;
+
+  // PostMenu integration
+  const { handleDelete, handlePin, handleReport, handleBlockAuthor } = usePostMenu({
+    postId: post.id,
+    authorId: post.author.handle || post.author.name,
+    onSuccess: (action) => {
+      console.log(`PostMenu action ${action} completed successfully`);
+      // TODO: Add toast notification
+      // TODO: Refresh data if needed
+    },
+    onError: (error) => {
+      console.error('PostMenu action failed:', error);
+      // TODO: Add error toast
+    },
+  });
 
   // Post is locked if: has access level restrictions AND (not purchased AND not subscribed AND not own post)
   const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber && !isOwnPost;
@@ -40,38 +75,66 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
     navigate(`/home/post/${post.id}`, { state: post });
   };
 
-  const getCategoryBadge = () => {
-    const badges = {
-      code: { bg: "#6B6BFF", label: "Soft" },
-      video: { bg: "#FF6BD4", label: "Video" },
-      education: { bg: "#4FC3F7", label: "Idea" },
-      analysis: { bg: "#4FC3F7", label: "Idea" },
-      general: { bg: "#FF6B6B", label: "Opinion" },
-      macro: { bg: "#FF6B6B", label: "Opinion" },
-      onchain: { bg: "#F7A350", label: "Analytics" },
-      news: { bg: "#F7A350", label: "Analytics" },
-    };
-
-    const badge = badges[post.type as keyof typeof badges];
-    if (!badge) return null;
-
-    return (
-      <span
-        className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
-        style={{ backgroundColor: badge.bg }}
-      >
-        {badge.label}
-      </span>
-    );
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const username = post.author.handle?.replace('@', '') || post.author.name.replace(/\s+/g, '-').toLowerCase();
+    navigate(`/social/profile/${username}`);
   };
 
   const formatNumber = (num: number) => (num >= 1000 ? `${(num / 1000).toFixed(1)}K` : num);
+
+  const handleLikeToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    const previousState = isLiked;
+    const previousCount = likesCount;
+    
+    // Optimistic update
+    setIsLiked(!isLiked);
+    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+    
+    try {
+      if (isLiked) {
+        await customBackendAPI.unlikePost(post.id);
+      } else {
+        await customBackendAPI.likePost(post.id);
+      }
+    } catch (error) {
+      // Revert on error
+      setIsLiked(previousState);
+      setLikesCount(previousCount);
+      console.error('Failed to toggle like:', error);
+    }
+  };
+
+  const handleBookmarkToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    const previousState = isBookmarked;
+    
+    // Optimistic update
+    setIsBookmarked(!isBookmarked);
+    
+    try {
+      if (isBookmarked) {
+        await customBackendAPI.unbookmarkPost(post.id);
+      } else {
+        await customBackendAPI.bookmarkPost(post.id);
+      }
+    } catch (error) {
+      // Revert on error
+      setIsBookmarked(previousState);
+      console.error('Failed to toggle bookmark:', error);
+    }
+  };
 
   return (
     <article
       onClick={handlePostClick}
       className={cn(
-        "flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer hover:bg-white/[0.02]",
+        "flex w-full flex-col gap-3 sm:gap-4 md:gap-6 bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 relative cursor-pointer hover:bg-white/[0.02] min-w-0 overflow-x-hidden",
         showTopBorder && "before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[#181B22] before:to-transparent"
       )}
       style={{
@@ -89,27 +152,30 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             ...post.author,
             followers: post.author.followers ?? 0,
             following: post.author.following ?? 0,
+            isCurrentUser: isOwnPost,
           }}
           isFollowing={isFollowing}
           onFollowToggle={(nextState) => onFollowToggle(post.author.handle, nextState)}
         >
-          <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3 cursor-pointer">
-          <Avatar className="flex-shrink-0 h-11 w-11 sm:w-12 sm:h-12">
-            <AvatarImage src={post.author.avatar} />
-            <AvatarFallback>{post.author.name[0]}</AvatarFallback>
-          </Avatar>
+          <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3">
+          <div onClick={handleProfileClick} className="cursor-pointer">
+            <Avatar className="flex-shrink-0 h-11 w-11 sm:w-12 sm:h-12">
+              <AvatarImage src={post.author.avatar} />
+              <AvatarFallback>{post.author.name[0]}</AvatarFallback>
+            </Avatar>
+          </div>
           <div className="flex flex-1 flex-col min-w-0">
             <div className="flex items-center gap-1 sm:gap-1.5 text-[15px] sm:text-base md:text-[15px] font-bold md:font-semibold leading-tight text-white">
-              <span className="truncate">{post.author.name}</span>
+              <span onClick={handleProfileClick} className="truncate cursor-pointer hover:underline">{post.author.name}</span>
               {post.author.verified && <VerifiedBadge size={16} />}
-              <span className="hidden md:inline text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
+              <span onClick={handleProfileClick} className="hidden md:inline text-xs font-normal text-[#7C7C7C] cursor-pointer hover:underline">{post.author.handle}</span>
               <svg className="hidden md:inline w-1 h-1 fill-[#7C7C7C]" viewBox="0 0 4 4">
                 <circle cx="2" cy="2" r="1.5" />
               </svg>
               <span className="hidden md:inline text-xs font-normal text-[#7C7C7C]">{post.timestamp}</span>
             </div>
             <div className="flex md:hidden items-center gap-1 sm:gap-1.5 text-[13px] sm:text-sm font-normal text-[#7C7C7C] mt-0.5">
-              <span>{post.author.handle}</span>
+              <span onClick={handleProfileClick} className="cursor-pointer hover:underline">{post.author.handle}</span>
               <svg className="w-1 h-1 fill-[#7C7C7C]" viewBox="0 0 4 4">
                 <circle cx="2" cy="2" r="1.5" />
               </svg>
@@ -118,18 +184,76 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
             {/* Category Badges */}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
-              {/* Signal Sentiment Badge */}
-              {isSignal && post.sentiment && (
+              {/* Sentiment Badge */}
+              {post.sentiment && (
                 <span
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
-                    post.sentiment === "bullish"
-                      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                      : "border-rose-400/40 bg-rose-400/10 text-rose-300"
-                  )}
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: post.sentiment === "bullish" ? "rgb(16, 185, 129)" : "rgb(244, 63, 94)" }}
                 >
                   {post.sentiment === "bullish" ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
                   {post.sentiment === "bullish" ? "Bullish" : "Bearish"}
+                </span>
+              )}
+
+              {/* Market Badge */}
+              {post.market && (
+                <span 
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: "rgb(59, 130, 246)" }}
+                >
+                  {post.market}
+                </span>
+              )}
+
+              {/* Symbol Badge */}
+              {'ticker' in post && post.ticker && (
+                <span 
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: "rgb(16, 185, 129)" }}
+                >
+                  {post.ticker}
+                </span>
+              )}
+
+              {/* Category Badge with icon */}
+              {post.category && (() => {
+                const config = categoryConfig[post.category as keyof typeof categoryConfig];
+                if (!config) return null;
+                const Icon = config.icon;
+                return (
+                  <span 
+                    className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                    style={{ backgroundColor: config.color }}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {post.category}
+                  </span>
+                );
+              })()}
+
+              {/* Timeframe Badge */}
+              {post.timeframe && (
+                <span 
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: "rgb(6, 182, 212)" }}
+                >
+                  {post.timeframe}
+                </span>
+              )}
+
+              {/* Risk Badge */}
+              {post.risk && (
+                <span
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ 
+                    backgroundColor: post.risk === "low" 
+                      ? "rgb(34, 197, 94)" 
+                      : post.risk === "medium" 
+                      ? "rgb(234, 179, 8)" 
+                      : "rgb(239, 68, 68)" 
+                  }}
+                >
+                  Risk: {post.risk}
                 </span>
               )}
 
@@ -154,9 +278,6 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
                 </span>
               )}
 
-              {/* Category Badge for non-signal posts */}
-              {!isSignal && getCategoryBadge()}
-
               {/* Premium Badge */}
               {isLocked && (
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#2A1C3F] text-[#CDBAFF] border border-[#A06AFF]/50">
@@ -173,7 +294,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
               {!post.accessLevel || post.accessLevel === "public" ? (
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40">
                   <Sparkles className="h-3 w-3" />
-                  Free доступ
+                  FREE
                 </span>
               ) : null}
             </div>
@@ -183,31 +304,26 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         <PostMenu
           isOwnPost={isOwnPost}
           postId={post.id}
-          onDelete={() => {
-            console.log("Delete post:", post.id);
-            // TODO: Implement delete functionality
-          }}
+          onDelete={handleDelete}
           onCopyLink={() => {
-            console.log("Link copied!");
-            // Toast notification will be added
+            const postUrl = `${window.location.origin}/home/post/${post.id}`;
+            navigator.clipboard.writeText(postUrl);
+            console.log("Link copied to clipboard!");
+            // TODO: Add toast notification
           }}
-          onPin={() => {
-            console.log("Pin post:", post.id);
-            // TODO: Implement pin functionality
-          }}
+          onPin={handlePin}
           onReport={() => {
-            console.log("Report post:", post.id);
-            // TODO: Implement report functionality
+            const reason = prompt("Укажите причину жалобы:");
+            if (reason && reason.trim()) {
+              handleReport(reason.trim());
+            }
           }}
-          onBlockAuthor={() => {
-            console.log("Block author:", post.author.handle);
-            // TODO: Implement block functionality
-          }}
+          onBlockAuthor={handleBlockAuthor}
         />
       </header>
 
       {/* Content Section */}
-      <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px]">
+      <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px] min-w-0 overflow-x-hidden">
         <div>
           <p className="whitespace-pre-line text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white">
             {displayText}
@@ -234,6 +350,28 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             ))}
           </div>
         )}
+        {/* Code Blocks */}
+        {post.codeBlocks && post.codeBlocks.length > 0 && (() => {
+          console.log('[FeedPost] Rendering code blocks:', {
+            postId: post.id,
+            count: post.codeBlocks.length,
+            codeBlocks: post.codeBlocks,
+          });
+          return (
+            <div className="flex flex-col gap-3 mt-2">
+              {post.codeBlocks.map((cb, idx) => (
+              <div key={idx} className="rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full max-w-full min-w-0">
+                <div className="flex items-center justify-between border-b border-[#6B46C1]/20 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] px-4 py-2">
+                  <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
+                </div>
+                <pre className="p-4 text-sm leading-relaxed font-mono bg-[#05030A] w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] overflow-x-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
+                  <code className="block text-[#D4B5FD] whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>{cb.code}</code>
+                </pre>
+              </div>
+              ))}
+            </div>
+          );
+        })()}
       </section>
 
       {/* Signal-specific info */}
@@ -271,7 +409,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           <GatedContent
             accessLevel={post.accessLevel!}
             postId={post.id}
-            authorId={post.author.id || post.author.handle}
+            authorId={post.author.handle}
             postPrice={post.postPrice}
             subscriptionPrice={post.author.subscriptionPrice}
             authorName={post.author.name}
@@ -282,15 +420,43 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         </section>
       ) : (
         /* Media - Only show for unlocked posts */
-        post.mediaUrl && (
+        ((post.media && post.media.length > 0) || post.mediaUrl) && (
           <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
-            <div className="overflow-hidden rounded-2xl border border-[#181B22]">
-              <img
-                src={post.mediaUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            </div>
+            {post.media && post.media.length > 0 ? (
+              /* Multiple media from backend */
+              <div className="grid gap-2 grid-cols-1">
+                {post.media.slice(0, 4).map((mediaItem, index) => (
+                  <div key={mediaItem.id || index} className="overflow-hidden rounded-2xl border border-[#181B22]">
+                    {mediaItem.type === 'image' || mediaItem.type === 'gif' ? (
+                      <img
+                        src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
+                        alt={mediaItem.alt_text || ''}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          console.error('Image load error:', mediaItem.url);
+                          e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23181B22" width="400" height="300"/%3E%3Ctext fill="%236D6D6D" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
+                        }}
+                      />
+                    ) : mediaItem.type === 'video' ? (
+                      <video
+                        src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
+                        controls
+                        className="h-full w-full"
+                      />
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : post.mediaUrl ? (
+              /* Legacy single media URL */
+              <div className="overflow-hidden rounded-2xl border border-[#181B22]">
+                <img
+                  src={post.mediaUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : null}
           </section>
         )
       )}
@@ -331,17 +497,20 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           </button>
 
           <button
-            onClick={(e) => e.stopPropagation()}
-            className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors hover:text-[#F91880]"
+            onClick={handleLikeToggle}
+            className={cn(
+              "relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2 transition-colors",
+              isLiked ? "text-[#F91880]" : "hover:text-[#F91880]"
+            )}
           >
-            <svg className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" viewBox="0 0 24 24" fill="none">
+            <svg className="w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] md:w-5 md:h-5" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"}>
               <path
                 d="M16.498 5.54308C15.3303 5.48575 13.9382 6.03039 12.7811 7.60698L12.0119 8.64848L11.2417 7.60698C10.0837 6.03039 8.69053 5.48575 7.5229 5.54308C6.3352 5.60997 5.27841 6.28838 4.74237 7.3681C4.21493 8.43827 4.13753 10.0244 5.20006 11.9736C6.22627 13.856 8.31214 16.0537 12.0119 18.2895C15.7097 16.0537 17.7946 13.856 18.8208 11.9736C19.8824 10.0244 19.805 8.43827 19.2766 7.3681C18.7406 6.28838 17.6847 5.60997 16.498 5.54308ZM20.4987 12.8909C19.2078 15.2606 16.6757 17.7831 12.4925 20.2197L12.0119 20.5063L11.5303 20.2197C7.34613 17.7831 4.81403 15.2606 3.52123 12.8909C2.22174 10.5022 2.17397 8.24717 3.0301 6.5177C3.87764 4.80734 5.55933 3.73717 7.42639 3.64162C9.00393 3.55562 10.6445 4.1767 12.0109 5.56219C13.3763 4.1767 15.0169 3.55562 16.5935 3.64162C18.4606 3.73717 20.1423 4.80734 20.9898 6.5177C21.846 8.24717 21.7982 10.5022 20.4987 12.8909Z"
                 fill="currentColor"
               />
             </svg>
-            <span className="hidden md:inline">{formatNumber(post.likes)}</span>
-            <span className="md:hidden">{formatNumber(post.likes)}</span>
+            <span className="hidden md:inline">{formatNumber(likesCount)}</span>
+            <span className="md:hidden">{formatNumber(likesCount)}</span>
           </button>
 
           {typeof post.views === "number" && (
@@ -361,10 +530,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           )}
 
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsBookmarked(!isBookmarked);
-            }}
+            onClick={handleBookmarkToggle}
             className={cn(
               "relative z-10 flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#482090]/10",
               isBookmarked ? "text-[#A06AFF]" : "text-[#6D6D6D] hover:text-[#A06AFF]"

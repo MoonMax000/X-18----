@@ -1,0 +1,67 @@
+package middleware
+
+import (
+	"github.com/yourusername/x18-backend/internal/database"
+	"github.com/yourusername/x18-backend/internal/models"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
+
+// AdminOnly проверяет что пользователь является админом
+func AdminOnly(db *database.Database) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID := c.Locals("userID")
+		if userID == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		// Получаем пользователя из БД
+		var user models.User
+		if err := db.DB.Where("id = ?", userID.(uuid.UUID)).First(&user).Error; err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "User not found",
+			})
+		}
+
+		// Проверяем роль
+		if user.Role != "admin" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error": "Admin access required",
+			})
+		}
+
+		return c.Next()
+	}
+}
+
+// AdminOrModerator проверяет что пользователь является админом или модератором
+func AdminOrModerator(db *database.Database) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID := c.Locals("userID")
+		if userID == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		// Получаем пользователя из БД
+		var user models.User
+		if err := db.DB.Where("id = ?", userID.(uuid.UUID)).First(&user).Error; err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "User not found",
+			})
+		}
+
+		// Проверяем роль
+		if user.Role != "admin" && user.Role != "moderator" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error": "Admin or moderator access required",
+			})
+		}
+
+		return c.Next()
+	}
+}

@@ -1,6 +1,7 @@
-import { type FC, useMemo, useRef, useState } from "react";
+import { type FC, useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Heart, Repeat2 } from "lucide-react";
+import { MessageCircle, Heart, Repeat2, TrendingUp, TrendingDown, DollarSign, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import VerifiedBadge from "./VerifiedBadge";
 import CommentCard from "./CommentCard";
@@ -9,65 +10,249 @@ import { getCommentsByPostId, type SocialComment } from "@/data/socialComments";
 import type { SocialPost } from "@/data/socialPosts";
 import type { Post } from "@/features/feed/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { customBackendAPI, type ReplyPost } from "@/services/api/custom-backend";
+import { getAvatarUrl } from "@/lib/avatar-utils";
+import { formatTimeAgo } from "@/lib/time-utils";
+import PostMenu from "@/features/feed/components/posts/PostMenu";
+import { usePostMenu } from "@/hooks/usePostMenu";
 
 interface UnifiedPostDetailProps {
   post: SocialPost | Post;
 }
 
-interface ExtendedComment extends SocialComment {
-  text?: string;
-  replyCount?: number;
-  replies?: ExtendedComment[];
+interface ExtendedComment {
+  id: string;
+  postId: string;
+  author: {
+    name: string;
+    handle: string;
+    avatar: string;
+    verified: boolean;
+  };
+  timestamp: string;
+  text: string;
+  content: string;
+  likes: number;
+  replyCount: number;
+  replies: ExtendedComment[];
 }
 
 const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const comments = useMemo(() => getCommentsByPostId(post.id), [post.id]);
-  const hashtags = 'hashtags' in post ? (post.hashtags ?? []) : (post.tags ?? []);
-  const postBody = 'body' in post ? post.body : post.text;
-  const postTitle = 'title' in post ? post.title : post.text.split('\n')[0];
+  const hashtags = 'hashtags' in post ? (post.hashtags ?? []) : ('tags' in post ? (post.tags ?? []) : []);
+  const postBody = 'body' in post ? post.body : ('text' in post ? post.text : '');
+  const postTitle = 'title' in post ? post.title : ('text' in post ? post.text.split('\n')[0] : '');
+
+  // Check if this is the current user's post
+  const currentUserHandle = user ? `@${user.username}` : null;
+  const isOwnPost = currentUserHandle && post.author.handle 
+    ? post.author.handle.toLowerCase() === currentUserHandle.toLowerCase()
+    : false;
+
+  // PostMenu integration
+  const { handleDelete, handlePin, handleReport, handleBlockAuthor } = usePostMenu({
+    postId: post.id,
+    authorId: post.author.handle || post.author.name,
+    onSuccess: (action) => {
+      console.log(`PostMenu action ${action} completed successfully`);
+      // TODO: Add toast notification
+      if (action === 'delete') {
+        // Navigate back after delete
+        navigate(-1);
+      }
+    },
+    onError: (error) => {
+      console.error('PostMenu action failed:', error);
+      // TODO: Add error toast
+    },
+  });
 
   const [commentText, setCommentText] = useState("");
   const [localComments, setLocalComments] = useState<ExtendedComment[]>(
-    comments.map(c => ({ ...c, text: c.content, replyCount: c.replies || 0, replies: [] }))
+    comments.map(c => ({ 
+      ...c, 
+      text: c.content, 
+      replyCount: c.replies || 0, 
+      replies: [],
+      author: {
+        name: c.author.name,
+        handle: c.author.handle || `@${c.author.name.toLowerCase()}`,
+        avatar: c.author.avatar,
+        verified: c.author.verified ?? false,
+      }
+    }))
   );
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const MAX_COMMENT_LENGTH = 500;
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState('isLiked' in post ? post.isLiked : false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likes, setLikes] = useState(post.likes);
 
-  const handleSubmitComment = () => {
+  // Build comment hierarchy from flat list
+  const buildCommentHierarchy = (flatComments: ExtendedComment[], postId: string): ExtendedComment[] => {
+    const commentMap = new Map<string, ExtendedComment>();
+    const rootComments: ExtendedComment[] = [];
+
+    // Create map of all comments
+    flatComments.forEach(comment => {
+      commentMap.set(comment.id, { ...comment, replies: [] });
+    });
+
+    // Build hierarchy
+    flatComments.forEach(comment => {
+      const commentWithReplies = commentMap.get(comment.id)!;
+      
+      // Find what this comment is replying to
+      const replyToPost = flatComments.find(c => c.id === comment.id);
+      const parentId = replyToPost?.postId;
+
+      if (parentId && parentId !== postId) {
+        // This is a reply to another comment
+        const parent = commentMap.get(parentId);
+        if (parent) {
+          parent.replies = parent.replies || [];
+          parent.replies.push(commentWithReplies);
+        } else {
+          // Parent not found, treat as root
+          rootComments.push(commentWithReplies);
+        }
+      } else {
+        // This is a direct reply to the post
+        rootComments.push(commentWithReplies);
+      }
+    });
+
+    return rootComments;
+  };
+
+  // Load real comments from API on mount
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setIsLoadingComments(true);
+        const replies = await customBackendAPI.getPostReplies(post.id);
+        const flatComments: ExtendedComment[] = replies.map(reply => ({
+          id: reply.id,
+          postId: reply.reply_to_id || post.id,
+          author: {
+            name: reply.user?.display_name || reply.user?.username || 'Unknown',
+            handle: `@${reply.user?.username || 'unknown'}`,
+            avatar: getAvatarUrl(reply.user),
+            verified: reply.user?.verified || false,
+          },
+          timestamp: reply.created_at,
+          text: reply.content,
+          content: reply.content,
+          likes: reply.likes_count || 0,
+          replyCount: reply.replies_count || 0,
+          replies: [],
+        }));
+        
+        // Build hierarchy: comments that reply directly to post are roots,
+        // comments that reply to other comments are nested
+        const rootComments = flatComments.filter(c => c.postId === post.id);
+        const nestedComments = flatComments.filter(c => c.postId !== post.id);
+        
+        // Build tree
+        const buildTree = (comments: ExtendedComment[]): ExtendedComment[] => {
+          return comments.map(comment => {
+            const children = nestedComments.filter(c => c.postId === comment.id);
+            return {
+              ...comment,
+              replies: children.length > 0 ? buildTree(children) : []
+            };
+          });
+        };
+        
+        setLocalComments(buildTree(rootComments));
+      } catch (error) {
+        console.error('Failed to load comments:', error);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    };
+
+    loadComments();
+  }, [post.id]);
+
+  const handleSubmitComment = async () => {
     if (!commentText.trim()) return;
     
-    const newComment: ExtendedComment = {
-      id: `comment-${Date.now()}`,
-      postId: post.id,
-      author: {
-        name: "You",
-        handle: "@you",
-        avatar: "https://i.pravatar.cc/120?img=1",
-        verified: false,
-      },
-      timestamp: "Just now",
-      text: commentText,
-      content: commentText,
-      likes: 0,
-      replyCount: 0,
-      replies: [],
-    };
-    
-    setLocalComments([newComment, ...localComments]);
-    setCommentText("");
+    try {
+      // Create comment via API
+      await customBackendAPI.createPost({
+        content: commentText.trim(),
+        reply_to_id: post.id,
+      });
 
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      // Reload comments from server and rebuild hierarchy
+      const replies = await customBackendAPI.getPostReplies(post.id);
+      const flatComments: ExtendedComment[] = replies.map(reply => ({
+        id: reply.id,
+        postId: reply.reply_to_id || post.id,
+        author: {
+          name: reply.user?.display_name || reply.user?.username || 'Unknown',
+          handle: `@${reply.user?.username || 'unknown'}`,
+          avatar: getAvatarUrl(reply.user),
+          verified: reply.user?.verified || false,
+        },
+        timestamp: reply.created_at,
+        text: reply.content,
+        content: reply.content,
+        likes: reply.likes_count || 0,
+        replyCount: reply.replies_count || 0,
+        replies: [],
+      }));
+      
+      // Build hierarchy
+      const rootComments = flatComments.filter(c => c.postId === post.id);
+      const nestedComments = flatComments.filter(c => c.postId !== post.id);
+      
+      const buildTree = (comments: ExtendedComment[]): ExtendedComment[] => {
+        return comments.map(comment => {
+          const children = nestedComments.filter(c => c.postId === comment.id);
+          return {
+            ...comment,
+            replies: children.length > 0 ? buildTree(children) : []
+          };
+        });
+      };
+      
+      setLocalComments(buildTree(rootComments));
+      
+      setCommentText("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+    } catch (error) {
+      console.error('Failed to post comment:', error);
     }
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
+    const previousState = isLiked;
+    const previousCount = likes;
+    
+    // Optimistic update
     setIsLiked(!isLiked);
     setLikes(isLiked ? likes - 1 : likes + 1);
+    
+    try {
+      if (isLiked) {
+        await customBackendAPI.unlikePost(post.id);
+      } else {
+        await customBackendAPI.likePost(post.id);
+      }
+    } catch (error) {
+      // Revert on error
+      setIsLiked(previousState);
+      setLikes(previousCount);
+      console.error('Failed to toggle like:', error);
+    }
   };
 
   const handleProfileClick = () => {
@@ -82,21 +267,22 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           <AvatarWithHoverCard
             author={{
               ...post.author,
+              handle: post.author.handle || `@${post.author.name.toLowerCase()}`,
               followers: post.author.followers ?? 0,
               following: post.author.following ?? 0,
             }}
-            isFollowing={post.isFollowing}
+            isFollowing={'isFollowing' in post ? post.isFollowing : false}
           >
             <div className="cursor-pointer" onClick={handleProfileClick}>
               <Avatar className="h-12 w-12 flex-shrink-0">
-                <AvatarImage src={post.author.avatar} alt={post.author.name} />
+                <AvatarImage src={getAvatarUrl(post.author)} alt={post.author.name} />
                 <AvatarFallback className="text-sm font-semibold text-white">
                   {post.author.name.split(" ").map((n) => n[0]).join("")}
                 </AvatarFallback>
               </Avatar>
             </div>
           </AvatarWithHoverCard>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-lg font-semibold">
               <span 
                 className="hover:underline hover:underline-offset-2 cursor-pointer"
@@ -109,48 +295,100 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
             {post.author.handle ? (
               <div className="text-sm text-[#8B98A5]">{post.author.handle}</div>
             ) : null}
+
+            {/* Metadata Badges */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+              {/* Sentiment Badge */}
+              {'sentiment' in post && post.sentiment && (
+                <span
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: post.sentiment === "bullish" ? "rgb(16, 185, 129)" : "rgb(244, 63, 94)" }}
+                >
+                  {post.sentiment === "bullish" ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                  {post.sentiment === "bullish" ? "Bullish" : "Bearish"}
+                </span>
+              )}
+
+              {/* Market Badge */}
+              {'market' in post && post.market && (
+                <span 
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: "rgb(59, 130, 246)" }}
+                >
+                  {post.market}
+                </span>
+              )}
+
+              {/* Category Badge */}
+              {'category' in post && post.category && (
+                <span 
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: "rgb(168, 85, 247)" }}
+                >
+                  {post.category}
+                </span>
+              )}
+
+              {/* Timeframe Badge */}
+              {'timeframe' in post && post.timeframe && (
+                <span 
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ backgroundColor: "rgb(6, 182, 212)" }}
+                >
+                  {post.timeframe}
+                </span>
+              )}
+
+              {/* Risk Badge */}
+              {'risk' in post && post.risk && (
+                <span
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  style={{ 
+                    backgroundColor: post.risk === "low" 
+                      ? "rgb(34, 197, 94)" 
+                      : post.risk === "medium" 
+                      ? "rgb(234, 179, 8)" 
+                      : "rgb(239, 68, 68)" 
+                  }}
+                >
+                  Risk: {post.risk}
+                </span>
+              )}
+
+              {/* Access Level Badges */}
+              {'accessLevel' in post && post.accessLevel && post.accessLevel !== "public" ? (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#1F1630] text-[#CDBAFF] border border-[#6F4BD3]/40">
+                  <DollarSign className="h-3 w-3" />
+                  Premium
+                </span>
+              ) : (!('accessLevel' in post) || !post.accessLevel || post.accessLevel === "public") ? (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40">
+                  <Sparkles className="h-3 w-3" />
+                  FREE
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-[#8B98A5]">
-          <button
-            type="button"
-            className="rounded-full p-2 transition hover:bg-white/5"
-            aria-label="More options"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 10.8333C10.4602 10.8333 10.8333 10.4602 10.8333 10C10.8333 9.53977 10.4602 9.16667 10 9.16667C9.53976 9.16667 9.16667 9.53977 9.16667 10C9.16667 10.4602 9.53976 10.8333 10 10.8333Z"
-                fill="currentColor"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M15.8333 10.8333C16.2936 10.8333 16.6667 10.4602 16.6667 10C16.6667 9.53977 16.2936 9.16667 15.8333 9.16667C15.3731 9.16667 15 9.53977 15 10C15 10.4602 15.3731 10.8333 15.8333 10.8333Z"
-                fill="currentColor"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4.16667 10.8333C4.6269 10.8333 5 10.4602 5 10C5 9.53977 4.6269 9.16667 4.16667 9.16667C3.70643 9.16667 3.33333 9.53977 3.33333 10C3.33333 10.4602 3.70643 10.8333 4.16667 10.8333Z"
-                fill="currentColor"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
+        <PostMenu
+          isOwnPost={isOwnPost}
+          postId={post.id}
+          onDelete={handleDelete}
+          onCopyLink={() => {
+            const postUrl = `${window.location.origin}/home/post/${post.id}`;
+            navigator.clipboard.writeText(postUrl);
+            console.log("Link copied to clipboard!");
+            // TODO: Add toast notification
+          }}
+          onPin={handlePin}
+          onReport={() => {
+            const reason = prompt("Укажите причину жалобы:");
+            if (reason && reason.trim()) {
+              handleReport(reason.trim());
+            }
+          }}
+          onBlockAuthor={handleBlockAuthor}
+        />
       </header>
 
       <div className="space-y-4">
@@ -169,9 +407,50 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
             ))}
           </div>
         ) : null}
+        {/* Code Blocks */}
+        {'codeBlocks' in post && post.codeBlocks && post.codeBlocks.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {post.codeBlocks.map((cb: any, idx: number) => (
+              <div key={idx} className="rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full max-w-full">
+                <div className="flex items-center justify-between border-b border-[#6B46C1]/20 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] px-4 py-2">
+                  <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
+                </div>
+                <pre className="p-4 text-sm leading-relaxed font-mono bg-[#05030A] w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] overflow-x-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
+                  <code className="block text-[#D4B5FD] whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>{cb.code}</code>
+                </pre>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {post.mediaUrl ? (
+      {/* Media from array (new format) */}
+      {'media' in post && post.media && post.media.length > 0 ? (
+        <div className="grid gap-2 grid-cols-1">
+          {post.media.slice(0, 4).map((mediaItem: any, index: number) => (
+            <div key={mediaItem.id || index} className="overflow-hidden rounded-2xl border border-[#181B22]">
+              {mediaItem.type === 'image' || mediaItem.type === 'gif' ? (
+                <img
+                  src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
+                  alt={mediaItem.alt_text || ''}
+                  className="w-full object-cover"
+                  onError={(e) => {
+                    console.error('Image load error:', mediaItem.url);
+                    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23181B22" width="400" height="300"/%3E%3Ctext fill="%236D6D6D" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
+                  }}
+                />
+              ) : mediaItem.type === 'video' ? (
+                <video
+                  src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
+                  controls
+                  className="w-full"
+                />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : post.mediaUrl ? (
+        /* Legacy single media URL */
         <div className="overflow-hidden rounded-2xl border border-widget-border">
           <img
             src={post.mediaUrl}
@@ -192,7 +471,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-[#8B98A5] border-b border-widget-border pb-4">
-        <div>{post.timestamp}</div>
+        <div>{formatTimeAgo(post.timestamp)}</div>
       </div>
 
       <div className="flex items-center justify-around border-b border-widget-border pb-4">
@@ -268,54 +547,61 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-widget-border bg-[#0A0A0A] p-3 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.25)]">
-        <div className="flex gap-3">
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src="https://i.pravatar.cc/120?img=1" alt="You" />
-            <AvatarFallback className="text-sm font-semibold text-white">Y</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <textarea
-              ref={textareaRef}
-              value={commentText}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                if (newValue.length <= MAX_COMMENT_LENGTH) {
-                  setCommentText(newValue);
-                  if (textareaRef.current) {
-                    textareaRef.current.style.height = 'auto';
-                    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      {user && (
+        <div className="rounded-2xl border border-widget-border bg-[#0A0A0A] p-3 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.25)]">
+          <div className="flex gap-3">
+            <Avatar className="h-10 w-10 flex-shrink-0">
+              <AvatarImage 
+                src={getAvatarUrl(user)} 
+                alt={user?.display_name || user?.username || "You"} 
+              />
+              <AvatarFallback className="text-sm font-semibold text-white">
+                {user?.display_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'Y'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <textarea
+                ref={textareaRef}
+                value={commentText}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  if (newValue.length <= MAX_COMMENT_LENGTH) {
+                    setCommentText(newValue);
+                    if (textareaRef.current) {
+                      textareaRef.current.style.height = 'auto';
+                      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+                    }
                   }
-                }
-              }}
-              placeholder="Post your reply..."
-              className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[32px] max-h-[200px] overflow-y-auto"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                  handleSubmitComment();
-                }
-              }}
-            />
-            <div className="mt-2 flex items-center justify-between">
-              <span className={`text-xs transition-colors ${
-                commentText.length > MAX_COMMENT_LENGTH * 0.9
-                  ? 'text-[#F91880]'
-                  : 'text-[#6C7080]'
-              }`}>
-                {commentText.length}/{MAX_COMMENT_LENGTH}
-              </span>
-              <button
-                type="button"
-                onClick={handleSubmitComment}
-                disabled={!commentText.trim()}
-                className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Reply
-              </button>
+                }}
+                placeholder="Post your reply..."
+                className="w-full resize-none bg-transparent text-sm text-white placeholder:text-[#8B98A5] focus:outline-none min-h-[32px] max-h-[200px] overflow-y-auto"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    handleSubmitComment();
+                  }
+                }}
+              />
+              <div className="mt-2 flex items-center justify-between">
+                <span className={`text-xs transition-colors ${
+                  commentText.length > MAX_COMMENT_LENGTH * 0.9
+                    ? 'text-[#F91880]'
+                    : 'text-[#6C7080]'
+                }`}>
+                  {commentText.length}/{MAX_COMMENT_LENGTH}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSubmitComment}
+                  disabled={!commentText.trim()}
+                  className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Reply
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {localComments.length > 0 ? (
         <section className="flex flex-col border-t border-widget-border pt-4">
@@ -329,48 +615,53 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
                 comment={comment}
                 depth={0}
                 isFirst={index === 0}
-                onReply={(commentId, text) => {
+                onReply={async (commentId, text) => {
                   if (!text.trim()) return;
 
-                  const newReply: ExtendedComment = {
-                    id: `reply-${Date.now()}`,
-                    postId: post.id,
-                    author: {
-                      name: "You",
-                      handle: "@you",
-                      avatar: "https://i.pravatar.cc/120?img=1",
-                      verified: false,
-                    },
-                    timestamp: "now",
-                    text: text.trim(),
-                    content: text.trim(),
-                    likes: 0,
-                    replyCount: 0,
-                    replies: [],
-                  };
-
-                  const addReplyToComment = (comments: ExtendedComment[]): ExtendedComment[] => {
-                    return comments.map((c) => {
-                      if (c.id === commentId) {
-                        return {
-                          ...c,
-                          replies: [...(c.replies || []), newReply],
-                          replyCount: (c.replyCount || 0) + 1,
-                        };
-                      }
-
-                      if (c.replies && c.replies.length > 0) {
-                        const updatedReplies = addReplyToComment(c.replies);
-                        if (updatedReplies !== c.replies) {
-                          return { ...c, replies: updatedReplies };
-                        }
-                      }
-
-                      return c;
+                  try {
+                    // Создаем reply на комментарий (вложенный ответ)
+                    await customBackendAPI.createPost({
+                      content: text.trim(),
+                      reply_to_id: commentId, // Отвечаем на комментарий, а не на пост
                     });
-                  };
 
-                  setLocalComments((prevComments) => addReplyToComment(prevComments));
+                    // Перезагружаем все комментарии с бэкенда и перестраиваем иерархию
+                    const replies = await customBackendAPI.getPostReplies(post.id);
+                    const reloadedComments: ExtendedComment[] = replies.map(reply => ({
+                      id: reply.id,
+                      postId: reply.reply_to_id || post.id,
+                      author: {
+                        name: reply.user?.display_name || reply.user?.username || 'Unknown',
+                        handle: `@${reply.user?.username || 'unknown'}`,
+                        avatar: getAvatarUrl(reply.user),
+                        verified: reply.user?.verified || false,
+                      },
+                      timestamp: reply.created_at,
+                      text: reply.content,
+                      content: reply.content,
+                      likes: reply.likes_count || 0,
+                      replyCount: reply.replies_count || 0,
+                      replies: [],
+                    }));
+                    
+                    // Build hierarchy
+                    const rootComments = reloadedComments.filter(c => c.postId === post.id);
+                    const nestedComments = reloadedComments.filter(c => c.postId !== post.id);
+                    
+                    const buildTree = (comments: ExtendedComment[]): ExtendedComment[] => {
+                      return comments.map(comment => {
+                        const children = nestedComments.filter(c => c.postId === comment.id);
+                        return {
+                          ...comment,
+                          replies: children.length > 0 ? buildTree(children) : []
+                        };
+                      });
+                    };
+                    
+                    setLocalComments(buildTree(rootComments));
+                  } catch (error) {
+                    console.error('Failed to post reply:', error);
+                  }
                 }}
               />
             ))}

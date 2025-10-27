@@ -42,8 +42,15 @@ export const CodeBlockModal: FC<CodeBlockModalProps> = ({ isOpen, onClose, onIns
 
   const handleInsert = () => {
     if (code.trim()) {
+      console.log('[CodeBlockModal] Inserting code block:', {
+        language,
+        codeLength: code.length,
+        code: code.substring(0, 100) + (code.length > 100 ? '...' : ''),
+      });
       onInsert(code, language);
       onClose();
+    } else {
+      console.log('[CodeBlockModal] Cannot insert - code is empty');
     }
   };
 

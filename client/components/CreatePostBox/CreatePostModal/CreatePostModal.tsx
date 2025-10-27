@@ -10,6 +10,10 @@ import { EmojiPicker } from '../EmojiPicker';
 import { useSimpleComposer } from '../useSimpleComposer';
 import { MediaItem } from '../types';
 import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from '@/features/feed/components/composers/shared';
+import { useAuth } from '@/contexts/AuthContext';
+import { getAvatarUrl } from '@/lib/avatar-utils';
+import { customBackendAPI } from '@/services/api/custom-backend';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -24,6 +28,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   initialText,
   initialSentiment,
 }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const {
     text,
     media,
@@ -95,14 +101,15 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      initialize(initialText, [], [], undefined, initialSentiment || undefined);
+      // DON'T call initialize here - it resets state and causes codeBlocks to be lost
+      // State is managed through explicit reset in handleClose and handlePost
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen, initialize, initialText, initialSentiment]);
+  }, [isOpen]);
 
   const handleClose = useCallback(() => {
     // Warning if there's unsaved content
@@ -112,58 +119,103 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       );
       if (!confirmed) return;
     }
+    // Reset state when closing
+    initialize('', [], [], undefined, undefined);
     onClose();
-  }, [text, media, codeBlocks, onClose]);
+  }, [text, media, codeBlocks, onClose, initialize]);
 
   const handlePost = useCallback(async () => {
     if (!canPost || isPosting) return;
 
+    // CRITICAL DEBUG: Log codeBlocks state at the start
+    console.log('[CreatePostModal - handlePost START] codeBlocks state:', {
+      codeBlocks,
+      length: codeBlocks.length,
+      isEmpty: codeBlocks.length === 0,
+      items: codeBlocks.map(cb => ({ id: cb.id, language: cb.language, codeLength: cb.code.length })),
+    });
+
     setIsPosting(true);
 
     try {
-      // Build post payload with correct accessLevel mapping
-      const accessLevelMap: Record<typeof accessType, string> = {
-        "free": "public",
-        "pay-per-post": "paid",
-        "subscribers-only": "subscribers",
-        "followers-only": "followers",
-        "premium": "premium",
+      const mediaIds: string[] = [];
+      
+      // Upload media files first
+      for (const mediaItem of media) {
+        if (mediaItem.file) {
+          const uploaded = await customBackendAPI.uploadMedia(mediaItem.file);
+          mediaIds.push(uploaded.id);
+        }
+      }
+
+      const visibilityMap: Record<typeof replySetting, 'public' | 'followers' | 'private'> = {
+        everyone: 'public',
+        following: 'followers',
+        verified: 'public',
+        mentioned: 'private',
       };
 
-      const payload = {
-        text,
-        media: media.map((m) => ({
-          id: m.id,
-          transform: m.transform,
-          alt: m.alt,
-          sensitiveTags: m.sensitiveTags,
-        })),
-        codeBlocks,
-        replySetting,
-        sentiment,
-        metadata: {
-          market: postMarket,
-          category: postCategory,
-          symbol: postSymbol,
-          timeframe: postTimeframe,
-          risk: postRisk,
-        },
-        accessLevel: accessLevelMap[accessType],
-        accessType, // Keep original value
-        ...(accessType === "pay-per-post" && { price: postPrice }),
+      // Build metadata object for custom backend
+      const metadata: Record<string, any> = {};
+      if (postCategory) metadata.category = postCategory;
+      if (postMarket) metadata.market = postMarket;
+      if (postSymbol) metadata.ticker = postSymbol;
+      if (sentiment) metadata.sentiment = sentiment;
+      if (postTimeframe) metadata.timeframe = postTimeframe;
+      if (postRisk) metadata.risk = postRisk;
+      if (accessType) metadata.access_level = accessType;
+      if (accessType === 'pay-per-post' && postPrice) metadata.price = postPrice.toString();
+      
+      // Add code blocks to metadata
+      if (codeBlocks.length > 0) {
+        metadata.code_blocks = codeBlocks.map(cb => ({
+          language: cb.language,
+          code: cb.code
+        }));
+        console.log('[CreatePostModal] Added code blocks to metadata:', {
+          count: codeBlocks.length,
+          codeBlocks: metadata.code_blocks,
+        });
+      }
+
+      // Log the complete request payload
+      const postPayload = {
+        content: text,
+        media_ids: mediaIds.length > 0 ? mediaIds : undefined,
+        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+        visibility: visibilityMap[replySetting],
       };
+      
+      console.log('[CreatePostModal] Creating post with payload:', postPayload);
 
-      console.log('Posting from CreatePostModal:', payload);
+      // Create post using custom backend API
+      const createdPost = await customBackendAPI.createPost(postPayload);
+      
+      console.log('[CreatePostModal] Post created successfully:', {
+        postId: createdPost.id,
+        hasMetadata: !!createdPost.metadata,
+        metadata: createdPost.metadata,
+      });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast({ 
+        title: "Пост создан!", 
+        description: "Ваш пост успешно опубликован." 
+      });
 
+      // Reset state after successful post
+      initialize('', [], [], undefined, undefined);
       onClose();
     } catch (error) {
-      console.error('Post failed:', error);
+      console.error('Failed to create post:', error);
+      toast({
+        title: "Ошибка публикации",
+        description: error instanceof Error ? error.message : "Не удалось опубликовать пост. Попробуйте еще раз.",
+        variant: "destructive",
+      });
     } finally {
       setIsPosting(false);
     }
-  }, [text, media, codeBlocks, replySetting, sentiment, postMarket, postCategory, postSymbol, postTimeframe, postRisk, accessType, postPrice, canPost, isPosting, onClose]);
+  }, [text, media, codeBlocks, replySetting, sentiment, postMarket, postCategory, postSymbol, postTimeframe, postRisk, accessType, postPrice, canPost, isPosting, onClose, toast]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -222,11 +274,11 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar">
           <div className="flex gap-3">
             <Avatar className="h-12 w-12 shrink-0">
-              <AvatarImage src="https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87" />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarImage src={getAvatarUrl(user)} />
+              <AvatarFallback>{user?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
 
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 overflow-x-hidden">
               <Textarea
                 placeholder="What's happening in the markets?"
                 value={text}
@@ -248,9 +300,9 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               )}
 
               {codeBlocks.length > 0 && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-2 max-w-full overflow-hidden">
                   {codeBlocks.map((cb) => (
-                    <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg">
+                    <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg w-full min-w-0">
                       <div className="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] border-b border-[#6B46C1]/20">
                         <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
                         <button
@@ -261,8 +313,8 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                           <X className="h-4 w-4" />
                         </button>
                       </div>
-                      <pre className="px-4 py-3 text-xs text-[#D4B5FD] overflow-x-auto max-h-40 font-mono bg-[#05030A]">
-                        <code>{cb.code}</code>
+                      <pre className="px-4 py-3 text-xs text-[#D4B5FD] max-h-40 font-mono bg-[#05030A] w-full max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] overflow-x-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
+                        <code className="block whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>{cb.code}</code>
                       </pre>
                     </div>
                   ))}
@@ -376,16 +428,18 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       <input ref={documentInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
       <input ref={videoInputRef} type="file" accept=".mp4,.webm,.mov,.avi,video/*" className="hidden" onChange={e => { addMedia(e.target.files); e.currentTarget.value = ""; }} />
 
-      <AccessTypeModal
-        isOpen={isAccessModalOpen}
-        onClose={() => setIsAccessModalOpen(false)}
-        currentAccessType={accessType}
-        currentPrice={postPrice}
-        onSave={(newAccessType, newPrice) => {
-          setAccessType(newAccessType);
-          setPostPrice(newPrice);
-        }}
-      />
+        <AccessTypeModal
+          isOpen={isAccessModalOpen}
+          onClose={() => setIsAccessModalOpen(false)}
+          currentAccessType={accessType}
+          currentPrice={postPrice}
+          currentReplyPolicy={replySetting}
+          onSave={(newAccessType, newPrice, newReplyPolicy) => {
+            setAccessType(newAccessType);
+            setPostPrice(newPrice);
+            setReplySetting(newReplyPolicy);
+          }}
+        />
     </div>,
     document.body
   );

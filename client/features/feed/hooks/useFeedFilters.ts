@@ -37,14 +37,14 @@ export function useFeedFilters(initialTab: FeedTab = "all") {
   const applyToPosts = useCallback((posts: Post[], followingHandles?: Set<string>) => {
     let res = [...posts];
 
-    // Filter by tab (direct mapping to post types)
-    if (activeTab === "signal") res = res.filter(p => p.type === "signal");
-    if (activeTab === "news") res = res.filter(p => p.type === "news");
-    if (activeTab === "education") res = res.filter(p => p.type === "education");
-    if (activeTab === "analysis") res = res.filter(p => p.type === "analysis" || p.type === "onchain");
-    if (activeTab === "macro") res = res.filter(p => p.type === "macro");
-    if (activeTab === "code") res = res.filter(p => p.type === "code");
-    if (activeTab === "video") res = res.filter(p => p.type === "video");
+    // Filter by tab (using category field instead of type)
+    if (activeTab === "signal") res = res.filter(p => p.category?.toLowerCase() === "signal");
+    if (activeTab === "news") res = res.filter(p => p.category?.toLowerCase() === "news");
+    if (activeTab === "education") res = res.filter(p => p.category?.toLowerCase() === "education");
+    if (activeTab === "analysis") res = res.filter(p => p.category?.toLowerCase() === "analysis");
+    if (activeTab === "macro") res = res.filter(p => p.category?.toLowerCase() === "macro");
+    if (activeTab === "code") res = res.filter(p => p.category?.toLowerCase() === "code");
+    if (activeTab === "video") res = res.filter(p => p.category?.toLowerCase() === "video");
     if (activeTab === "liked") res = res.filter(p => (p as any).__liked);
 
     if (filters.market && filters.market !== "All") {

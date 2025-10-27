@@ -1,28 +1,102 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProfilePageLayout from "@/components/socialProfile/ProfilePageLayout";
-import { useGTSProfile } from "@/hooks/useGTSProfile";
-import { getCurrentAccount } from "@/services/api/gotosocial";
-import type { GTSAccount } from "@/services/api/gotosocial";
+import { useAuth } from "@/contexts/AuthContext";
+import { customBackendAPI } from "@/services/api/custom-backend";
+import type { Post as CustomPost, User as CustomUser } from "@/services/api/custom-backend";
+import { getAvatarUrl, getCoverUrl } from "@/lib/avatar-utils";
+import { formatTimeAgo } from "@/lib/time-utils";
+
+// Convert Custom Backend user to GTS-compatible format
+// Using centralized avatar utilities for consistency
+function customUserToGTS(user: CustomUser): any {
+  return {
+    id: user.id,
+    username: user.username,
+    acct: user.username,
+    display_name: user.display_name || user.username,
+    note: user.bio || '',
+    avatar: getAvatarUrl(user),
+    avatar_static: getAvatarUrl(user),
+    header: getCoverUrl(user.header_url),
+    header_static: getCoverUrl(user.header_url),
+    locked: user.private_account,
+    bot: false,
+    discoverable: true,
+    followers_count: user.followers_count,
+    following_count: user.following_count,
+    statuses_count: user.posts_count,
+    created_at: user.created_at,
+    fields: [], // Empty array for custom profile fields
+    emojis: [], // Empty array for custom emojis
+    url: `/${user.username}`,
+  };
+}
+
+// Convert Custom Backend post to GTS-compatible format
+function customPostToGTS(post: CustomPost, currentUserId?: string): any {
+  const isCurrentUser = currentUserId && post.user?.id 
+    ? String(post.user.id) === String(currentUserId)
+    : false;
+    
+  return {
+    id: post.id,
+    created_at: formatTimeAgo(post.created_at),
+    content: post.content,
+    visibility: post.visibility,
+    sensitive: false,
+    spoiler_text: '',
+    media_attachments: (post.media_urls || []).map((url, i) => ({
+      id: `media-${i}`,
+      type: 'image',
+      url: url,
+      preview_url: url,
+    })),
+    account: post.user ? {
+      ...customUserToGTS(post.user),
+      isCurrentUser: isCurrentUser,
+    } : undefined,
+    reblogs_count: post.retweets_count,
+    favourites_count: post.likes_count,
+    replies_count: post.replies_count,
+    favourited: post.is_liked || false,
+    reblogged: post.is_retweeted || false,
+    bookmarked: post.is_bookmarked || false,
+  };
+}
 
 export default function ProfilePage() {
-  const [currentUser, setCurrentUser] = useState<GTSAccount | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get current user first
+  // Redirect to home if not authenticated
   useEffect(() => {
-    getCurrentAccount()
-      .then(setCurrentUser)
-      .catch(err => console.error('Failed to get current user:', err))
-      .finally(() => setIsLoadingUser(false));
-  }, []);
+    if (!authLoading && !isAuthenticated) {
+      navigate('/');
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
-  // Load own profile data
-  const { profile, statuses, isLoading, error } = useGTSProfile({
-    userId: currentUser?.id,
-    fetchStatuses: true,
-  });
+  // Load user posts
+  useEffect(() => {
+    if (user) {
+      setIsLoadingPosts(true);
+      customBackendAPI.getUserPosts(user.id, { limit: 20 })
+        .then(customPosts => {
+          const gtsPosts = customPosts.map(post => customPostToGTS(post, String(user.id)));
+          setPosts(gtsPosts);
+        })
+        .catch(err => {
+          console.error('Failed to load posts:', err);
+          setError('Failed to load posts');
+        })
+        .finally(() => setIsLoadingPosts(false));
+    }
+  }, [user]);
 
-  if (isLoadingUser || isLoading) {
+  if (authLoading || isLoadingPosts) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -33,7 +107,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (error || !profile) {
+  if (error || !user) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center max-w-md">
@@ -44,12 +118,20 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="text-lg font-semibold">Failed to load profile</h3>
-            <p className="text-sm text-muted-foreground mt-2">{error || 'Profile not found'}</p>
+            <p className="text-sm text-muted-foreground mt-2">{error || 'Please sign in to view your profile'}</p>
           </div>
+          <button
+            onClick={() => navigate('/')}
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Go Home
+          </button>
         </div>
       </div>
     );
   }
 
-  return <ProfilePageLayout isOwnProfile={true} profile={profile} posts={statuses} />;
+  const gtsProfile = customUserToGTS(user);
+  
+  return <ProfilePageLayout isOwnProfile={true} profile={gtsProfile} posts={posts} />;
 }
