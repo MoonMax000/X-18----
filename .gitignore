@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.exe
+*.out
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Process IDs
+*.pid
+.*.pid
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Media uploads
+custom-backend/storage/media/*.jpeg
+custom-backend/storage/media/*.jpg
+custom-backend/storage/media/*.png
+custom-backend/storage/media/*.gif
+custom-backend/storage/media/*.webp
+
+# GoToSocial storage
+gotosocial/storage/
+
+# Test files
+*.test
+
+# Temporary files
+tmp/
+temp/
+*.tmp
