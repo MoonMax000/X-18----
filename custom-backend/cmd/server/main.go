@@ -59,8 +59,16 @@ func main() {
 	app.Use(logger.New(logger.Config{
 		Format: "[${time}] ${status} - ${method} ${path} (${latency})\n",
 	}))
+
+	// Get CORS origin from environment or use localhost for development
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000"
+	}
+
+	log.Printf("✅ CORS configured for: %s", corsOrigin)
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000", // Frontend URLs
+		AllowOrigins:     corsOrigin,
 		AllowMethods:     "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization",
 		AllowCredentials: true,
