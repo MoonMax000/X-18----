@@ -32,6 +32,7 @@ interface UserAccount {
   following_count: number;
   posts_count: number;
   private_account: boolean;
+  role?: string;
   created_at: string;
 }
 

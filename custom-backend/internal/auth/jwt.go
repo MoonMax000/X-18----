@@ -12,6 +12,7 @@ type JWTClaims struct {
 	UserID   uuid.UUID `json:"user_id"`
 	Username string    `json:"username"`
 	Email    string    `json:"email"`
+	Role     string    `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -22,13 +23,14 @@ type TokenPair struct {
 }
 
 // GenerateAccessToken creates a new JWT access token
-func GenerateAccessToken(userID uuid.UUID, username, email, secret string, expiryMinutes int) (string, error) {
+func GenerateAccessToken(userID uuid.UUID, username, email, role, secret string, expiryMinutes int) (string, error) {
 	expiresAt := time.Now().Add(time.Duration(expiryMinutes) * time.Minute)
 
 	claims := &JWTClaims{
 		UserID:   userID,
 		Username: username,
 		Email:    email,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -59,8 +61,8 @@ func GenerateRefreshToken(userID uuid.UUID, secret string, expiryDays int) (stri
 }
 
 // GenerateTokenPair creates both access and refresh tokens
-func GenerateTokenPair(userID uuid.UUID, username, email, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (*TokenPair, error) {
-	accessToken, err := GenerateAccessToken(userID, username, email, accessSecret, accessExpiry)
+func GenerateTokenPair(userID uuid.UUID, username, email, role, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (*TokenPair, error) {
+	accessToken, err := GenerateAccessToken(userID, username, email, role, accessSecret, accessExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}

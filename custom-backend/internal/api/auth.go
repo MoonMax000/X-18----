@@ -122,6 +122,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		user.ID,
 		user.Username,
 		user.Email,
+		user.Role, // Добавляем роль
 		h.config.JWT.AccessSecret,
 		h.config.JWT.RefreshSecret,
 		h.config.JWT.AccessExpiry,
@@ -186,6 +187,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		user.ID,
 		user.Username,
 		user.Email,
+		user.Role, // Добавляем роль
 		h.config.JWT.AccessSecret,
 		h.config.JWT.RefreshSecret,
 		h.config.JWT.AccessExpiry,
@@ -274,6 +276,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		user.ID,
 		user.Username,
 		user.Email,
+		user.Role, // Добавляем роль
 		h.config.JWT.AccessSecret,
 		h.config.JWT.RefreshSecret,
 		h.config.JWT.AccessExpiry,
