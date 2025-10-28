@@ -20,7 +20,12 @@ func Connect(config *configs.RedisConfig) (*Cache, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Addr(),
 		Password: config.Password,
+		Username: config.Username, // Для Redis 6+
 		DB:       config.DB,
+
+		// Отключаем неподдерживаемые команды для Railway Redis
+		DisableIndentity: true,
+		IdentitySuffix:   "",
 	})
 
 	ctx := context.Background()
