@@ -100,6 +100,12 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		})
 	}
 
+	// URL для доступа к файлу (используем переменную окружения для BASE_URL)
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:8080" // fallback для локальной разработки
+	}
+
 	// Обрабатываем медиа в зависимости от типа
 	var processedPath string
 	var width, height int
@@ -130,7 +136,7 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		thumbnailFilename := "thumb_" + safeFilename
 		thumbnailPath := filepath.Join(h.uploadDir, thumbnailFilename)
 		if err := utils.GenerateThumbnail(processedPath, thumbnailPath, 400, 400); err == nil {
-			thumbnailURL = fmt.Sprintf("/storage/media/%s", thumbnailFilename)
+			thumbnailURL = fmt.Sprintf("%s/storage/media/%s", baseURL, thumbnailFilename)
 		}
 
 		// Удаляем временный файл
@@ -153,7 +159,7 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 	}
 
 	// URL для доступа к файлу
-	fileURL := fmt.Sprintf("/storage/media/%s", safeFilename)
+	fileURL := fmt.Sprintf("%s/storage/media/%s", baseURL, safeFilename)
 
 	// Опциональный alt text
 	altText := c.FormValue("alt_text", "")
