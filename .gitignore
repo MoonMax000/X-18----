@@ -58,3 +58,4 @@ temp/
 # ngrok files
 ngrok-*.log
 NGROK_URLS.txt
+gotosocial/
