@@ -54,3 +54,7 @@ gotosocial/storage/
 tmp/
 temp/
 *.tmp
+
+# ngrok files
+ngrok-*.log
+NGROK_URLS.txt
