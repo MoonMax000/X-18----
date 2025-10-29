@@ -8,7 +8,7 @@ interface ApiResponse<T> {
 }
 
 class CustomBackendAPI {
-  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  private baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8080') + '/api';
 
   private async request<T>(
     endpoint: string,
@@ -41,6 +41,7 @@ class CustomBackendAPI {
         // Try to refresh the token
         const refreshToken = localStorage.getItem('custom_refresh_token');
         if (refreshToken) {
+          // Refresh endpoint uses full baseUrl which already includes /api
           const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
             method: 'POST',
             headers: {
