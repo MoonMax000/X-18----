@@ -377,3 +377,64 @@ func (ss *SessionService) RevokeAllSessions(userID uuid.UUID) error {
 func (ss *SessionService) CleanupExpiredSessions() error {
 	return ss.db.Where("expires_at < ?", time.Now()).Delete(&models.Session{}).Error
 }
+
+// TOTPService handles TOTP 2FA operations
+type TOTPService struct {
+	db    *gorm.DB
+	cache *cache.Cache
+}
+
+// NewTOTPService creates a new TOTP service
+func NewTOTPService(db *gorm.DB, cache *cache.Cache) *TOTPService {
+	return &TOTPService{
+		db:    db,
+		cache: cache,
+	}
+}
+
+// GenerateTOTPSecret generates a new TOTP secret and QR code for user
+func (ts *TOTPService) GenerateTOTPSecret(userID uuid.UUID, email string, issuer string) (secret string, qrCode string, err error) {
+	// Import required packages
+	// Note: This function signature will be updated once we add the actual implementation
+	// For now, returning placeholder values to avoid compilation errors
+
+	// TODO: Implement TOTP secret generation using github.com/pquerna/otp
+	// TODO: Generate QR code image
+	// TODO: Encode QR code as base64 data URL
+
+	return "", "", fmt.Errorf("TOTP generation not yet implemented")
+}
+
+// VerifyTOTPCode verifies a TOTP code against user's secret
+func (ts *TOTPService) VerifyTOTPCode(userID uuid.UUID, code string) (bool, error) {
+	// Get user's TOTP secret from database
+	var user models.User
+	if err := ts.db.First(&user, "id = ?", userID).Error; err != nil {
+		return false, err
+	}
+
+	if user.TOTPSecret == "" {
+		return false, fmt.Errorf("TOTP not enabled for this user")
+	}
+
+	// TODO: Implement TOTP verification using github.com/pquerna/otp/totp
+	// TODO: Validate code against secret with time window
+
+	return false, fmt.Errorf("TOTP verification not yet implemented")
+}
+
+// EnableTOTP enables TOTP for a user and saves the secret
+func (ts *TOTPService) EnableTOTP(userID uuid.UUID, secret string) error {
+	return ts.db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"totp_secret":  secret,
+		"totp_enabled": true,
+	}).Error
+}
+
+// DisableTOTP disables TOTP for a user
+func (ts *TOTPService) DisableTOTP(userID uuid.UUID) error {
+	return ts.db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"totp_secret":  "",
+		"totp_enabled": false,
+	}).Error
+}

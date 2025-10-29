@@ -36,6 +36,14 @@ type User struct {
 	EmailVerifiedAt    *time.Time `json:"email_verified_at,omitempty"`
 	PhoneVerifiedAt    *time.Time `json:"phone_verified_at,omitempty"`
 
+	// TOTP 2FA fields
+	TOTPSecret  string `gorm:"size:255" json:"-"` // Hidden from JSON, encrypted secret
+	TOTPEnabled bool   `gorm:"default:false" json:"totp_enabled"`
+
+	// Account deactivation fields (30-day recovery period)
+	DeactivatedAt       *time.Time `json:"deactivated_at,omitempty"`
+	DeletionScheduledAt *time.Time `json:"deletion_scheduled_at,omitempty"`
+
 	// Soft delete
 	IsDeleted           bool       `gorm:"default:false" json:"is_deleted"`
 	DeletionRequestedAt *time.Time `json:"deletion_requested_at,omitempty"`
