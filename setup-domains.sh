@@ -14,7 +14,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Переменные доменов
-FRONTEND_DOMAIN="app.tyriantrade.com"
+FRONTEND_DOMAIN="social.tyriantrade.com"
 BACKEND_DOMAIN="api.tyriantrade.com"
 ADMIN_DOMAIN="admin.tyriantrade.com"
 
@@ -23,7 +23,7 @@ RAILWAY_APP_NAME="x-18-production"
 RAILWAY_SERVICE_NAME="custom-backend"
 
 echo -e "${BLUE}📋 План настройки:${NC}"
-echo "1. Frontend: $FRONTEND_DOMAIN (Netlify)"
+echo "1. Social Network: $FRONTEND_DOMAIN (Netlify)"
 echo "2. Backend API: $BACKEND_DOMAIN (Railway)"
 echo "3. Admin Panel: $ADMIN_DOMAIN (Netlify)"
 echo ""
@@ -151,9 +151,9 @@ show_dns_instructions() {
     echo ""
     echo "3. Добавьте следующие DNS записи:"
     echo ""
-    echo -e "${GREEN}Для Frontend (Netlify):${NC}"
+    echo -e "${GREEN}Для Social (Netlify):${NC}"
     echo "   Тип: CNAME"
-    echo "   Имя: app"
+    echo "   Имя: social"
     echo "   Значение: [ваш-сайт].netlify.app"
     echo ""
     echo -e "${GREEN}Для Backend (Railway):${NC}"
@@ -299,6 +299,6 @@ echo "Railway Dashboard: https://railway.app/dashboard"
 echo "Netlify Dashboard: https://app.netlify.com"
 echo ""
 echo -e "${GREEN}После настройки DNS ваш сайт будет доступен по адресам:${NC}"
-echo "Frontend: https://$FRONTEND_DOMAIN"
+echo "Social Network: https://$FRONTEND_DOMAIN"
 echo "API: https://$BACKEND_DOMAIN" 
 echo "Admin: https://$ADMIN_DOMAIN"

@@ -62,3 +62,9 @@ gotosocial/
 
 # Local Netlify folder
 .netlify
+
+# GoToSocial old backend (removed)
+gotosocial/
+gotosocial-backup-*.tar.gz
+.gotosocial.pid
+gotosocial*.log
