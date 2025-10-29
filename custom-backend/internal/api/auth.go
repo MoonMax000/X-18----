@@ -1,14 +1,17 @@
 package api
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/yourusername/x18-backend/configs"
 	"github.com/yourusername/x18-backend/internal/auth"
 	"github.com/yourusername/x18-backend/internal/cache"
 	"github.com/yourusername/x18-backend/internal/database"
 	"github.com/yourusername/x18-backend/internal/models"
+	"github.com/yourusername/x18-backend/internal/services"
 	"github.com/yourusername/x18-backend/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -47,6 +50,7 @@ type AuthResponse struct {
 	RefreshToken string        `json:"refresh_token"`
 	TokenType    string        `json:"token_type"`
 	ExpiresIn    int64         `json:"expires_in"`
+	SessionID    uuid.UUID     `json:"session_id,omitempty"`
 }
 
 // Register handles user registration
@@ -152,7 +156,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	})
 }
 
-// Login handles user login
+// Login handles user login with security features
 // POST /api/auth/login
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req LoginRequest
@@ -162,10 +166,39 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
+	// Get client IP and user agent
+	ipAddress := services.GetClientIP(c)
+	userAgent := c.Get("User-Agent")
+
+	// Initialize security service
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+
+	// Check for lockouts first
+	isLocked, lockoutType, blockedUntil := securityService.CheckLockouts(req.Email, ipAddress)
+	if isLocked {
+		var message string
+		if lockoutType == "ip_blocked" {
+			message = fmt.Sprintf("IP address is blocked until %s", blockedUntil.Format("15:04:05"))
+		} else {
+			message = fmt.Sprintf("Account is locked until %s", blockedUntil.Format("15:04:05"))
+		}
+
+		// Record failed attempt
+		securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, lockoutType)
+
+		return c.Status(403).JSON(fiber.Map{
+			"error":        message,
+			"locked_until": blockedUntil,
+		})
+	}
+
 	// Find user by email
 	var user models.User
 	if err := h.db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
+			// Record failed attempt for unknown user
+			securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, "user_not_found")
+
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Invalid email or password",
 			})
@@ -175,10 +208,44 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
+	// Check if account is soft deleted
+	if user.IsDeleted {
+		return c.Status(403).JSON(fiber.Map{
+			"error":                 "Account has been deleted",
+			"deletion_requested_at": user.DeletionRequestedAt,
+		})
+	}
+
 	// Verify password
 	if !utils.CheckPassword(req.Password, user.Password) {
+		// Record failed attempt
+		securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, "wrong_password")
+
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Invalid email or password",
+		})
+	}
+
+	// Check if 2FA is enabled
+	if user.Is2FAEnabled {
+		// Generate and send 2FA code
+		code, err := securityService.GenerateVerificationCode(
+			user.ID,
+			models.VerificationType2FA,
+			models.VerificationMethod(user.VerificationMethod),
+		)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to generate 2FA code",
+			})
+		}
+
+		// TODO: Send code via email/SMS
+		// For now, we'll include it in response (remove in production!)
+		return c.Status(200).JSON(fiber.Map{
+			"requires_2fa":        true,
+			"verification_method": user.VerificationMethod,
+			"debug_code":          code.Code, // REMOVE IN PRODUCTION
 		})
 	}
 
@@ -199,14 +266,20 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	// Store refresh token in database
+	// Create enhanced session
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
 	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
-	session := models.Session{
-		UserID:           user.ID,
-		RefreshTokenHash: refreshTokenHash,
-		ExpiresAt:        time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour),
+	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
+
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, expiresAt)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to create session",
+		})
 	}
-	h.db.DB.Create(&session)
+
+	// Record successful login
+	securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, true, "")
 
 	// Update last active
 	now := time.Now()
@@ -219,6 +292,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		RefreshToken: tokens.RefreshToken,
 		TokenType:    "Bearer",
 		ExpiresIn:    tokens.ExpiresIn,
+		SessionID:    session.ID, // Include session ID for tracking
 	})
 }
 
@@ -238,6 +312,92 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message": "Logged out successfully",
+	})
+}
+
+// Login2FA handles 2FA verification
+// POST /api/auth/login/2fa
+func (h *AuthHandler) Login2FA(c *fiber.Ctx) error {
+	type TwoFactorRequest struct {
+		Email string `json:"email" validate:"required,email"`
+		Code  string `json:"code" validate:"required,len=6"`
+	}
+
+	var req TwoFactorRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Find user
+	var user models.User
+	if err := h.db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Verify 2FA code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	valid, err := securityService.VerifyCode(user.ID, req.Code, models.VerificationType2FA)
+	if err != nil || !valid {
+		// Record failed 2FA attempt
+		ipAddress := services.GetClientIP(c)
+		userAgent := c.Get("User-Agent")
+		securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, "invalid_2fa_code")
+
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid or expired 2FA code",
+		})
+	}
+
+	// Generate tokens
+	tokens, err := auth.GenerateTokenPair(
+		user.ID,
+		user.Username,
+		user.Email,
+		user.Role,
+		h.config.JWT.AccessSecret,
+		h.config.JWT.RefreshSecret,
+		h.config.JWT.AccessExpiry,
+		h.config.JWT.RefreshExpiry,
+	)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to generate tokens",
+		})
+	}
+
+	// Create session
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
+	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
+
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, expiresAt)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to create session",
+		})
+	}
+
+	// Record successful login with 2FA
+	ipAddress := services.GetClientIP(c)
+	userAgent := c.Get("User-Agent")
+	securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, true, "2fa_success")
+
+	// Update last active
+	now := time.Now()
+	user.LastActiveAt = &now
+	h.db.DB.Save(&user)
+
+	return c.JSON(AuthResponse{
+		User:         user.ToMe(),
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    tokens.ExpiresIn,
+		SessionID:    session.ID,
 	})
 }
 
@@ -302,5 +462,532 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		"refresh_token": tokens.RefreshToken,
 		"token_type":    "Bearer",
 		"expires_in":    tokens.ExpiresIn,
+	})
+}
+
+// VerifyEmail handles email verification
+// POST /api/auth/verify/email
+func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
+	type VerifyRequest struct {
+		Code string `json:"code" validate:"required,len=6"`
+	}
+
+	var req VerifyRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Verify code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	valid, err := securityService.VerifyCode(userID.(uuid.UUID), req.Code, models.VerificationTypeEmail)
+	if err != nil || !valid {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid or expired verification code",
+		})
+	}
+
+	// Update user's email verification status
+	h.db.DB.Model(&models.User{}).Where("id = ?", userID).Update("is_email_verified", true)
+
+	return c.JSON(fiber.Map{
+		"message": "Email verified successfully",
+	})
+}
+
+// RequestPasswordReset initiates password reset process
+// POST /api/auth/password/reset
+func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
+	type ResetRequest struct {
+		Email string `json:"email" validate:"required,email"`
+	}
+
+	var req ResetRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Find user
+	var user models.User
+	if err := h.db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		// Don't reveal if email exists
+		return c.JSON(fiber.Map{
+			"message": "If the email exists, a reset link has been sent",
+		})
+	}
+
+	// Generate password reset code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	code, err := securityService.GenerateVerificationCode(
+		user.ID,
+		models.VerificationTypePasswordReset,
+		models.VerificationMethodEmail,
+	)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to generate reset code",
+		})
+	}
+
+	// TODO: Send email with reset code
+	// For now, include in response (remove in production!)
+	return c.JSON(fiber.Map{
+		"message":    "If the email exists, a reset link has been sent",
+		"debug_code": code.Code, // REMOVE IN PRODUCTION
+	})
+}
+
+// ResetPassword completes password reset process
+// POST /api/auth/password/reset/confirm
+func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
+	type ResetConfirmRequest struct {
+		Email       string `json:"email" validate:"required,email"`
+		Code        string `json:"code" validate:"required,len=6"`
+		NewPassword string `json:"new_password" validate:"required,min=8"`
+	}
+
+	var req ResetConfirmRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Validate password strength
+	if valid, msg := utils.ValidatePassword(req.NewPassword); !valid {
+		return c.Status(400).JSON(fiber.Map{
+			"error": msg,
+		})
+	}
+
+	// Find user
+	var user models.User
+	if err := h.db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid credentials",
+		})
+	}
+
+	// Verify reset code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	valid, err := securityService.VerifyCode(user.ID, req.Code, models.VerificationTypePasswordReset)
+	if err != nil || !valid {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid or expired reset code",
+		})
+	}
+
+	// Hash new password
+	hashedPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to process password",
+		})
+	}
+
+	// Update password
+	h.db.DB.Model(&user).Update("password", hashedPassword)
+
+	// Revoke all existing sessions for security
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	sessionService.RevokeAllSessions(user.ID)
+
+	return c.JSON(fiber.Map{
+		"message": "Password reset successfully",
+	})
+}
+
+// GetSessions returns all active sessions for the authenticated user
+// GET /api/auth/sessions
+func (h *AuthHandler) GetSessions(c *fiber.Ctx) error {
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get all active sessions
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	sessions, err := sessionService.GetActiveSessions(userID.(uuid.UUID))
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to fetch sessions",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"sessions": sessions,
+	})
+}
+
+// RevokeSession revokes a specific session
+// DELETE /api/auth/sessions/:sessionId
+func (h *AuthHandler) RevokeSession(c *fiber.Ctx) error {
+	sessionID := c.Params("sessionId")
+	if sessionID == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Session ID required",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Parse session ID
+	id, err := uuid.Parse(sessionID)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid session ID",
+		})
+	}
+
+	// Verify session belongs to user
+	var session models.Session
+	if err := h.db.DB.Where("id = ? AND user_id = ?", id, userID).First(&session).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Session not found",
+		})
+	}
+
+	// Revoke session
+	h.db.DB.Delete(&session)
+
+	return c.JSON(fiber.Map{
+		"message": "Session revoked successfully",
+	})
+}
+
+// Get2FASettings returns current 2FA settings for user
+// GET /api/auth/2fa/settings
+func (h *AuthHandler) Get2FASettings(c *fiber.Ctx) error {
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get user
+	var user models.User
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"is_2fa_enabled":      user.Is2FAEnabled,
+		"verification_method": user.VerificationMethod,
+		"backup_email":        user.BackupEmail,
+		"backup_phone":        user.BackupPhone,
+		"is_email_verified":   user.IsEmailVerified,
+		"is_phone_verified":   user.IsPhoneVerified,
+	})
+}
+
+// Enable2FA enables two-factor authentication
+// POST /api/auth/2fa/enable
+func (h *AuthHandler) Enable2FA(c *fiber.Ctx) error {
+	type Enable2FARequest struct {
+		Method   string `json:"method" validate:"required,oneof=email sms"`
+		Password string `json:"password" validate:"required"`
+	}
+
+	var req Enable2FARequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get user
+	var user models.User
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Verify password
+	if !utils.CheckPassword(req.Password, user.Password) {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid password",
+		})
+	}
+
+	// Check if email/phone is verified based on method
+	if req.Method == "email" && !user.IsEmailVerified {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Please verify your email first",
+		})
+	}
+	if req.Method == "sms" && !user.IsPhoneVerified {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Please verify your phone number first",
+		})
+	}
+
+	// Generate verification code to confirm 2FA setup
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	code, err := securityService.GenerateVerificationCode(
+		user.ID,
+		models.VerificationType2FA,
+		models.VerificationMethod(req.Method),
+	)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to generate verification code",
+		})
+	}
+
+	// TODO: Send verification code via email/SMS
+	// For now, include in response (remove in production!)
+	return c.JSON(fiber.Map{
+		"message":    "Verification code sent. Please confirm to enable 2FA",
+		"method":     req.Method,
+		"debug_code": code.Code, // REMOVE IN PRODUCTION
+	})
+}
+
+// Confirm2FA confirms and enables 2FA after verification
+// POST /api/auth/2fa/confirm
+func (h *AuthHandler) Confirm2FA(c *fiber.Ctx) error {
+	type Confirm2FARequest struct {
+		Code   string `json:"code" validate:"required,len=6"`
+		Method string `json:"method" validate:"required,oneof=email sms"`
+	}
+
+	var req Confirm2FARequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Verify code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	valid, err := securityService.VerifyCode(userID.(uuid.UUID), req.Code, models.VerificationType2FA)
+	if err != nil || !valid {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid or expired verification code",
+		})
+	}
+
+	// Enable 2FA for user
+	h.db.DB.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"is_2fa_enabled":      true,
+		"verification_method": req.Method,
+	})
+
+	// Generate backup codes (optional, for future implementation)
+	// backupCodes := generateBackupCodes()
+
+	return c.JSON(fiber.Map{
+		"message": "2FA enabled successfully",
+		"method":  req.Method,
+		// "backup_codes": backupCodes, // For future implementation
+	})
+}
+
+// Disable2FA disables two-factor authentication
+// POST /api/auth/2fa/disable
+func (h *AuthHandler) Disable2FA(c *fiber.Ctx) error {
+	type Disable2FARequest struct {
+		Password string `json:"password" validate:"required"`
+	}
+
+	var req Disable2FARequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get user
+	var user models.User
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Verify password
+	if !utils.CheckPassword(req.Password, user.Password) {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid password",
+		})
+	}
+
+	// Disable 2FA
+	h.db.DB.Model(&user).Updates(map[string]interface{}{
+		"is_2fa_enabled": false,
+	})
+
+	return c.JSON(fiber.Map{
+		"message": "2FA disabled successfully",
+	})
+}
+
+// UpdateBackupContact updates backup email or phone for recovery
+// POST /api/auth/backup-contact
+func (h *AuthHandler) UpdateBackupContact(c *fiber.Ctx) error {
+	type UpdateBackupRequest struct {
+		BackupEmail string `json:"backup_email,omitempty"`
+		BackupPhone string `json:"backup_phone,omitempty"`
+		Password    string `json:"password" validate:"required"`
+	}
+
+	var req UpdateBackupRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get user
+	var user models.User
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Verify password
+	if !utils.CheckPassword(req.Password, user.Password) {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid password",
+		})
+	}
+
+	// Update backup contacts
+	updates := make(map[string]interface{})
+	if req.BackupEmail != "" {
+		if !utils.ValidateEmail(req.BackupEmail) {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid email format",
+			})
+		}
+		updates["backup_email"] = req.BackupEmail
+	}
+	if req.BackupPhone != "" {
+		// TODO: Validate phone format
+		updates["backup_phone"] = req.BackupPhone
+	}
+
+	if len(updates) > 0 {
+		h.db.DB.Model(&user).Updates(updates)
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Backup contact updated successfully",
+	})
+}
+
+// RequestAccountDeletion initiates soft delete process
+// POST /api/auth/delete-account
+func (h *AuthHandler) RequestAccountDeletion(c *fiber.Ctx) error {
+	type DeleteRequest struct {
+		Password string `json:"password" validate:"required"`
+		Reason   string `json:"reason,omitempty"`
+	}
+
+	var req DeleteRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get user
+	var user models.User
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Verify password
+	if !utils.CheckPassword(req.Password, user.Password) {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid password",
+		})
+	}
+
+	// Mark account for deletion (soft delete)
+	now := time.Now()
+	h.db.DB.Model(&user).Updates(map[string]interface{}{
+		"is_deleted":            true,
+		"deletion_requested_at": now,
+	})
+
+	// Revoke all sessions
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	sessionService.RevokeAllSessions(user.ID)
+
+	// TODO: Schedule permanent deletion after grace period (30 days)
+	// TODO: Send confirmation email
+
+	return c.JSON(fiber.Map{
+		"message":       "Account marked for deletion. You have 30 days to restore it.",
+		"deletion_date": now.Add(30 * 24 * time.Hour),
 	})
 }

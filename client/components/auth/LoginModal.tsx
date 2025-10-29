@@ -1,6 +1,7 @@
 import { FC, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
 import { customAuth } from '@/services/auth/custom-backend-auth';
+import { use2FALogin, useAccountRecovery } from '@/hooks/useSecurity';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -32,6 +33,10 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isCodeExpired, setIsCodeExpired] = useState(false);
   const [isBlocked2FA, setIsBlocked2FA] = useState(false);
+  const [tempAuthData, setTempAuthData] = useState<{ email: string; requires_2fa: boolean } | null>(null);
+  
+  const { verify2FACode, isLoading: is2FALoading } = use2FALogin();
+  const { requestPasswordReset, confirmPasswordReset } = useAccountRecovery();
   
   // Forgot Password states
   const [forgotEmail, setForgotEmail] = useState('');
@@ -271,17 +276,25 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
     }
   };
 
-  // Verify 2FA code (mock)
-  const verify2FACode = () => {
-    if (isBlocked2FA || isCodeExpired) return;
+  // Verify 2FA code with real API
+  const handleVerify2FACode = async () => {
+    if (isBlocked2FA || isCodeExpired || !tempAuthData) return;
 
     const code = twoFactorCode.join('');
     console.log('Verifying 2FA code:', code);
 
-    if (code === '123456') {
-      console.log('2FA verification successful!');
+    try {
+      const result = await verify2FACode(tempAuthData.email, code);
+      console.log('✅ 2FA verification successful:', result);
+      
+      // Clear temp data
+      setTempAuthData(null);
       setTwoFactorError('');
-    } else {
+      
+      // Close modal and reload
+      onClose();
+      window.location.reload();
+    } catch (error) {
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
 
@@ -298,18 +311,31 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
     }
   };
 
-  // Resend 2FA code (mock)
-  const resend2FACode = () => {
-    if (!canResend || isBlocked2FA) return;
+  // Resend 2FA code with real API
+  const resend2FACode = async () => {
+    if (!canResend || isBlocked2FA || !tempAuthData) return;
 
-    console.log('Resending 2FA code to:', maskedEmail);
-    setTwoFactorCode(['', '', '', '', '', '']);
-    setTwoFactorError('');
-    setIsCodeExpired(false);
-    setFailedAttempts(0);
-    inputRefs[0].current?.focus();
-    setCanResend(false);
-    setResendTimer(60);
+    try {
+      // Request new 2FA code
+      await fetch('/api/auth/2fa/resend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: tempAuthData.email }),
+      });
+
+      console.log('Resending 2FA code to:', maskedEmail);
+      setTwoFactorCode(['', '', '', '', '', '']);
+      setTwoFactorError('');
+      setIsCodeExpired(false);
+      setFailedAttempts(0);
+      inputRefs[0].current?.focus();
+      setCanResend(false);
+      setResendTimer(60);
+    } catch (error) {
+      setTwoFactorError('Failed to resend code. Please try again.');
+    }
   };
 
   // Go back from 2FA to login
@@ -319,24 +345,38 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
   };
 
   // Forgot Password handlers
-  const handleSendResetLink = () => {
+  const handleSendResetLink = async () => {
     if (!forgotEmail) return;
-    console.log('Sending reset link to:', forgotEmail);
-    setCurrentScreen('forgot-sent');
+    
+    const success = await requestPasswordReset(forgotEmail);
+    if (success) {
+      console.log('Reset link sent to:', forgotEmail);
+      setCurrentScreen('forgot-sent');
+    } else {
+      setEmailError('Failed to send reset email. Please try again.');
+    }
   };
 
   const handleResendCode = () => {
     console.log('Resending code to:', forgotEmail);
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     const allRequirementsMet = passwordRequirements.every((req) => req.test(newPassword));
     const passwordsMatch = newPassword && confirmNewPassword && newPassword === confirmNewPassword;
     
     if (!allRequirementsMet || !passwordsMatch) return;
     
-    console.log('Resetting password');
-    setCurrentScreen('password-reset');
+    // In real app, you'd get the reset code from URL params or previous screen
+    const resetCode = ''; // This should be obtained from the reset link
+    
+    const success = await confirmPasswordReset(resetCode, newPassword);
+    if (success) {
+      console.log('Password reset successful');
+      setCurrentScreen('password-reset');
+    } else {
+      alert('Failed to reset password. Please try again.');
+    }
   };
 
   const handleReturnToSignIn = () => {
@@ -388,16 +428,43 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
 
     try {
       // Use Custom Backend Auth Service
-      const authData = await customAuth.login({
+      const loginData = {
         email: authMethod === 'email' ? email : `${phoneNumber}@phone.temp`,
         password,
+      };
+
+      // First attempt login
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
       });
 
-      console.log('✅ Login successful:', authData.user.username);
+      const data = await response.json();
 
-      // Close modal and refresh page to load user data
-      onClose();
-      window.location.reload();
+      if (data.requires_2fa) {
+        // User has 2FA enabled - show 2FA screen
+        console.log('2FA required for user:', loginData.email);
+        setTempAuthData({ email: loginData.email, requires_2fa: true });
+        setMaskedEmail(loginData.email.replace(/(.{2})(.*)(@.*)/, '$1****$3'));
+        setCurrentScreen('2fa');
+      } else if (response.ok) {
+        // No 2FA - proceed with login
+        localStorage.setItem('auth_token', data.token);
+        if (data.refresh_token) {
+          localStorage.setItem('refresh_token', data.refresh_token);
+        }
+        
+        console.log('✅ Login successful:', data.user.username);
+        
+        // Close modal and refresh page to load user data
+        onClose();
+        window.location.reload();
+      } else {
+        throw new Error(data.error || 'Invalid login or password.');
+      }
     } catch (error) {
       console.error('❌ Login error:', error);
       
@@ -496,7 +563,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
   // Auto-verify when all 6 digits are entered
   useEffect(() => {
     if (twoFactorCode.every(digit => digit !== '')) {
-      verify2FACode();
+      handleVerify2FACode();
     }
   }, [twoFactorCode]);
 

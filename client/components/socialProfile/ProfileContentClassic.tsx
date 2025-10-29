@@ -8,6 +8,7 @@ import type { RootState } from "@/store/store";
 import ProfileHero from "./ProfileHero";
 import TabListClassic, { type ProfilePostsFilter, type ProfileSection, type ProfileSortOption } from "./TabListClassic";
 import ProfileTweetsClassic from "./ProfileTweetsClassic";
+import ProfileSecuritySettings from "./ProfileSecuritySettings";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
 import type { GTSAccount, GTSStatus } from "@/services/api/gotosocial";
@@ -247,6 +248,13 @@ export default function ProfileContentClassic({
     return filteredPosts;
   }, [filteredPosts, sortOption]);
 
+  const renderTabContent = () => {
+    if (activeSection === "security" && isOwnProfile) {
+      return <ProfileSecuritySettings />;
+    }
+    return <ProfileTweetsClassic posts={sortedPosts} />;
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -440,7 +448,7 @@ export default function ProfileContentClassic({
             />
           </div>
         </div>
-        <ProfileTweetsClassic posts={sortedPosts} />
+        {renderTabContent()}
       </main>
     </div>
   );

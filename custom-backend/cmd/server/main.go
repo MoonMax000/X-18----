@@ -111,10 +111,28 @@ func main() {
 	auth := apiGroup.Group("/auth")
 	auth.Post("/register", authHandler.Register)
 	auth.Post("/login", authHandler.Login)
+	auth.Post("/login/2fa", authHandler.Login2FA)
 	auth.Post("/refresh", authHandler.RefreshToken)
+	auth.Post("/password/reset", authHandler.RequestPasswordReset)
+	auth.Post("/password/reset/confirm", authHandler.ResetPassword)
 
 	// Protected auth routes
 	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)
+	auth.Post("/verify/email", middleware.JWTMiddleware(cfg), authHandler.VerifyEmail)
+
+	// Session management
+	auth.Get("/sessions", middleware.JWTMiddleware(cfg), authHandler.GetSessions)
+	auth.Delete("/sessions/:sessionId", middleware.JWTMiddleware(cfg), authHandler.RevokeSession)
+
+	// 2FA settings
+	auth.Get("/2fa/settings", middleware.JWTMiddleware(cfg), authHandler.Get2FASettings)
+	auth.Post("/2fa/enable", middleware.JWTMiddleware(cfg), authHandler.Enable2FA)
+	auth.Post("/2fa/confirm", middleware.JWTMiddleware(cfg), authHandler.Confirm2FA)
+	auth.Post("/2fa/disable", middleware.JWTMiddleware(cfg), authHandler.Disable2FA)
+
+	// Account security
+	auth.Post("/backup-contact", middleware.JWTMiddleware(cfg), authHandler.UpdateBackupContact)
+	auth.Post("/delete-account", middleware.JWTMiddleware(cfg), authHandler.RequestAccountDeletion)
 
 	// Users routes
 	users := apiGroup.Group("/users")

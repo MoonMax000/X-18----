@@ -1,0 +1,271 @@
+import { useState, useEffect, useCallback } from 'react';
+
+interface SecuritySettings {
+  is_2fa_enabled: boolean;
+  verification_method: 'email' | 'sms';
+  is_email_verified: boolean;
+  is_phone_verified: boolean;
+  backup_email?: string;
+  backup_phone?: string;
+}
+
+interface Session {
+  id: string;
+  session_id: string;
+  user_id: number;
+  device_type: string;
+  browser: string;
+  os: string;
+  ip_address: string;
+  user_agent: string;
+  last_active: string;
+  created_at: string;
+  is_current: boolean;
+}
+
+export function useSecuritySettings() {
+  const [settings, setSettings] = useState<SecuritySettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/auth/2fa/settings', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      } else {
+        throw new Error('Failed to fetch security settings');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateSettings = useCallback(async (updates: Partial<SecuritySettings & { verification_code?: string }>) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      
+      // Handle 2FA enable/disable
+      if (updates.is_2fa_enabled !== undefined) {
+        const endpoint = updates.is_2fa_enabled 
+          ? '/api/auth/2fa/enable' 
+          : '/api/auth/2fa/disable';
+        
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: updates.verification_method || settings?.verification_method || 'email',
+            code: updates.verification_code,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update 2FA settings');
+        }
+      }
+
+      // Handle backup contact updates
+      if (updates.backup_email !== undefined || updates.backup_phone !== undefined) {
+        const response = await fetch('/api/auth/backup-contact', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            backup_email: updates.backup_email,
+            backup_phone: updates.backup_phone,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update backup contacts');
+        }
+      }
+
+      // Refresh settings after update
+      await fetchSettings();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    }
+  }, [settings, fetchSettings]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  return { settings, isLoading, error, updateSettings, refetch: fetchSettings };
+}
+
+export function useSessions() {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSessions = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/auth/sessions', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSessions(data.sessions || []);
+      } else {
+        throw new Error('Failed to fetch sessions');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const revokeSession = useCallback(async (sessionId: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/auth/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to revoke session');
+      }
+
+      // Refresh sessions list
+      await fetchSessions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    }
+  }, [fetchSessions]);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
+
+  return { sessions, isLoading, error, revokeSession, refetch: fetchSessions };
+}
+
+export function useAccountRecovery() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/auth/password/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send password reset email');
+      }
+
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const confirmPasswordReset = useCallback(async (code: string, newPassword: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/auth/password/reset/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, new_password: newPassword }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset password');
+      }
+
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { requestPasswordReset, confirmPasswordReset, isLoading, error };
+}
+
+export function use2FALogin() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const verify2FACode = useCallback(async (email: string, code: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/auth/login/2fa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Invalid 2FA code');
+      }
+
+      const data = await response.json();
+      
+      // Store tokens
+      localStorage.setItem('auth_token', data.token);
+      if (data.refresh_token) {
+        localStorage.setItem('refresh_token', data.refresh_token);
+      }
+
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { verify2FACode, isLoading, error };
+}

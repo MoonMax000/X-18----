@@ -77,6 +77,27 @@ func (c *Cache) SetTimelineExpiry(userID string, duration time.Duration) error {
 	return c.Client.Expire(c.ctx, key, duration).Err()
 }
 
+// Generic cache methods
+
+// Set stores a key-value pair with expiration
+func (c *Cache) Set(key string, value interface{}, expiry time.Duration) error {
+	return c.Client.Set(c.ctx, key, value, expiry).Err()
+}
+
+// Get retrieves value by key
+func (c *Cache) Get(key string) (string, bool) {
+	val, err := c.Client.Get(c.ctx, key).Result()
+	if err != nil {
+		return "", false
+	}
+	return val, true
+}
+
+// Delete removes key from cache
+func (c *Cache) Delete(key string) error {
+	return c.Client.Del(c.ctx, key).Err()
+}
+
 // Session cache methods
 
 // SetSession stores session data

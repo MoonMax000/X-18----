@@ -25,6 +25,21 @@ type User struct {
 	AvatarURL   string `gorm:"size:500" json:"avatar_url"`
 	HeaderURL   string `gorm:"size:500" json:"header_url"`
 
+	// Extended fields from Django
+	BackupEmail        string     `gorm:"size:255" json:"backup_email,omitempty"`
+	BackupPhone        string     `gorm:"size:20" json:"backup_phone,omitempty"`
+	Phone              string     `gorm:"size:20" json:"phone,omitempty"`
+	Is2FAEnabled       bool       `gorm:"default:false" json:"is_2fa_enabled"`
+	VerificationMethod string     `gorm:"size:10;default:'email'" json:"verification_method"` // email or sms
+	IsEmailVerified    bool       `gorm:"default:false" json:"is_email_verified"`
+	IsPhoneVerified    bool       `gorm:"default:false" json:"is_phone_verified"`
+	EmailVerifiedAt    *time.Time `json:"email_verified_at,omitempty"`
+	PhoneVerifiedAt    *time.Time `json:"phone_verified_at,omitempty"`
+
+	// Soft delete
+	IsDeleted           bool       `gorm:"default:false" json:"is_deleted"`
+	DeletionRequestedAt *time.Time `json:"deletion_requested_at,omitempty"`
+
 	// Monetization
 	Verified          bool    `gorm:"default:false" json:"verified"`
 	SubscriptionPrice float64 `gorm:"type:decimal(10,2);default:0" json:"subscription_price"`

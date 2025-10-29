@@ -30,7 +30,8 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_CUSTOM_BACKEND_URL: ${{ secrets.VITE_CUSTOM_BACKEND_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_APP_ENV: production
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
         run: npm run build:client
 

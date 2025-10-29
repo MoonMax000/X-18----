@@ -16,8 +16,9 @@ const coreTabs = [
 ] as const;
 
 const likesTab = { id: "likes", label: "Likes" } as const;
+const securityTab = { id: "security", label: "Security" } as const;
 
-const allTabs = [...coreTabs, likesTab] as const;
+const allTabs = [...coreTabs, likesTab, securityTab] as const;
 
 const postSubFilters = [
   { id: "all", label: "All" },
@@ -62,15 +63,20 @@ export default function TabListClassic({
   const totalPosts = postFilterCounts?.all ?? 0;
 
   const tabsToRender = useMemo(() => {
-    const tabs = [...coreTabs];
+    const tabs: Array<{ id: ProfileSection; label: string }> = [...coreTabs];
     if (showLikesTab) {
       tabs.push(likesTab);
     }
+    // Add Security tab only for own profile
+    if (isOwnProfile) {
+      tabs.push(securityTab);
+    }
     return tabs;
-  }, [showLikesTab]);
+  }, [showLikesTab, isOwnProfile]);
 
   const tabsGridClass = cn(
     "grid w-full gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5",
+    tabsToRender.length === 5 ? "grid-cols-2 sm:grid-cols-5" : 
     tabsToRender.length === 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3",
   );
 
