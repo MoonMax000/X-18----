@@ -68,6 +68,7 @@ class AuthFetch {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
     return fetch(url, {
       ...options,
+      credentials: 'include', // Включаем cookies для всех запросов
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -77,23 +78,14 @@ class AuthFetch {
   
   private async refreshToken(): Promise<boolean> {
     try {
-      const refreshToken = localStorage.getItem('custom_refresh_token');
-      if (!refreshToken) {
-        DEBUG.log('AUTH', 'No refresh token available');
-        return false;
-      }
-      
+      // Refresh token теперь в HttpOnly cookie, не нужно отправлять в body
       const response = await this.performFetch('/auth/refresh', {
         method: 'POST',
-        body: JSON.stringify({ refresh_token: refreshToken }),
       });
       
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('custom_token', data.access_token);
-        if (data.refresh_token) {
-          localStorage.setItem('custom_refresh_token', data.refresh_token);
-        }
         DEBUG.log('AUTH', 'Token refreshed successfully');
         return true;
       }
@@ -112,7 +104,6 @@ class AuthFetch {
   
   private clearTokens(): void {
     localStorage.removeItem('custom_token');
-    localStorage.removeItem('custom_refresh_token');
     localStorage.removeItem('custom_user');
     
     // Отправляем событие для обновления UI
@@ -124,12 +115,9 @@ class AuthFetch {
     return !!localStorage.getItem('custom_token');
   }
   
-  // Утилита для установки токенов (после логина)
-  setTokens(accessToken: string, refreshToken?: string): void {
+  // Утилита для установки токена (после логина)
+  setTokens(accessToken: string): void {
     localStorage.setItem('custom_token', accessToken);
-    if (refreshToken) {
-      localStorage.setItem('custom_refresh_token', refreshToken);
-    }
   }
 }
 

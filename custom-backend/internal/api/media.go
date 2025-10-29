@@ -22,9 +22,24 @@ type MediaHandler struct {
 }
 
 func NewMediaHandler(db *database.Database) *MediaHandler {
+	// Определяем путь хранения в зависимости от окружения
+	uploadDir := os.Getenv("STORAGE_PATH")
+	if uploadDir == "" {
+		// Для локальной разработки используем ./storage/media
+		uploadDir = "./storage/media"
+	} else {
+		// Для production добавляем /media к пути
+		uploadDir = filepath.Join(uploadDir, "media")
+	}
+
 	// Создаем директорию для загрузок если не существует
-	uploadDir := "./storage/media"
-	os.MkdirAll(uploadDir, 0755)
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		// Логируем ошибку, но продолжаем работу
+		fmt.Printf("Warning: Failed to create upload directory %s: %v\n", uploadDir, err)
+	}
+
+	// Логируем используемый путь
+	fmt.Printf("Media storage initialized at: %s\n", uploadDir)
 
 	return &MediaHandler{
 		db:          db,
@@ -94,11 +109,14 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 	finalPath := filepath.Join(h.uploadDir, safeFilename)
 
 	// Сохраняем временный файл
+	fmt.Printf("Saving file to: %s\n", tempPath)
 	if err := c.SaveFile(file, tempPath); err != nil {
+		fmt.Printf("Error saving file: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to save file",
 		})
 	}
+	fmt.Printf("File saved successfully to: %s\n", tempPath)
 
 	// URL для доступа к файлу (используем переменную окружения для BASE_URL)
 	baseURL := os.Getenv("BASE_URL")
@@ -187,9 +205,17 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		if thumbnailURL != "" {
 			os.Remove(filepath.Join(h.uploadDir, "thumb_"+safeFilename))
 		}
+		fmt.Printf("Error saving media record: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to save media record",
 		})
+	}
+
+	fmt.Printf("Media saved successfully: ID=%s, URL=%s, Path=%s\n", media.ID, media.URL, finalPath)
+
+	// Проверяем что файл действительно существует
+	if _, err := os.Stat(finalPath); os.IsNotExist(err) {
+		fmt.Printf("WARNING: File doesn't exist after save: %s\n", finalPath)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(media)

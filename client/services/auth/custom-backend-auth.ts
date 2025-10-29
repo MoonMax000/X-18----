@@ -39,6 +39,8 @@ interface UserAccount {
 
 class CustomBackendAuthService {
   private baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8080') + '/api';
+  private isRefreshing = false;
+  private refreshSubscribers: Array<(token: string) => void> = [];
 
   /**
    * Register a new user account
@@ -53,6 +55,7 @@ class CustomBackendAuthService {
     const response = await fetch(`${this.baseUrl}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Включаем cookies
       body: JSON.stringify({
         username,
         email,
@@ -70,9 +73,9 @@ class CustomBackendAuthService {
     const data = await response.json();
     console.log('✅ Registration successful');
 
-    // Store token and user
+    // Store only access token and user
     localStorage.setItem('custom_token', data.access_token);
-    localStorage.setItem('custom_refresh_token', data.refresh_token);
+    // Не сохраняем refresh_token - он в HttpOnly cookie
     localStorage.setItem('custom_user', JSON.stringify(data.user));
 
     return data;
@@ -90,6 +93,7 @@ class CustomBackendAuthService {
     const response = await fetch(`${this.baseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Включаем cookies
       body: JSON.stringify({
         email,
         password,
@@ -105,9 +109,9 @@ class CustomBackendAuthService {
     const data = await response.json();
     console.log('✅ Login successful');
 
-    // Store token and user
+    // Store only access token and user
     localStorage.setItem('custom_token', data.access_token);
-    localStorage.setItem('custom_refresh_token', data.refresh_token);
+    // Не сохраняем refresh_token - он в HttpOnly cookie
     localStorage.setItem('custom_user', JSON.stringify(data.user));
 
     return data;
@@ -162,9 +166,11 @@ class CustomBackendAuthService {
   /**
    * Get refresh token from localStorage
    * @returns Refresh token or null if not logged in
+   * @deprecated Refresh token теперь в HttpOnly cookie
    */
   getRefreshToken(): string | null {
-    return localStorage.getItem('custom_refresh_token');
+    // Больше не используем localStorage для refresh token
+    return null;
   }
 
   /**
@@ -180,37 +186,73 @@ class CustomBackendAuthService {
    * @returns New auth response
    */
   async refreshToken(): Promise<AuthResponse> {
-    const refreshToken = this.getRefreshToken();
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
+    // Предотвращаем множественные одновременные запросы обновления
+    if (this.isRefreshing) {
+      return new Promise((resolve) => {
+        this.refreshSubscribers.push((token: string) => {
+          resolve({
+            access_token: token,
+            token_type: 'Bearer',
+            expires_in: 900, // 15 минут
+          } as AuthResponse);
+        });
+      });
     }
 
-    const response = await fetch(`${this.baseUrl}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        refresh_token: refreshToken,
-      }),
-    });
+    this.isRefreshing = true;
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('❌ Token refresh failed:', error);
-      this.logout(); // Clear invalid tokens
-      throw new Error('Token refresh failed');
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Cookie будет отправлена автоматически
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Token refresh failed:', error);
+        this.logout(); // Clear invalid tokens
+        throw new Error('Token refresh failed');
+      }
+
+      const data = await response.json();
+      console.log('✅ Token refreshed successfully');
+
+      // Update only access token
+      localStorage.setItem('custom_token', data.access_token);
+      if (data.user) {
+        localStorage.setItem('custom_user', JSON.stringify(data.user));
+      }
+
+      // Уведомляем всех ожидающих
+      this.refreshSubscribers.forEach((callback) => callback(data.access_token));
+      this.refreshSubscribers = [];
+
+      return data;
+    } finally {
+      this.isRefreshing = false;
     }
+  }
 
-    const data = await response.json();
-    console.log('✅ Token refreshed successfully');
-
-    // Update stored tokens
-    localStorage.setItem('custom_token', data.access_token);
-    localStorage.setItem('custom_refresh_token', data.refresh_token);
-    if (data.user) {
-      localStorage.setItem('custom_user', JSON.stringify(data.user));
+  /**
+   * Добавить перехватчик для автоматического обновления токена
+   * @param originalRequest - Функция для повторного выполнения запроса
+   * @returns Promise с результатом
+   */
+  async withTokenRefresh<T>(request: () => Promise<T>): Promise<T> {
+    try {
+      return await request();
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        try {
+          await this.refreshToken();
+          return await request();
+        } catch (refreshError) {
+          throw refreshError;
+        }
+      }
+      throw error;
     }
-
-    return data;
   }
 
   /**
@@ -228,15 +270,15 @@ class CustomBackendAuthService {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: 'include', // Очистка cookie
         });
       } catch (error) {
         console.warn('Logout API call failed:', error);
       }
     }
 
-    // Clear local storage
+    // Clear local storage (refresh_token уже не храним)
     localStorage.removeItem('custom_token');
-    localStorage.removeItem('custom_refresh_token');
     localStorage.removeItem('custom_user');
     console.log('✅ User logged out');
   }

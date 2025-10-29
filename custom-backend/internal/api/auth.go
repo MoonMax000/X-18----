@@ -47,7 +47,7 @@ type LoginRequest struct {
 type AuthResponse struct {
 	User         models.MeUser `json:"user"`
 	AccessToken  string        `json:"access_token"`
-	RefreshToken string        `json:"refresh_token"`
+	RefreshToken string        `json:"refresh_token,omitempty"` // Deprecated: только для обратной совместимости
 	TokenType    string        `json:"token_type"`
 	ExpiresIn    int64         `json:"expires_in"`
 	SessionID    uuid.UUID     `json:"session_id,omitempty"`
@@ -147,13 +147,34 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	}
 	h.db.DB.Create(&session)
 
-	return c.Status(201).JSON(AuthResponse{
-		User:         user.ToMe(),
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    tokens.ExpiresIn,
+	// Устанавливаем refresh token в HttpOnly cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production", // HTTPS только в production
+		SameSite: "Lax",                               // Изменяем на Lax для лучшей совместимости
+		MaxAge:   86400 * h.config.JWT.RefreshExpiry,  // дни в секунды
+		Path:     "/",                                 // Доступен для всего домена
 	})
+
+	// Проверяем заголовок для обратной совместимости
+	includeRefreshToken := c.Get("X-Include-Refresh-Token") == "true"
+
+	// Создаем ответ БЕЗ refresh_token
+	response := fiber.Map{
+		"user":         user.ToMe(),
+		"access_token": tokens.AccessToken,
+		"token_type":   "Bearer",
+		"expires_in":   tokens.ExpiresIn,
+	}
+
+	// Включаем refresh_token только если клиент явно запросил (для обратной совместимости)
+	if includeRefreshToken {
+		response["refresh_token"] = tokens.RefreshToken
+	}
+
+	return c.Status(201).JSON(response)
 }
 
 // Login handles user login with security features
@@ -286,14 +307,35 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	user.LastActiveAt = &now
 	h.db.DB.Save(&user)
 
-	return c.JSON(AuthResponse{
-		User:         user.ToMe(),
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    tokens.ExpiresIn,
-		SessionID:    session.ID, // Include session ID for tracking
+	// Устанавливаем refresh token в HttpOnly cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
+		Path:     "/",
 	})
+
+	// Проверяем заголовок для обратной совместимости
+	includeRefreshToken := c.Get("X-Include-Refresh-Token") == "true"
+
+	// Создаем ответ БЕЗ refresh_token
+	response := fiber.Map{
+		"user":         user.ToMe(),
+		"access_token": tokens.AccessToken,
+		"token_type":   "Bearer",
+		"expires_in":   tokens.ExpiresIn,
+		"session_id":   session.ID,
+	}
+
+	// Включаем refresh_token только если клиент явно запросил (для обратной совместимости)
+	if includeRefreshToken {
+		response["refresh_token"] = tokens.RefreshToken
+	}
+
+	return c.JSON(response)
 }
 
 // Logout handles user logout
@@ -309,6 +351,17 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
 	// Delete all user sessions
 	h.db.DB.Where("user_id = ?", userID).Delete(&models.Session{})
+
+	// Очищаем refresh token cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   -1, // Удаляем cookie
+		Path:     "/",
+	})
 
 	return c.JSON(fiber.Map{
 		"message": "Logged out successfully",
@@ -391,32 +444,63 @@ func (h *AuthHandler) Login2FA(c *fiber.Ctx) error {
 	user.LastActiveAt = &now
 	h.db.DB.Save(&user)
 
-	return c.JSON(AuthResponse{
-		User:         user.ToMe(),
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    tokens.ExpiresIn,
-		SessionID:    session.ID,
+	// Устанавливаем refresh token в HttpOnly cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
+		Path:     "/",
 	})
+
+	// Проверяем заголовок для обратной совместимости
+	includeRefreshToken := c.Get("X-Include-Refresh-Token") == "true"
+
+	// Создаем ответ БЕЗ refresh_token
+	response := fiber.Map{
+		"user":         user.ToMe(),
+		"access_token": tokens.AccessToken,
+		"token_type":   "Bearer",
+		"expires_in":   tokens.ExpiresIn,
+		"session_id":   session.ID,
+	}
+
+	// Включаем refresh_token только если клиент явно запросил (для обратной совместимости)
+	if includeRefreshToken {
+		response["refresh_token"] = tokens.RefreshToken
+	}
+
+	return c.JSON(response)
 }
 
 // RefreshToken handles token refresh
 // POST /api/auth/refresh
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
-	type RefreshRequest struct {
-		RefreshToken string `json:"refresh_token" validate:"required"`
+	// Сначала пробуем получить из cookie
+	refreshToken := c.Cookies("refresh_token")
+
+	// Если нет в cookie, пробуем из body (для обратной совместимости)
+	if refreshToken == "" {
+		type RefreshRequest struct {
+			RefreshToken string `json:"refresh_token"`
+		}
+
+		var req RefreshRequest
+		if err := c.BodyParser(&req); err == nil && req.RefreshToken != "" {
+			refreshToken = req.RefreshToken
+		}
 	}
 
-	var req RefreshRequest
-	if err := c.BodyParser(&req); err != nil {
+	if refreshToken == "" {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid request body",
+			"error": "Refresh token not provided",
 		})
 	}
 
 	// Validate refresh token
-	userID, err := auth.ValidateRefreshToken(req.RefreshToken, h.config.JWT.RefreshSecret)
+	userID, err := auth.ValidateRefreshToken(refreshToken, h.config.JWT.RefreshSecret)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Invalid refresh token",
@@ -457,12 +541,32 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 			"expires_at":         time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour),
 		})
 
-	return c.JSON(fiber.Map{
-		"access_token":  tokens.AccessToken,
-		"refresh_token": tokens.RefreshToken,
-		"token_type":    "Bearer",
-		"expires_in":    tokens.ExpiresIn,
+	// Обновляем refresh token в cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
+		Path:     "/",
 	})
+
+	// Проверяем заголовок для обратной совместимости
+	includeRefreshToken := c.Get("X-Include-Refresh-Token") == "true"
+
+	result := fiber.Map{
+		"access_token": tokens.AccessToken,
+		"token_type":   "Bearer",
+		"expires_in":   tokens.ExpiresIn,
+	}
+
+	// Включаем refresh_token только если клиент явно запросил (для обратной совместимости)
+	if includeRefreshToken {
+		result["refresh_token"] = tokens.RefreshToken
+	}
+
+	return c.JSON(result)
 }
 
 // VerifyEmail handles email verification

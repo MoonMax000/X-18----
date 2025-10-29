@@ -15,6 +15,7 @@ func JWTMiddleware(config *configs.Config) fiber.Handler {
 		// Get Authorization header
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
+			c.Set("WWW-Authenticate", `Bearer realm="api", error="missing_token"`)
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Missing authorization header",
 			})
@@ -23,6 +24,7 @@ func JWTMiddleware(config *configs.Config) fiber.Handler {
 		// Check Bearer scheme
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.Set("WWW-Authenticate", `Bearer realm="api", error="invalid_request"`)
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Invalid authorization format. Use: Bearer <token>",
 			})
@@ -33,6 +35,7 @@ func JWTMiddleware(config *configs.Config) fiber.Handler {
 		// Validate token
 		claims, err := auth.ValidateAccessToken(token, config.JWT.AccessSecret)
 		if err != nil {
+			c.Set("WWW-Authenticate", `Bearer realm="api", error="invalid_token"`)
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Invalid or expired token",
 			})

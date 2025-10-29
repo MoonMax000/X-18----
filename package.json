@@ -30,6 +30,7 @@
     "react-easy-crop": "^5.5.3",
     "react-redux": "^9.2.0",
     "react-textarea-autosize": "^8.5.9",
+    "ws": "^8.18.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -95,6 +95,9 @@ func main() {
 		})
 	})
 
+	// Initialize WebSocket hub
+	api.InitWebSocketHub(redisCache)
+
 	// Initialize handlers
 	authHandler := api.NewAuthHandler(db, redisCache, cfg)
 	usersHandler := api.NewUsersHandler(db, redisCache)
@@ -106,15 +109,16 @@ func main() {
 	widgetsHandler := api.NewWidgetsHandler(db)
 	postMenuHandler := api.NewPostMenuHandler(db)
 	adminHandler := api.NewAdminHandler(db)
+	wsHandler := api.NewWebSocketHandler(db, redisCache, cfg)
 
-	// Auth routes (public)
+	// Auth routes (public) with rate limiting
 	auth := apiGroup.Group("/auth")
-	auth.Post("/register", authHandler.Register)
-	auth.Post("/login", authHandler.Login)
-	auth.Post("/login/2fa", authHandler.Login2FA)
-	auth.Post("/refresh", authHandler.RefreshToken)
-	auth.Post("/password/reset", authHandler.RequestPasswordReset)
-	auth.Post("/password/reset/confirm", authHandler.ResetPassword)
+	auth.Post("/register", middleware.AuthRateLimiter(), authHandler.Register)
+	auth.Post("/login", middleware.AuthRateLimiter(), authHandler.Login)
+	auth.Post("/login/2fa", middleware.AuthRateLimiter(), authHandler.Login2FA)
+	auth.Post("/refresh", middleware.AuthRateLimiter(), authHandler.RefreshToken)
+	auth.Post("/password/reset", middleware.AuthRateLimiter(), authHandler.RequestPasswordReset)
+	auth.Post("/password/reset/confirm", middleware.AuthRateLimiter(), authHandler.ResetPassword)
 
 	// Protected auth routes
 	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)
@@ -170,10 +174,10 @@ func main() {
 	timeline.Get("/user/:id", timelineHandler.GetUserTimeline)
 	timeline.Get("/search", timelineHandler.GetPostsByMetadata)
 
-	// Notifications routes
+	// Notifications routes with rate limiting
 	notifications := apiGroup.Group("/notifications", middleware.JWTMiddleware(cfg))
-	notifications.Get("/", notificationsHandler.GetNotifications)
-	notifications.Get("/unread-count", notificationsHandler.GetUnreadCount)
+	notifications.Get("/", middleware.NotificationRateLimiter(), notificationsHandler.GetNotifications)
+	notifications.Get("/unread-count", middleware.NotificationRateLimiter(), notificationsHandler.GetUnreadCount)
 	notifications.Patch("/:id/read", notificationsHandler.MarkAsRead)
 	notifications.Patch("/read-all", notificationsHandler.MarkAllAsRead)
 	notifications.Delete("/:id", notificationsHandler.DeleteNotification)
@@ -236,6 +240,9 @@ func main() {
 
 	// Admin - Statistics
 	admin.Get("/stats", adminHandler.GetAdminStats)
+
+	// WebSocket endpoint
+	app.Get("/ws/notifications", wsHandler.HandleWebSocket)
 
 	// Serve static media files
 	app.Static("/storage/media", "./storage/media")

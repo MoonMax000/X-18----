@@ -50,6 +50,7 @@ func (h *TimelineHandler) GetHomeTimeline(c *fiber.Ctx) error {
 	// Базовый запрос
 	query := h.db.DB.Model(&models.Post{}).
 		Where("user_id IN ?", followingIDs).
+		Where("reply_to_id IS NULL"). // Исключаем комментарии из основной ленты
 		Preload("User").
 		Preload("Media")
 
@@ -122,6 +123,7 @@ func (h *TimelineHandler) GetExploreTimeline(c *fiber.Ctx) error {
 
 	// Базовый запрос
 	query := h.db.DB.Model(&models.Post{}).
+		Where("reply_to_id IS NULL"). // Исключаем комментарии из основной ленты
 		Preload("User").
 		Preload("Media")
 
@@ -223,6 +225,7 @@ func (h *TimelineHandler) GetTrendingPosts(c *fiber.Ctx) error {
 	// Базовый запрос
 	query := h.db.DB.Model(&models.Post{}).
 		Where("created_at >= ?", since).
+		Where("reply_to_id IS NULL"). // Исключаем комментарии из трендов
 		Preload("User").
 		Preload("Media")
 
@@ -289,6 +292,7 @@ func (h *TimelineHandler) GetUserTimeline(c *fiber.Ctx) error {
 	// Базовый запрос
 	query := h.db.DB.Model(&models.Post{}).
 		Where("user_id = ?", userID).
+		Where("reply_to_id IS NULL"). // Исключаем комментарии из профиля пользователя
 		Preload("User").
 		Preload("Media")
 
@@ -349,6 +353,7 @@ func (h *TimelineHandler) GetPostsByMetadata(c *fiber.Ctx) error {
 
 	// Базовый запрос
 	query := h.db.DB.Model(&models.Post{}).
+		Where("reply_to_id IS NULL"). // Исключаем комментарии из поиска по metadata
 		Preload("User").
 		Preload("Media")
 
