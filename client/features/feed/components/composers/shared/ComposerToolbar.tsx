@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { DollarSign, Users, UserCheck, Lock, Sparkles } from "lucide-react";
+import { DollarSign, Users, UserCheck, Lock } from "lucide-react";
 
 export interface ComposerToolbarProps {
   onMediaClick: () => void;
@@ -20,7 +20,7 @@ export interface ComposerToolbarProps {
 
 const accessTypeConfig = {
   "free": {
-    icon: Sparkles,
+    icon: DollarSign,
     label: "Free",
     color: "#6CA8FF",
     bg: "bg-[#14243A]",

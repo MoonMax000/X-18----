@@ -238,16 +238,18 @@ export default function FeedTest() {
       </div>
 
       {/* Right Sidebar with Widgets */}
-      <div className="hidden lg:block w-[340px] space-y-4">
-        <NewsWidget limit={5} />
-        <TrendingTickersWidget limit={10} timeframe="24h" />
-        <TopAuthorsWidget limit={5} timeframe="7d" />
-        {user && (
-          <>
-            <MyEarningsWidget period="30d" />
-            <MyActivityWidget period="7d" />
-          </>
-        )}
+      <div className="hidden lg:block w-[340px]">
+        <div className="sticky top-20 space-y-4">
+          <NewsWidget limit={5} />
+          <TrendingTickersWidget limit={10} timeframe="24h" />
+          <TopAuthorsWidget limit={5} timeframe="7d" />
+          {user && (
+            <>
+              <MyEarningsWidget period="30d" />
+              <MyActivityWidget period="7d" />
+            </>
+          )}
+        </div>
       </div>
 
       <CreatePostModal

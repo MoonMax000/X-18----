@@ -11,16 +11,35 @@ import (
 // AdminOnly проверяет что пользователь является админом
 func AdminOnly(db *database.Database) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userID := c.Locals("userID")
-		if userID == nil {
+		userIDInterface := c.Locals("userID")
+		if userIDInterface == nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Unauthorized",
 			})
 		}
 
+		// Преобразуем userID к uuid.UUID
+		userID, ok := userIDInterface.(uuid.UUID)
+		if !ok {
+			// Пытаемся преобразовать из строки
+			userIDStr, strOk := userIDInterface.(string)
+			if !strOk {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": "Invalid user ID format",
+				})
+			}
+			var err error
+			userID, err = uuid.Parse(userIDStr)
+			if err != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": "Invalid user ID",
+				})
+			}
+		}
+
 		// Получаем пользователя из БД
 		var user models.User
-		if err := db.DB.Where("id = ?", userID.(uuid.UUID)).First(&user).Error; err != nil {
+		if err := db.DB.Where("id = ?", userID).First(&user).Error; err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "User not found",
 			})
@@ -40,16 +59,35 @@ func AdminOnly(db *database.Database) fiber.Handler {
 // AdminOrModerator проверяет что пользователь является админом или модератором
 func AdminOrModerator(db *database.Database) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userID := c.Locals("userID")
-		if userID == nil {
+		userIDInterface := c.Locals("userID")
+		if userIDInterface == nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Unauthorized",
 			})
 		}
 
+		// Преобразуем userID к uuid.UUID
+		userID, ok := userIDInterface.(uuid.UUID)
+		if !ok {
+			// Пытаемся преобразовать из строки
+			userIDStr, strOk := userIDInterface.(string)
+			if !strOk {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": "Invalid user ID format",
+				})
+			}
+			var err error
+			userID, err = uuid.Parse(userIDStr)
+			if err != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": "Invalid user ID",
+				})
+			}
+		}
+
 		// Получаем пользователя из БД
 		var user models.User
-		if err := db.DB.Where("id = ?", userID.(uuid.UUID)).First(&user).Error; err != nil {
+		if err := db.DB.Where("id = ?", userID).First(&user).Error; err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "User not found",
 			})

@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
-import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
+import { useFollowRecommendations } from '@/hooks/useFollowRecommendations';
 import { useCustomNotifications } from "@/hooks/useCustomNotifications";
 import type { Notification } from "@/services/api/custom-backend";
 import { getAvatarUrl } from "@/lib/avatar-utils";
@@ -131,6 +131,9 @@ const SocialNotifications: FC = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<NotificationFilterId>("all");
   const [attentionDialogOpen, setAttentionDialogOpen] = useState(false);
+  
+  // Get follow recommendations
+  const { recommendations: followRecommendations } = useFollowRecommendations();
   
   // Attention control settings
   const [attentionSettings, setAttentionSettings] = useState({
@@ -400,7 +403,7 @@ const SocialNotifications: FC = () => {
             </label>
           </div>
         </div>
-        <FollowRecommendationsWidget title="Who to follow" profiles={DEFAULT_SUGGESTED_PROFILES} />
+        <FollowRecommendationsWidget title="Who to follow" profiles={followRecommendations} />
       </aside>
 
       {/* Attention Control Dialog */}

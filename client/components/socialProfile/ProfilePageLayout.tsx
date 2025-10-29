@@ -60,22 +60,24 @@ export default function ProfilePageLayout({ isOwnProfile, profile, posts, initia
       </div>
 
       {/* Right Sidebar with Widgets */}
-      <div className="hidden lg:block w-[340px] space-y-4">
-        {isOwnProfile ? (
-          <>
-            {/* Own Profile: Show earnings, activity, subscriptions */}
-            <MyEarningsWidget period="30d" />
-            <MyActivityWidget period="7d" />
-            <MySubscriptionsWidget />
-          </>
-        ) : (
-          <>
-            {/* Other Profile: Show news, tickers, authors */}
-            <NewsWidget limit={5} />
-            <TrendingTickersWidget limit={10} timeframe="24h" />
-            <TopAuthorsWidget limit={5} timeframe="7d" />
-          </>
-        )}
+      <div className="hidden lg:block w-[340px]">
+        <div className="sticky top-20 space-y-4">
+          {isOwnProfile ? (
+            <>
+              {/* Own Profile: Show earnings, activity, subscriptions */}
+              <MyEarningsWidget period="30d" />
+              <MyActivityWidget period="7d" />
+              <MySubscriptionsWidget />
+            </>
+          ) : (
+            <>
+              {/* Other Profile: Show news, tickers, authors */}
+              <NewsWidget limit={5} />
+              <TrendingTickersWidget limit={10} timeframe="24h" />
+              <TopAuthorsWidget limit={5} timeframe="7d" />
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

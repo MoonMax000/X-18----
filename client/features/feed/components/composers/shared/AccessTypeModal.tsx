@@ -151,29 +151,29 @@ export function AccessTypeModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-[520px] max-h-[calc(100vh-80px)] overflow-hidden rounded-3xl border border-[#181B22] bg-black shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[100px]"
+        className="relative w-full max-w-[380px] max-h-[calc(100vh-120px)] overflow-hidden rounded-2xl border border-[#181B22] bg-black shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[100px]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#181B22] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[#181B22] px-4 py-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">Post Settings</h2>
-            <p className="text-sm text-[#808283] mt-0.5">Configure access and reply permissions</p>
+            <h2 className="text-base font-semibold text-white">Post Settings</h2>
+            <p className="text-xs text-[#808283] mt-0.5">Configure access and reply permissions</p>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[#808283] transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-[#808283] transition-colors hover:bg-white/10 hover:text-white"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto px-6 py-5 max-h-[calc(100vh-240px)] scrollbar">
+        <div className="overflow-y-auto px-4 py-3 max-h-[calc(100vh-200px)] scrollbar">
           {/* Access Type Section */}
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-white mb-3">Who can see this post</h3>
-            <div className="space-y-3">
+          <div className="mb-4">
+            <h3 className="text-xs font-semibold text-white mb-2">Who can see this post</h3>
+            <div className="space-y-2">
             {accessOptions.map((option) => {
               const Icon = option.icon;
               const isSelected = selectedType === option.id;
@@ -184,7 +184,7 @@ export function AccessTypeModal({
                   type="button"
                   onClick={() => setSelectedType(option.id)}
                   className={cn(
-                    "group relative w-full overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
+                    "group relative w-full overflow-hidden rounded-xl border p-3 text-left transition-all",
                     isSelected
                       ? `${option.border} bg-gradient-to-br ${option.gradient}`
                       : "border-[#1B1F27] hover:border-[#2F3336] bg-[#0A0D12]"
@@ -192,41 +192,41 @@ export function AccessTypeModal({
                 >
                   {/* Selection indicator */}
                   {isSelected && (
-                    <div className="absolute top-3 right-3">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full" style={{ backgroundColor: option.color }}>
-                        <svg className="h-4 w-4 text-white" viewBox="0 0 16 16" fill="none">
+                    <div className="absolute top-2 right-2">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full" style={{ backgroundColor: option.color }}>
+                        <svg className="h-3 w-3 text-white" viewBox="0 0 16 16" fill="none">
                           <path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
                     </div>
                   )}
 
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     {/* Icon */}
                     <div
                       className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all",
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all",
                         isSelected ? option.bg : "bg-[#1B1F27] group-hover:bg-[#2F3336]"
                       )}
                     >
-                      <Icon className="h-6 w-6" style={{ color: option.color }} />
+                      <Icon className="h-5 w-5" style={{ color: option.color }} />
                     </div>
 
                     {/* Text */}
                     <div className="flex-1 min-w-0 pr-8">
-                      <h3 className="text-base font-semibold text-white mb-1">
+                      <h3 className="text-sm font-semibold text-white mb-0.5">
                         {option.label}
                       </h3>
-                      <p className="text-sm text-[#808283] leading-relaxed">
+                      <p className="text-xs text-[#808283] leading-relaxed">
                         {option.description}
                       </p>
 
                       {/* Price input for pay-per-post */}
                       {option.id === "pay-per-post" && isSelected && (
-                        <div className="mt-4 flex items-center gap-3">
-                          <label className="text-sm font-medium text-white">Price:</label>
-                          <div className="flex items-center gap-2 rounded-xl border border-[#A06AFF]/40 bg-[#000000] px-3 py-2 transition-colors hover:border-[#A06AFF]">
-                            <span className="text-base font-bold text-[#A06AFF]">$</span>
+                        <div className="mt-2 flex items-center gap-2">
+                          <label className="text-xs font-medium text-white">Price:</label>
+                          <div className="flex items-center gap-1 rounded-lg border border-[#A06AFF]/40 bg-[#000000] px-2 py-1.5 transition-colors hover:border-[#A06AFF]">
+                            <span className="text-sm font-bold text-[#A06AFF]">$</span>
                             <input
                               type="number"
                               min="0"
@@ -234,7 +234,7 @@ export function AccessTypeModal({
                               value={price}
                               onChange={handlePriceChange}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-20 bg-transparent text-base font-semibold text-[#A06AFF] outline-none"
+                              className="w-16 bg-transparent text-sm font-semibold text-[#A06AFF] outline-none"
                               placeholder="5.00"
                             />
                           </div>
@@ -250,8 +250,8 @@ export function AccessTypeModal({
 
           {/* Reply Policy Section */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-3">Who can reply</h3>
-            <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-white mb-2">Who can reply</h3>
+            <div className="space-y-1.5">
               {replyOptions.map((option) => {
                 const Icon = option.icon;
                 const isSelected = selectedReplyPolicy === option.id;
@@ -262,40 +262,40 @@ export function AccessTypeModal({
                     type="button"
                     onClick={() => setSelectedReplyPolicy(option.id)}
                     className={cn(
-                      "group relative w-full overflow-hidden rounded-xl border-2 p-3 text-left transition-all",
+                      "group relative w-full overflow-hidden rounded-lg border p-2.5 text-left transition-all",
                       isSelected
                         ? "border-[#1D9BF0]/50 bg-[#1D9BF0]/10"
                         : "border-[#1B1F27] hover:border-[#2F3336] bg-[#0A0D12]"
                     )}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       {/* Icon */}
                       <div
                         className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all",
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all",
                           isSelected ? "bg-[#1D9BF0]/20" : "bg-[#1B1F27] group-hover:bg-[#2F3336]"
                         )}
                       >
-                        <Icon className="h-5 w-5" style={{ color: isSelected ? option.color : "#808283" }} />
+                        <Icon className="h-4 w-4" style={{ color: isSelected ? option.color : "#808283" }} />
                       </div>
 
                       {/* Text */}
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold text-white mb-0.5">
+                        <h4 className="text-xs font-semibold text-white">
                           {option.label}
                         </h4>
-                        <p className="text-xs text-[#808283]">
+                        <p className="text-[11px] text-[#808283]">
                           {option.description}
                         </p>
                       </div>
 
                       {/* Radio indicator */}
                       <div className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         isSelected ? "border-[#1D9BF0]" : "border-[#2F3336]"
                       )}>
                         {isSelected && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-[#1D9BF0]" />
+                          <div className="h-2 w-2 rounded-full bg-[#1D9BF0]" />
                         )}
                       </div>
                     </div>
@@ -307,17 +307,17 @@ export function AccessTypeModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[#181B22] px-6 py-4">
-          <div className="flex items-center justify-between gap-3">
+        <div className="border-t border-[#181B22] px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
             <button
               onClick={onClose}
-              className="flex-1 rounded-xl border border-[#1B1F27] bg-transparent px-4 py-2.5 text-sm font-semibold text-[#808283] transition-colors hover:border-[#2F3336] hover:bg-white/5 hover:text-white"
+              className="flex-1 rounded-lg border border-[#1B1F27] bg-transparent px-3 py-2 text-xs font-semibold text-[#808283] transition-colors hover:border-[#2F3336] hover:bg-white/5 hover:text-white"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 rounded-xl bg-gradient-to-r from-[#A06AFF] via-[#7F57FF] to-[#482090] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_20px_44px_-20px_rgba(160,106,255,0.9)] transition-all hover:shadow-[0_24px_50px_-18px_rgba(160,106,255,1)] hover:-translate-y-0.5 active:scale-[0.98]"
+              className="flex-1 rounded-lg bg-gradient-to-r from-[#A06AFF] via-[#7F57FF] to-[#482090] px-3 py-2 text-xs font-semibold text-white shadow-[0_20px_44px_-20px_rgba(160,106,255,0.9)] transition-all hover:shadow-[0_24px_50px_-18px_rgba(160,106,255,1)] hover:-translate-y-0.5 active:scale-[0.98]"
             >
               Save
             </button>

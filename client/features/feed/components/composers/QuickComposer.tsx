@@ -51,9 +51,9 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
 
   const MAX_CHARS = 300;
 
-  const handleEmojiToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (!isEmojiPickerOpen) {
-      const rect = event.currentTarget.getBoundingClientRect();
+  const handleEmojiToggle = () => {
+    if (!isEmojiPickerOpen && emojiButtonRef.current) {
+      const rect = emojiButtonRef.current.getBoundingClientRect();
       setEmojiPickerPosition({ top: rect.bottom + 10, left: rect.left });
     }
     setIsEmojiPickerOpen(prev => !prev);
@@ -102,9 +102,41 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
     setIsCodeBlockOpen(false);
   };
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
   const handleBoldToggle = () => {
-    const boldText = `**${text}**`;
-    updateText(boldText);
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = text.substring(start, end);
+    
+    if (selectedText) {
+      // Если есть выделенный текст, оборачиваем его
+      const before = text.substring(0, start);
+      const after = text.substring(end);
+      const newText = `${before}**${selectedText}**${after}`;
+      updateText(newText);
+      
+      // Восстанавливаем позицию курсора после изменения
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + 2, end + 2);
+      }, 0);
+    } else {
+      // Если текста нет, просто вставляем маркеры и помещаем курсор между ними
+      const before = text.substring(0, start);
+      const after = text.substring(start);
+      const newText = `${before}****${after}`;
+      updateText(newText);
+      
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + 2, start + 2);
+      }, 0);
+    }
+    
     setIsBoldActive(!isBoldActive);
   };
 
@@ -231,6 +263,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
 
       <div className="flex-1 mb-[-1px]">
         <Textarea
+          ref={textareaRef}
           placeholder="Share your trading ideas, signals, or analysis... ($TICKER, #tags, @mentions)"
           value={text}
           onChange={e => updateText(e.target.value)}
@@ -290,7 +323,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
             onDocumentClick={() => documentInputRef.current?.click()}
             onVideoClick={() => videoInputRef.current?.click()}
             onCodeBlockClick={() => setIsCodeBlockOpen(true)}
-            onEmojiClick={() => setIsEmojiPickerOpen(prev => !prev)}
+            onEmojiClick={handleEmojiToggle}
             onBoldClick={handleBoldToggle}
             isBoldActive={isBoldActive}
             sentiment={sentiment}

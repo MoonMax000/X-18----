@@ -7,6 +7,7 @@ import type { SocialComment } from "@/data/socialComments";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarUrl } from "@/lib/avatar-utils";
 import { formatTimeAgo } from "@/lib/time-utils";
+import LoginModal from "@/components/auth/LoginModal";
 
 import VerifiedBadge from "./VerifiedBadge";
 
@@ -44,14 +45,31 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginAction, setLoginAction] = useState<'reply' | 'like'>('reply');
 
   const handleLike = () => {
+    if (!user) {
+      setLoginAction('like');
+      setShowLoginModal(true);
+      return;
+    }
+
     if (liked) {
       setLikeCount((prev) => prev - 1);
     } else {
       setLikeCount((prev) => prev + 1);
     }
     setLiked((prev) => !prev);
+  };
+
+  const handleReplyClick = () => {
+    if (!user) {
+      setLoginAction('reply');
+      setShowLoginModal(true);
+      return;
+    }
+    setShowReplyForm(!showReplyForm);
   };
 
   const commentContent = comment.text || comment.content;
@@ -110,7 +128,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
             {depth < 3 && (
               <button
                 type="button"
-                onClick={() => setShowReplyForm(!showReplyForm)}
+                onClick={handleReplyClick}
                 className="group flex items-center gap-1.5 transition-colors hover:text-[#A06AFF]"
                 aria-label="Reply"
               >
@@ -269,6 +287,13 @@ const CommentCard: FC<CommentCardProps> = ({ comment, depth = 0, isFirst = false
           ))}
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        initialScreen="login"
+      />
     </>
   );
 };

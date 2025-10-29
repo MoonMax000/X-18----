@@ -172,12 +172,12 @@ export default function FeedFilters({
           >
             <div
               data-modal-content="main-filters"
-              className="relative w-full max-w-2xl rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl mx-4"
+              className="relative w-full max-w-lg rounded-2xl border border-[#2F2F31] bg-black p-4 shadow-2xl mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2F2F31]">
-                <h2 className="text-xl font-bold text-white">Filters</h2>
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#2F2F31]">
+                <h2 className="text-lg font-bold text-white">Filters</h2>
                 <button
                   type="button"
                   onClick={() => setIsMainFiltersModalOpen(false)}
@@ -188,7 +188,7 @@ export default function FeedFilters({
               </div>
 
               {/* Filters Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {/* Market Filter */}
                 {activeConfig?.visible?.includes('market') && (
                   <div className="flex flex-col gap-2">
@@ -199,7 +199,7 @@ export default function FeedFilters({
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[34px] items-center justify-between gap-2 rounded-lg border border-[#181B22] bg-black px-3 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.market || 'All'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -243,7 +243,7 @@ export default function FeedFilters({
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[34px] items-center justify-between gap-2 rounded-lg border border-[#181B22] bg-black px-3 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.price || 'All'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -287,7 +287,7 @@ export default function FeedFilters({
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[38px] items-center justify-between gap-2 rounded-xl border border-[#181B22] bg-[#000000] px-4 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[34px] items-center justify-between gap-2 rounded-lg border border-[#181B22] bg-black px-3 text-sm font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.period || 'All time'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -410,7 +410,7 @@ export default function FeedFilters({
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-[#2F2F31]">
+              <div className="flex items-center justify-between pt-3 border-t border-[#2F2F31]">
                 <button
                   type="button"
                   onClick={handleResetFilters}

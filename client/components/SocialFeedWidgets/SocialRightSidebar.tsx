@@ -8,9 +8,9 @@ import FollowRecommendationsWidget from "./FollowRecommendationsWidget";
 import NewsWidget, { type NewsItem } from "./TrendingTopicsWidget";
 import {
   DEFAULT_SUGGESTED_PROFILES,
-  DEFAULT_FOLLOW_RECOMMENDATIONS,
   DEFAULT_NEWS_ITEMS,
 } from "./sidebarData";
+import { useFollowRecommendations } from '@/hooks/useFollowRecommendations';
 
 interface SocialRightSidebarProps {
   profiles?: SuggestedProfile[];
@@ -22,11 +22,14 @@ interface SocialRightSidebarProps {
 
 const SocialRightSidebar: FC<SocialRightSidebarProps> = ({
   profiles = DEFAULT_SUGGESTED_PROFILES,
-  followRecommendations = DEFAULT_FOLLOW_RECOMMENDATIONS,
+  followRecommendations,
   newsItems = DEFAULT_NEWS_ITEMS,
   showSearch = true,
   className,
 }) => {
+  // Получаем реальные рекомендации пользователей
+  const { recommendations, loading } = useFollowRecommendations();
+  const actualRecommendations = followRecommendations || recommendations;
   return (
     <aside className={cn("hidden w-full max-w-[360px] xl:max-w-[380px] flex-shrink-0 flex-col gap-5 lg:flex", className)}>
       <div className="sticky top-28 flex flex-col gap-5 bg-background">
@@ -45,7 +48,7 @@ const SocialRightSidebar: FC<SocialRightSidebarProps> = ({
         ) : null}
         <SuggestedProfilesWidget profiles={profiles} />
         <NewsWidget items={newsItems} />
-        <FollowRecommendationsWidget profiles={followRecommendations} />
+        <FollowRecommendationsWidget profiles={actualRecommendations} />
       </div>
     </aside>
   );

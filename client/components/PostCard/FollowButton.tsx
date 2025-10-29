@@ -8,6 +8,8 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import LoginModal from "@/components/auth/LoginModal";
 
 const BRAND_COLOR = "#A06AFF";
 const BRAND_HOVER_BACKGROUND = "rgba(160,106,255,0.16)";
@@ -41,6 +43,8 @@ const FollowButton: FC<FollowButtonProps> = ({
 }) => {
   const [internalFollowing, setInternalFollowing] = useState(defaultFollowing);
   const [isHovered, setIsHovered] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user } = useAuth();
 
   const following =
     typeof isFollowing === "boolean" ? isFollowing : internalFollowing;
@@ -49,6 +53,12 @@ const FollowButton: FC<FollowButtonProps> = ({
     if (stopPropagation) {
       event.stopPropagation();
       event.preventDefault();
+    }
+
+    // Check if user is authenticated
+    if (!user) {
+      setShowLoginModal(true);
+      return;
     }
 
     if (onClick) {
@@ -101,24 +111,33 @@ const FollowButton: FC<FollowButtonProps> = ({
   }, [following, isHovered]);
 
   return (
-    <button
-      type="button"
-      aria-pressed={following}
-      data-profile={profileId}
-      onClick={handleToggle}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={cn(
-        "flex items-center justify-center rounded-full font-semibold",
-        sizeClasses[size],
-        buttonClasses,
-        className,
-      )}
-      style={buttonStyle}
-      {...rest}
-    >
-      {following ? (isHovered ? "Unfollow" : "Following") : "Follow"}
-    </button>
+    <>
+      <button
+        type="button"
+        aria-pressed={following}
+        data-profile={profileId}
+        onClick={handleToggle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={cn(
+          "flex items-center justify-center rounded-full font-semibold",
+          sizeClasses[size],
+          buttonClasses,
+          className,
+        )}
+        style={buttonStyle}
+        {...rest}
+      >
+        {following ? (isHovered ? "Unfollow" : "Following") : "Follow"}
+      </button>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        initialScreen="login"
+      />
+    </>
   );
 };
 

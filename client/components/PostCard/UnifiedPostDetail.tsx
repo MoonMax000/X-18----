@@ -16,6 +16,7 @@ import { getAvatarUrl } from "@/lib/avatar-utils";
 import { formatTimeAgo } from "@/lib/time-utils";
 import PostMenu from "@/features/feed/components/posts/PostMenu";
 import { usePostMenu } from "@/hooks/usePostMenu";
+import LoginModal from "@/components/auth/LoginModal";
 
 interface UnifiedPostDetailProps {
   post: SocialPost | Post;
@@ -91,6 +92,8 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   const [isLiked, setIsLiked] = useState('isLiked' in post ? post.isLiked : false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likes, setLikes] = useState(post.likes);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginAction, setLoginAction] = useState<'comment' | 'like' | 'bookmark'>('comment');
 
   // Build comment hierarchy from flat list
   const buildCommentHierarchy = (flatComments: ExtendedComment[], postId: string): ExtendedComment[] => {
@@ -234,6 +237,12 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   };
 
   const handleLike = async () => {
+    if (!user) {
+      setLoginAction('like');
+      setShowLoginModal(true);
+      return;
+    }
+
     const previousState = isLiked;
     const previousCount = likes;
     
@@ -252,6 +261,22 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
       setIsLiked(previousState);
       setLikes(previousCount);
       console.error('Failed to toggle like:', error);
+    }
+  };
+
+  const handleBookmark = () => {
+    if (!user) {
+      setLoginAction('bookmark');
+      setShowLoginModal(true);
+      return;
+    }
+    setIsBookmarked(!isBookmarked);
+  };
+
+  const handleCommentFocus = () => {
+    if (!user) {
+      setLoginAction('comment');
+      setShowLoginModal(true);
     }
   };
 
@@ -524,7 +549,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
 
         <button
           type="button"
-          onClick={() => setIsBookmarked(!isBookmarked)}
+          onClick={handleBookmark}
           className={`flex items-center gap-2 transition-colors ${
             isBookmarked ? "text-[#A06AFF]" : "text-[#8B98A5] hover:text-[#A06AFF]"
           }`}
@@ -547,7 +572,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
         </button>
       </div>
 
-      {user && (
+      {user ? (
         <div className="rounded-2xl border border-widget-border bg-[#0A0A0A] p-3 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.25)]">
           <div className="flex gap-3">
             <Avatar className="h-10 w-10 flex-shrink-0">
@@ -597,6 +622,20 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
                 >
                   Reply
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div 
+          className="rounded-2xl border border-widget-border bg-[#0A0A0A] p-3 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.25)] cursor-pointer"
+          onClick={handleCommentFocus}
+        >
+          <div className="flex gap-3">
+            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br from-[#6366F1] to-[#A855F7] animate-pulse" />
+            <div className="flex-1">
+              <div className="w-full resize-none bg-transparent text-sm text-[#8B98A5] placeholder:text-[#8B98A5] focus:outline-none min-h-[32px] flex items-center">
+                Sign in to post your reply...
               </div>
             </div>
           </div>
@@ -674,6 +713,13 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
           <p className="mt-2 text-xs">Be the first to comment on this post</p>
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        initialScreen="login"
+      />
     </article>
   );
 };

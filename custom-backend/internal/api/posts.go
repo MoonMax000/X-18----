@@ -129,34 +129,48 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 
 		// Если это ответ на другой пост
 		if req.ReplyToID != nil && *req.ReplyToID != "" {
-			replyToID, err := uuid.Parse(*req.ReplyToID)
-			if err == nil {
-				post.ReplyToID = &replyToID
+			fmt.Printf("[CreatePost DEBUG] Processing reply to post: %s\n", *req.ReplyToID)
 
-				// Обновляем счетчик ответов у родительского поста
-				if err := tx.Model(&models.Post{}).Where("id = ?", replyToID).Update("replies_count", gorm.Expr("replies_count + 1")).Error; err != nil {
+			replyToID, err := uuid.Parse(*req.ReplyToID)
+			if err != nil {
+				fmt.Printf("[CreatePost ERROR] Invalid reply_to_id format: %v\n", err)
+				return fmt.Errorf("invalid reply_to_id format: %w", err)
+			}
+
+			post.ReplyToID = &replyToID
+
+			// Проверяем существование родительского поста
+			var parentPost models.Post
+			if err := tx.First(&parentPost, replyToID).Error; err != nil {
+				fmt.Printf("[CreatePost ERROR] Parent post not found: %v\n", err)
+				return fmt.Errorf("parent post not found")
+			}
+
+			fmt.Printf("[CreatePost DEBUG] Parent post found: %s (author: %s)\n", parentPost.ID, parentPost.UserID)
+			fmt.Printf("[CreatePost DEBUG] Current user: %s\n", userID)
+
+			// Обновляем счетчик ответов у родительского поста
+			if err := tx.Model(&models.Post{}).Where("id = ?", replyToID).Update("replies_count", gorm.Expr("replies_count + 1")).Error; err != nil {
+				fmt.Printf("[CreatePost ERROR] Failed to update replies_count: %v\n", err)
+				return err
+			}
+
+			// Создаем уведомление для автора родительского поста (если это не сам автор)
+			if parentPost.UserID != userID {
+				notification := models.Notification{
+					ID:         uuid.New(),
+					UserID:     parentPost.UserID,
+					FromUserID: &userID,
+					Type:       "reply",
+					PostID:     &post.ID,
+					Read:       false,
+					CreatedAt:  time.Now(),
+				}
+				if err := tx.Create(&notification).Error; err != nil {
+					fmt.Printf("[CreatePost ERROR] Failed to create reply notification: %v\n", err)
 					return err
 				}
-
-				// Получаем родительский пост для создания уведомления
-				var parentPost models.Post
-				if err := tx.First(&parentPost, replyToID).Error; err == nil {
-					// Создаем уведомление для автора родительского поста (если это не сам автор)
-					if parentPost.UserID != userID {
-						notification := models.Notification{
-							ID:         uuid.New(),
-							UserID:     parentPost.UserID,
-							FromUserID: &userID,
-							Type:       "reply",
-							PostID:     &post.ID,
-							Read:       false,
-							CreatedAt:  time.Now(),
-						}
-						if err := tx.Create(&notification).Error; err != nil {
-							return err
-						}
-					}
-				}
+				fmt.Printf("[CreatePost DEBUG] Reply notification created for user %s\n", parentPost.UserID)
 			}
 		}
 
@@ -375,7 +389,12 @@ func (h *PostsHandler) LikePost(c *fiber.Ctx) error {
 			Read:       false,
 			CreatedAt:  time.Now(),
 		}
-		h.db.DB.Create(&notification)
+		if err := h.db.DB.Create(&notification).Error; err != nil {
+			// Логируем ошибку, но не прерываем операцию лайка
+			fmt.Printf("Failed to create like notification: %v\n", err)
+		} else {
+			fmt.Printf("Like notification created successfully for post %s\n", postID)
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{

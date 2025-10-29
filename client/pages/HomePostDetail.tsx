@@ -1,17 +1,21 @@
 import { type FC, useMemo, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
-import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
 import UnifiedPostDetail from "@/components/PostCard/UnifiedPostDetail";
 import { getSocialPostById, type SocialPost } from "@/data/socialPosts";
 import { MOCK_POSTS } from "@/features/feed/mocks";
 import type { Post } from "@/features/feed/types";
+import NewsWidget from "@/components/SocialFeedWidgets/NewsWidget";
+import TrendingTickersWidget from "@/components/SocialFeedWidgets/TrendingTickersWidget";
+import TopAuthorsWidget from "@/components/SocialFeedWidgets/TopAuthorsWidget";
+import { useAuth } from "@/contexts/AuthContext";
+import MyEarningsWidget from "@/components/SocialFeedWidgets/MyEarningsWidget";
 
 const HomePostDetail: FC = () => {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
   const location = useLocation();
+  const { user } = useAuth();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -87,12 +91,15 @@ const HomePostDetail: FC = () => {
         <UnifiedPostDetail post={post} />
       </div>
 
-      <aside className="sticky top-4 hidden h-fit w-[340px] flex-col gap-4 lg:flex">
-        <SuggestedProfilesWidget
-          title="Relevant people"
-          profiles={DEFAULT_SUGGESTED_PROFILES}
-        />
-      </aside>
+      {/* Right Sidebar with Widgets */}
+      <div className="hidden lg:block w-[340px]">
+        <div className="sticky top-20 space-y-4">
+          <NewsWidget limit={5} />
+          <TrendingTickersWidget limit={10} timeframe="24h" />
+          <TopAuthorsWidget limit={5} timeframe="7d" />
+          {user && <MyEarningsWidget period="30d" />}
+        </div>
+      </div>
     </div>
   );
 };
