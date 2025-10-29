@@ -41,13 +41,17 @@ class CustomBackendAPI {
         // Try to refresh the token
         const refreshToken = localStorage.getItem('custom_refresh_token');
         if (refreshToken) {
-          // Refresh endpoint uses full baseUrl which already includes /api
+          console.log('🔄 Attempting to refresh token...');
+          
+          // Send refresh_token in request body (not in header!)
           const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${refreshToken}`,
             },
+            body: JSON.stringify({
+              refresh_token: refreshToken,
+            }),
           });
 
           if (refreshResponse.ok) {
@@ -57,18 +61,29 @@ class CustomBackendAPI {
               localStorage.setItem('custom_refresh_token', refresh_token);
             }
             
+            console.log('✅ Token refreshed successfully');
+            
             // Retry the original request with new token
             return this.request<T>(endpoint, options, retryCount + 1);
+          } else {
+            console.error('❌ Token refresh failed:', refreshResponse.status);
           }
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
+        console.error('❌ Token refresh error:', refreshError);
       }
       
-      // If refresh failed, clear tokens and throw
+      // If refresh failed, clear tokens and reload page to reset state
+      console.warn('⚠️ Clearing invalid tokens and reloading...');
       localStorage.removeItem('custom_token');
       localStorage.removeItem('custom_refresh_token');
       localStorage.removeItem('custom_user');
+      
+      // Reload page after a short delay to ensure state is reset
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
       throw new Error('Invalid or expired token');
     }
 

@@ -47,20 +47,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           try {
             const freshUser = await customAuth.getCurrentUserFromAPI(token);
             setUser(freshUser);
+            console.log('✅ Auth initialized successfully');
           } catch (error) {
+            console.warn('⚠️ Stored token is invalid, attempting refresh...');
             // Token might be expired, try refresh
             try {
               const refreshed = await customAuth.refreshToken();
               setUser(refreshed.user);
-            } catch {
-              // Refresh failed, clear auth
+              console.log('✅ Token refreshed during init');
+            } catch (refreshError) {
+              // Refresh failed, clear auth and reload
+              console.error('❌ Refresh failed, clearing auth state');
               await customAuth.logout();
               setUser(null);
+              
+              // Reload page to clear any stale state
+              window.location.reload();
             }
           }
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
+        // Clear any corrupted auth state
+        await customAuth.logout();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
