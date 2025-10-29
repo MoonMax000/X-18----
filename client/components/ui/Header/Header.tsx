@@ -118,34 +118,38 @@ export const Header: FC<HeaderProps> = ({
 
         {/* Center: Search + Assistant (desktop) */}
         <div className="flex items-center gap-4 justify-self-center">
-        <div className="flex items-center gap-2 h-10 px-4 rounded-3xl border border-[#A06AFFCC] bg-black w-full md:max-w-[260px] lg:max-w-[320px] xl:max-w-[360px]">
+        <div className="group flex items-center gap-3 h-12 px-5 rounded-full border border-[#A06AFF]/30 bg-gradient-to-r from-black/50 to-[#A06AFF]/5 backdrop-blur-xl w-full md:max-w-[280px] lg:max-w-[340px] xl:max-w-[400px] hover:border-[#A06AFF]/60 hover:shadow-[0_0_20px_rgba(160,106,255,0.15)] transition-all duration-300">
           <svg
-            className="w-6 h-6 flex-shrink-0 text-webGray"
-            width="25"
-            height="24"
-            viewBox="0 0 25 24"
+            className="w-5 h-5 flex-shrink-0 text-[#A06AFF]/70 group-hover:text-[#A06AFF] transition-colors duration-300"
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d="M12 21C17.2467 21 21.5 16.7467 21.5 11.5C21.5 6.25329 17.2467 2 12 2C6.75329 2 2.5 6.25329 2.5 11.5C2.5 16.7467 6.75329 21 12 21Z"
+              d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z"
               stroke="currentColor"
-              strokeWidth="1"
+              strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
-              d="M22.5 22L20.5 20"
+              d="M17.5 17.5L14.1667 14.1667"
               stroke="currentColor"
-              strokeWidth="1"
+              strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
           <input
-            className="bg-transparent text-white text-[14px] sm:text-[15px] font-semibold placeholder:text-webGray outline-none w-full"
-            placeholder="Поиск по авторам и темам"
+            className="bg-transparent text-white text-[14px] sm:text-[15px] font-medium placeholder:text-[#A06AFF]/50 placeholder:font-normal outline-none w-full group-hover:placeholder:text-[#A06AFF]/70 transition-colors duration-300"
+            placeholder="Поиск авторов и тем..."
           />
+          <kbd className="hidden sm:flex items-center gap-1 h-6 px-2 text-[11px] font-medium text-[#A06AFF]/50 border border-[#A06AFF]/20 rounded-md bg-[#A06AFF]/5">
+            <span>⌘</span>
+            <span>K</span>
+          </kbd>
         </div>
         {false && (
         <a
@@ -174,7 +178,15 @@ export const Header: FC<HeaderProps> = ({
               <NotificationBell count={unreadCount} />
             </div>
           )}
-        <AvatarDropdown />
+          {!user && (
+            <Link
+              to="/auth/signup"
+              className="inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#A06AFF] to-[#7C3AED] hover:from-[#B084FF] hover:to-[#8B49FF] transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              Sign Up
+            </Link>
+          )}
+          <AvatarDropdown />
           {setRightMenuOpen && (
             <RightBarButton
               isCollapsed={rightMenuOpen}

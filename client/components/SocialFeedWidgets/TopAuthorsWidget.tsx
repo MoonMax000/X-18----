@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { useTopAuthors } from "../../hooks/useWidgets";
 import { Crown } from "lucide-react";
-import { getAvatarUrl } from "../../lib/avatar-generator";
+import { getAvatarUrl } from "../../lib/avatar-utils";
 
 interface TopAuthorsWidgetProps {
   limit?: number;
@@ -56,11 +56,9 @@ const TopAuthorsWidget: FC<TopAuthorsWidgetProps> = ({ limit = 5, timeframe = '7
             </span>
             <img
               src={getAvatarUrl({
-                userId: author.user_id,
-                displayName: author.display_name,
+                avatar_url: author.avatar_url,
                 username: author.username,
-                avatarUrl: author.avatar_url,
-                size: 80
+                display_name: author.display_name
               })}
               alt={author.display_name}
               className="h-10 w-10 rounded-full object-cover"

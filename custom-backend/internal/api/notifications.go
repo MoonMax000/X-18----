@@ -1,6 +1,8 @@
 package api
 
 import (
+	"time"
+
 	"github.com/yourusername/x18-backend/internal/database"
 	"github.com/yourusername/x18-backend/internal/models"
 
@@ -21,7 +23,24 @@ func NewNotificationsHandler(db *database.Database) *NotificationsHandler {
 // GetNotifications возвращает уведомления пользователя
 // GET /api/notifications?limit=20&offset=0&unread_only=false
 func (h *NotificationsHandler) GetNotifications(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(uuid.UUID)
+	userIDInterface := c.Locals("userID")
+	userID, ok := userIDInterface.(uuid.UUID)
+	if !ok {
+		// Пытаемся преобразовать из строки
+		userIDStr, strOk := userIDInterface.(string)
+		if !strOk {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid user ID format",
+			})
+		}
+		var err error
+		userID, err = uuid.Parse(userIDStr)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid user ID",
+			})
+		}
+	}
 
 	// Параметры пагинации
 	limit := c.QueryInt("limit", 20)
@@ -66,8 +85,46 @@ func (h *NotificationsHandler) GetNotifications(c *fiber.Ctx) error {
 		Where("user_id = ? AND read = ?", userID, false).
 		Count(&unreadCount)
 
+	// Конвертируем для правильного JSON вывода
+	type NotificationResponse struct {
+		ID        string       `json:"id"`
+		UserID    string       `json:"user_id"`
+		ActorID   *string      `json:"actor_id,omitempty"`
+		Type      string       `json:"type"`
+		PostID    *string      `json:"post_id,omitempty"`
+		IsRead    bool         `json:"is_read"`
+		CreatedAt time.Time    `json:"created_at"`
+		Actor     *models.User `json:"actor,omitempty"`
+		Post      *models.Post `json:"post,omitempty"`
+	}
+
+	var responseNotifications []NotificationResponse
+	for _, n := range notifications {
+		resp := NotificationResponse{
+			ID:        n.ID.String(),
+			UserID:    n.UserID.String(),
+			Type:      n.Type,
+			IsRead:    n.Read,
+			CreatedAt: n.CreatedAt,
+			Actor:     n.FromUser,
+			Post:      n.Post,
+		}
+
+		if n.FromUserID != nil {
+			actorID := n.FromUserID.String()
+			resp.ActorID = &actorID
+		}
+
+		if n.PostID != nil {
+			postID := n.PostID.String()
+			resp.PostID = &postID
+		}
+
+		responseNotifications = append(responseNotifications, resp)
+	}
+
 	return c.JSON(fiber.Map{
-		"notifications": notifications,
+		"notifications": responseNotifications,
 		"total":         total,
 		"unread_count":  unreadCount,
 		"limit":         limit,
@@ -166,7 +223,24 @@ func (h *NotificationsHandler) DeleteNotification(c *fiber.Ctx) error {
 // GetUnreadCount возвращает количество непрочитанных уведомлений
 // GET /api/notifications/unread-count
 func (h *NotificationsHandler) GetUnreadCount(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(uuid.UUID)
+	userIDInterface := c.Locals("userID")
+	userID, ok := userIDInterface.(uuid.UUID)
+	if !ok {
+		// Пытаемся преобразовать из строки
+		userIDStr, strOk := userIDInterface.(string)
+		if !strOk {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid user ID format",
+			})
+		}
+		var err error
+		userID, err = uuid.Parse(userIDStr)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid user ID",
+			})
+		}
+	}
 
 	var count int64
 	if err := h.db.DB.Model(&models.Notification{}).

@@ -446,6 +446,12 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
                         src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
                         controls
                         className="h-full w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        onPlay={(e) => {
+                          e.stopPropagation();
+                        }}
                       />
                     ) : null}
                   </div>
