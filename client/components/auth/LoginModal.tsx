@@ -433,37 +433,22 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
         password,
       };
 
-      // First attempt login
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
-      });
-
-      const data = await response.json();
-
+      // Use customAuth service for login
+      const data = await customAuth.login(loginData);
+      
       if (data.requires_2fa) {
         // User has 2FA enabled - show 2FA screen
         console.log('2FA required for user:', loginData.email);
         setTempAuthData({ email: loginData.email, requires_2fa: true });
         setMaskedEmail(loginData.email.replace(/(.{2})(.*)(@.*)/, '$1****$3'));
         setCurrentScreen('2fa');
-      } else if (response.ok) {
+      } else {
         // No 2FA - proceed with login
-        localStorage.setItem('auth_token', data.token);
-        if (data.refresh_token) {
-          localStorage.setItem('refresh_token', data.refresh_token);
-        }
-        
         console.log('✅ Login successful:', data.user.username);
         
         // Close modal and refresh page to load user data
         onClose();
         window.location.reload();
-      } else {
-        throw new Error(data.error || 'Invalid login or password.');
       }
     } catch (error) {
       console.error('❌ Login error:', error);

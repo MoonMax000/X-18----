@@ -96,7 +96,7 @@ func (h *PostMenuHandler) UnpinPost(c *fiber.Ctx) error {
 	})
 }
 
-// DeletePost удаляет пост (только свой)
+// DeletePost удаляет пост (свой или любой для администратора)
 // DELETE /api/posts/:postId
 func (h *PostMenuHandler) DeletePost(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
@@ -107,11 +107,26 @@ func (h *PostMenuHandler) DeletePost(c *fiber.Ctx) error {
 		})
 	}
 
-	// Проверяем что пост принадлежит пользователю
+	// Получаем роль пользователя
+	var user models.User
+	if err := h.db.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get user info",
+		})
+	}
+
+	// Проверяем что пост существует
 	var post models.Post
-	if err := h.db.DB.Where("id = ? AND user_id = ?", postID, userID).First(&post).Error; err != nil {
+	if err := h.db.DB.Where("id = ?", postID).First(&post).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Post not found or you don't have permission",
+			"error": "Post not found",
+		})
+	}
+
+	// Проверяем права на удаление (владелец поста или администратор)
+	if post.UserID != userID && user.Role != "admin" {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to delete this post",
 		})
 	}
 

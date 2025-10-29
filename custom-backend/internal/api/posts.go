@@ -273,7 +273,7 @@ func (h *PostsHandler) DeletePost(c *fiber.Ctx) error {
 		})
 	}
 
-	// Проверяем, что пост принадлежит пользователю
+	// Проверяем, что пост существует
 	var post models.Post
 	if err := h.db.DB.First(&post, postID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -286,7 +286,16 @@ func (h *PostsHandler) DeletePost(c *fiber.Ctx) error {
 		})
 	}
 
-	if post.UserID != userID {
+	// Получаем информацию о пользователе для проверки роли
+	var user models.User
+	if err := h.db.DB.First(&user, userID).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch user",
+		})
+	}
+
+	// Разрешаем удаление если пользователь является админом ИЛИ владельцем поста
+	if user.Role != "admin" && post.UserID != userID {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"error": "You don't have permission to delete this post",
 		})

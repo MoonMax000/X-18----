@@ -6,6 +6,7 @@ import { navElements, NavElementProps } from './constants';
 import { ChevronDown, DoubleArrow, QuillPen } from './icons';
 import CreatePostModal from '@/components/CreatePostBox/CreatePostModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { ShieldCheck } from 'lucide-react';
 
 interface Props {
   variant?: LayoutVariant;
@@ -22,8 +23,19 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
   // Filter navigation elements for unauthenticated users
   const filteredNavElements = useMemo(() => {
+    let elements = [...navElements];
+    
+    // Add admin panel link for admin users
+    if (isAuthenticated && user?.role === 'admin') {
+      elements.push({
+        icon: <ShieldCheck className="h-5 w-5" />,
+        title: 'Admin Panel',
+        route: '/admin/dashboard'
+      });
+    }
+    
     if (!isAuthenticated) {
-      return navElements
+      return elements
         .map((el) => {
           // Hide Dashboard for unauthenticated users
           if (el.title === 'Dashboard') return null;
@@ -40,8 +52,8 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
         })
         .filter(Boolean) as NavElementProps[];
     }
-    return navElements;
-  }, [isAuthenticated]);
+    return elements;
+  }, [isAuthenticated, user?.role]);
 
   // Определяем активную группу по текущему роуту
   useEffect(() => {

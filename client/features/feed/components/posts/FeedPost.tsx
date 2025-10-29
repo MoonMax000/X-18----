@@ -46,6 +46,9 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
     ? post.author.handle.toLowerCase() === currentUserHandle.toLowerCase()
     : false;
 
+  // Check if current user is admin
+  const isAdmin = user?.role === 'admin';
+
   // PostMenu integration
   const { handleDelete, handlePin, handleReport, handleBlockAuthor } = usePostMenu({
     postId: post.id,
@@ -303,6 +306,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         </UserHoverCard>
         <PostMenu
           isOwnPost={isOwnPost}
+          isAdmin={isAdmin}
           postId={post.id}
           onDelete={handleDelete}
           onCopyLink={() => {

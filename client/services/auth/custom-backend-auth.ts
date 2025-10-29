@@ -16,6 +16,7 @@ interface AuthResponse {
   refresh_token: string;
   token_type: string;
   expires_in: number;
+  requires_2fa?: boolean;
 }
 
 interface UserAccount {
@@ -37,7 +38,7 @@ interface UserAccount {
 }
 
 class CustomBackendAuthService {
-  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+  private baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8080') + '/api';
 
   /**
    * Register a new user account

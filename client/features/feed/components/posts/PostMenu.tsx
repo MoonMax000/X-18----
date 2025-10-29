@@ -3,6 +3,7 @@ import { Trash2, Link2, Pin, Flag, UserX } from "lucide-react";
 
 interface PostMenuProps {
   isOwnPost: boolean;
+  isAdmin?: boolean;
   postId: string;
   onDelete?: () => void;
   onCopyLink?: () => void;
@@ -13,6 +14,7 @@ interface PostMenuProps {
 
 export default function PostMenu({
   isOwnPost,
+  isAdmin = false,
   postId,
   onDelete,
   onCopyLink,
@@ -75,7 +77,7 @@ export default function PostMenu({
           dangerous: true,
         },
         {
-          label: "Копировать ссы��ку",
+          label: "Копировать ссылку",
           icon: Link2,
           onClick: handleCopyLink,
           dangerous: false,
@@ -88,6 +90,13 @@ export default function PostMenu({
         },
       ]
     : [
+        // Если админ и не свой пост - показываем кнопку удаления
+        ...(isAdmin ? [{
+          label: "Удалить (admin)",
+          icon: Trash2,
+          onClick: handleDelete,
+          dangerous: true,
+        }] : []),
         {
           label: "Копировать ссылку",
           icon: Link2,
