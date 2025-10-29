@@ -287,10 +287,10 @@ const Footer: FC = () => {
             </div>
 
             {/* Right Section: 4 Columns Navigation */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
             {/* Column 1: Продукты */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Продукты</h4>
+              <h4 className="mb-3 md:mb-4 text-white font-semibold text-sm md:text-base">Продукты</h4>
               <ul className="space-y-3">
                 <li>
                   <a href="/social" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
@@ -312,7 +312,7 @@ const Footer: FC = () => {
 
             {/* Column 2: Начать */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Начать</h4>
+              <h4 className="mb-3 md:mb-4 text-white font-semibold text-sm md:text-base">Начать</h4>
               <ul className="space-y-3">
                 <li>
                   <a href="/signup" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
@@ -339,7 +339,7 @@ const Footer: FC = () => {
 
             {/* Column 3: Ресурсы */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Ресурсы</h4>
+              <h4 className="mb-3 md:mb-4 text-white font-semibold text-sm md:text-base">Ресурсы</h4>
               <ul className="space-y-3">
                 <li>
                   <a href="/support" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
@@ -361,7 +361,7 @@ const Footer: FC = () => {
 
             {/* Column 4: Компания */}
             <div>
-              <h4 className="mb-4 text-white font-semibold text-base">Компания</h4>
+              <h4 className="mb-3 md:mb-4 text-white font-semibold text-sm md:text-base">Компания</h4>
               <ul className="space-y-3">
                 <li>
                   <a href="/about" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">

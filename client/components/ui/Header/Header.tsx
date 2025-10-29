@@ -68,6 +68,14 @@ export const Header: FC<HeaderProps> = ({
         </div>
         <AnimatedLogo />
         <div className="flex-1 flex items-center justify-end gap-2">
+          {!user && (
+            <Link
+              to="/auth/signup"
+              className="inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[#A06AFF] to-[#7C3AED] hover:from-[#B084FF] hover:to-[#8B49FF] transition-all duration-200"
+            >
+              Sign Up
+            </Link>
+          )}
           <AvatarDropdown />
           {setRightMenuOpen && (
             <RightBarButton

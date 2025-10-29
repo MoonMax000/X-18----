@@ -1,6 +1,6 @@
 import React from "react";
 import { FEED_TABS } from "../constants";
-import { TAB_VARIANTS } from "../styles";
+import { TAB_VARIANTS } from "../styles/variants";
 import type { FeedTab } from "../types";
 
 interface FeedTabsProps {

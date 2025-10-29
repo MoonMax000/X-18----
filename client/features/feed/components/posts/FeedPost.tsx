@@ -7,6 +7,7 @@ import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
 import PostMenu from "./PostMenu";
+import VideoPlayer from "./VideoPlayer";
 import type { Post } from "../../types";
 import { customBackendAPI } from "@/services/api/custom-backend";
 import { useAuth } from "@/contexts/AuthContext";
@@ -442,16 +443,8 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
                         }}
                       />
                     ) : mediaItem.type === 'video' ? (
-                      <video
+                      <VideoPlayer
                         src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
-                        controls
-                        className="h-full w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        onPlay={(e) => {
-                          e.stopPropagation();
-                        }}
                       />
                     ) : null}
                   </div>

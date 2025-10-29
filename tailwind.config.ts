@@ -135,6 +135,16 @@ export default {
           "backdrop-filter": "blur(100px)",
           "-webkit-backdrop-filter": "blur(100px)",
         },
+        ".scrollbar-hide": {
+          /* IE and Edge */
+          "-ms-overflow-style": "none",
+          /* Firefox */
+          "scrollbar-width": "none",
+          /* Safari and Chrome */
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        },
       });
     }),
   ],

@@ -1,9 +1,11 @@
-import { type FC, useState } from "react";
+import { type FC, useState, useRef } from "react";
 import type { SocialProfileData } from "@/data/socialProfile";
 import { profileButtonStyles } from "./profileButtonStyles";
-import { TipModal } from "@/components/monetization";
-import { DollarSign } from "lucide-react";
+import { TipModal } from "@/components/Monetization";
+import { DollarSign, Camera } from "lucide-react";
 import { toast } from "sonner";
+import { AvatarCropModal } from "./AvatarCropModal";
+import { CoverCropModal } from "./CoverCropModal";
 
 interface ProfileHeroProps {
   profile: SocialProfileData;
@@ -27,6 +29,18 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   const [localIsFollowing, setLocalIsFollowing] = useState(externalIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
+  
+  // Avatar and cover upload states
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatar);
+  const [coverUrl, setCoverUrl] = useState(profile.cover);
+  const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
+  const [tempCoverUrl, setTempCoverUrl] = useState<string | null>(null);
+  const [showAvatarCrop, setShowAvatarCrop] = useState(false);
+  const [showCoverCrop, setShowCoverCrop] = useState(false);
+  const [isHoveringCover, setIsHoveringCover] = useState(false);
+  
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const isFollowing = externalIsFollowing !== undefined ? externalIsFollowing : localIsFollowing;
 
@@ -50,29 +64,136 @@ const ProfileHero: FC<ProfileHeroProps> = ({
     }
   };
 
+  // Handle avatar file selection
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempAvatarUrl(reader.result as string);
+      setShowAvatarCrop(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle cover file selection
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempCoverUrl(reader.result as string);
+      setShowCoverCrop(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Save cropped avatar
+  const handleSaveAvatar = async (croppedImageUrl: string) => {
+    try {
+      // TODO: Upload to backend
+      setAvatarUrl(croppedImageUrl);
+      toast.success('Avatar updated successfully');
+    } catch (error) {
+      console.error('Failed to save avatar:', error);
+      toast.error('Failed to save avatar');
+    }
+  };
+
+  // Save cropped cover
+  const handleSaveCover = async (croppedImageUrl: string) => {
+    try {
+      // TODO: Upload to backend
+      setCoverUrl(croppedImageUrl);
+      toast.success('Cover photo updated successfully');
+    } catch (error) {
+      console.error('Failed to save cover:', error);
+      toast.error('Failed to save cover');
+    }
+  };
+
   return (
     <section className="mb-6">
+      {/* Hidden file inputs */}
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleAvatarFileChange}
+        className="hidden"
+      />
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleCoverFileChange}
+        className="hidden"
+      />
+
       {/* Cover/Banner image */}
-      <div className="w-full overflow-hidden rounded-3xl bg-gradient-to-br from-[#141923] to-[#0B0E13]">
-        {profile.cover ? (
+      <div
+        className="relative w-full overflow-hidden rounded-3xl bg-gradient-to-br from-[#141923] to-[#0B0E13] group"
+        onMouseEnter={() => isOwnProfile && setIsHoveringCover(true)}
+        onMouseLeave={() => isOwnProfile && setIsHoveringCover(false)}
+      >
+        {coverUrl ? (
           <img
-            src={profile.cover}
+            src={coverUrl}
             alt={`${profile.name} cover`}
             className="h-[120px] sm:h-[160px] md:h-[200px] w-full object-cover"
           />
         ) : (
           <div className="h-[120px] sm:h-[160px] md:h-[200px] w-full" />
         )}
+        
+        {/* Update cover overlay */}
+        {isOwnProfile && (
+          <button
+            onClick={() => coverInputRef.current?.click()}
+            className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200 ${
+              isHoveringCover ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="flex items-center gap-2 text-white">
+              <Camera className="h-5 w-5" />
+              <span className="font-semibold">Update cover</span>
+            </div>
+          </button>
+        )}
       </div>
 
       <div className="px-3 sm:px-4 md:px-6 pt-3 sm:pt-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="relative -mt-12 sm:-mt-14 md:-mt-16 h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full border-3 sm:border-4 border-[#0B0E13] bg-[#121720]">
-            <img
-              src={profile.avatar}
-              alt={profile.name}
-              className="h-full w-full object-cover"
-            />
+          <div className="relative -mt-12 sm:-mt-14 md:-mt-16 h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px]">
+            <div className="relative h-full w-full overflow-hidden rounded-full border-3 sm:border-4 border-[#0B0E13] bg-[#121720] group">
+              <img
+                src={avatarUrl}
+                alt={profile.name}
+                className="h-full w-full object-cover"
+              />
+              
+              {/* Avatar upload overlay */}
+              {isOwnProfile && (
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Camera className="h-6 w-6 text-white" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 pt-2">
@@ -156,6 +277,32 @@ const ProfileHero: FC<ProfileHeroProps> = ({
           authorId={profile.username}
           authorName={profile.name}
           authorAvatar={profile.avatar}
+        />
+      )}
+
+      {/* Avatar Crop Modal */}
+      {showAvatarCrop && tempAvatarUrl && (
+        <AvatarCropModal
+          imageUrl={tempAvatarUrl}
+          onSave={handleSaveAvatar}
+          onClose={() => {
+            setShowAvatarCrop(false);
+            setTempAvatarUrl(null);
+            if (avatarInputRef.current) avatarInputRef.current.value = '';
+          }}
+        />
+      )}
+
+      {/* Cover Crop Modal */}
+      {showCoverCrop && tempCoverUrl && (
+        <CoverCropModal
+          imageUrl={tempCoverUrl}
+          onSave={handleSaveCover}
+          onClose={() => {
+            setShowCoverCrop(false);
+            setTempCoverUrl(null);
+            if (coverInputRef.current) coverInputRef.current.value = '';
+          }}
         />
       )}
     </section>
