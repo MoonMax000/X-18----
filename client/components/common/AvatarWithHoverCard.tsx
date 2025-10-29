@@ -1,5 +1,6 @@
 import { type FC, type ReactNode } from "react";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
+import { DEBUG } from "@/lib/debug";
 
 interface AvatarWithHoverCardProps {
   author: {
@@ -38,20 +39,36 @@ const AvatarWithHoverCard: FC<AvatarWithHoverCardProps> = ({
   children,
   disabled = false,
 }) => {
+  DEBUG.log('HOVER_CARDS', 'AvatarWithHoverCard render', { 
+    author,
+    isFollowing,
+    disabled 
+  });
+
   // If disabled, just return children without hover card
   if (disabled) {
     return <>{children}</>;
   }
 
+  const handleFollowToggle = (nextState: boolean) => {
+    DEBUG.log('HOVER_CARDS', 'AvatarWithHoverCard follow toggle', { 
+      author: author.name,
+      nextState 
+    });
+    onFollowToggle?.(nextState);
+  };
+
   return (
     <UserHoverCard
       author={{
         ...author,
+        avatar: author.avatar || '/default-avatar.png', // Provide default avatar
         followers: author.followers ?? 0,
         following: author.following ?? 0,
       }}
       isFollowing={isFollowing}
-      onFollowToggle={onFollowToggle ?? (() => {})}
+      onFollowToggle={handleFollowToggle}
+      showFollowButton={true}
     >
       {children}
     </UserHoverCard>

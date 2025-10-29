@@ -1,6 +1,7 @@
 // useCustomNotifications - Hook for managing notifications from Custom Backend
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { customBackendAPI, type Notification, type PaginationParams } from '@/services/api/custom-backend';
+import { customAuth } from '@/services/auth/custom-backend-auth';
 
 interface UseCustomNotificationsOptions {
   limit?: number;
@@ -38,11 +39,20 @@ export function useCustomNotifications(
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadUnreadCount = useCallback(async () => {
+    // Check if user is authenticated
+    const token = customAuth.getAccessToken();
+    if (!token) {
+      console.log('[useCustomNotifications] No auth token, skipping unread count load');
+      setUnreadCount(0);
+      return;
+    }
+
     try {
       const result = await customBackendAPI.getUnreadCount();
       setUnreadCount(result.count);
     } catch (err) {
       console.error('Error loading unread count:', err);
+      setUnreadCount(0);
     }
   }, []);
 
@@ -58,6 +68,17 @@ export function useCustomNotifications(
 
   const loadInitial = useCallback(async () => {
     console.log('[useCustomNotifications] loadInitial called');
+    
+    // Check if user is authenticated
+    const token = customAuth.getAccessToken();
+    if (!token) {
+      console.log('[useCustomNotifications] No auth token, skipping notifications load');
+      setIsLoading(false);
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -84,6 +105,9 @@ export function useCustomNotifications(
     } catch (err) {
       console.error('[useCustomNotifications] Error loading notifications:', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
+      // Reset state on error
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }

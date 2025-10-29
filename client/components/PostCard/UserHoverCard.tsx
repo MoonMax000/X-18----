@@ -1,4 +1,4 @@
-import { type FC, type MouseEvent, type ReactNode, useState } from "react";
+import { type FC, type MouseEvent, type ReactNode, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import UserAvatar from "@/components/ui/Avatar/UserAvatar";
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/hover-card";
 import { cn } from "@/lib/utils";
 import { customBackendAPI } from "@/services/api/custom-backend";
+import { DEBUG } from "@/lib/debug";
 
 import FollowButton from "./FollowButton";
 import type { FeedPostProps } from "./VideoPost";
@@ -44,6 +45,8 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
   const navigate = useNavigate();
   const [following, setFollowing] = useState(isFollowing);
   const [isLoading, setIsLoading] = useState(false);
+  const [authorData, setAuthorData] = useState(author);
+  const [isLoadingAuthorData, setIsLoadingAuthorData] = useState(false);
   
   // Local state for follower counts to update after follow/unfollow
   const [followersCount, setFollowersCount] = useState(
@@ -56,6 +59,54 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
   // Always show counts, even if 0
   const followers = followersCount;
   const followingCount = followingCountState;
+
+  // Load fresh author data when hover card opens
+  useEffect(() => {
+    const loadAuthorData = async () => {
+      try {
+        const username = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+        DEBUG.log('HOVER_CARDS', `Loading fresh data for user: ${username}`, { author });
+        
+        setIsLoadingAuthorData(true);
+        const userData = await customBackendAPI.getUserByUsername(username);
+        
+        DEBUG.log('HOVER_CARDS', `Loaded user data:`, userData);
+        
+        // Update author data with fresh API data
+        setAuthorData({
+          ...author,
+          avatar: userData.avatar_url || author.avatar,
+          bio: userData.bio || author.bio,
+          followers: userData.followers_count ?? author.followers ?? 0,
+          following: userData.following_count ?? author.following ?? 0,
+          verified: userData.verified ?? author.verified ?? false,
+          isCurrentUser: false, // This should be checked properly
+        });
+        
+        setFollowersCount(userData.followers_count ?? 0);
+        setFollowingCountState(userData.following_count ?? 0);
+        
+        // Check follow status
+        const currentUser = JSON.parse(localStorage.getItem('custom_user') || '{}');
+        if (currentUser?.id && userData.id && currentUser.id !== userData.id) {
+          try {
+            const followingList = await customBackendAPI.getFollowing(currentUser.id, { limit: 1000 });
+            const isFollowingUser = followingList.some(u => u.id === userData.id);
+            setFollowing(isFollowingUser);
+            DEBUG.log('HOVER_CARDS', `Follow status for ${username}: ${isFollowingUser}`);
+          } catch (error) {
+            DEBUG.error('HOVER_CARDS', 'Failed to check follow status', error);
+          }
+        }
+      } catch (error) {
+        DEBUG.error('HOVER_CARDS', 'Failed to load author data', error);
+      } finally {
+        setIsLoadingAuthorData(false);
+      }
+    };
+
+    loadAuthorData();
+  }, [author.handle, author.name]);
 
   const handleFollowToggle = async (nextState: boolean) => {
     if (isLoading) return;
@@ -89,19 +140,19 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
       
       if (errorMessage.includes('Already following')) {
         // User is already following - update state to reflect this
-        console.log('[UserHoverCard] Already following, updating state to true');
+        DEBUG.log('HOVER_CARDS', 'Already following, updating state to true');
         setFollowing(true);
         onFollowToggle?.(true);
         // Don't update follower count - already counted
       } else if (errorMessage.includes('Not following')) {
         // User is not following - update state to reflect this
-        console.log('[UserHoverCard] Not following, updating state to false');
+        DEBUG.log('HOVER_CARDS', 'Not following, updating state to false');
         setFollowing(false);
         onFollowToggle?.(false);
         // Don't update follower count - already removed
       } else {
         // Other errors - revert to previous state
-        console.error('[UserHoverCard] Failed to toggle follow:', error);
+        DEBUG.error('HOVER_CARDS', 'Failed to toggle follow', error);
         setFollowing(previousState);
       }
     } finally {
@@ -112,11 +163,27 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
   // Always generate labels, even for 0
   const followersLabel = formatCount(followers);
   const followingLabel = formatCount(followingCount);
-  const shouldRenderFollowButton = showFollowButton ?? !author.isCurrentUser;
+  
+  // Check if current user
+  const currentUser = JSON.parse(localStorage.getItem('custom_user') || '{}');
+  const username = authorData.handle?.replace('@', '') || authorData.name.replace(/\s+/g, '-').toLowerCase();
+  const isCurrentUser = currentUser?.username === username;
+  
+  const shouldRenderFollowButton = showFollowButton ?? !isCurrentUser;
   const headerClasses = cn(
     "flex items-start gap-4",
     shouldRenderFollowButton ? "justify-between" : "justify-start",
   );
+
+  DEBUG.log('HOVER_CARDS', 'Hover card render data', {
+    author: authorData,
+    followers,
+    followingCount,
+    following,
+    isCurrentUser,
+    shouldRenderFollowButton,
+    isLoadingAuthorData
+  });
 
   const handleProfileClick = (e: MouseEvent) => {
     // На мобильных устройствах (без hover) сразу переходим в профиль
@@ -154,19 +221,19 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
             }}
           >
             <UserAvatar
-              src={author.avatar}
-              alt={author.name}
+              src={authorData.avatar}
+              alt={authorData.name}
               size={52}
               accent={false}
             />
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 text-base font-semibold leading-tight text-white">
-                <span>{author.name}</span>
-                {author.verified ? <VerifiedBadge size={16} /> : null}
+                <span>{authorData.name}</span>
+                {authorData.verified ? <VerifiedBadge size={16} /> : null}
               </div>
-              {author.handle ? (
+              {authorData.handle ? (
                 <span className="text-sm font-medium text-[#8E92A0]">
-                  {author.handle}
+                  {authorData.handle}
                 </span>
               ) : null}
             </div>
@@ -177,16 +244,16 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
               stopPropagation
               isFollowing={following}
               onToggle={handleFollowToggle}
-              profileId={author.handle ?? author.name}
+              profileId={authorData.handle ?? authorData.name}
               className="gap-2"
-              disabled={isLoading}
+              disabled={isLoading || isLoadingAuthorData}
             />
           ) : null}
         </div>
 
-        {author.bio ? (
+        {authorData.bio ? (
           <p className="mt-3 text-sm leading-relaxed text-white/80">
-            {author.bio}
+            {authorData.bio}
           </p>
         ) : null}
 
@@ -195,7 +262,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+              const profileHandle = authorData.handle?.replace('@', '') || authorData.name.replace(/\s+/g, '-').toLowerCase();
               navigate(`/profile-connections/${profileHandle}?tab=following`);
             }}
             className="group cursor-pointer transition-colors hover:text-white"
@@ -211,7 +278,7 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              const profileHandle = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
+              const profileHandle = authorData.handle?.replace('@', '') || authorData.name.replace(/\s+/g, '-').toLowerCase();
               navigate(`/profile-connections/${profileHandle}?tab=followers`);
             }}
             className="group cursor-pointer transition-colors hover:text-white"

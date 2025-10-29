@@ -22,10 +22,10 @@ export const Header: FC<HeaderProps> = ({
 }) => {
   const { user } = useAuth();
   
-  // Fetch unread notifications count
+  // Fetch unread notifications count only if user is authenticated
   const { unreadCount } = useCustomNotifications({
     limit: 10,
-    autoRefresh: true,
+    autoRefresh: !!user, // Only auto-refresh if user exists
     refreshInterval: 60000, // Refresh every minute
   });
 
