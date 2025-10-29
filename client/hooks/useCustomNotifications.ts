@@ -1,7 +1,9 @@
 // useCustomNotifications - Hook for managing notifications from Custom Backend
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { customBackendAPI, type Notification, type PaginationParams } from '@/services/api/custom-backend';
-import { customAuth } from '@/services/auth/custom-backend-auth';
+import { authFetch } from '@/lib/auth-fetch';
+import { DEBUG } from '@/lib/debug';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UseCustomNotificationsOptions {
   limit?: number;
@@ -21,16 +23,18 @@ interface UseCustomNotificationsReturn {
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   deleteNotification: (id: string) => Promise<void>;
+  isAuthenticated: boolean;
 }
 
 export function useCustomNotifications(
   options: UseCustomNotificationsOptions = {}
 ): UseCustomNotificationsReturn {
   const { limit = 20, autoRefresh = false, refreshInterval = 60000 } = options;
+  const { user, isAuthenticated } = useAuth();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Изменено на false по умолчанию
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -39,10 +43,9 @@ export function useCustomNotifications(
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadUnreadCount = useCallback(async () => {
-    // Check if user is authenticated
-    const token = customAuth.getAccessToken();
-    if (!token) {
-      console.log('[useCustomNotifications] No auth token, skipping unread count load');
+    // Пропускаем если не авторизован
+    if (!isAuthenticated || !authFetch.hasToken()) {
+      DEBUG.log('NOTIFICATIONS', 'Skipping unread count - not authenticated');
       setUnreadCount(0);
       return;
     }
@@ -51,10 +54,11 @@ export function useCustomNotifications(
       const result = await customBackendAPI.getUnreadCount();
       setUnreadCount(result.count);
     } catch (err) {
-      console.error('Error loading unread count:', err);
+      DEBUG.log('NOTIFICATIONS', 'Error loading unread count', err);
+      // Не показываем ошибку пользователю для фоновых запросов
       setUnreadCount(0);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const loadNotifications = useCallback(async (params: PaginationParams) => {
     try {
@@ -67,15 +71,14 @@ export function useCustomNotifications(
   }, []);
 
   const loadInitial = useCallback(async () => {
-    console.log('[useCustomNotifications] loadInitial called');
+    DEBUG.log('NOTIFICATIONS', 'loadInitial called', { isAuthenticated });
     
-    // Check if user is authenticated
-    const token = customAuth.getAccessToken();
-    if (!token) {
-      console.log('[useCustomNotifications] No auth token, skipping notifications load');
-      setIsLoading(false);
+    // Пропускаем загрузку если не авторизован
+    if (!isAuthenticated || !authFetch.hasToken()) {
+      DEBUG.log('NOTIFICATIONS', 'Skipping initial load - not authenticated');
       setNotifications([]);
       setUnreadCount(0);
+      setIsLoading(false);
       return;
     }
 
@@ -83,35 +86,37 @@ export function useCustomNotifications(
     setError(null);
 
     try {
-      console.log('[useCustomNotifications] Fetching notifications with limit:', limit);
+      DEBUG.log('NOTIFICATIONS', 'Fetching notifications', { limit });
       const [notifs, countResult] = await Promise.all([
         loadNotifications({ limit, offset: 0 }),
         customBackendAPI.getUnreadCount(),
       ]);
 
-      console.log('[useCustomNotifications] Received notifications:', notifs);
-      console.log('[useCustomNotifications] Notifications count:', notifs?.length);
-      console.log('[useCustomNotifications] Unread count:', countResult.count);
-      
-      if (notifs && notifs.length > 0) {
-        console.log('[useCustomNotifications] First notification:', notifs[0]);
-        console.log('[useCustomNotifications] First notification actor:', notifs[0]?.actor);
-      }
+      DEBUG.log('NOTIFICATIONS', 'Loaded notifications', { 
+        count: notifs?.length,
+        unreadCount: countResult.count 
+      });
 
-      setNotifications(notifs);
+      setNotifications(notifs || []);
       setUnreadCount(countResult.count);
       setHasMore(notifs.length === limit);
       setOffset(notifs.length);
     } catch (err) {
-      console.error('[useCustomNotifications] Error loading notifications:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
-      // Reset state on error
+      DEBUG.log('NOTIFICATIONS', 'Error loading notifications', err);
+      
+      // Для 401 ошибок не показываем ошибку UI
+      if (err instanceof Error && err.message.includes('401')) {
+        setError(null);
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load notifications');
+      }
+      
       setNotifications([]);
       setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }
-  }, [limit, loadNotifications]);
+  }, [limit, loadNotifications, isAuthenticated]);
 
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
@@ -189,14 +194,21 @@ export function useCustomNotifications(
     }
   }, [loadUnreadCount]);
 
-  // Initial load
+  // Initial load при изменении состояния авторизации
   useEffect(() => {
-    loadInitial();
-  }, [loadInitial]);
+    if (isAuthenticated) {
+      loadInitial();
+    } else {
+      // Очищаем данные при выходе
+      setNotifications([]);
+      setUnreadCount(0);
+      setError(null);
+    }
+  }, [loadInitial, isAuthenticated]);
 
-  // Auto-refresh
+  // Auto-refresh только для авторизованных
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh || !isAuthenticated) return;
 
     refreshTimerRef.current = setInterval(() => {
       loadUnreadCount();
@@ -207,7 +219,19 @@ export function useCustomNotifications(
         clearInterval(refreshTimerRef.current);
       }
     };
-  }, [autoRefresh, refreshInterval, loadUnreadCount]);
+  }, [autoRefresh, refreshInterval, loadUnreadCount, isAuthenticated]);
+
+  // Слушаем событие logout
+  useEffect(() => {
+    const handleLogout = () => {
+      setNotifications([]);
+      setUnreadCount(0);
+      setError(null);
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
+  }, []);
 
   return {
     notifications,
@@ -221,5 +245,6 @@ export function useCustomNotifications(
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    isAuthenticated,
   };
 }
