@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -52,8 +53,15 @@ func NotificationRateLimiter() fiber.Handler {
 		Expiration: 10 * time.Second,
 		KeyGenerator: func(c *fiber.Ctx) string {
 			// Используем userID если есть, иначе IP
-			if userID := c.Locals("userID"); userID != nil {
-				return userID.(string)
+			if userIDRaw := c.Locals("userID"); userIDRaw != nil {
+				// Проверяем тип и правильно конвертируем
+				switch v := userIDRaw.(type) {
+				case string:
+					return v
+				default:
+					// Для uuid.UUID и других типов используем String()
+					return fmt.Sprintf("%v", v)
+				}
 			}
 			return c.IP()
 		},
