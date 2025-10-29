@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -12,6 +12,7 @@ import type { Post } from "../../types";
 import { customBackendAPI } from "@/services/api/custom-backend";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePostMenu } from "@/hooks/usePostMenu";
+import { useLikeStore } from "@/store/useLikeStore";
 
 // Category configuration with icons and colors (same as in ComposerMetadata)
 const categoryConfig = {
@@ -36,10 +37,19 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
-  const [isLiked, setIsLiked] = useState(post.isLiked || false);
-  const [likesCount, setLikesCount] = useState(post.likes);
   const [isExpanded, setIsExpanded] = useState(false);
   const isSignal = post.type === "signal";
+  
+  // Use global like store
+  const { getLikeState, initializeLike, toggleLike } = useLikeStore();
+  const likeState = getLikeState(post.id);
+  const isLiked = likeState?.isLiked ?? (post.isLiked || false);
+  const likesCount = likeState?.likesCount ?? post.likes;
+  
+  // Initialize like state on mount
+  useEffect(() => {
+    initializeLike(post.id, post.isLiked || false, post.likes);
+  }, [post.id, post.isLiked, post.likes, initializeLike]);
 
   // Check if this is the current user's post
   const currentUserHandle = user ? `@${user.username}` : null;
@@ -91,23 +101,10 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
     e.stopPropagation();
     e.preventDefault();
     
-    const previousState = isLiked;
-    const previousCount = likesCount;
-    
-    // Optimistic update
-    setIsLiked(!isLiked);
-    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
-    
     try {
-      if (isLiked) {
-        await customBackendAPI.unlikePost(post.id);
-      } else {
-        await customBackendAPI.likePost(post.id);
-      }
+      await toggleLike(post.id);
     } catch (error) {
-      // Revert on error
-      setIsLiked(previousState);
-      setLikesCount(previousCount);
+      // Error already handled in store with rollback
       console.error('Failed to toggle like:', error);
     }
   };

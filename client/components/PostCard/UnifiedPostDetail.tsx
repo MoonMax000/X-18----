@@ -17,6 +17,7 @@ import { formatTimeAgo } from "@/lib/time-utils";
 import PostMenu from "@/features/feed/components/posts/PostMenu";
 import { usePostMenu } from "@/hooks/usePostMenu";
 import LoginModal from "@/components/auth/LoginModal";
+import { useLikeStore } from "@/store/useLikeStore";
 
 interface UnifiedPostDetailProps {
   post: SocialPost | Post;
@@ -89,11 +90,21 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const MAX_COMMENT_LENGTH = 500;
-  const [isLiked, setIsLiked] = useState('isLiked' in post ? post.isLiked : false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [likes, setLikes] = useState(post.likes);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginAction, setLoginAction] = useState<'comment' | 'like' | 'bookmark'>('comment');
+
+  // Use global like store for synchronization with FeedPost
+  const { getLikeState, initializeLike, toggleLike } = useLikeStore();
+  const likeState = getLikeState(post.id);
+  const initialIsLiked = 'isLiked' in post ? post.isLiked : false;
+  const isLiked = likeState?.isLiked ?? initialIsLiked;
+  const likes = likeState?.likesCount ?? post.likes;
+
+  // Initialize like state on mount
+  useEffect(() => {
+    initializeLike(post.id, initialIsLiked, post.likes);
+  }, [post.id, initialIsLiked, post.likes, initializeLike]);
 
   // Build comment hierarchy from flat list
   const buildCommentHierarchy = (flatComments: ExtendedComment[], postId: string): ExtendedComment[] => {
@@ -243,23 +254,10 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
       return;
     }
 
-    const previousState = isLiked;
-    const previousCount = likes;
-    
-    // Optimistic update
-    setIsLiked(!isLiked);
-    setLikes(isLiked ? likes - 1 : likes + 1);
-    
     try {
-      if (isLiked) {
-        await customBackendAPI.unlikePost(post.id);
-      } else {
-        await customBackendAPI.likePost(post.id);
-      }
+      await toggleLike(post.id);
     } catch (error) {
-      // Revert on error
-      setIsLiked(previousState);
-      setLikes(previousCount);
+      // Error already handled by store with rollback
       console.error('Failed to toggle like:', error);
     }
   };
