@@ -51,23 +51,17 @@ class WebSocketService {
 
   /**
    * Подключение к WebSocket серверу
+   * HttpOnly cookies автоматически отправляются браузером при WebSocket upgrade
    */
   connect(): void {
-    // Проверяем авторизацию
-    const token = customAuth.getAccessToken();
-    if (!token) {
-      console.warn('WebSocket: No auth token available');
-      return;
-    }
-
     // Если уже подключены или подключаемся
     if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || 
                     this.ws.readyState === WebSocket.OPEN)) {
       return;
     }
 
-    // Строим URL с токеном
-    const wsUrl = this.buildWebSocketUrl(token);
+    // Строим URL без токена (браузер автоматически отправит HttpOnly cookie)
+    const wsUrl = this.buildWebSocketUrl();
     this.isIntentionallyClosed = false;
     
     this.setConnectionState(ConnectionState.CONNECTING);
@@ -153,12 +147,13 @@ class WebSocketService {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
   }
 
-  private buildWebSocketUrl(token: string): string {
+  private buildWebSocketUrl(): string {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     const wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
     const wsHost = baseUrl.replace(/^https?:\/\//, '');
     
-    return `${wsProtocol}://${wsHost}/ws/notifications?token=${token}`;
+    // Браузер автоматически отправит HttpOnly cookie при WebSocket upgrade
+    return `${wsProtocol}://${wsHost}/ws/notifications`;
   }
 
   private setupEventHandlers(): void {

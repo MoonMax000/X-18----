@@ -113,11 +113,22 @@ func (h *WebSocketHandler) HandleWebSocket(c *fiber.Ctx) error {
 
 	// Проверяем, является ли запрос WebSocket
 	if websocket.IsWebSocketUpgrade(c) {
-		// Извлекаем токен из заголовка или query параметра
-		token := c.Get("Authorization")
-		if token != "" && len(token) > 7 && token[:7] == "Bearer " {
-			token = token[7:]
-		} else {
+		// Пытаемся получить токен из разных источников
+		var token string
+
+		// 1. Проверяем HttpOnly cookie (приоритет для безопасности)
+		token = c.Cookies("access_token")
+
+		// 2. Если нет в cookie, проверяем Authorization header
+		if token == "" {
+			authHeader := c.Get("Authorization")
+			if authHeader != "" && len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+				token = authHeader[7:]
+			}
+		}
+
+		// 3. Если нет в header, проверяем query параметр (legacy)
+		if token == "" {
 			token = c.Query("token")
 		}
 
