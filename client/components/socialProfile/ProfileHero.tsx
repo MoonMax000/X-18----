@@ -1,7 +1,7 @@
 import { type FC, useState, useRef } from "react";
 import type { SocialProfileData } from "@/data/socialProfile";
 import { profileButtonStyles } from "./profileButtonStyles";
-import { TipModal } from "@/components/Monetization";
+import TipModal from "@/components/Monetization/TipModal";
 import { DollarSign, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarCropModal } from "./AvatarCropModal";
