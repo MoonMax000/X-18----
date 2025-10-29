@@ -73,17 +73,13 @@ class CustomBackendAPI {
         console.error('❌ Token refresh error:', refreshError);
       }
       
-      // If refresh failed, clear tokens and reload page to reset state
-      console.warn('⚠️ Clearing invalid tokens and reloading...');
+      // If refresh failed, clear tokens but DO NOT reload page
+      console.warn('⚠️ Clearing invalid tokens...');
       localStorage.removeItem('custom_token');
       localStorage.removeItem('custom_refresh_token');
       localStorage.removeItem('custom_user');
       
-      // Reload page after a short delay to ensure state is reset
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
-      
+      // Let the error propagate to be handled by the UI components
       throw new Error('Invalid or expired token');
     }
 

@@ -56,13 +56,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               setUser(refreshed.user);
               console.log('✅ Token refreshed during init');
             } catch (refreshError) {
-              // Refresh failed, clear auth and reload
+              // Refresh failed, clear auth but DO NOT reload
               console.error('❌ Refresh failed, clearing auth state');
               await customAuth.logout();
               setUser(null);
               
-              // Reload page to clear any stale state
-              window.location.reload();
+              // Let the UI react to the null user state
+              // Components will show login prompt as needed
             }
           }
         }
