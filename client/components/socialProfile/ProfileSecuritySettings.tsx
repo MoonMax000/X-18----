@@ -12,13 +12,18 @@ import {
   Loader2,
   Monitor,
   Globe,
-  Calendar
+  Calendar,
+  Copy,
+  Download,
+  QrCode
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSecuritySettings, useSessions } from '@/hooks/useSecurity';
+import { useTOTP } from '@/hooks/useTOTP';
+import { useAccountManagement } from '@/hooks/useAccountManagement';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Session {
@@ -35,16 +40,64 @@ interface Session {
 export default function ProfileSecuritySettings() {
   const { settings, isLoading: settingsLoading, updateSettings } = useSecuritySettings();
   const { sessions, isLoading: sessionsLoading, revokeSession } = useSessions();
+  const { 
+    loading: totpLoading, 
+    error: totpError,
+    getTOTPStatus,
+    generateTOTP,
+    enableTOTP,
+    disableTOTP,
+    regenerateBackupCodes
+  } = useTOTP();
+  const {
+    loading: accountLoading,
+    error: accountError,
+    getRecoveryInfo,
+    deactivateAccount,
+    restoreAccount
+  } = useAccountManagement();
   
   const [activeTab, setActiveTab] = useState<'sessions' | 'twofa' | 'backup' | 'password' | 'delete'>('sessions');
-  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
-  const [twoFACode, setTwoFACode] = useState(['', '', '', '', '', '']);
+  
+  // TOTP States
+  const [totpStatus, setTotpStatus] = useState<{ enabled: boolean; has_backup_codes: boolean } | null>(null);
+  const [isSetupTOTPOpen, setIsSetupTOTPOpen] = useState(false);
+  const [totpSetupData, setTotpSetupData] = useState<{
+    secret: string;
+    formatted_secret: string;
+    qr_code: string;
+    backup_codes: string[];
+  } | null>(null);
+  const [totpVerifyCode, setTotpVerifyCode] = useState('');
+  const [showBackupCodes, setShowBackupCodes] = useState(false);
+  const [isDisableTOTPOpen, setIsDisableTOTPOpen] = useState(false);
+  const [disableTotpCode, setDisableTotpCode] = useState('');
+  
+  // Account States
+  const [recoveryInfo, setRecoveryInfo] = useState<any>(null);
   const [backupEmail, setBackupEmail] = useState('');
   const [backupPhone, setBackupPhone] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteReason, setDeleteReason] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
+  // Load TOTP status
+  useEffect(() => {
+    loadTOTPStatus();
+    loadRecoveryInfo();
+  }, []);
+
+  const loadTOTPStatus = async () => {
+    const status = await getTOTPStatus();
+    setTotpStatus(status);
+  };
+
+  const loadRecoveryInfo = async () => {
+    const info = await getRecoveryInfo();
+    setRecoveryInfo(info);
+  };
 
   const tabs = [
     { id: 'sessions', label: 'Active Sessions', icon: Smartphone },
@@ -65,26 +118,63 @@ export default function ProfileSecuritySettings() {
     }
   };
 
-  const handle2FAToggle = async (enabled: boolean) => {
-    if (enabled) {
-      setIs2FAModalOpen(true);
-    } else {
-      await updateSettings({ is_2fa_enabled: false });
+  const handleSetupTOTP = async () => {
+    const data = await generateTOTP();
+    if (data) {
+      setTotpSetupData(data);
+      setIsSetupTOTPOpen(true);
     }
   };
 
-  const handle2FACodeChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    if (value && !/^\d$/.test(value)) return;
-
-    const newCode = [...twoFACode];
-    newCode[index] = value;
-    setTwoFACode(newCode);
-
-    if (value && index < 5) {
-      const nextInput = document.querySelector(`input[name="2fa-${index + 1}"]`) as HTMLInputElement;
-      nextInput?.focus();
+  const handleEnableTOTP = async () => {
+    if (totpVerifyCode.length !== 6) return;
+    
+    const success = await enableTOTP(totpVerifyCode);
+    if (success) {
+      setIsSetupTOTPOpen(false);
+      setTotpVerifyCode('');
+      setShowBackupCodes(true);
+      await loadTOTPStatus();
     }
+  };
+
+  const handleDisableTOTP = async () => {
+    if (disableTotpCode.length !== 6) return;
+    
+    const success = await disableTOTP(disableTotpCode);
+    if (success) {
+      setIsDisableTOTPOpen(false);
+      setDisableTotpCode('');
+      await loadTOTPStatus();
+    }
+  };
+
+  const handleRegenerateBackupCodes = async () => {
+    const code = prompt('Enter your TOTP code to regenerate backup codes:');
+    if (!code) return;
+    
+    const codes = await regenerateBackupCodes(code);
+    if (codes && totpSetupData) {
+      setTotpSetupData({ ...totpSetupData, backup_codes: codes });
+      setShowBackupCodes(true);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
+  };
+
+  const downloadBackupCodes = () => {
+    if (!totpSetupData?.backup_codes) return;
+    
+    const text = totpSetupData.backup_codes.join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'backup-codes.txt';
+    a.click();
   };
 
   const handleBackupUpdate = async () => {
@@ -100,7 +190,6 @@ export default function ProfileSecuritySettings() {
       return;
     }
 
-    // Call API to change password
     try {
       const response = await fetch('/api/auth/password/change', {
         method: 'POST',
@@ -128,28 +217,27 @@ export default function ProfileSecuritySettings() {
     }
   };
 
-  const handleAccountDeletion = async () => {
+  const handleAccountDeactivation = async () => {
     if (deleteConfirmation !== 'DELETE') {
       alert('Please type DELETE to confirm');
       return;
     }
 
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      try {
-        const response = await fetch('/api/auth/delete-account', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        });
+    if (confirm('Are you sure you want to deactivate your account? You will have 30 days to restore it.')) {
+      const result = await deactivateAccount(deleteReason);
+      if (result) {
+        alert(`Account deactivated. You have ${result.days_until_deletion} days to restore it before permanent deletion.`);
+        await loadRecoveryInfo();
+      }
+    }
+  };
 
-        if (response.ok) {
-          alert('Account deletion request submitted. Your account will be deleted in 30 days.');
-          // Logout user
-          window.location.href = '/';
-        }
-      } catch (error) {
-        console.error('Error deleting account:', error);
+  const handleAccountRestore = async () => {
+    if (confirm('Do you want to restore your account?')) {
+      const success = await restoreAccount();
+      if (success) {
+        alert('Account restored successfully!');
+        await loadRecoveryInfo();
       }
     }
   };
@@ -229,52 +317,64 @@ export default function ProfileSecuritySettings() {
         return (
           <div className="space-y-4">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Two-Factor Authentication</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Two-Factor Authentication (TOTP)</h3>
               <p className="text-sm text-gray-400">
-                Add an extra layer of security to your account by requiring a verification code in addition to your password.
+                Add an extra layer of security using authenticator apps like Google Authenticator, Microsoft Authenticator, or Authy.
               </p>
             </div>
 
-            <div className="p-4 rounded-lg border border-widget-border bg-black/40">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-white">Two-Factor Authentication</p>
-                    <p className="text-sm text-gray-400">
-                      {settings?.is_2fa_enabled ? 'Enabled' : 'Disabled'}
-                    </p>
+            {totpLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="font-medium text-white">TOTP Two-Factor Authentication</p>
+                        <p className="text-sm text-gray-400">
+                          {totpStatus?.enabled ? 'Enabled ✓' : 'Disabled'}
+                        </p>
+                      </div>
+                    </div>
+                    {!totpStatus?.enabled ? (
+                      <Button onClick={handleSetupTOTP} size="sm">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Enable 2FA
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={() => setIsDisableTOTPOpen(true)} 
+                        variant="destructive" 
+                        size="sm"
+                      >
+                        Disable 2FA
+                      </Button>
+                    )}
                   </div>
                 </div>
-                <Switch
-                  checked={settings?.is_2fa_enabled || false}
-                  onCheckedChange={handle2FAToggle}
-                />
-              </div>
-            </div>
 
-            {settings?.is_2fa_enabled && (
-              <div className="p-4 rounded-lg border border-widget-border bg-black/40 space-y-3">
-                <p className="text-sm text-gray-400">Verification method:</p>
-                <div className="flex gap-3">
-                  <Button
-                    variant={settings?.verification_method === 'email' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => updateSettings({ verification_method: 'email' })}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email
-                  </Button>
-                  <Button
-                    variant={settings?.verification_method === 'sms' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => updateSettings({ verification_method: 'sms' })}
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    SMS
-                  </Button>
-                </div>
-              </div>
+                {totpStatus?.enabled && (
+                  <div className="p-4 rounded-lg border border-widget-border bg-black/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-300">Backup Codes</p>
+                      <Button 
+                        onClick={handleRegenerateBackupCodes}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Regenerate
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      Save your backup codes in a safe place. They can be used if you lose access to your authenticator app.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         );
@@ -381,41 +481,71 @@ export default function ProfileSecuritySettings() {
         return (
           <div className="space-y-4">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Delete Account</h3>
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+              <h3 className="text-lg font-semibold text-white mb-2">Account Deactivation</h3>
+              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                 <div className="flex gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-red-200">
-                    <p className="font-medium mb-1">This action is irreversible!</p>
-                    <p>Your account will be permanently deleted after 30 days. You can cancel the deletion request within this period by logging back in.</p>
+                  <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-yellow-200">
+                    <p className="font-medium mb-1">30-Day Recovery Period</p>
+                    <p>Your account will be deactivated and you'll have 30 days to restore it. After 30 days, the account will be permanently deleted.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Type DELETE to confirm
-                </label>
-                <Input
-                  type="text"
-                  value={deleteConfirmation}
-                  onChange={(e) => setDeleteConfirmation(e.target.value)}
-                  placeholder="Type DELETE"
-                  className="bg-black/40 border-widget-border"
-                />
+            {recoveryInfo?.is_deactivated ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <p className="font-medium text-red-200 mb-2">Account is Deactivated</p>
+                  <p className="text-sm text-red-300">
+                    Deletion scheduled for: {new Date(recoveryInfo.deletion_scheduled_at).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-red-300">
+                    Days remaining: {recoveryInfo.days_remaining}
+                  </p>
+                </div>
+                <Button onClick={handleAccountRestore} className="w-full">
+                  Restore My Account
+                </Button>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Reason for deactivation (optional)
+                  </label>
+                  <Input
+                    type="text"
+                    value={deleteReason}
+                    onChange={(e) => setDeleteReason(e.target.value)}
+                    placeholder="Why are you leaving?"
+                    className="bg-black/40 border-widget-border"
+                  />
+                </div>
 
-              <Button 
-                onClick={handleAccountDeletion} 
-                variant="destructive"
-                className="w-full"
-                disabled={deleteConfirmation !== 'DELETE'}
-              >
-                Delete My Account
-              </Button>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Type DELETE to confirm
+                  </label>
+                  <Input
+                    type="text"
+                    value={deleteConfirmation}
+                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    placeholder="Type DELETE"
+                    className="bg-black/40 border-widget-border"
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleAccountDeactivation} 
+                  variant="destructive"
+                  className="w-full"
+                  disabled={deleteConfirmation !== 'DELETE'}
+                >
+                  Deactivate My Account
+                </Button>
+              </div>
+            )}
           </div>
         );
 
@@ -453,51 +583,200 @@ export default function ProfileSecuritySettings() {
         {renderContent()}
       </div>
 
-      {/* 2FA Modal */}
-      {is2FAModalOpen && (
+      {/* TOTP Setup Modal */}
+      {isSetupTOTPOpen && totpSetupData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-[#0C1015] rounded-lg p-6 w-full max-w-md border border-widget-border max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Set Up Two-Factor Authentication
+            </h3>
+            
+            {!showBackupCodes ? (
+              <>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-black/40 border border-widget-border">
+                    <p className="text-sm text-gray-300 mb-3">
+                      1. Scan this QR code with your authenticator app:
+                    </p>
+                    <div className="flex justify-center mb-3">
+                      <img 
+                        src={totpSetupData.qr_code} 
+                        alt="QR Code" 
+                        className="w-48 h-48 rounded"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 text-center">
+                      Or enter this code manually:
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <code className="flex-1 p-2 bg-black/60 rounded text-xs text-white font-mono text-center">
+                        {totpSetupData.formatted_secret}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(totpSetupData.secret)}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      2. Enter the 6-digit code from your app:
+                    </label>
+                    <Input
+                      type="text"
+                      maxLength={6}
+                      value={totpVerifyCode}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setTotpVerifyCode(val);
+                      }}
+                      placeholder="000000"
+                      className="bg-black/40 border-widget-border text-center text-lg font-mono"
+                    />
+                  </div>
+
+                  {totpError && (
+                    <p className="text-sm text-red-400">{totpError}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsSetupTOTPOpen(false);
+                      setTotpVerifyCode('');
+                      setTotpSetupData(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleEnableTOTP}
+                    className="flex-1"
+                    disabled={totpVerifyCode.length !== 6 || totpLoading}
+                  >
+                    {totpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Enable'}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Check className="w-5 h-5 text-green-500" />
+                      <p className="font-medium text-green-200">2FA Enabled Successfully!</p>
+                    </div>
+                    <p className="text-sm text-green-300">
+                      Save these backup codes in a safe place.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-black/40 border border-widget-border">
+                    <p className="text-sm text-gray-300 mb-3">Your Backup Codes:</p>
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {totpSetupData.backup_codes.map((code, idx) => (
+                        <code key={idx} className="p-2 bg-black/60 rounded text-sm text-white font-mono text-center">
+                          {code}
+                        </code>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(totpSetupData.backup_codes.join('\n'))}
+                        className="flex-1"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy All
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={downloadBackupCodes}
+                        className="flex-1"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                    <p className="text-xs text-yellow-200">
+                      ⚠️ Store these codes safely. You'll need them if you lose access to your authenticator app.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    setIsSetupTOTPOpen(false);
+                    setShowBackupCodes(false);
+                    setTotpSetupData(null);
+                  }}
+                  className="w-full mt-6"
+                >
+                  Done
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TOTP Disable Modal */}
+      {isDisableTOTPOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
           <div className="bg-[#0C1015] rounded-lg p-6 w-full max-w-md border border-widget-border">
-            <h3 className="text-lg font-semibold text-white mb-4">Enable Two-Factor Authentication</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Disable Two-Factor Authentication</h3>
             <p className="text-sm text-gray-400 mb-4">
-              Enter the verification code sent to your {settings?.verification_method === 'sms' ? 'phone' : 'email'}
+              Enter your TOTP code to confirm disabling 2FA
             </p>
             
-            <div className="flex gap-2 justify-center mb-6">
-              {twoFACode.map((digit, index) => (
-                <input
-                  key={index}
-                  name={`2fa-${index}`}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handle2FACodeChange(index, e.target.value)}
-                  className="w-12 h-12 text-center text-lg font-semibold bg-black/40 border border-widget-border rounded-lg text-white focus:border-primary focus:outline-none"
-                />
-              ))}
+            <div className="space-y-4">
+              <Input
+                type="text"
+                maxLength={6}
+                value={disableTotpCode}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setDisableTotpCode(val);
+                }}
+                placeholder="000000"
+                className="bg-black/40 border-widget-border text-center text-lg font-mono"
+              />
+
+              {totpError && (
+                <p className="text-sm text-red-400">{totpError}</p>
+              )}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-6">
               <Button
                 variant="outline"
                 onClick={() => {
-                  setIs2FAModalOpen(false);
-                  setTwoFACode(['', '', '', '', '', '']);
+                  setIsDisableTOTPOpen(false);
+                  setDisableTotpCode('');
                 }}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button
-                onClick={async () => {
-                  const code = twoFACode.join('');
-                  await updateSettings({ is_2fa_enabled: true, verification_code: code });
-                  setIs2FAModalOpen(false);
-                  setTwoFACode(['', '', '', '', '', '']);
-                }}
+                onClick={handleDisableTOTP}
+                variant="destructive"
                 className="flex-1"
+                disabled={disableTotpCode.length !== 6 || totpLoading}
               >
-                Confirm
+                {totpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Disable 2FA'}
               </Button>
             </div>
           </div>
