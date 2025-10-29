@@ -15,6 +15,7 @@ import (
 	"github.com/yourusername/x18-backend/internal/api"
 	"github.com/yourusername/x18-backend/internal/cache"
 	"github.com/yourusername/x18-backend/internal/database"
+	"github.com/yourusername/x18-backend/internal/services"
 	"github.com/yourusername/x18-backend/pkg/middleware"
 )
 
@@ -110,6 +111,13 @@ func main() {
 	postMenuHandler := api.NewPostMenuHandler(db)
 	adminHandler := api.NewAdminHandler(db)
 	wsHandler := api.NewWebSocketHandler(db, redisCache, cfg)
+	totpHandler := api.NewTOTPHandler(db.DB, redisCache)
+	accountHandler := api.NewAccountHandler(db.DB, redisCache)
+
+	// Start cleanup service (background tasks)
+	cleanupService := services.NewCleanupService(db.DB, redisCache)
+	go cleanupService.StartScheduledCleanup()
+	log.Println("✅ Cleanup service started (accounts: 6h, sessions: 1h, cache: 30min)")
 
 	// Auth routes (public) with rate limiting
 	auth := apiGroup.Group("/auth")
@@ -137,6 +145,21 @@ func main() {
 	// Account security
 	auth.Post("/backup-contact", middleware.JWTMiddleware(cfg), authHandler.UpdateBackupContact)
 	auth.Post("/delete-account", middleware.JWTMiddleware(cfg), authHandler.RequestAccountDeletion)
+
+	// TOTP 2FA routes (protected)
+	totp := apiGroup.Group("/totp", middleware.JWTMiddleware(cfg))
+	totp.Post("/generate", totpHandler.GenerateTOTPSecret)
+	totp.Post("/enable", totpHandler.VerifyAndEnableTOTP)
+	totp.Post("/disable", totpHandler.DisableTOTP)
+	totp.Post("/verify", totpHandler.VerifyTOTP)
+	totp.Get("/status", totpHandler.GetTOTPStatus)
+	totp.Post("/backup-codes/regenerate", totpHandler.RegenerateBackupCodes)
+
+	// Account management routes (protected)
+	account := apiGroup.Group("/account", middleware.JWTMiddleware(cfg))
+	account.Post("/deactivate", accountHandler.DeactivateAccount)
+	account.Post("/restore", accountHandler.RestoreAccount)
+	account.Get("/recovery-info", accountHandler.GetRecoveryInfo)
 
 	// Users routes
 	users := apiGroup.Group("/users")
