@@ -113,6 +113,10 @@ func main() {
 	wsHandler := api.NewWebSocketHandler(db, redisCache, cfg)
 	totpHandler := api.NewTOTPHandler(db.DB, redisCache)
 	accountHandler := api.NewAccountHandler(db.DB, redisCache)
+	protectedOpsHandler := api.NewProtectedOperationsHandler(db, redisCache, cfg)
+
+	// Create security service for TOTP middleware
+	securityService := services.NewSecurityService(db.DB, redisCache)
 
 	// Start cleanup service (background tasks)
 	cleanupService := services.NewCleanupService(db.DB, redisCache)
@@ -131,6 +135,12 @@ func main() {
 	// Protected auth routes
 	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)
 	auth.Post("/verify/email", middleware.JWTMiddleware(cfg), authHandler.VerifyEmail)
+
+	// TOTP-protected sensitive operations
+	auth.Post("/password/change",
+		middleware.JWTMiddleware(cfg),
+		middleware.TOTPRequired(securityService),
+		protectedOpsHandler.ChangePassword)
 
 	// Session management
 	auth.Get("/sessions", middleware.JWTMiddleware(cfg), authHandler.GetSessions)
@@ -172,6 +182,16 @@ func main() {
 	users.Get("/:id/following", usersHandler.GetFollowing)
 	users.Post("/:id/follow", middleware.JWTMiddleware(cfg), usersHandler.FollowUser)
 	users.Delete("/:id/follow", middleware.JWTMiddleware(cfg), usersHandler.UnfollowUser)
+
+	// TOTP-protected user operations
+	users.Post("/email/change",
+		middleware.JWTMiddleware(cfg),
+		middleware.TOTPRequired(securityService),
+		protectedOpsHandler.ChangeEmail)
+	users.Post("/phone/change",
+		middleware.JWTMiddleware(cfg),
+		middleware.TOTPRequired(securityService),
+		protectedOpsHandler.ChangePhone)
 
 	// Posts routes
 	posts := apiGroup.Group("/posts")

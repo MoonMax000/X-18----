@@ -38,3 +38,31 @@ func ValidateUsername(username string) (bool, string) {
 
 	return true, ""
 }
+
+// ValidatePhone checks if phone number meets requirements
+func ValidatePhone(phone string) (bool, string) {
+	phone = strings.TrimSpace(phone)
+
+	if len(phone) < 10 {
+		return false, "Phone number must be at least 10 digits long"
+	}
+
+	if len(phone) > 20 {
+		return false, "Phone number must not exceed 20 characters"
+	}
+
+	// Phone can only contain digits, plus, hyphens, spaces, and parentheses
+	// Examples: +1234567890, (123) 456-7890, 123-456-7890
+	phoneRegex := regexp.MustCompile(`^[\d\s\-\+\(\)]+$`)
+	if !phoneRegex.MatchString(phone) {
+		return false, "Phone number can only contain digits, spaces, hyphens, plus, and parentheses"
+	}
+
+	// Ensure there are at least 10 digits
+	digitsOnly := regexp.MustCompile(`\d`).FindAllString(phone, -1)
+	if len(digitsOnly) < 10 {
+		return false, "Phone number must contain at least 10 digits"
+	}
+
+	return true, ""
+}

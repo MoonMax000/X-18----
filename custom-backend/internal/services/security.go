@@ -226,6 +226,38 @@ func (s *SecurityService) VerifyCode(userID uuid.UUID, code string, codeType mod
 	return true, nil
 }
 
+// GetUserTOTPStatus returns whether the user has TOTP enabled
+func (s *SecurityService) GetUserTOTPStatus(userID uint) (bool, error) {
+	var user models.User
+	if err := s.db.Select("totp_enabled").First(&user, userID).Error; err != nil {
+		return false, err
+	}
+	return user.TOTPEnabled, nil
+}
+
+// VerifyTOTPCode verifies a TOTP code for a user
+// Note: Backup codes support will be added in a future update
+func (s *SecurityService) VerifyTOTPCode(userID uint, code string) (bool, error) {
+	// Get user to find their UUID
+	var user models.User
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return false, fmt.Errorf("user not found: %w", err)
+	}
+
+	// Check if TOTP is enabled
+	if !user.TOTPEnabled {
+		return false, fmt.Errorf("TOTP not enabled for this user")
+	}
+
+	// Verify as TOTP code (6 digits)
+	if len(code) != 6 {
+		return false, fmt.Errorf("invalid TOTP code format - must be 6 digits")
+	}
+
+	totpService := NewTOTPService(s.db, s.cache)
+	return totpService.VerifyTOTPCode(user.ID, code)
+}
+
 // generateRandomCode generates a random numeric code
 func (s *SecurityService) generateRandomCode(length int) string {
 	const digits = "0123456789"

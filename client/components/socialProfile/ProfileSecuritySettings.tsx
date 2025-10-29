@@ -24,6 +24,9 @@ import { Input } from '@/components/ui/input';
 import { useSecuritySettings, useSessions } from '@/hooks/useSecurity';
 import { useTOTP } from '@/hooks/useTOTP';
 import { useAccountManagement } from '@/hooks/useAccountManagement';
+import { useProtectedOperations } from '@/hooks/useProtectedOperations';
+import { useDebounce } from '@/hooks/useDebounce';
+import { TOTPVerificationModal } from '@/components/auth/TOTPVerificationModal';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Session {
@@ -56,8 +59,22 @@ export default function ProfileSecuritySettings() {
     deactivateAccount,
     restoreAccount
   } = useAccountManagement();
+  const {
+    changePassword,
+    changeEmail,
+    changePhone,
+    isLoading: protectedOpsLoading,
+    error: protectedOpsError,
+    requiresTOTP,
+    resetError: resetProtectedOpsError,
+  } = useProtectedOperations();
   
   const [activeTab, setActiveTab] = useState<'sessions' | 'twofa' | 'backup' | 'password' | 'delete'>('sessions');
+  
+  // TOTP Verification Modal State
+  const [totpModalOpen, setTotpModalOpen] = useState(false);
+  const [pendingOperation, setPendingOperation] = useState<((code: string) => Promise<void>) | null>(null);
+  const [operationType, setOperationType] = useState('');
   
   // TOTP States
   const [totpStatus, setTotpStatus] = useState<{ enabled: boolean; has_backup_codes: boolean } | null>(null);
@@ -82,6 +99,14 @@ export default function ProfileSecuritySettings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [deleteReason, setDeleteReason] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  
+  // Auto-save states
+  const [savingStatus, setSavingStatus] = useState<null | 'saving' | 'saved'>(null);
+  const debouncedBackupEmail = useDebounce(backupEmail, 1000);
+  const debouncedBackupPhone = useDebounce(backupPhone, 1000);
+  
+  // Password change success state
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
 
   // Load TOTP status
   useEffect(() => {
@@ -177,43 +202,96 @@ export default function ProfileSecuritySettings() {
     a.click();
   };
 
-  const handleBackupUpdate = async () => {
-    await updateSettings({
-      backup_email: backupEmail,
-      backup_phone: backupPhone,
-    });
-  };
+  // Auto-save backup contacts
+  useEffect(() => {
+    if (!debouncedBackupEmail && !debouncedBackupPhone) return;
+    
+    const saveBackupContacts = async () => {
+      setSavingStatus('saving');
+      
+      try {
+        await updateSettings({
+          backup_email: debouncedBackupEmail,
+          backup_phone: debouncedBackupPhone,
+        });
+        
+        setSavingStatus('saved');
+        
+        setTimeout(() => {
+          setSavingStatus(null);
+        }, 2000);
+      } catch (err) {
+        console.error('Error saving backup contacts:', err);
+        setSavingStatus(null);
+      }
+    };
+    
+    saveBackupContacts();
+  }, [debouncedBackupEmail, debouncedBackupPhone]);
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
+      alert('Пароли не совпадают');
       return;
     }
 
-    try {
-      const response = await fetch('/api/auth/password/change', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-        },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword,
-        }),
-      });
+    if (newPassword.length < 8) {
+      alert('Новый пароль должен содержать минимум 8 символов');
+      return;
+    }
 
-      if (response.ok) {
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        alert('Password changed successfully');
-      } else {
-        alert('Failed to change password');
+    setPasswordChangeSuccess(false);
+    resetProtectedOpsError();
+
+    try {
+      await changePassword({
+        currentPassword,
+        newPassword,
+      });
+      
+      // Success!
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordChangeSuccess(true);
+      
+      setTimeout(() => {
+        setPasswordChangeSuccess(false);
+      }, 3000);
+    } catch (err: any) {
+      if (requiresTOTP) {
+        // Open TOTP modal
+        setPendingOperation(() => async (code: string) => {
+          await changePassword(
+            {
+              currentPassword,
+              newPassword,
+            },
+            code
+          );
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+          setPasswordChangeSuccess(true);
+          setTimeout(() => setPasswordChangeSuccess(false), 3000);
+        });
+        setOperationType('изменить пароль');
+        setTotpModalOpen(true);
       }
-    } catch (error) {
-      console.error('Error changing password:', error);
-      alert('An error occurred');
+    }
+  };
+
+  const handleTOTPVerify = async (code: string) => {
+    if (pendingOperation) {
+      try {
+        await pendingOperation(code);
+        setTotpModalOpen(false);
+        setPendingOperation(null);
+        setOperationType('');
+      } catch (err) {
+        // Error will be shown in modal
+        throw err;
+      }
     }
   };
 
@@ -383,17 +461,31 @@ export default function ProfileSecuritySettings() {
         return (
           <div className="space-y-4">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Backup Contacts</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Резервные контакты</h3>
               <p className="text-sm text-gray-400">
-                Add backup email and phone for account recovery in case you lose access to your primary contacts.
+                Добавьте резервные email и телефон для восстановления доступа к аккаунту.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Backup Email
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Резервный Email
+                  </label>
+                  {savingStatus === 'saving' && (
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Сохранение...
+                    </span>
+                  )}
+                  {savingStatus === 'saved' && (
+                    <span className="text-xs text-green-400 flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      Сохранено ✓
+                    </span>
+                  )}
+                </div>
                 <Input
                   type="email"
                   value={backupEmail}
@@ -405,7 +497,7 @@ export default function ProfileSecuritySettings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Backup Phone
+                  Резервный телефон
                 </label>
                 <Input
                   type="tel"
@@ -414,11 +506,10 @@ export default function ProfileSecuritySettings() {
                   placeholder="+1234567890"
                   className="bg-black/40 border-widget-border"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Изменения сохраняются автоматически
+                </p>
               </div>
-
-              <Button onClick={handleBackupUpdate} className="w-full">
-                Update Backup Contacts
-              </Button>
             </div>
           </div>
         );
@@ -427,51 +518,96 @@ export default function ProfileSecuritySettings() {
         return (
           <div className="space-y-4">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Change Password</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Смена пароля</h3>
               <p className="text-sm text-gray-400">
-                Ensure your account stays secure by using a strong password.
+                Защитите свой аккаунт, используя надёжный пароль (минимум 8 символов).
               </p>
+              {totpStatus?.enabled && (
+                <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-primary flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Для смены пароля потребуется TOTP код
+                  </p>
+                </div>
+              )}
             </div>
+
+            {passwordChangeSuccess && (
+              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                <p className="text-sm text-green-400 flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Пароль успешно изменён!
+                </p>
+              </div>
+            )}
+
+            {protectedOpsError && !requiresTOTP && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-sm text-red-400 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  {protectedOpsError}
+                </p>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Current Password
+                  Текущий пароль
                 </label>
                 <Input
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  New Password
+                  Новый пароль
                 </label>
                 <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Confirm New Password
+                  Подтвердите новый пароль
                 </label>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
                 />
               </div>
 
-              <Button onClick={handlePasswordChange} className="w-full">
-                Change Password
+              <Button 
+                onClick={handlePasswordChange} 
+                className="w-full"
+                disabled={
+                  !currentPassword || 
+                  !newPassword || 
+                  !confirmPassword || 
+                  protectedOpsLoading
+                }
+              >
+                {protectedOpsLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Изменение...
+                  </>
+                ) : (
+                  'Изменить пароль'
+                )}
               </Button>
             </div>
           </div>
@@ -782,6 +918,19 @@ export default function ProfileSecuritySettings() {
           </div>
         </div>
       )}
+
+      {/* TOTP Verification Modal for Protected Operations */}
+      <TOTPVerificationModal
+        isOpen={totpModalOpen}
+        onClose={() => {
+          setTotpModalOpen(false);
+          setPendingOperation(null);
+          setOperationType('');
+          resetProtectedOpsError();
+        }}
+        onVerify={handleTOTPVerify}
+        operation={operationType}
+      />
     </div>
   );
 }
