@@ -9,8 +9,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/pquerna/otp"
 	"github.com/yourusername/x18-backend/internal/cache"
 	"github.com/yourusername/x18-backend/internal/models"
+	"github.com/yourusername/x18-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -394,39 +396,113 @@ func NewTOTPService(db *gorm.DB, cache *cache.Cache) *TOTPService {
 
 // GenerateTOTPSecret generates a new TOTP secret and QR code for user
 func (ts *TOTPService) GenerateTOTPSecret(userID uuid.UUID, email string, issuer string) (secret string, qrCode string, err error) {
-	// Import required packages
-	// Note: This function signature will be updated once we add the actual implementation
-	// For now, returning placeholder values to avoid compilation errors
+	if email == "" {
+		return "", "", fmt.Errorf("email cannot be empty")
+	}
 
-	// TODO: Implement TOTP secret generation using github.com/pquerna/otp
-	// TODO: Generate QR code image
-	// TODO: Encode QR code as base64 data URL
+	// Check if user exists
+	var user models.User
+	if err := ts.db.First(&user, "id = ?", userID).Error; err != nil {
+		return "", "", fmt.Errorf("user not found: %w", err)
+	}
 
-	return "", "", fmt.Errorf("TOTP generation not yet implemented")
+	// Check if TOTP is already enabled
+	if user.TOTPEnabled {
+		return "", "", fmt.Errorf("TOTP is already enabled for this user")
+	}
+
+	// Generate TOTP key using utils
+	var key interface{}
+	if issuer != "" {
+		key, err = utils.GenerateTOTPKey(email, issuer)
+	} else {
+		key, err = utils.GenerateTOTPKey(email)
+	}
+
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate TOTP key: %w", err)
+	}
+
+	// Type assert the key
+	totpKey, ok := key.(*otp.Key)
+	if !ok {
+		return "", "", fmt.Errorf("invalid TOTP key type")
+	}
+
+	// Get the secret from the key
+	secret = totpKey.Secret()
+
+	// Generate QR code from the key
+	qrCode, err = utils.GenerateQRCode(totpKey)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate QR code: %w", err)
+	}
+
+	// Return the unencrypted secret (it will be encrypted when EnableTOTP is called)
+	// The QR code is returned as base64 data URL for frontend display
+	return secret, qrCode, nil
 }
 
 // VerifyTOTPCode verifies a TOTP code against user's secret
 func (ts *TOTPService) VerifyTOTPCode(userID uuid.UUID, code string) (bool, error) {
+	if code == "" {
+		return false, fmt.Errorf("TOTP code cannot be empty")
+	}
+
 	// Get user's TOTP secret from database
 	var user models.User
 	if err := ts.db.First(&user, "id = ?", userID).Error; err != nil {
-		return false, err
+		return false, fmt.Errorf("user not found: %w", err)
 	}
 
-	if user.TOTPSecret == "" {
+	// Check if TOTP is enabled
+	if !user.TOTPEnabled {
 		return false, fmt.Errorf("TOTP not enabled for this user")
 	}
 
-	// TODO: Implement TOTP verification using github.com/pquerna/otp/totp
-	// TODO: Validate code against secret with time window
+	if user.TOTPSecret == "" {
+		return false, fmt.Errorf("TOTP secret not found")
+	}
 
-	return false, fmt.Errorf("TOTP verification not yet implemented")
+	// Decrypt the TOTP secret
+	secret, err := utils.DecryptString(user.TOTPSecret)
+	if err != nil {
+		return false, fmt.Errorf("failed to decrypt TOTP secret: %w", err)
+	}
+
+	// Validate the TOTP code using utils
+	// This checks the code against the secret with ±30 second time skew
+	isValid := utils.ValidateTOTPCode(code, secret)
+
+	return isValid, nil
 }
 
-// EnableTOTP enables TOTP for a user and saves the secret
+// EnableTOTP enables TOTP for a user and saves the encrypted secret
 func (ts *TOTPService) EnableTOTP(userID uuid.UUID, secret string) error {
+	if secret == "" {
+		return fmt.Errorf("TOTP secret cannot be empty")
+	}
+
+	// Check if user exists
+	var user models.User
+	if err := ts.db.First(&user, "id = ?", userID).Error; err != nil {
+		return fmt.Errorf("user not found: %w", err)
+	}
+
+	// Check if TOTP is already enabled
+	if user.TOTPEnabled {
+		return fmt.Errorf("TOTP is already enabled for this user")
+	}
+
+	// Encrypt the TOTP secret before storing
+	encryptedSecret, err := utils.EncryptString(secret)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt TOTP secret: %w", err)
+	}
+
+	// Save encrypted secret and enable TOTP
 	return ts.db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
-		"totp_secret":  secret,
+		"totp_secret":  encryptedSecret,
 		"totp_enabled": true,
 	}).Error
 }
