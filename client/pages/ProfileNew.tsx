@@ -19,7 +19,7 @@ const ProfileOverview = lazy(() => import("@/components/ProfileOverview/ProfileO
 const SocialOverview = lazy(() => import("@/components/SocialOverview/SocialOverview"));
 const MyPosts = lazy(() => import("@/components/MyPosts/MyPosts"));
 const Subscriptions = lazy(() => import("@/components/Subscriptions/Subscriptions"));
-const Monetization = lazy(() => import("@/components/Monetization/Monetization"));
+const Monetization = lazy(() => import("@/components/monetization/Monetization"));
 
 type Tab =
   | "profile"
