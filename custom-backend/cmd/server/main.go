@@ -105,6 +105,7 @@ func main() {
 	postsHandler := api.NewPostsHandler(db)
 	timelineHandler := api.NewTimelineHandler(db)
 	notificationsHandler := api.NewNotificationsHandler(db)
+	notificationPreferencesHandler := api.NewNotificationPreferencesHandler(db)
 	mediaHandler := api.NewMediaHandler(db)
 	searchHandler := api.NewSearchHandler(db)
 	widgetsHandler := api.NewWidgetsHandler(db)
@@ -114,6 +115,17 @@ func main() {
 	totpHandler := api.NewTOTPHandler(db.DB, redisCache)
 	accountHandler := api.NewAccountHandler(db.DB, redisCache)
 	protectedOpsHandler := api.NewProtectedOperationsHandler(db, redisCache, cfg)
+
+	// Stripe webhook handler
+	stripeWebhookSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
+	stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
+	if stripeWebhookSecret == "" {
+		log.Println("⚠️  Warning: STRIPE_WEBHOOK_SECRET not set")
+	}
+	if stripeSecretKey == "" {
+		log.Println("⚠️  Warning: STRIPE_SECRET_KEY not set")
+	}
+	stripeWebhookHandler := api.NewStripeWebhookHandler(db, stripeWebhookSecret, stripeSecretKey)
 
 	// Create security service for TOTP middleware
 	securityService := services.NewSecurityService(db.DB, redisCache)
@@ -225,6 +237,10 @@ func main() {
 	notifications.Patch("/read-all", notificationsHandler.MarkAllAsRead)
 	notifications.Delete("/:id", notificationsHandler.DeleteNotification)
 
+	// Notification Preferences routes (protected)
+	apiGroup.Get("/notification-preferences", middleware.JWTMiddleware(cfg), notificationPreferencesHandler.GetNotificationPreferences)
+	apiGroup.Put("/notification-preferences", middleware.JWTMiddleware(cfg), notificationPreferencesHandler.UpdateNotificationPreferences)
+
 	// Media routes
 	media := apiGroup.Group("/media")
 	media.Post("/upload", middleware.JWTMiddleware(cfg), mediaHandler.UploadMedia)
@@ -283,6 +299,10 @@ func main() {
 
 	// Admin - Statistics
 	admin.Get("/stats", adminHandler.GetAdminStats)
+
+	// Stripe webhooks (public endpoint - no auth, Stripe verifies with signature)
+	webhooks := apiGroup.Group("/webhooks")
+	webhooks.Post("/stripe", stripeWebhookHandler.HandleWebhook)
 
 	// WebSocket endpoint
 	app.Get("/ws/notifications", wsHandler.HandleWebSocket)

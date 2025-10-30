@@ -12,6 +12,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/redis/go-redis/v9 v9.16.0
 	github.com/russross/blackfriday/v2 v2.1.0
+	github.com/stripe/stripe-go/v72 v72.122.0
 	golang.org/x/crypto v0.31.0
 	golang.org/x/image v0.32.0
 	gorm.io/driver/postgres v1.6.0

@@ -16,6 +16,7 @@ import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
 import { useFollowRecommendations } from '@/hooks/useFollowRecommendations';
 import { useCustomNotifications } from "@/hooks/useCustomNotifications";
+import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import type { Notification } from "@/services/api/custom-backend";
 import { getAvatarUrl } from "@/lib/avatar-utils";
 
@@ -135,16 +136,23 @@ const SocialNotifications: FC = () => {
   // Get follow recommendations
   const { recommendations: followRecommendations } = useFollowRecommendations();
   
-  // Attention control settings
-  const [attentionSettings, setAttentionSettings] = useState({
-    showLikes: true,
-    showReposts: true,
-    showFollows: true,
-    showMentions: true,
-  });
-  
-  // Newsletter settings
-  const [emailNotifications, setEmailNotifications] = useState(false);
+  // Notification preferences from backend
+  const {
+    preferences,
+    isLoading: isLoadingPreferences,
+    error: preferencesError,
+    updatePreferences,
+  } = useNotificationPreferences();
+
+  // Map backend preferences to UI state
+  const attentionSettings = {
+    showLikes: preferences?.likes ?? true,
+    showReposts: preferences?.reposts ?? true,
+    showFollows: preferences?.new_followers ?? true,
+    showMentions: preferences?.mentions ?? true,
+  };
+
+  const emailNotifications = preferences?.email_notifications_enabled ?? false;
 
   // Fetch notifications from Custom Backend
   const {
@@ -393,12 +401,22 @@ const SocialNotifications: FC = () => {
           <p className="mt-2 text-sm text-[#B0B0B0]">
             Получайте важные уведомления на вашу электронную почту.
           </p>
+          {preferencesError && (
+            <p className="mt-2 text-xs text-red-400">Ошибка загрузки настроек</p>
+          )}
           <div className="mt-4">
             <label className="flex cursor-pointer items-center justify-between text-sm text-white">
               <span>Включить email уведомления</span>
               <Switch
                 checked={emailNotifications}
-                onCheckedChange={setEmailNotifications}
+                disabled={isLoadingPreferences}
+                onCheckedChange={async (checked) => {
+                  try {
+                    await updatePreferences({ email_notifications_enabled: checked });
+                  } catch (err) {
+                    console.error('Failed to update email notifications:', err);
+                  }
+                }}
               />
             </label>
           </div>
@@ -422,36 +440,56 @@ const SocialNotifications: FC = () => {
                 <span>Лайки</span>
                 <Switch
                   checked={attentionSettings.showLikes}
-                  onCheckedChange={(checked) =>
-                    setAttentionSettings((prev) => ({ ...prev, showLikes: checked }))
-                  }
+                  disabled={isLoadingPreferences}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updatePreferences({ likes: checked });
+                    } catch (err) {
+                      console.error('Failed to update likes preference:', err);
+                    }
+                  }}
                 />
               </label>
               <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Репосты</span>
                 <Switch
                   checked={attentionSettings.showReposts}
-                  onCheckedChange={(checked) =>
-                    setAttentionSettings((prev) => ({ ...prev, showReposts: checked }))
-                  }
+                  disabled={isLoadingPreferences}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updatePreferences({ reposts: checked });
+                    } catch (err) {
+                      console.error('Failed to update reposts preference:', err);
+                    }
+                  }}
                 />
               </label>
               <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Новые подписчики</span>
                 <Switch
                   checked={attentionSettings.showFollows}
-                  onCheckedChange={(checked) =>
-                    setAttentionSettings((prev) => ({ ...prev, showFollows: checked }))
-                  }
+                  disabled={isLoadingPreferences}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updatePreferences({ new_followers: checked });
+                    } catch (err) {
+                      console.error('Failed to update follows preference:', err);
+                    }
+                  }}
                 />
               </label>
               <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#5E5E5E] bg-[#0C1014] p-3 text-sm text-white transition-colors hover:bg-[#10131A]">
                 <span>Упоминания</span>
                 <Switch
                   checked={attentionSettings.showMentions}
-                  onCheckedChange={(checked) =>
-                    setAttentionSettings((prev) => ({ ...prev, showMentions: checked }))
-                  }
+                  disabled={isLoadingPreferences}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updatePreferences({ mentions: checked });
+                    } catch (err) {
+                      console.error('Failed to update mentions preference:', err);
+                    }
+                  }}
                 />
               </label>
             </div>
