@@ -12,6 +12,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ClientLayout } from "./components/ClientLayout/ClientLayout";
 import { lazy, Suspense } from "react";
+import { BrandedLoader } from "./components/common/BrandedLoader";
 
 // Lazy load all pages for better performance and code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -50,15 +51,6 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },
 });
 
-// Loading fallback component
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      <p className="text-sm text-muted-foreground">Loading...</p>
-    </div>
-  </div>
-);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -69,7 +61,7 @@ const App = () => (
           <Toaster />
           <Sonner />
         <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
+          <Suspense fallback={<BrandedLoader />}>
             <Routes>
               {/* Public test page without ClientLayout */}
               <Route path="/crop-test" element={<CropTestPage />} />
