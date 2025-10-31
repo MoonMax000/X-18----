@@ -34,9 +34,10 @@ export function useAdminNews() {
       setIsLoading(true);
       setError(null);
       const data = await customBackendAPI.getAdminNews(params);
-      setNews(data);
+      setNews(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить новости');
+      setNews([]);
     } finally {
       setIsLoading(false);
     }
@@ -101,9 +102,10 @@ export function useAdminUsers() {
       setIsLoading(true);
       setError(null);
       const data = await customBackendAPI.getAdminUsers(params);
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить пользователей');
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
@@ -138,9 +140,10 @@ export function useAdminReports() {
       setIsLoading(true);
       setError(null);
       const data = await customBackendAPI.getAdminReports(params);
-      setReports(data);
+      setReports(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить жалобы');
+      setReports([]);
     } finally {
       setIsLoading(false);
     }
