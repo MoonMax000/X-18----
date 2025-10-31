@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Брендированный компонент загрузки с логотипом и анимацией
+ * Брендированный компонент загрузки с логотипом и легкой пульсацией
  */
 export const BrandedLoader = () => {
   const [dots, setDots] = useState('');
@@ -16,111 +16,42 @@ export const BrandedLoader = () => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
-      {/* Gradient background effect */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-[#A06AFF]/20 via-transparent to-transparent blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-[#482090]/20 via-transparent to-transparent blur-3xl animate-pulse delay-1000" />
-      </div>
-
-      {/* Main loader content */}
-      <div className="relative flex flex-col items-center gap-8 animate-fade-in">
-        {/* Logo with glow effect */}
+      {/* Simple loader content */}
+      <div className="flex flex-col items-center gap-6">
+        {/* Logo with gentle pulse */}
         <div className="relative">
-          {/* Glow rings */}
-          <div className="absolute inset-0 -m-4">
-            <div className="w-full h-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] opacity-20 blur-2xl animate-ping" />
-          </div>
-          <div className="absolute inset-0 -m-2">
-            <div className="w-full h-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] opacity-30 blur-xl animate-pulse" />
-          </div>
-          
-          {/* Logo image */}
-          <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-[#A06AFF] to-[#482090] p-1 shadow-2xl shadow-[#A06AFF]/50 animate-float">
-            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-              <img 
-                src="/favicon.ico" 
-                alt="Logo" 
-                className="w-16 h-16 object-contain animate-pulse-slow"
-              />
-            </div>
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="w-32 h-32 object-contain animate-gentle-pulse"
+            onError={(e) => {
+              // Fallback to favicon if logo.png doesn't exist
+              (e.target as HTMLImageElement).src = '/favicon.ico';
+            }}
+          />
         </div>
 
         {/* Loading text */}
-        <div className="flex flex-col items-center gap-3">
-          <p className="text-lg font-bold text-white tracking-wide">
-            Loading{dots}
-          </p>
-          
-          {/* Progress bar */}
-          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-[#A06AFF] to-[#482090] rounded-full animate-progress" />
-          </div>
-        </div>
+        <p className="text-base font-medium text-white/80">
+          Loading{dots}
+        </p>
       </div>
 
-      {/* Add custom animations */}
+      {/* Simple pulse animation */}
       <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
+        @keyframes gentle-pulse {
+          0%, 100% {
             opacity: 1;
             transform: scale(1);
           }
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0);
-          }
           50% {
-            transform: translateY(-10px);
+            opacity: 0.85;
+            transform: scale(0.98);
           }
         }
 
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.7;
-          }
-        }
-
-        @keyframes progress {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(400%);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 2s ease-in-out infinite;
-        }
-
-        .animate-progress {
-          animation: progress 1.5s ease-in-out infinite;
-        }
-
-        .delay-1000 {
-          animation-delay: 1s;
-        }
-
-        .bg-gradient-radial {
-          background: radial-gradient(circle, var(--tw-gradient-stops));
+        .animate-gentle-pulse {
+          animation: gentle-pulse 2s ease-in-out infinite;
         }
       `}</style>
     </div>
