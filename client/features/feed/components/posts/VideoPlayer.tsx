@@ -40,11 +40,11 @@ export default function VideoPlayer({ src }: VideoPlayerProps) {
       {!isPlaying && (
         <button
           onClick={handlePlayClick}
-          className="absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity hover:bg-black/40 cursor-pointer"
+          className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-black/20 via-black/30 to-black/50 transition-opacity hover:bg-black/40 cursor-pointer backdrop-blur-[2px]"
           aria-label="Play video"
         >
-          <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/90 hover:bg-white transition-all duration-200 hover:scale-110">
-            <Play className="w-10 h-10 text-black ml-1" fill="currentColor" />
+          <div className="flex items-center justify-center w-20 h-20 rounded-full bg-[#482090]/40 backdrop-blur-md border border-[#A06AFF]/30 shadow-lg shadow-[#482090]/50 hover:bg-[#482090]/50 hover:border-[#A06AFF]/50 hover:shadow-[#482090]/70 transition-all duration-300 hover:scale-110">
+            <Play className="w-10 h-10 text-white ml-1" fill="currentColor" />
           </div>
         </button>
       )}
