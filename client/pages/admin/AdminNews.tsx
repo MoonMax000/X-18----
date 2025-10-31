@@ -217,13 +217,15 @@ export function AdminNews() {
                       <span className="px-2 py-1 text-xs font-medium bg-blue/20 text-blue rounded w-fit">
                         {item.category}
                       </span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded w-fit ${
-                        item.status === 'published' 
-                          ? 'bg-green/20 text-green' 
-                          : 'bg-yellow/20 text-yellow'
-                      }`}>
-                        {item.status === 'published' ? 'Опубликована' : 'Черновик'}
-                      </span>
+                      {item.status && (
+                        <span className={`px-2 py-1 text-xs font-medium rounded w-fit ${
+                          item.status === 'published' 
+                            ? 'bg-green/20 text-green' 
+                            : 'bg-yellow/20 text-yellow'
+                        }`}>
+                          {item.status === 'published' ? 'Опубликована' : 'Черновик'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-400">
