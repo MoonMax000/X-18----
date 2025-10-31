@@ -16,10 +16,12 @@ export function AdminNews() {
   const [formData, setFormData] = useState<CreateNewsData>({
     title: '',
     description: '',
+    content: '',
     url: '',
     image_url: '',
     category: 'general',
     source: '',
+    status: 'draft',
     is_active: true,
   });
 
@@ -58,11 +60,13 @@ export function AdminNews() {
     setFormData({
       title: newsItem.title,
       description: newsItem.description,
-      url: newsItem.url,
+      content: newsItem.content || '',
+      url: newsItem.url || '',
       image_url: newsItem.image_url || '',
       category: newsItem.category,
       source: newsItem.source,
-      is_active: true, // Backend не возвращает is_active, но можно добавить
+      status: newsItem.status || 'draft',
+      is_active: true,
     });
     setShowModal(true);
   };
@@ -80,10 +84,12 @@ export function AdminNews() {
     setFormData({
       title: '',
       description: '',
+      content: '',
       url: '',
       image_url: '',
       category: 'general',
       source: '',
+      status: 'draft',
       is_active: true,
     });
   };
@@ -201,9 +207,18 @@ export function AdminNews() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 text-xs font-medium bg-blue/20 text-blue rounded">
-                      {item.category}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className="px-2 py-1 text-xs font-medium bg-blue/20 text-blue rounded w-fit">
+                        {item.category}
+                      </span>
+                      <span className={`px-2 py-1 text-xs font-medium rounded w-fit ${
+                        item.status === 'published' 
+                          ? 'bg-green/20 text-green' 
+                          : 'bg-yellow/20 text-yellow'
+                      }`}>
+                        {item.status === 'published' ? 'Опубликована' : 'Черновик'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-400">
                     {item.source}
@@ -213,6 +228,15 @@ export function AdminNews() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
+                      <a
+                        href={`/news/${item.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-blue hover:bg-blue/10 rounded-lg transition-colors"
+                        title="Просмотр"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </a>
                       <button
                         onClick={() => handleEdit(item)}
                         className="p-2 text-tyrian hover:bg-tyrian/10 rounded-lg transition-colors"
@@ -282,8 +306,8 @@ export function AdminNews() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  placeholder="Опишите суть новости в 2-3 предложениях..."
+                  rows={2}
+                  placeholder="Краткое описание для карточки новости (2-3 предложения)"
                   className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors resize-none"
                   required
                 />
@@ -291,18 +315,34 @@ export function AdminNews() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Ссылка на полную статью *
+                  Полный текст новости *
+                </label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  rows={8}
+                  placeholder="Напишите полный текст новости, который будет виден при открытии..."
+                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors resize-none"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Этот текст будет виден на странице новости /news/:id
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Ссылка на источник (опционально)
                 </label>
                 <input
                   type="url"
                   value={formData.url}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                  placeholder="https://example.com/full-article"
+                  placeholder="https://example.com/original-article"
                   className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
-                  required
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Ссылка на оригинальную статью, куда перейдет пользователь при клике
+                  Если хотите добавить ссылку "Читать оригинал" на внешний источник
                 </p>
               </div>
 
@@ -422,17 +462,37 @@ export function AdminNews() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 text-tyrian border-widget-border rounded focus:ring-tyrian bg-onyxGrey"
-                />
-                <label htmlFor="is_active" className="text-sm font-medium text-gray-300">
-                  Активна (отображается в виджете)
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Статус публикации *
                 </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="draft"
+                      checked={formData.status === 'draft'}
+                      onChange={(e) => setFormData({ ...formData, status: 'draft' })}
+                      className="w-4 h-4 text-tyrian border-widget-border focus:ring-tyrian bg-onyxGrey"
+                    />
+                    <span className="text-sm text-gray-300">Черновик</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="published"
+                      checked={formData.status === 'published'}
+                      onChange={(e) => setFormData({ ...formData, status: 'published' })}
+                      className="w-4 h-4 text-tyrian border-widget-border focus:ring-tyrian bg-onyxGrey"
+                    />
+                    <span className="text-sm text-gray-300">Опубликована</span>
+                  </label>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Только опубликованные новости видны пользователям
+                </p>
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-widget-border">

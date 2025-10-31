@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNews } from '@/hooks/useWidgets';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Filter, Search, ExternalLink } from 'lucide-react';
+import { Filter, Search, ExternalLink, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
 const NewsPage: FC = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const { news, isLoading, error, refetch } = useNews({ limit: 50 });
@@ -108,7 +110,8 @@ const NewsPage: FC = () => {
                   return (
                     <article
                       key={item.id}
-                      className="group bg-moonlessNight border border-widget-border rounded-lg overflow-hidden hover:border-tyrian/50 transition-all duration-200 hover:shadow-lg hover:shadow-tyrian/10"
+                      onClick={() => navigate(`/news/${item.id}`)}
+                      className="group bg-moonlessNight border border-widget-border rounded-lg overflow-hidden hover:border-tyrian/50 transition-all duration-200 hover:shadow-lg hover:shadow-tyrian/10 cursor-pointer"
                     >
                       {/* Image */}
                       {item.image_url && (
@@ -155,15 +158,10 @@ const NewsPage: FC = () => {
                         </div>
 
                         {/* Read More Button */}
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-tyrian/10 text-tyrian rounded-lg hover:bg-tyrian hover:text-white transition-all duration-200 text-sm font-medium"
-                        >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-tyrian/10 text-tyrian rounded-lg group-hover:bg-tyrian group-hover:text-white transition-all duration-200 text-sm font-medium">
                           Читать полностью
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
                     </article>
                   );

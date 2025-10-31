@@ -714,10 +714,12 @@ export interface NewsItem {
   id: string;
   title: string;
   description: string;
-  url: string;
+  content?: string; // Полный текст новости
+  url?: string; // Внешняя ссылка на источник (опционально)
   image_url?: string;
   category: string;
   source: string;
+  status: 'published' | 'draft'; // Статус публикации
   published_at: string;
 }
 
@@ -774,10 +776,12 @@ export interface AdminStats {
 export interface CreateNewsData {
   title: string;
   description: string;
-  url: string;
+  content?: string; // Полный текст новости
+  url?: string; // Внешняя ссылка на источник (опционально)
   image_url?: string;
   category: string;
   source: string;
+  status?: 'published' | 'draft'; // Статус публикации
   is_active?: boolean;
 }
 
