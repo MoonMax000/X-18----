@@ -581,6 +581,11 @@ class CustomBackendAPI {
       body: JSON.stringify(data),
     });
   }
+
+  async getUsersByCountry(): Promise<CountryStats[]> {
+    const response = await this.request<{ countries: CountryStats[]; total: number }>('/admin/users/by-country');
+    return response.countries || [];
+  }
 }
 
 // ============================================================================
@@ -808,6 +813,11 @@ export interface ReviewReportData {
   status: 'reviewed' | 'resolved' | 'dismissed';
   review_note?: string;
   action?: 'none' | 'delete_post';
+}
+
+export interface CountryStats {
+  country: string;
+  user_count: number;
 }
 
 // Export singleton instance

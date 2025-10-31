@@ -335,8 +335,21 @@ func (h *AdminHandler) GetUserDetails(c *fiber.Ctx) error {
 	h.db.DB.Model(&models.Follow{}).Where("following_id = ?", userID).Count(&followersCount)
 	h.db.DB.Model(&models.Follow{}).Where("follower_id = ?", userID).Count(&followingCount)
 
-	fmt.Printf("[Admin] GetUserDetails: User %s - posts: %d, followers: %d, following: %d\n",
-		user.Username, postsCount, followersCount, followingCount)
+	// Получаем активные сессии пользователя
+	var sessions []models.Session
+	h.db.DB.Where("user_id = ? AND expires_at > ?", userID, time.Now()).
+		Order("last_active_at DESC").
+		Find(&sessions)
+
+	// Получаем последние логины (из login_attempts)
+	var loginAttempts []models.LoginAttempt
+	h.db.DB.Where("email = ?", user.Email).
+		Order("created_at DESC").
+		Limit(20).
+		Find(&loginAttempts)
+
+	fmt.Printf("[Admin] GetUserDetails: User %s - posts: %d, followers: %d, following: %d, sessions: %d, logins: %d\n",
+		user.Username, postsCount, followersCount, followingCount, len(sessions), len(loginAttempts))
 
 	// Убираем чувствительные данные
 	user.Password = ""
@@ -346,6 +359,8 @@ func (h *AdminHandler) GetUserDetails(c *fiber.Ctx) error {
 		"posts_count":     postsCount,
 		"followers_count": followersCount,
 		"following_count": followingCount,
+		"sessions":        sessions,
+		"login_attempts":  loginAttempts,
 	})
 }
 
@@ -560,4 +575,50 @@ func (h *AdminHandler) GetAdminStats(c *fiber.Ctx) error {
 		stats.ActiveNews, stats.UsersToday, stats.PostsToday)
 
 	return c.JSON(stats)
+}
+
+// GetUsersByCountry получает статистику пользователей по странам
+// GET /api/admin/users/by-country
+func (h *AdminHandler) GetUsersByCountry(c *fiber.Ctx) error {
+	fmt.Printf("[Admin] GetUsersByCountry called\n")
+
+	// Получаем статистику из последних логинов
+	type CountryStats struct {
+		Country   string `json:"country"`
+		UserCount int64  `json:"user_count"`
+	}
+
+	var results []CountryStats
+
+	// Подсчитываем уникальных пользователей по странам из их последних сессий
+	err := h.db.DB.Raw(`
+		SELECT 
+			COALESCE(s.country, 'Unknown') as country,
+			COUNT(DISTINCT s.user_id) as user_count
+		FROM (
+			SELECT DISTINCT ON (user_id)
+				user_id,
+				country
+			FROM sessions
+			WHERE country IS NOT NULL AND country != ''
+			ORDER BY user_id, created_at DESC
+		) s
+		GROUP BY s.country
+		ORDER BY user_count DESC
+		LIMIT 50
+	`).Scan(&results).Error
+
+	if err != nil {
+		fmt.Printf("[Admin] GetUsersByCountry: Database error: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch country statistics",
+		})
+	}
+
+	fmt.Printf("[Admin] GetUsersByCountry: Found %d countries\n", len(results))
+
+	return c.JSON(fiber.Map{
+		"countries": results,
+		"total":     len(results),
+	})
 }

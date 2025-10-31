@@ -315,6 +315,7 @@ func main() {
 
 	// Admin - Statistics
 	admin.Get("/stats", adminHandler.GetAdminStats)
+	admin.Get("/users/by-country", adminHandler.GetUsersByCountry)
 
 	// Stripe webhooks (public endpoint - no auth, Stripe verifies with signature)
 	webhooks := apiGroup.Group("/webhooks")
