@@ -46,10 +46,16 @@ export function AdminNews() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Если URL пустой, отправляем строку с "#" чтобы бэкенд не ругался
+    const dataToSubmit = {
+      ...formData,
+      url: formData.url || '#',
+    };
+    
     if (editingNews) {
-      await updateNews(editingNews.id, formData);
+      await updateNews(editingNews.id, dataToSubmit);
     } else {
-      await createNews(formData);
+      await createNews(dataToSubmit);
     }
     
     handleCloseModal();
