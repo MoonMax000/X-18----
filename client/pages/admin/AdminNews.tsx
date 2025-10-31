@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useAdminNews } from '@/hooks/useAdmin';
-import { Plus, Edit, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, X, ExternalLink } from 'lucide-react';
 import type { NewsItem, CreateNewsData } from '@/services/api/custom-backend';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 export function AdminNews() {
   const { news, isLoading, error, fetchNews, createNews, updateNews, deleteNews } = useAdminNews();
   const [showModal, setShowModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   const [formData, setFormData] = useState<CreateNewsData>({
     title: '',
@@ -309,23 +312,123 @@ export function AdminNews() {
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-widget-border">
+              <div className="flex items-center justify-between pt-4 border-t border-widget-border">
                 <button
                   type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 text-gray-300 hover:bg-onyxGrey rounded-lg transition-colors"
+                  onClick={() => setShowPreview(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-tyrian hover:bg-tyrian/10 rounded-lg transition-colors"
                 >
-                  Отмена
+                  <Eye className="w-4 h-4" />
+                  Предпросмотр
                 </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-4 py-2 bg-tyrian text-white rounded-lg hover:bg-tyrian-dark transition-colors disabled:opacity-50 shadow-lg shadow-tyrian/20"
-                >
-                  {editingNews ? 'Сохранить' : 'Создать'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 text-gray-300 hover:bg-onyxGrey rounded-lg transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-tyrian text-white rounded-lg hover:bg-tyrian-dark transition-colors disabled:opacity-50 shadow-lg shadow-tyrian/20"
+                  >
+                    {editingNews ? 'Сохранить' : 'Создать'}
+                  </button>
+                </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-moonlessNight rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-widget-border shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-widget-border">
+              <h2 className="text-xl font-bold text-white">
+                Предпросмотр новости
+              </h2>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="p-2 text-gray-400 hover:text-white hover:bg-onyxGrey rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Preview как в виджете */}
+              <div className="bg-richBlack border border-widget-border rounded-lg overflow-hidden">
+                {formData.image_url && (
+                  <div className="relative h-64 overflow-hidden bg-onyxGrey">
+                    <img
+                      src={formData.image_url}
+                      alt={formData.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    {/* Category Badge */}
+                    <div className="absolute top-3 right-3">
+                      <span className="px-3 py-1 text-xs font-medium bg-tyrian/90 text-white rounded-full backdrop-blur-sm">
+                        {formData.category}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-5">
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    {formData.title || 'Заголовок новости'}
+                  </h3>
+
+                  {/* Description */}
+                  {formData.description && (
+                    <p className="text-sm text-gray-400 mb-4">
+                      {formData.description}
+                    </p>
+                  )}
+
+                  {/* Meta Info */}
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                    <span>только что</span>
+                    {formData.source && (
+                      <>
+                        <span className="h-1 w-1 rounded-full bg-gray-600" />
+                        <span>{formData.source}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Read More Button */}
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-tyrian/10 text-tyrian rounded-lg text-sm font-medium">
+                    Читать полностью
+                    <ExternalLink className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="mt-4 p-4 bg-blue/10 border border-blue/30 rounded-lg">
+                <p className="text-sm text-blue">
+                  💡 Так новость будет выглядеть в виджете и на странице новостей
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-widget-border">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="px-4 py-2 bg-tyrian text-white rounded-lg hover:bg-tyrian-dark transition-colors shadow-lg shadow-tyrian/20"
+              >
+                Закрыть
+              </button>
+            </div>
           </div>
         </div>
       )}

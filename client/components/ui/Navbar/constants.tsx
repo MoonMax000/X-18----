@@ -11,6 +11,7 @@ import {
   Activity as ActivityIcon,
 } from "./icons";
 import DashboardNavIcon from "./DashboardNavIcon";
+import { Newspaper } from "lucide-react";
 
 export interface NavElementProps {
   icon: ReactNode;
@@ -40,6 +41,11 @@ export const navElements: NavElementProps[] = [
         icon: <ExploreIcon className="h-5 w-5" />,
         title: "Explore",
         route: "/social/explore",
+      },
+      {
+        icon: <Newspaper className="h-5 w-5" />,
+        title: "News",
+        route: "/news",
       },
       {
         icon: <MessageIcon className="h-5 w-5" />,

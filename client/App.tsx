@@ -36,6 +36,7 @@ const FeedTest = lazy(() => import("./pages/FeedTest"));
 const ProfileConnections = lazy(() => import("./pages/ProfileConnections"));
 const HomePostDetail = lazy(() => import("./pages/HomePostDetail"));
 const CropTestPage = lazy(() => import("./pages/CropTestPage"));
+const NewsPage = lazy(() => import("./pages/NewsPage"));
 
 // Admin pages
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
@@ -125,6 +126,7 @@ const App = () => (
                     <Route path="/updates" element={<Updates />} />
                     <Route path="/referrals" element={<Referrals />} />
                     <Route path="/feedtest" element={<FeedTest />} />
+                    <Route path="/news" element={<NewsPage />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/language" element={<Settings />} />
                     <Route
