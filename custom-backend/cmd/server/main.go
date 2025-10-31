@@ -16,6 +16,7 @@ import (
 	"github.com/yourusername/x18-backend/internal/cache"
 	"github.com/yourusername/x18-backend/internal/database"
 	"github.com/yourusername/x18-backend/internal/services"
+	"github.com/yourusername/x18-backend/pkg/email"
 	"github.com/yourusername/x18-backend/pkg/middleware"
 )
 
@@ -99,8 +100,21 @@ func main() {
 	// Initialize WebSocket hub
 	api.InitWebSocketHub(redisCache)
 
+	// Initialize Resend email client
+	resendAPIKey := os.Getenv("RESEND_API_KEY")
+	resendFromEmail := os.Getenv("RESEND_FROM_EMAIL")
+	if resendFromEmail == "" {
+		resendFromEmail = "noreply@tyriantrade.com"
+	}
+	resendClient := email.NewResendClient(resendAPIKey, resendFromEmail, "Tyrian Trade")
+	if resendAPIKey == "" {
+		log.Println("⚠️  Warning: RESEND_API_KEY not set - email sending will be disabled")
+	} else {
+		log.Printf("✅ Resend email client initialized (from: %s)", resendFromEmail)
+	}
+
 	// Initialize handlers
-	authHandler := api.NewAuthHandler(db, redisCache, cfg)
+	authHandler := api.NewAuthHandler(db, redisCache, cfg, resendClient)
 	usersHandler := api.NewUsersHandler(db, redisCache)
 	postsHandler := api.NewPostsHandler(db)
 	timelineHandler := api.NewTimelineHandler(db)
@@ -147,6 +161,7 @@ func main() {
 	// Protected auth routes
 	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)
 	auth.Post("/verify/email", middleware.JWTMiddleware(cfg), authHandler.VerifyEmail)
+	auth.Post("/resend-verification", middleware.JWTMiddleware(cfg), authHandler.ResendVerificationEmail)
 
 	// TOTP-protected sensitive operations
 	auth.Post("/password/change",

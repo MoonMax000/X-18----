@@ -112,7 +112,7 @@ export function useSessions() {
   const fetchSessions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await authFetch.fetch('/sessions');
+      const response = await authFetch.fetch('/auth/sessions');
 
       if (response.ok) {
         const data = await response.json();
@@ -129,7 +129,7 @@ export function useSessions() {
 
   const revokeSession = useCallback(async (sessionId: string) => {
     try {
-      const response = await authFetch.fetch(`/sessions/${sessionId}`, {
+      const response = await authFetch.fetch(`/auth/sessions/${sessionId}`, {
         method: 'DELETE',
       });
 

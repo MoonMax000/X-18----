@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,21 +13,24 @@ import (
 	"github.com/yourusername/x18-backend/internal/database"
 	"github.com/yourusername/x18-backend/internal/models"
 	"github.com/yourusername/x18-backend/internal/services"
+	"github.com/yourusername/x18-backend/pkg/email"
 	"github.com/yourusername/x18-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
-	db     *database.Database
-	cache  *cache.Cache
-	config *configs.Config
+	db          *database.Database
+	cache       *cache.Cache
+	config      *configs.Config
+	emailClient *email.ResendClient
 }
 
-func NewAuthHandler(db *database.Database, cache *cache.Cache, config *configs.Config) *AuthHandler {
+func NewAuthHandler(db *database.Database, cache *cache.Cache, config *configs.Config, emailClient *email.ResendClient) *AuthHandler {
 	return &AuthHandler{
-		db:     db,
-		cache:  cache,
-		config: config,
+		db:          db,
+		cache:       cache,
+		config:      config,
+		emailClient: emailClient,
 	}
 }
 
@@ -119,6 +123,22 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create user",
 		})
+	}
+
+	// Generate email verification code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	verificationCode, err := securityService.GenerateVerificationCode(
+		user.ID,
+		models.VerificationTypeEmail,
+		models.VerificationMethodEmail,
+	)
+	if err != nil {
+		log.Printf("Failed to generate verification code: %v", err)
+	} else if h.emailClient != nil && h.emailClient.APIKey != "" {
+		// Send verification email
+		if err := h.emailClient.SendVerificationEmail(user.Email, verificationCode.Code); err != nil {
+			log.Printf("Failed to send verification email: %v", err)
+		}
 	}
 
 	// Generate tokens
@@ -261,12 +281,16 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 			})
 		}
 
-		// TODO: Send code via email/SMS
-		// For now, we'll include it in response (remove in production!)
+		// Send 2FA code via email if method is email
+		if user.VerificationMethod == "email" && h.emailClient != nil && h.emailClient.APIKey != "" {
+			if err := h.emailClient.Send2FAEmail(user.Email, code.Code); err != nil {
+				log.Printf("Failed to send 2FA email: %v", err)
+			}
+		}
+
 		return c.Status(200).JSON(fiber.Map{
 			"requires_2fa":        true,
 			"verification_method": user.VerificationMethod,
-			"debug_code":          code.Code, // REMOVE IN PRODUCTION
 		})
 	}
 
@@ -644,11 +668,15 @@ func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
 		})
 	}
 
-	// TODO: Send email with reset code
-	// For now, include in response (remove in production!)
+	// Send password reset email
+	if h.emailClient != nil && h.emailClient.APIKey != "" {
+		if err := h.emailClient.SendPasswordResetEmail(user.Email, code.Code); err != nil {
+			log.Printf("Failed to send password reset email: %v", err)
+		}
+	}
+
 	return c.JSON(fiber.Map{
-		"message":    "If the email exists, a reset link has been sent",
-		"debug_code": code.Code, // REMOVE IN PRODUCTION
+		"message": "If the email exists, a reset link has been sent",
 	})
 }
 
@@ -871,12 +899,16 @@ func (h *AuthHandler) Enable2FA(c *fiber.Ctx) error {
 		})
 	}
 
-	// TODO: Send verification code via email/SMS
-	// For now, include in response (remove in production!)
+	// Send verification code via email if method is email
+	if req.Method == "email" && h.emailClient != nil && h.emailClient.APIKey != "" {
+		if err := h.emailClient.Send2FAEmail(user.Email, code.Code); err != nil {
+			log.Printf("Failed to send 2FA setup email: %v", err)
+		}
+	}
+
 	return c.JSON(fiber.Map{
-		"message":    "Verification code sent. Please confirm to enable 2FA",
-		"method":     req.Method,
-		"debug_code": code.Code, // REMOVE IN PRODUCTION
+		"message": "Verification code sent. Please confirm to enable 2FA",
+		"method":  req.Method,
 	})
 }
 
@@ -1093,5 +1125,87 @@ func (h *AuthHandler) RequestAccountDeletion(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message":       "Account marked for deletion. You have 30 days to restore it.",
 		"deletion_date": now.Add(30 * 24 * time.Hour),
+	})
+}
+
+// ResendVerificationEmail resends verification email to user
+// POST /api/auth/resend-verification
+func (h *AuthHandler) ResendVerificationEmail(c *fiber.Ctx) error {
+	type ResendRequest struct {
+		Type string `json:"type" validate:"required,oneof=email password_reset 2fa"`
+	}
+
+	var req ResendRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Get user from context
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	// Get user
+	var user models.User
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Determine verification type
+	var verificationType models.VerificationType
+	var emailMethod func(string, string) error
+
+	switch req.Type {
+	case "email":
+		verificationType = models.VerificationTypeEmail
+		emailMethod = h.emailClient.SendVerificationEmail
+	case "password_reset":
+		verificationType = models.VerificationTypePasswordReset
+		emailMethod = h.emailClient.SendPasswordResetEmail
+	case "2fa":
+		verificationType = models.VerificationType2FA
+		emailMethod = h.emailClient.Send2FAEmail
+	default:
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid verification type",
+		})
+	}
+
+	// Generate new verification code
+	securityService := services.NewSecurityService(h.db.DB, h.cache)
+	code, err := securityService.GenerateVerificationCode(
+		user.ID,
+		verificationType,
+		models.VerificationMethodEmail,
+	)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to generate verification code",
+		})
+	}
+
+	// Send email if client is configured
+	if h.emailClient != nil && h.emailClient.APIKey != "" {
+		if err := emailMethod(user.Email, code.Code); err != nil {
+			log.Printf("Failed to resend verification email: %v", err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to send verification email",
+			})
+		}
+	} else {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Email service not configured",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Verification code sent successfully",
 	})
 }
