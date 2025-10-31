@@ -1,4 +1,4 @@
-import { FC, Dispatch, SetStateAction } from "react";
+import { FC, Dispatch, SetStateAction, useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import RightBarButton from "../RightBar/RightBarButton";
 import { AnimatedLogo } from "../AnimatedLogo/AnimatedLogo";
@@ -6,6 +6,9 @@ import { AvatarDropdown } from "../AvatarDropdown/AvatarDropdown";
 import { NotificationBell } from "./NotificationBell";
 import { useCustomNotifications } from "@/hooks/useCustomNotifications";
 import { useAuth } from "@/contexts/AuthContext";
+
+// Lazy load modal to reduce initial bundle size
+const LoginModal = lazy(() => import("@/components/auth/LoginModal"));
 
 interface HeaderProps {
   rightMenuOpen?: boolean;
@@ -21,6 +24,7 @@ export const Header: FC<HeaderProps> = ({
   setLeftMenuOpen,
 }) => {
   const { user } = useAuth();
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   
   // Fetch unread notifications count only if user is authenticated
   const { unreadCount } = useCustomNotifications({
@@ -69,12 +73,12 @@ export const Header: FC<HeaderProps> = ({
         <AnimatedLogo />
         <div className="flex-1 flex items-center justify-end gap-2">
           {!user && (
-            <Link
-              to="/auth/signup"
+            <button
+              onClick={() => setIsSignUpModalOpen(true)}
               className="inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[#A06AFF] to-[#7C3AED] hover:from-[#B084FF] hover:to-[#8B49FF] transition-all duration-200"
             >
               Sign Up
-            </Link>
+            </button>
           )}
           <AvatarDropdown />
           {setRightMenuOpen && (
@@ -187,12 +191,12 @@ export const Header: FC<HeaderProps> = ({
             </div>
           )}
           {!user && (
-            <Link
-              to="/auth/signup"
+            <button
+              onClick={() => setIsSignUpModalOpen(true)}
               className="inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#A06AFF] to-[#7C3AED] hover:from-[#B084FF] hover:to-[#8B49FF] transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Sign Up
-            </Link>
+            </button>
           )}
           <AvatarDropdown />
           {setRightMenuOpen && (
@@ -203,6 +207,17 @@ export const Header: FC<HeaderProps> = ({
           )}
         </div>
       </div>
+
+      {/* Sign Up Modal */}
+      {isSignUpModalOpen && (
+        <Suspense fallback={null}>
+          <LoginModal
+            isOpen={isSignUpModalOpen}
+            onClose={() => setIsSignUpModalOpen(false)}
+            initialScreen="signup"
+          />
+        </Suspense>
+      )}
     </header>
   );
 };
