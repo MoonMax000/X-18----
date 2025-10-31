@@ -17,12 +17,24 @@ export function AdminLayout() {
 
   // Проверка прав доступа
   React.useEffect(() => {
-    if (!user || user.role !== 'admin') {
+    console.log('🔍 AdminLayout - Checking access...');
+    console.log('User:', user);
+    console.log('User role:', user?.role);
+    console.log('Is admin?', user?.role === 'admin');
+    
+    if (!user) {
+      console.log('❌ No user - redirecting to home');
       navigate('/');
+    } else if (user.role !== 'admin') {
+      console.log('❌ User role is not admin - redirecting to home. Current role:', user.role);
+      navigate('/');
+    } else {
+      console.log('✅ Access granted - user is admin');
     }
   }, [user, navigate]);
 
   if (!user || user.role !== 'admin') {
+    console.log('🚫 Rendering null because user is not admin');
     return null;
   }
 
@@ -39,14 +51,16 @@ export function AdminLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-richBlack">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+      <aside className="fixed left-0 top-0 h-full w-64 bg-moonlessNight border-r border-widget-border">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-widget-border">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-blue-600" />
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            <div className="p-2 bg-tyrian/10 rounded-lg">
+              <ShieldCheck className="w-6 h-6 text-tyrian" />
+            </div>
+            <h1 className="text-xl font-bold text-white">
               Админ панель
             </h1>
           </div>
@@ -62,10 +76,10 @@ export function AdminLayout() {
                 key={item.path}
                 to={item.path}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                  flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                   ${isActive
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'bg-tyrian/20 text-tyrian shadow-lg shadow-tyrian/10'
+                    : 'text-gray-400 hover:text-white hover:bg-onyxGrey'
                   }
                 `}
               >
@@ -77,26 +91,26 @@ export function AdminLayout() {
         </nav>
 
         {/* User Info & Logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-widget-border bg-moonlessNight">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <img
                 src={user.avatar_url || '/default-avatar.png'}
                 alt={user.display_name}
-                className="w-10 h-10 rounded-full"
+                className="w-10 h-10 rounded-full ring-2 ring-tyrian/20"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-white truncate">
                   {user.display_name}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-xs text-gray-500 truncate">
                   @{user.username}
                 </p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="p-2 text-gray-400 hover:text-tyrian hover:bg-tyrian/10 rounded-lg transition-colors"
               title="Выйти"
             >
               <LogOut className="w-5 h-5" />

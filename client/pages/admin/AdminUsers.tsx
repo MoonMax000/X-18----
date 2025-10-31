@@ -35,9 +35,9 @@ export function AdminUsers() {
 
   const getRoleBadge = (role?: string) => {
     const roleConfig = {
-      admin: { label: 'Админ', icon: Shield, color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' },
-      moderator: { label: 'Модератор', icon: Crown, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
-      user: { label: 'Пользователь', icon: User, color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+      admin: { label: 'Админ', icon: Shield, color: 'bg-red/20 text-red' },
+      moderator: { label: 'Модератор', icon: Crown, color: 'bg-tyrian/20 text-tyrian' },
+      user: { label: 'Пользователь', icon: User, color: 'bg-gray-700 text-gray-300' },
     };
 
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.user;
@@ -55,8 +55,8 @@ export function AdminUsers() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Загрузка пользователей...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tyrian mx-auto"></div>
+          <p className="mt-4 text-gray-400">Загрузка пользователей...</p>
         </div>
       </div>
     );
@@ -66,17 +66,17 @@ export function AdminUsers() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-white">
           Управление пользователями
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-gray-400">
           Просмотр и изменение ролей пользователей
         </p>
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-800 dark:text-red-200">Ошибка: {error}</p>
+        <div className="bg-red/20 border border-red rounded-lg p-4">
+          <p className="text-red">Ошибка: {error}</p>
         </div>
       )}
 
@@ -88,71 +88,71 @@ export function AdminUsers() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Поиск по имени, username или email..."
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          className="w-full pl-10 pr-4 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-400 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
         />
       </div>
 
       {/* Users Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-moonlessNight rounded-lg border border-widget-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-onyxGrey">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Пользователь
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Роль
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Статистика
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Действия
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-widget-border">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <tr key={user.id} className="hover:bg-onyxGrey/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <img
                         src={user.avatar_url || '/default-avatar.png'}
                         alt={user.display_name}
-                        className="w-10 h-10 rounded-full"
+                        className="w-10 h-10 rounded-full ring-2 ring-widget-border"
                       />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
+                        <p className="font-medium text-white">
                           {user.display_name}
                         </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-400">
                           @{user.username}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 text-sm text-gray-400">
                     {user.email}
                   </td>
                   <td className="px-6 py-4">
                     {getRoleBadge(user.role)}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
-                      <div>Посты: {user.posts_count}</div>
-                      <div>Подписчики: {user.followers_count}</div>
-                      <div>Подписки: {user.following_count}</div>
+                    <div className="text-sm text-gray-400 space-y-1">
+                      <div>Посты: <span className="text-white font-medium">{user.posts_count}</span></div>
+                      <div>Подписчики: <span className="text-white font-medium">{user.followers_count}</span></div>
+                      <div>Подписки: <span className="text-white font-medium">{user.following_count}</span></div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <select
                       value={user.role || 'user'}
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="px-3 py-1 text-sm border border-widget-border rounded-lg bg-onyxGrey text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
                     >
                       <option value="user">Пользователь</option>
                       <option value="moderator">Модератор</option>
@@ -167,7 +167,7 @@ export function AdminUsers() {
 
         {filteredUsers.length === 0 && !isLoading && (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-400">
               {searchQuery ? 'Пользователи не найдены' : 'Пользователей пока нет'}
             </p>
           </div>
@@ -176,45 +176,51 @@ export function AdminUsers() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-moonlessNight rounded-lg border border-widget-border p-6 hover:border-blue transition-colors">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-gray-400">
                 Всего пользователей
               </p>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <p className="mt-2 text-3xl font-bold text-white">
                 {users.length}
               </p>
             </div>
-            <User className="w-8 h-8 text-blue-500" />
+            <div className="p-3 bg-blue/20 rounded-lg">
+              <User className="w-8 h-8 text-blue" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-moonlessNight rounded-lg border border-widget-border p-6 hover:border-tyrian transition-colors">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-gray-400">
                 Модераторов
               </p>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <p className="mt-2 text-3xl font-bold text-white">
                 {users.filter((u) => u.role === 'moderator').length}
               </p>
             </div>
-            <Crown className="w-8 h-8 text-purple-500" />
+            <div className="p-3 bg-tyrian/20 rounded-lg">
+              <Crown className="w-8 h-8 text-tyrian" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-moonlessNight rounded-lg border border-widget-border p-6 hover:border-red transition-colors">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-gray-400">
                 Администраторов
               </p>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <p className="mt-2 text-3xl font-bold text-white">
                 {users.filter((u) => u.role === 'admin').length}
               </p>
             </div>
-            <Shield className="w-8 h-8 text-red-500" />
+            <div className="p-3 bg-red/20 rounded-lg">
+              <Shield className="w-8 h-8 text-red" />
+            </div>
           </div>
         </div>
       </div>
