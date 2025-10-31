@@ -13,14 +13,21 @@ import {
 export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
 
   // Проверка прав доступа
   React.useEffect(() => {
     console.log('🔍 AdminLayout - Checking access...');
+    console.log('isLoading:', isLoading);
     console.log('User:', user);
     console.log('User role:', user?.role);
     console.log('Is admin?', user?.role === 'admin');
+    
+    // Wait for auth to initialize
+    if (isLoading) {
+      console.log('⏳ Waiting for auth to initialize...');
+      return;
+    }
     
     if (!user) {
       console.log('❌ No user - redirecting to home');
@@ -31,7 +38,19 @@ export function AdminLayout() {
     } else {
       console.log('✅ Access granted - user is admin');
     }
-  }, [user, navigate]);
+  }, [user, navigate, isLoading]);
+
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-richBlack flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tyrian mx-auto"></div>
+          <p className="mt-4 text-gray-400">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user || user.role !== 'admin') {
     console.log('🚫 Rendering null because user is not admin');
