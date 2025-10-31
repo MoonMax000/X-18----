@@ -9,7 +9,7 @@ export default function Profile() {
             preferences in one place.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-2xl bg-[#0C101480] border border-[#181B22] p-4">
+            <div className="rounded-2xl bg-[#0C101480] border border-widget-border p-4">
               <p className="text-webGray text-xs uppercase tracking-wide">
                 Status
               </p>
@@ -18,7 +18,7 @@ export default function Profile() {
                 Member since January 2024
               </p>
             </div>
-            <div className="rounded-2xl bg-[#0C101480] border border-[#181B22] p-4">
+            <div className="rounded-2xl bg-[#0C101480] border border-widget-border p-4">
               <p className="text-webGray text-xs uppercase tracking-wide">
                 Plan
               </p>
@@ -27,7 +27,7 @@ export default function Profile() {
                 Next renewal: 14 Jul 2024
               </p>
             </div>
-            <div className="rounded-2xl bg-[#0C101480] border border-[#181B22] p-4">
+            <div className="rounded-2xl bg-[#0C101480] border border-widget-border p-4">
               <p className="text-webGray text-xs uppercase tracking-wide">
                 Security
               </p>

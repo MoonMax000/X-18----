@@ -43,39 +43,32 @@ const QRIcon: FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-const CrossIcon: FC<{ className?: string }> = ({ className }) => (
-  <svg
-    className={className}
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M18 6L6 18M6 6l12 12"
-      stroke="#A06AFF"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const RightBarButton: FC<Props> = ({ isCollapsed, setIsCollapsed }) => {
   const toggleOpen = () => setIsCollapsed((prev) => !prev);
 
   return (
     <button
       onClick={toggleOpen}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300 ${
+      className={`group relative inline-flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300 ${
         isCollapsed
-          ? "bg-transparent hover:bg-[#181B20]"
-          : "bg-gradient-to-r from-[rgba(160,106,255,0.72)] to-[rgba(72,32,144,0.72)] hover:shadow-lg hover:shadow-primary/30 hover:scale-105 active:scale-95"
+          ? "bg-gradient-to-r from-[rgba(160,106,255,0.72)] to-[rgba(72,32,144,0.72)] shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:from-[rgba(160,106,255,0.85)] hover:to-[rgba(72,32,144,0.85)]"
+          : "bg-transparent hover:bg-gradient-to-r hover:from-[rgba(160,106,255,0.2)] hover:to-[rgba(72,32,144,0.2)]"
       }`}
       aria-label={isCollapsed ? "Close right menu" : "Open right menu"}
       aria-pressed={isCollapsed}
     >
-      {isCollapsed ? <CrossIcon /> : <QRIcon />}
+      <div
+        className={`transition-transform duration-300 ${
+          isCollapsed ? "rotate-45 scale-110" : "rotate-0 scale-100"
+        }`}
+      >
+        <QRIcon className="group-hover:scale-110 transition-transform duration-200" />
+      </div>
+
+      {/* Пульсирующий индикатор когда открыто */}
+      {isCollapsed && (
+        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#A06AFF] rounded-full animate-pulse" />
+      )}
     </button>
   );
 };

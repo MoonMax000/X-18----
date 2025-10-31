@@ -1,19 +1,19 @@
 import { FC, useEffect, useRef, useState, useCallback, ChangeEvent } from "react";
 import { createPortal } from "react-dom";
+import { ChevronDown, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TweetBlock } from "./TweetBlock";
+import { PaidPostModal, PaidPostConfig } from "./PaidPostModal";
 import { MediaEditor } from "./MediaEditor";
 import { EmojiPicker } from "./EmojiPicker";
-import { DraftsList } from "./DraftsList";
 import { CodeBlockModal } from "./CodeBlockModal";
 import { useAdvancedComposer } from "./useAdvancedComposer";
 import {
   MediaItem,
   ReplyPolicy,
-  ComposerDraft,
   ComposerBlockState,
   ComposerSentiment,
-  MAX_DRAFTS,
   REPLY_SUMMARY_TEXT,
 } from "./types";
 
@@ -90,12 +90,12 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
-  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [replyMenuPosition, setReplyMenuPosition] = useState<{
     top: number;
     left: number;
+    openBelow?: boolean;
   } | null>(null);
   const [emojiMenuPosition, setEmojiMenuPosition] = useState<{
     top: number;
@@ -105,8 +105,33 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
   const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiMenuRef = useRef<HTMLDivElement>(null);
   const toolbarFileInputRef = useRef<HTMLInputElement>(null);
+  const toolbarDocumentInputRef = useRef<HTMLInputElement>(null);
   const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [isBoldActive, setIsBoldActive] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
+  const [paidConfig, setPaidConfig] = useState<PaidPostConfig | null>(null);
+
+  // Post metadata for filtering
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('Analysis');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+
+  // Category configuration with icons and colors
+  const categoryConfig = {
+    'News': { icon: Newspaper, color: '#4D7CFF', bg: 'bg-[#4D7CFF]/15' },
+    'Education': { icon: GraduationCap, color: '#F78DA7', bg: 'bg-[#F78DA7]/15' },
+    'Analysis': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Macro': { icon: Brain, color: '#FFD166', bg: 'bg-[#FFD166]/15' },
+    'On-chain': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Code': { icon: Code2, color: '#64B5F6', bg: 'bg-[#64B5F6]/15' },
+    'Video': { icon: Video, color: '#FF8A65', bg: 'bg-[#FF8A65]/20' },
+    'Signal': { icon: TrendingUp, color: '#2EBD85', bg: 'bg-[#2EBD85]/15' },
+  };
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
 
   useEffect(() => {
     setMounted(true);
@@ -150,14 +175,18 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       if (
         isReplyMenuOpen &&
         replyMenuRef.current &&
-        !replyMenuRef.current.contains(e.target as Node)
+        !replyMenuRef.current.contains(e.target as Node) &&
+        replyButtonRef.current &&
+        !replyButtonRef.current.contains(e.target as Node)
       ) {
         setIsReplyMenuOpen(false);
       }
       if (
         isEmojiPickerOpen &&
         emojiMenuRef.current &&
-        !emojiMenuRef.current.contains(e.target as Node)
+        !emojiMenuRef.current.contains(e.target as Node) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(e.target as Node)
       ) {
         setIsEmojiPickerOpen(false);
       }
@@ -185,21 +214,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, blocks, replySetting, sentiment]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const autoSave = setInterval(() => {
-      const hasContent = blocks.some(
-        (b) => b.text.trim() || b.media.length > 0 || b.codeBlocks.length > 0,
-      );
-      if (hasContent) {
-        saveDraft();
-      }
-    }, 10000);
-
-    return () => clearInterval(autoSave);
-  }, [isOpen, blocks, replySetting]);
 
 
   // propagate blocks changes to parent if requested (live sync)
@@ -305,11 +319,59 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     [ensureActiveBlock, addMedia],
   );
 
-  const handleToolbarEmojiToggle = useCallback(() => {
+  const handleToolbarDocumentPick = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files || files.length === 0) {
+        return;
+      }
+
+      const targetId = ensureActiveBlock();
+      if (!targetId) {
+        event.target.value = "";
+        return;
+      }
+
+      addMedia(targetId, files);
+      event.target.value = "";
+    },
+    [ensureActiveBlock, addMedia],
+  );
+
+  const handleToolbarEmojiToggle = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const targetId = ensureActiveBlock();
     if (!targetId) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pickerWidth = 360;
+    const pickerHeight = 350;
+
+    let left = rect.left;
+    let top = rect.bottom + 8;
+
+    // Adjust if picker would go off right edge of screen
+    if (left + pickerWidth > window.innerWidth) {
+      left = window.innerWidth - pickerWidth - 20;
+    }
+
+    // Adjust if picker would go off bottom of screen
+    if (top + pickerHeight > window.innerHeight) {
+      top = rect.top - pickerHeight - 8;
+    }
+
+    setEmojiMenuPosition({ top, left });
     setIsEmojiPickerOpen((prev) => !prev);
   }, [ensureActiveBlock]);
+
+  const handleBoldToggle = useCallback(() => {
+    const targetId = activeBlockId || ensureActiveBlock();
+    if (!targetId) return;
+
+    const block = blocks.find(b => b.id === targetId);
+    if (!block) return;
+
+    setIsBoldActive(!isBoldActive);
+  }, [activeBlockId, ensureActiveBlock, blocks, isBoldActive]);
 
   const handleCodeBlockInsert = useCallback(
     (code: string, language: string) => {
@@ -371,77 +433,20 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
     [setActiveBlockId],
   );
 
-  const saveDraft = useCallback(() => {
-    const draft: ComposerDraft = {
-      id: `draft-${Date.now()}`,
-      blocks: blocks.map((b) => ({
-        id: b.id,
-        text: b.text,
-        mediaIds: b.media.map((m) => m.id),
-        media: b.media.map((m) => ({
-          id: m.id,
-          transform: m.transform,
-          alt: m.alt,
-          sensitiveTags: m.sensitiveTags,
-        })),
-        codeBlocks: b.codeBlocks,
-      })),
-      replyPolicy: replySetting,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const saved = localStorage.getItem("composer-drafts");
-    const drafts: ComposerDraft[] = saved ? JSON.parse(saved) : [];
-    drafts.unshift(draft);
-    localStorage.setItem(
-      "composer-drafts",
-      JSON.stringify(drafts.slice(0, MAX_DRAFTS)),
-    );
-  }, [blocks, replySetting]);
-
-  const handleOpenDraft = useCallback(
-    (draft: ComposerDraft) => {
-      const hasMedia = draft.blocks.some(
-        (b) => b.mediaIds && b.mediaIds.length > 0,
-      );
-
-      if (hasMedia) {
-        const confirmed = window.confirm(
-          "This draft contains media that cannot be restored. The text and code blocks will be restored, but you'll need to re-add any media. Continue?",
-        );
-        if (!confirmed) return;
-      }
-
-      const restoredBlocks: ComposerBlockState[] = draft.blocks.map((b) => ({
-        id: b.id,
-        text: b.text,
-        media: [],
-        codeBlocks: b.codeBlocks ?? [],
-      }));
-
-      initialize(restoredBlocks, draft.replyPolicy, sentiment);
-      setIsDraftsOpen(false);
-    },
-    [initialize, sentiment],
-  );
-
   const handleClose = useCallback(() => {
     const hasContent = blocks.some(
       (b) => b.text.trim() || b.media.length > 0 || b.codeBlocks.length > 0,
     );
 
     if (hasContent) {
-      const shouldSave = window.confirm(
-        "You have unsaved changes. Would you like to save this as a draft?\n\nNote: Media files will not be saved in drafts.",
+      const confirmed = window.confirm(
+        "Are you sure you want to close? Your post will not be saved.",
       );
-      if (shouldSave) {
-        saveDraft();
-      }
+      if (!confirmed) return;
     }
 
     onClose(blocks);
-  }, [blocks, onClose, saveDraft]);
+  }, [blocks, onClose]);
 
   const handlePost = useCallback(async () => {
     if (!canPost || isPosting) return;
@@ -496,9 +501,11 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
       >
         <div className="flex items-center justify-between px-5 py-4">
           <button
+            type="button"
             onClick={handleClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-[#E7E9EA] transition-colors hover:bg-white/10"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25]"
             disabled={isPosting}
+            aria-label="Close"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path
@@ -509,14 +516,6 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                 strokeLinejoin="round"
               />
             </svg>
-          </button>
-
-          <button
-            onClick={() => setIsDraftsOpen(true)}
-            className="text-sm font-semibold text-[#A06AFF] transition-colors hover:text-[#E3D8FF]"
-            disabled={isPosting}
-          >
-            Drafts
           </button>
         </div>
 
@@ -554,17 +553,10 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         </div>
 
         <div className="px-5 py-3">
-          <div
-            className="grid"
-            style={{
-              gridTemplateColumns: "repeat(5, auto) 1fr auto",
-              gap: "0.75rem",
-              alignItems: "center",
-            }}
-          >
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10"
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
               title="Видео или GIF"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -588,24 +580,9 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             </button>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10"
-              title="Опрос"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 12h4v7H3zM10 7h4v12h-4zM17 3h4v16h-4z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
               onClick={openToolbarFilePicker}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10 disabled:text-white/30 disabled:hover:bg-transparent"
-              title="Доб��вить медиа"
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
+              title="Добавить медиа"
               disabled={blocks.length === 0}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -638,41 +615,55 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             />
             <button
               type="button"
-              onClick={handleToolbarEmojiToggle}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10 disabled:text-white/30 disabled:hover:bg-transparent"
-              title="Добавить эмодзи"
+              onClick={() => toolbarDocumentInputRef.current?.click()}
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
+              title="Add documents (PDF, DOCX, PPTX, etc.)"
               disabled={blocks.length === 0}
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
-                  d="M10.0003 18.3333C14.6027 18.3333 18.3337 14.6023 18.3337 9.99996C18.3337 5.39759 14.6027 1.66663 10.0003 1.66663C5.39795 1.66663 1.66699 5.39759 1.66699 9.99996C1.66699 14.6023 5.39795 18.3333 10.0003 18.3333Z"
+                  d="M14.5 5H12.5C9.67157 5 8.25736 5 7.37868 5.87868C6.5 6.75736 6.5 8.17157 6.5 11V16C6.5 18.8284 6.5 20.2426 7.37868 21.1213C8.25736 22 9.67157 22 12.5 22H13.8431C14.6606 22 15.0694 22 15.4369 21.8478C15.8045 21.6955 16.0935 21.4065 16.6716 20.8284L19.3284 18.1716C19.9065 17.5935 20.1955 17.3045 20.3478 16.9369C20.5 16.5694 20.5 16.1606 20.5 15.3431V11C20.5 8.17157 20.5 6.75736 19.6213 5.87868C18.7426 5 17.3284 5 14.5 5Z"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
-                  d="M6.66699 12.5C7.42709 13.512 8.63724 14.1667 10.0003 14.1667C11.3634 14.1667 12.5736 13.512 13.3337 12.5"
+                  d="M15 21.5V20.5C15 18.6144 15 17.6716 15.5858 17.0858C16.1716 16.5 17.1144 16.5 19 16.5H20"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
-                  d="M6.67447 7.5H6.66699M13.3337 7.5H13.3262"
+                  d="M6.5 19C4.84315 19 3.5 17.6569 3.5 16V8C3.5 5.17157 3.5 3.75736 4.37868 2.87868C5.25736 2 6.67157 2 9.5 2H14.5004C16.1572 2.00001 17.5004 3.34319 17.5004 5.00003"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10.0011 13H14.0011M10.0011 9H17.0011"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
             </button>
+            <input
+              ref={toolbarDocumentInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+              className="hidden"
+              onChange={handleToolbarDocumentPick}
+            />
             <button
               type="button"
               onClick={() =>
                 handleCodeBlockClick(activeBlockId || blocks[0]?.id)
               }
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#A06AFF] transition-colors hover:bg-[#482090]/10 disabled:text-white/30 disabled:hover:bg-transparent"
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
               title="Блок кода"
               disabled={blocks.length === 0}
             >
@@ -687,72 +678,346 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
               </svg>
             </button>
 
-            <div></div>
+            <div className="ml-2 h-6 w-px bg-[#1B1F27]" />
 
-            <div className="flex items-center gap-3 justify-end">
+            <button
+              type="button"
+              onClick={handleToolbarEmojiToggle}
+              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF] disabled:text-white/30 disabled:hover:text-white/30"
+              title="Добавить эмодзи"
+              disabled={blocks.length === 0}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M8 9.5C8 8.119 8.672 7 9.5 7S11 8.119 11 9.5 10.328 12 9.5 12 8 10.881 8 9.5zm6.5 2.5c.828 0 1.5-1.119 1.5-2.5S15.328 7 14.5 7 13 8.119 13 9.5s.672 2.5 1.5 2.5zM12 16c-2.224 0-3.021-2.227-3.051-2.316l-1.897.633c.05.15 1.271 3.684 4.949 3.684s4.898-3.533 4.949-3.684l-1.896-.638c-.033.095-.83 2.322-3.053 2.322zm10.25-4.001c0 5.652-4.598 10.25-10.25 10.25S1.75 17.652 1.75 12 6.348 1.75 12 1.75 22.25 6.348 22.25 12zm-2 0c0-4.549-3.701-8.25-8.25-8.25S3.75 7.451 3.75 12s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBoldToggle}
+              className={cn(
+                "flex h-8 items-center justify-center gap-1.5 transition-colors",
+                isBoldActive ? "text-[#A06AFF]" : "text-[#6C7280] hover:text-[#A06AFF]"
+              )}
+              aria-label="Bold"
+              disabled={blocks.length === 0}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M15.636 11.671c2.079-.583 3.093-2.18 3.093-3.929 0-2.307-1.471-4.741-5.983-4.741H5.623V21h7.579c4.411 0 6.008-2.484 6.008-4.994 0-2.383-1.343-3.955-3.574-4.335zm-3.295-6.287c2.535 0 3.27 1.319 3.27 2.662 0 1.242-.583 2.611-3.27 2.611H8.69V5.384h3.651zM8.69 18.617v-5.628h4.208c2.231 0 3.194 1.166 3.194 2.738 0 1.547-.887 2.89-3.397 2.89H8.69z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <div className="ml-2 h-6 w-px bg-[#1B1F27]" />
+
+            <div className="inline-flex items-center gap-2">
               <button
-                onClick={() => setSentiment("bullish")}
-                className={`rounded inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold transition-colors ${sentiment === "bullish" ? "bg-[#1C3430] text-white" : "bg-white/5 text-white/40 hover:text-white"}`}
+                type="button"
+                onClick={() => setSentiment(sentiment === "bullish" ? null : "bullish")}
+                className={cn(
+                  "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
+                  sentiment === "bullish"
+                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A] hover:shadow-[0_4px_12px_rgba(46,189,133,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#2EBD85]/15"
+                )}
                 disabled={isPosting}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="shrink-0"
-                >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
-                    d="M13.3333 8.66659V5.33325H10"
-                    stroke="#2EBD85"
+                    d="M13.3333 8.66665V5.33331H10"
+                    stroke={sentiment === "bullish" ? "white" : "#2EBD85"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M13.3334 5.33325L10.0001 8.66659C9.41168 9.25499 9.11755 9.54912 8.75648 9.58165C8.69675 9.58705 8.63675 9.58705 8.57702 9.58165C8.21595 9.54912 7.92181 9.25499 7.33341 8.66659C6.74501 8.07819 6.45085 7.78405 6.08979 7.75152C6.03011 7.74612 5.97005 7.74612 5.91037 7.75152C5.54931 7.78405 5.25512 8.07819 4.66675 8.66659L2.66675 10.6666"
-                    stroke="#2EBD85"
+                    d="M13.3337 5.33331L10.0003 8.66665C9.41193 9.25505 9.11779 9.54918 8.75673 9.58171C8.69699 9.58711 8.63699 9.58711 8.57726 9.58171C8.21619 9.54918 7.92206 9.25505 7.33366 8.66665C6.74526 8.07825 6.45109 7.78411 6.09004 7.75158C6.03035 7.74618 5.9703 7.74618 5.91061 7.75158C5.54956 7.78411 5.25537 8.07825 4.66699 8.66665L2.66699 10.6666"
+                    stroke={sentiment === "bullish" ? "white" : "#2EBD85"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                Bullish
+                <span className={cn(
+                  "text-xs font-bold",
+                  sentiment === "bullish" ? "text-white" : "text-white"
+                )}>
+                  Bullish
+                </span>
               </button>
+
+              <div className="h-5 w-px bg-[#1B1F27]" />
+
               <button
-                onClick={() => setSentiment("bearish")}
-                className={`rounded inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold transition-colors ${sentiment === "bearish" ? "bg-[#3A2127] text-white" : "bg-white/5 text-white/40 hover:text-white"}`}
+                type="button"
+                onClick={() => setSentiment(sentiment === "bearish" ? null : "bearish")}
+                className={cn(
+                  "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
+                  sentiment === "bearish"
+                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414] hover:shadow-[0_4px_12px_rgba(255,38,38,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#EF454A]/15"
+                )}
                 disabled={isPosting}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="shrink-0"
-                >
+                <span className={cn(
+                  "text-xs font-bold",
+                  sentiment === "bearish" ? "text-white" : "text-white"
+                )}>
+                  Bearish
+                </span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
-                    d="M13.3333 7.3335V10.6668H10"
-                    stroke="#EF454A"
+                    d="M13.3333 7.33331V10.6666H10"
+                    stroke={sentiment === "bearish" ? "white" : "#EF454A"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M13.3334 10.6668L10.0001 7.3335C9.41168 6.7451 9.11755 6.45093 8.75648 6.41841C8.69675 6.41303 8.63675 6.41303 8.57702 6.41841C8.21595 6.45093 7.92181 6.7451 7.33341 7.3335C6.74501 7.9219 6.45085 8.21603 6.08979 8.24856C6.03011 8.25396 5.97005 8.25396 5.91037 8.24856C5.54931 8.21603 5.25512 7.9219 4.66675 7.3335L2.66675 5.3335"
-                    stroke="#EF454A"
+                    d="M13.3337 10.6666L10.0003 7.33331C9.41193 6.74491 9.11779 6.45075 8.75673 6.41823C8.69699 6.41285 8.63699 6.41285 8.57726 6.41823C8.21619 6.45075 7.92206 6.74491 7.33366 7.33331C6.74526 7.92171 6.45109 8.21585 6.09004 8.24838C6.03035 8.25378 5.9703 8.25378 5.91061 8.24838C5.54956 8.21585 5.25537 7.92171 4.66699 7.33331L2.66699 5.33331"
+                    stroke={sentiment === "bearish" ? "white" : "#EF454A"}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                Bearish
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isPaid) {
+                  setIsPaid(false);
+                  setPaidConfig(null);
+                } else {
+                  setIsPaidModalOpen(true);
+                }
+              }}
+              className={cn(
+                "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all",
+                isPaid
+                  ? "bg-gradient-to-l from-[#A06AFF] to-[#6B46C1] hover:shadow-[0_4px_12px_rgba(160,106,255,0.4)] hover:brightness-110"
+                  : "bg-transparent border border-[#A06AFF]/40 hover:bg-[#A06AFF]/15"
+              )}
+              disabled={isPosting}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6"
+                  stroke={isPaid ? "white" : "#A06AFF"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className={cn(
+                "text-xs font-bold",
+                isPaid ? "text-white" : "text-[#A06AFF]"
+              )}>
+                Paid
+              </span>
+            </button>
           </div>
         </div>
+
+        {/* Post Metadata Selectors */}
+        {blocks.some(block => block.text.trim().length > 0) && (
+          <div className="border-t border-widget-border px-5 py-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {/* Market Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Market <span className="text-[#EF454A]">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postMarket}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['Crypto', 'Stocks', 'Forex', 'Commodities', 'Indices'].map((market) => (
+                        <button
+                          key={market}
+                          type="button"
+                          onClick={() => setPostMarket(market)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postMarket === market
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {market}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Category Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Category <span className="text-[#EF454A]">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="flex items-center gap-1.5 truncate">
+                        {(() => {
+                          const config = categoryConfig[postCategory as keyof typeof categoryConfig];
+                          const Icon = config.icon;
+                          return (
+                            <>
+                              <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: config.color }} />
+                              <span className="truncate">{postCategory}</span>
+                            </>
+                          );
+                        })()}
+                      </span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'].map((category) => {
+                        const config = categoryConfig[category as keyof typeof categoryConfig];
+                        const Icon = config.icon;
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => setPostCategory(category)}
+                            className={cn(
+                              "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                              postCategory === category
+                                ? `${config.bg} font-semibold`
+                                : "text-[#D5D8E1] hover:bg-white/5"
+                            )}
+                          >
+                            <span className={cn(
+                              "flex h-5 w-5 shrink-0 items-center justify-center rounded",
+                              postCategory === category ? config.bg : "bg-[#2F3336]"
+                            )}>
+                              <Icon className="h-3 w-3" style={{ color: config.color }} />
+                            </span>
+                            <span style={{ color: postCategory === category ? config.color : undefined }}>
+                              {category}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Symbol Input */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Symbol
+                </label>
+                <input
+                  type="text"
+                  value={postSymbol}
+                  onChange={(e) => setPostSymbol(e.target.value.toUpperCase())}
+                  placeholder="BTC, ETH..."
+                  className="flex h-8 w-full rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] placeholder:text-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+                  maxLength={10}
+                />
+              </div>
+
+              {/* Timeframe Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Timeframe
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postTimeframe || 'None'}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['', '15m', '1h', '4h', '1d', '1w'].map((tf) => (
+                        <button
+                          key={tf || 'none'}
+                          type="button"
+                          onClick={() => setPostTimeframe(tf)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postTimeframe === tf
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {tf || 'None'}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Risk Level */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Risk
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postRisk || 'None'}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['', 'Low', 'Medium', 'High'].map((risk) => (
+                        <button
+                          key={risk || 'none'}
+                          type="button"
+                          onClick={() => setPostRisk(risk)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postRisk === risk
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {risk || 'None'}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <button
@@ -760,10 +1025,17 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             type="button"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
-              setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
+              const menuHeight = 280;
+
+              // Check if there's enough space above
+              const spaceAbove = rect.top;
+              const shouldOpenBelow = spaceAbove < menuHeight;
+
+              const top = shouldOpenBelow ? rect.bottom + 10 : rect.top - 10;
+              setReplyMenuPosition({ top, left: rect.left, openBelow: shouldOpenBelow });
               setIsReplyMenuOpen((prev) => !prev);
             }}
-            className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-sm font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-sm font-semibold text-[#A06AFF] transition-colors hover:bg-white/10"
             disabled={isPosting}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -810,9 +1082,10 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
             replyMenuPosition &&
             createPortal(
               <div
+                ref={replyMenuRef}
                 className="fixed z-[2300] w-80 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] shadow-2xl backdrop-blur-[100px] p-4"
                 style={{
-                  top: `${replyMenuPosition.top - 280}px`,
+                  top: replyMenuPosition.openBelow ? `${replyMenuPosition.top}px` : `${replyMenuPosition.top - 280}px`,
                   left: `${replyMenuPosition.left}px`,
                 }}
               >
@@ -832,13 +1105,13 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
                       <svg
                         className="mt-0.5 h-5 w-5 shrink-0"
                         viewBox="0 0 24 24"
-                        fill={replySetting === opt.id ? "#1D9BF0" : "none"}
+                        fill={replySetting === opt.id ? "#A06AFF" : "none"}
                         stroke="currentColor"
                         strokeWidth="2"
                       >
                         <circle cx="12" cy="12" r="10" />
                         {replySetting === opt.id && (
-                          <circle cx="12" cy="12" r="4" fill="#1D9BF0" />
+                          <circle cx="12" cy="12" r="4" fill="#A06AFF" />
                         )}
                       </svg>
                       <div className="flex-1">
@@ -940,10 +1213,15 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         </div>
 
         {isEmojiPickerOpen &&
+          emojiMenuPosition &&
           createPortal(
             <div
               ref={emojiMenuRef}
-              className="fixed bottom-24 left-6 z-[2300] h-96 w-96 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] p-4 shadow-2xl backdrop-blur-[100px]"
+              className="fixed z-[2300] h-[350px] w-full max-w-[360px] rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.95)] p-4 shadow-2xl backdrop-blur-[100px]"
+              style={{
+                top: `${emojiMenuPosition.top}px`,
+                left: `${emojiMenuPosition.left}px`,
+              }}
             >
               <EmojiPicker onSelect={handleEmojiSelect} />
             </div>,
@@ -968,11 +1246,14 @@ const CreatePostModal: FC<CreatePostModalProps> = ({
         onInsert={handleCodeBlockInsert}
       />
 
-      <DraftsList
-        isOpen={isDraftsOpen}
-        onClose={() => setIsDraftsOpen(false)}
-        onOpen={handleOpenDraft}
-        onDelete={() => {}}
+      <PaidPostModal
+        isOpen={isPaidModalOpen}
+        onClose={() => setIsPaidModalOpen(false)}
+        onSave={(config) => {
+          setPaidConfig(config);
+          setIsPaid(true);
+        }}
+        initialConfig={paidConfig || undefined}
       />
     </div>,
     document.body,

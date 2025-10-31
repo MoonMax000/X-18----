@@ -158,9 +158,9 @@ const TestFiltersBar: FC<TestFiltersBarProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-30 -mx-2 mb-4 rounded-3xl border border-[#181B22] bg-background/95 px-2 py-3 backdrop-blur-xl">
+    <div className="sticky top-0 z-30 -mx-2 mb-4 rounded-3xl border border-widget-border bg-background/95 px-2 py-3 backdrop-blur-xl">
       <div className="flex flex-col gap-3">
-        <div className="flex w-full max-w-[460px] self-center items-center justify-center gap-3 overflow-x-auto rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-1 backdrop-blur-[50px]">
+        <div className="flex w-full max-w-[460px] self-center items-center justify-center gap-3 overflow-x-auto rounded-[36px] border border-widget-border bg-[rgba(12,16,20,0.5)] p-1 backdrop-blur-[50px]">
           {PRIMARY_TAB_ITEMS.map((tab) => {
             const isActive = activePrimaryTab === tab.key;
             return (
@@ -172,7 +172,7 @@ const TestFiltersBar: FC<TestFiltersBarProps> = ({
                   "flex h-[34px] items-center justify-center whitespace-nowrap rounded-[32px] px-4 text-[15px] font-bold transition sm:px-5",
                   isActive
                     ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_10px_24px_-14px_rgba(160,106,255,0.8)]"
-                    : "border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-[#B0B0B0] hover:text-white",
+                    : "border border-widget-border bg-[rgba(12,16,20,0.5)] text-[#B0B0B0] hover:text-white",
                 )}
               >
                 {tab.label}
@@ -181,7 +181,7 @@ const TestFiltersBar: FC<TestFiltersBarProps> = ({
           })}
         </div>
 
-        <div className="rounded-2xl border border-[#181B22] bg-[#0C1014]/70 p-3">
+        <div className="rounded-2xl border border-widget-border bg-[#0C1014]/70 p-3">
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
               <PopoverTrigger asChild>

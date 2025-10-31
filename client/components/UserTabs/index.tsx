@@ -1,10 +1,14 @@
 import { FC, useMemo, useState } from "react";
+import { DollarSign, LockKeyhole, Sparkles } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import type { ViewMode } from "@/screens/home/Home";
+import type { LabCategory } from "@/components/testLab/categoryConfig";
+import { LAB_CATEGORY_MAP } from "@/components/testLab/categoryConfig";
 
 import FeedPost, { type FeedPostProps } from "../PostCard/VideoPost";
 import CompactPostCard from "../PostCard/CompactPostCard";
+import { cn } from "@/lib/utils";
 
 interface Tab {
   id: TabId;
@@ -20,14 +24,32 @@ type TabId =
   | "videos"
   | "liked";
 
+type MonetizationFilter = "all" | "free" | "premium";
+
 interface Props {
   isOwn?: boolean;
   viewMode?: ViewMode;
+  effectiveCategories?: LabCategory[];
+  monetizationFilter?: MonetizationFilter;
 }
 
-const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
+const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal", effectiveCategories = [], monetizationFilter = "all" }) => {
   const [activeTab, setActiveTab] = useState<TabId>("ideas");
   const { toast } = useToast();
+
+  const shouldShowMonetizationBadges = (isPremium: boolean) => {
+    if (monetizationFilter === "all") return true;
+    if (monetizationFilter === "free") return !isPremium;
+    if (monetizationFilter === "premium") return isPremium;
+    return true;
+  };
+
+  const shouldShowCategoryBadges = (categoryLabel: string) => {
+    if (effectiveCategories.length === 0) return true;
+    return effectiveCategories.some(
+      (cat) => LAB_CATEGORY_MAP[cat]?.label === categoryLabel
+    );
+  };
 
   const postsByTab = useMemo<Record<TabId, FeedPostProps[]>>(
     () => ({
@@ -306,7 +328,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
   );
 
   const renderEmptyState = (tabId: TabId) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.40)] p-6 text-center backdrop-blur-[50px]">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-[#16C784] bg-[rgba(12,16,20,0.40)] p-6 text-center backdrop-blur-[50px]">
       <h4 className="text-lg font-bold text-white">
         No {tabs.find((tab) => tab.id === tabId)?.label.toLowerCase()} yet
       </h4>
@@ -332,6 +354,85 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
     </div>
   );
 
+  const renderPostWithBadges = (post: FeedPostProps, index: number) => {
+    const isPremium = false;
+    const categoryConfig = Object.values(LAB_CATEGORY_MAP).find(
+      (config) => config.label === post.category
+    );
+    const CategoryIcon = categoryConfig?.icon;
+
+    return (
+      <article
+        key={`${activeTab}-${index}-${post.title}`}
+        className="mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#16C784] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60"
+      >
+        <header className="flex w-full items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <img
+              src={post.author.avatar}
+              alt={post.author.name}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 text-base font-semibold leading-tight text-white">
+                <span>{post.author.name}</span>
+                <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-[#B0B0B0]">
+                {CategoryIcon ? (
+                  <span className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
+                    categoryConfig?.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                  )}>
+                    <CategoryIcon className="h-3.5 w-3.5" />
+                    {post.category}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#2F3336] text-white/70">
+                    {post.category}
+                  </span>
+                )}
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]",
+                  isPremium
+                    ? "bg-[#1F1630] text-[#CDBAFF] border border-[#6F4BD3]/40"
+                    : "bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40"
+                )}>
+                  {isPremium ? <DollarSign className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
+                  {isPremium ? "Premium · открыт" : "Free доступ"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {post.mediaUrl && (
+          <div className="relative aspect-video overflow-hidden rounded-2xl">
+            <img
+              src={post.mediaUrl}
+              alt={post.title}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2">
+          <h3 className="text-base font-semibold text-white">{post.title}</h3>
+          {post.content && (
+            <p className="text-sm text-[#C5C9D3]">{post.content}</p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-[#16C784] pt-3 text-xs text-[#8E92A0]">
+          <div className="flex gap-4">
+            <span>❤️ {post.likes}</span>
+            <span>💬 {post.comments}</span>
+          </div>
+        </div>
+      </article>
+    );
+  };
+
   const activePosts = postsByTab[activeTab];
 
   return (
@@ -345,7 +446,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
             className={`group flex items-center justify-center gap-2 rounded-[32px] px-2.5 py-3 text-[15px] font-bold transition backdrop-blur-[58px] ${
               activeTab === tab.id
                 ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_8px_20px_-8px_rgba(160,106,255,0.7)]"
-                : "border border-[#181B22] bg-[rgba(12,16,20,0.50)] text-[#B0B0B0] hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] hover:text-white"
+                : "border border-[#16C784] bg-[rgba(12,16,20,0.50)] text-[#B0B0B0] hover:border-[#2F3240] hover:bg-[rgba(18,22,28,0.8)] hover:text-white"
             }`}
           >
             <span
@@ -368,7 +469,7 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
                 scrollbarColor: "#2F3240 transparent",
               }}
             >
-              {activePosts.map((post, index) => (
+              {activePosts.filter((post) => shouldShowCategoryBadges(post.category) && shouldShowMonetizationBadges(false)).map((post, index) => (
                 <CompactPostCard
                   key={`${activeTab}-compact-${index}-${post.title}`}
                   author={post.author}
@@ -388,13 +489,10 @@ const UserTabs: FC<Props> = ({ isOwn = true, viewMode = "normal" }) => {
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          {activePosts.length > 0
-            ? activePosts.map((post, index) => (
-                <FeedPost
-                  key={`${activeTab}-${index}-${post.title}`}
-                  {...post}
-                />
-              ))
+          {activePosts.filter((post) => shouldShowCategoryBadges(post.category) && shouldShowMonetizationBadges(false)).length > 0
+            ? activePosts
+                .filter((post) => shouldShowCategoryBadges(post.category) && shouldShowMonetizationBadges(false))
+                .map((post, index) => renderPostWithBadges(post, index))
             : renderEmptyState(activeTab)}
         </div>
       )}

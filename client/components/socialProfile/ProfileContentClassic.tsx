@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { defaultProfile, getProfileTimeline } from "@/data/socialProfile";
 import type { SocialProfileData } from "@/data/socialProfile";
 import type { SocialPost } from "@/data/socialPosts";
+import type { User } from "@/data/users";
 import ProfileHero from "./ProfileHero";
 import ProfileBioClassic from "./ProfileBioClassic";
 import TabListClassic from "./TabListClassic";
@@ -10,10 +11,12 @@ import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 
 interface ProfileContentClassicProps {
+  profile?: User | SocialProfileData;
   isOwnProfile?: boolean;
 }
 
 export default function ProfileContentClassic({
+  profile: profileProp,
   isOwnProfile = true,
 }: ProfileContentClassicProps) {
   const navigate = useNavigate();
@@ -29,17 +32,16 @@ export default function ProfileContentClassic({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // For now, always use defaultProfile
-      // In real app, fetch profile by handle or user_id
-      // console.log('Loading profile for handle:', handle);
-      setProfile(defaultProfile);
-      setPosts(getProfileTimeline(defaultProfile));
+      // Use provided profile or default profile
+      const profileToUse = profileProp || defaultProfile;
+      setProfile(profileToUse);
+      setPosts(getProfileTimeline(profileToUse));
 
       setIsLoading(false);
     };
 
     loadProfile();
-  }, [handle, user_id]);
+  }, [handle, user_id, profileProp]);
 
   if (isLoading) {
     return (
@@ -70,12 +72,16 @@ export default function ProfileContentClassic({
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-[#F7F9F9] transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[#F7F9F9] transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            aria-label="Back"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path
-                d="M6.19006 11.46L10.3926 16.5L9.21423 17.92L3.00006 10.46L9.21423 3L10.3926 4.42L6.19006 9.46H17.5117V11.46H6.19006Z"
-                fill="#F7F9F9"
+                d="M11.6667 5L6.66675 10L11.6667 15"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
           </button>
@@ -200,23 +206,31 @@ export default function ProfileContentClassic({
                 <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
                   {profile.stats.following}
                 </span>
-                <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/social/profile/${profile.username}/connections?tab=following`)}
+                  className="text-[15px] font-normal leading-5 text-[#8B98A5] transition-colors hover:underline"
+                >
                   Following
-                </span>
+                </button>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-[15px] font-bold leading-5 text-[#F7F9F9]">
                   {profile.stats.followers}
                 </span>
-                <span className="text-[15px] font-normal leading-5 text-[#8B98A5]">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/social/profile/${profile.username}/connections?tab=followers`)}
+                  className="text-[15px] font-normal leading-5 text-[#8B98A5] transition-colors hover:underline"
+                >
                   Followers
-                </span>
+                </button>
               </div>
             </div>
           </div>
 
           <div className="mt-8">
-            <TabListClassic />
+            <TabListClassic isOwnProfile={isOwnProfile} />
           </div>
         </div>
         <ProfileTweetsClassic posts={posts} />

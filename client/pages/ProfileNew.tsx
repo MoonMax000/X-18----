@@ -1057,7 +1057,11 @@ const ProfileNew: FC = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* User Header */}
-      <UserHeader isOwn={true} />
+      <div className="flex justify-center">
+        <div className="w-full max-w-[720px]">
+          <UserHeader isOwn={true} onEditProfile={() => setActiveTab("profile")} />
+        </div>
+      </div>
 
       {/* Navigation Tabs */}
       <div className="flex flex-col items-center gap-4">

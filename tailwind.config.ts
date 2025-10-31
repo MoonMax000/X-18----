@@ -16,7 +16,7 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          "Nunito Sans",
+          "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -65,6 +65,15 @@ export default {
 
         lightGray: "#1F2229",
         gray: "#272A32",
+
+        // Widget styling colors
+        "widget-border": "#16C784",
+        "widget-border-hover": "#2F3240",
+        "widget-bg": "rgba(12,16,20,0.50)",
+        "widget-bg-alt": "rgba(12,16,20,0.55)",
+        "widget-bg-light": "rgba(12,16,20,0.40)",
+        "widget-bg-dark": "rgba(12,16,20,0.65)",
+        "widget-bg-hover": "rgba(18,22,28,0.8)",
       },
       boxShadow: {
         "avatar-shadow": "0 6.71px 11.41px -1.34px rgba(0,0,0,0.28)",

@@ -12,7 +12,7 @@ const BottomNav: FC<BottomNavProps> = ({ onTweetClick }) => {
   const [isHubOpen, setIsHubOpen] = useState(false);
 
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/' || location.pathname === '/home';
+    if (path === '/') return location.pathname === '/' || location.pathname === '/social/explore';
     return location.pathname.startsWith(path);
   };
 
@@ -149,14 +149,14 @@ const BottomNav: FC<BottomNavProps> = ({ onTweetClick }) => {
           <div className="relative flex items-center justify-around h-16 px-2">
             {/* Home */}
             <button
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/social/explore')}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-1 rounded-xl transition-colors",
-                isActive('/home') || isActive('/') 
-                  ? "text-[#A06AFF]" 
+                isActive('/social/explore') || isActive('/')
+                  ? "text-[#A06AFF]"
                   : "text-[#8E92A0] hover:text-white"
               )}
-              aria-label="Home"
+              aria-label="Explore"
             >
               <svg
                 className="w-6 h-6"

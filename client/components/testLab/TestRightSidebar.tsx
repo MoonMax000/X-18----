@@ -1,12 +1,10 @@
-import { type FC } from "react";
-
 import type { FC } from "react";
 
 import { LAB_CATEGORY_CONFIG, LAB_CATEGORY_LABELS, type LabCategory } from "./categoryConfig";
 
 const QUICK_FILTERS: { title: string; description: string; categories: LabCategory[] }[] = [
   {
-    title: "Фокус на сигналах",
+    title: "Фо��ус на сигналах",
     description: "Показывать только свежие точки входа",
     categories: ["signals", "analytics"],
   },
@@ -32,7 +30,7 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
   return (
     <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
       <div className="sticky top-24 flex flex-col gap-5">
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[#16C784] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Быстрые фильтры</h3>
           <p className="mt-1 text-sm text-[#A3A6B4]">
             Сохранённые пресеты помогают быстро переключаться между сценариями просмотра.
@@ -42,7 +40,7 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
               <li key={preset.title}>
                 <button
                   type="button"
-                  className="w-full rounded-2xl border border-[#181B22] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10"
+                  className="w-full rounded-2xl border border-[#16C784] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10"
                   onClick={() => onApplyQuickFilter(preset.categories)}
                 >
                   <span className="text-sm font-semibold text-white">{preset.title}</span>
@@ -69,7 +67,7 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
           </ul>
         </section>
 
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+        <section className="rounded-[24px] border border-[#16C784] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
           <h3 className="text-lg font-semibold text-white">Мои рубрики</h3>
           {savedCategories.length === 0 ? (
             <p className="mt-2 text-sm text-[#A3A6B4]">
@@ -93,30 +91,6 @@ const TestRightSidebar: FC<TestRightSidebarProps> = ({ onApplyQuickFilter, saved
               Очистить предпочтения
             </button>
           ) : null}
-        </section>
-
-        <section className="rounded-[24px] border border-[#181B22] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-          <h3 className="text-lg font-semibold text-white">Монетизация</h3>
-          <ul className="mt-3 space-y-3 text-sm text-[#C5C9D3]">
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
-              <span className="text-white">Pay-per-post</span>
-              <p className="mt-1 text-xs text-[#8E92A0]">
-                Разблокировка отдельного сигнала или аналитики за разовую оплату.
-              </p>
-            </li>
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
-              <span className="text-white">Подписка на автора</span>
-              <p className="mt-1 text-xs text-[#8E92A0]">
-                Доступ ко всем закрытым постам автора и мгновенные уведомления.
-              </p>
-            </li>
-            <li className="rounded-2xl border border-[#181B22] bg-white/5 p-3">
-              <span className="text-white">Комбинированная модель</span>
-              <p className="mt-1 text-xs text-[#8E92A0]">
-                Авторы сами выбирают: платный сигнал, подписочная аналитика или бесплатные идеи.
-              </p>
-            </li>
-          </ul>
         </section>
       </div>
     </aside>

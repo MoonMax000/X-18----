@@ -1,5 +1,6 @@
 import { FC, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ type ScreenType = 'login' | '2fa' | 'forgot-email' | 'forgot-sent' | 'create-pas
 
 const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('login');
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('phone');
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [showPassword, setShowPassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -30,7 +31,11 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isCodeExpired, setIsCodeExpired] = useState(false);
   const [isBlocked2FA, setIsBlocked2FA] = useState(false);
-  
+  const [userId, setUserId] = useState('');
+
+  // Auth context
+  const { login, verifyCode } = useAuth();
+
   // Forgot Password states
   const [forgotEmail, setForgotEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -39,7 +44,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   // SignUp states
-  const [signupAuthMethod, setSignupAuthMethod] = useState<'email' | 'phone'>('phone');
+  const [signupAuthMethod, setSignupAuthMethod] = useState<'email' | 'phone'>('email');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -268,30 +273,38 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Verify 2FA code (mock)
-  const verify2FACode = () => {
+  // Verify 2FA code with real API
+  const verify2FACode = async () => {
     if (isBlocked2FA || isCodeExpired) return;
 
     const code = twoFactorCode.join('');
     console.log('Verifying 2FA code:', code);
 
-    if (code === '123456') {
-      console.log('2FA verification successful!');
-      setTwoFactorError('');
-    } else {
-      const newAttempts = failedAttempts + 1;
-      setFailedAttempts(newAttempts);
+    try {
+      const result = await verifyCode(userId, code, '2fa');
 
-      if (newAttempts >= 3) {
-        setIsBlocked2FA(true);
-        setTwoFactorError('Too many failed attempts. Try again later.');
+      if (result) {
+        console.log('2FA verification successful!');
+        setTwoFactorError('');
+        onClose();
       } else {
-        setTwoFactorError('Invalid code. Please try again.');
-        setTimeout(() => {
-          setTwoFactorCode(['', '', '', '', '', '']);
-          inputRefs[0].current?.focus();
-        }, 1000);
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
+
+        if (newAttempts >= 3) {
+          setIsBlocked2FA(true);
+          setTwoFactorError('Too many failed attempts. Try again later.');
+        } else {
+          setTwoFactorError('Invalid code. Please try again.');
+          setTimeout(() => {
+            setTwoFactorCode(['', '', '', '', '', '']);
+            inputRefs[0].current?.focus();
+          }, 1000);
+        }
       }
+    } catch (error: any) {
+      console.error('2FA verification error:', error);
+      setTwoFactorError('Verification failed. Please try again.');
     }
   };
 
@@ -355,8 +368,8 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle login - simulates different error scenarios
-  const handleLogin = () => {
+  // Handle login with real AuthContext
+  const handleLogin = async () => {
     setAuthError('');
     setAttemptsRemaining(null);
 
@@ -376,35 +389,26 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    console.log('Login attempt:', { authMethod, phoneNumber, email, password });
+    try {
+      const emailOrPhone = authMethod === 'email' ? email : phoneNumber;
+      const result = await login(emailOrPhone, password);
 
-    // Mock login validation - simulate different scenarios
-    // For demo: password 'wrongpassword' triggers attempt counter
-    if (password === 'wrongpassword') {
-      const newFailedAttempts = failedAttempts + 1;
-      setFailedAttempts(newFailedAttempts);
-
-      if (newFailedAttempts >= 10) {
-        setIsBlocked(true);
-        setAuthError('Too many failed attempts. Account locked for 30 minutes.');
-        return;
-      } else if (newFailedAttempts >= 5) {
-        setAuthError('Too many failed attempts. IP blocked for 15 minutes.');
-        setIsBlocked(true);
-        return;
+      if (result.requires2FA) {
+        // Show 2FA screen
+        setUserId(result.userId || '');
+        const masked = result.maskedContact || emailOrPhone.replace(/(.{1})(.*)(@.*)/, '$1***$3');
+        setMaskedEmail(masked);
+        setCurrentScreen('2fa');
+      } else if (result.success) {
+        // Login successful, close modal
+        onClose();
       } else {
-        const remaining = 10 - newFailedAttempts;
-        setAttemptsRemaining(remaining);
-        setAuthError('Invalid login or password.');
-        return;
+        setAuthError(result.error || 'Invalid login or password.');
       }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setAuthError(error.message || 'Login failed. Please try again.');
     }
-
-    // Mock: Show 2FA screen on successful login
-    const userEmail = authMethod === 'email' ? email : 'example@gmail.com';
-    const masked = userEmail.replace(/(.{1})(.*)(@.*)/, '$1***$3');
-    setMaskedEmail(masked);
-    setCurrentScreen('2fa');
   };
 
   useEffect(() => {
@@ -606,6 +610,43 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
               <h2 className="text-2xl font-bold text-white text-center mb-2">
                 Sign In
               </h2>
+
+              <div className="flex items-center justify-center">
+                <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20">
+                  <button
+                    onClick={() => {
+                      setAuthMethod('email');
+                      setPhoneError('');
+                      setEmailError('');
+                      setAuthError('');
+                    }}
+                    className={cn(
+                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                      authMethod === 'email'
+                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
+                        : 'text-white hover:text-primary'
+                    )}
+                  >
+                    Email
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAuthMethod('phone');
+                      setPhoneError('');
+                      setEmailError('');
+                      setAuthError('');
+                    }}
+                    className={cn(
+                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                      authMethod === 'phone'
+                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
+                        : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white shadow-md'
+                    )}
+                  >
+                    Phone
+                  </button>
+                </div>
+              </div>
 
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
@@ -1105,21 +1146,6 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 <div className="inline-flex items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] shadow-lg shadow-black/20">
                   <button
                     onClick={() => {
-                      setSignupAuthMethod('phone');
-                      setSignupPhoneError('');
-                      setSignupEmailError('');
-                    }}
-                    className={cn(
-                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
-                      signupAuthMethod === 'phone'
-                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
-                        : 'text-white hover:text-primary'
-                    )}
-                  >
-                    Phone
-                  </button>
-                  <button
-                    onClick={() => {
                       setSignupAuthMethod('email');
                       setSignupPhoneError('');
                       setSignupEmailError('');
@@ -1128,10 +1154,25 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
                       signupAuthMethod === 'email'
                         ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
-                        : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white shadow-md'
+                        : 'text-white hover:text-primary'
                     )}
                   >
                     Email
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSignupAuthMethod('phone');
+                      setSignupPhoneError('');
+                      setSignupEmailError('');
+                    }}
+                    className={cn(
+                      'flex items-center justify-center h-8 px-4 rounded-[32px] text-[15px] font-bold transition-all duration-300',
+                      signupAuthMethod === 'phone'
+                        ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
+                        : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white shadow-md'
+                    )}
+                  >
+                    Phone
                   </button>
                 </div>
               </div>

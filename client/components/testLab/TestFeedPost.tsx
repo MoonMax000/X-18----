@@ -42,10 +42,10 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
     return `${formattedContent.slice(0, 240)}${formattedContent.length > 240 ? "…" : ""}`;
   }, [expanded, formattedContent, post.isPremium, post.preview, post.unlocked, shouldShowToggle]);
 
-  const categoryConfig = LAB_CATEGORY_MAP[post.category];
+  const categoryConfig = LAB_CATEGORY_MAP[post.category] ?? LAB_CATEGORY_MAP['other'];
   const CategoryIcon = categoryConfig.icon;
   const showLock = Boolean(post.isPremium && !post.unlocked);
-  const audienceConfig = LAB_AUDIENCE_MAP[post.audience];
+  const audienceConfig = post.audience ? LAB_AUDIENCE_MAP[post.audience] : undefined;
   const monetizationBadgeClassName = post.isPremium
     ? showLock
       ? "bg-[#2A1C3F] text-[#CDBAFF] border border-[#A06AFF]/50"
@@ -79,7 +79,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
     <article
       onClick={() => onOpen?.(post.id)}
       className={cn(
-        "mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#181B22] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60",
+        "post-hover-glow mx-auto flex w-full max-w-full flex-col gap-3 rounded-3xl border border-[#5E5E5E] bg-background p-5 shadow-[0_24px_60px_-35px_rgba(0,0,0,0.65)] backdrop-blur-[32px] transition-colors duration-200 hover:border-[#A06AFF]/60",
         onOpen && "cursor-pointer",
       )}
     >
@@ -101,7 +101,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
             <UserAvatar src={post.author.avatar} alt={post.author.name} size={48} accent={false} />
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center gap-1.5 text-base font-semibold leading-tight text-white">
-                <span>{post.author.name}</span>
+                <span className="hover:underline hover:underline-offset-2 transition-all">{post.author.name}</span>
                 {post.author.verified ? <VerifiedBadge size={16} /> : null}
                 {post.author.handle ? (
                   <span className="text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
@@ -166,7 +166,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="-rotate-90 h-4 w-4"
+              className="h-4 w-4"
             >
               <path
                 d="M8.00004 8.66675C8.17685 8.66675 8.34642 8.59651 8.47145 8.47149C8.59647 8.34646 8.66671 8.17689 8.66671 8.00008C8.66671 7.82327 8.59647 7.6537 8.47145 7.52868C8.34642 7.40365 8.17685 7.33341 8.00004 7.33341C7.82323 7.33341 7.65366 7.40365 7.52864 7.52868C7.40361 7.6537 7.33337 7.82327 7.33337 8.00008C7.33337 8.17689 7.40361 8.34646 7.52864 8.47149C7.65366 8.59651 7.82323 8.66675 8.00004 8.66675Z"
@@ -197,7 +197,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
         </div>
       </header>
 
-      {post.assets.length > 0 ? (
+      {post.assets && post.assets.length > 0 ? (
         <div className="ml-14 flex flex-wrap items-center gap-1.5 text-xs text-[#8E92A0]">
           {post.assets.map((asset) => {
             const assetConfig = LAB_ASSET_MAP[asset];
@@ -226,6 +226,15 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
 
       <section className="ml-14 flex flex-col gap-2 text-sm leading-relaxed text-white/90">
         <p>{displayedContent}</p>
+        {post.hashtags && post.hashtags.length > 0 && !showLock ? (
+          <p className="text-sm leading-relaxed mt-1">
+            {post.hashtags.map((tag) => (
+              <span key={tag} className="text-[#4D7CFF] font-normal">
+                {tag.startsWith('#') ? tag : `#${tag}`}
+              </span>
+            )).reduce((prev, curr) => [prev, ' ', curr] as any)}
+          </p>
+        ) : null}
         {showLock ? (
           <div className="rounded-2xl border border-dashed border-[#A06AFF]/40 bg-[#A06AFF]/5 p-4 text-sm text-[#CDBAFF]">
             Этот пост доступен после оплаты. Оформите подписку или разблокируйте единично.
@@ -243,7 +252,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
       </section>
 
       {post.mediaUrl || post.videoUrl ? (
-        <div className="ml-14 overflow-hidden rounded-2xl border border-[#181B22]">
+        <div className="ml-14 overflow-hidden rounded-2xl border border-[#16C784]">
           {post.mediaUrl ? (
             <div className="relative">
               <img
@@ -260,7 +269,7 @@ const TestFeedPost: FC<TestFeedPostProps> = ({ post, onUnlock, onSubscribe, onOp
                     <LockKeyhole className="h-6 w-6" />
                   </div>
                   <p className="max-w-[240px] text-center text-sm font-semibold text-white">
-                    Изображение заблокировано. Откройте доступ, чтобы увидеть оригинал и разметку автора.
+                    Изображение заблокировано. Откройте доступ, чтобы увидеть оригинал и разметк�� автора.
                   </p>
                 </div>
               ) : null}

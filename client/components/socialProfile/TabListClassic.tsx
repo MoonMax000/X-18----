@@ -1,19 +1,23 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { LayoutGrid, Lightbulb, MessageCircle, BarChart3, Code, Heart } from "lucide-react";
 
 const tabs = [
-  { id: "tweets", label: "Tweets" },
-  { id: "tweet-replies", label: "Tweets & replies" },
-  { id: "media", label: "Media" },
-  { id: "likes", label: "Likes" },
+  { id: "all", label: "All", icon: LayoutGrid },
+  { id: "ideas", label: "Ideas", icon: Lightbulb },
+  { id: "opinions", label: "Opinions", icon: MessageCircle },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "soft", label: "Soft", icon: Code },
+  { id: "liked", label: "Liked", icon: Heart },
 ];
 
 interface TabListClassicProps {
   onTabChange?: (tabId: string) => void;
+  isOwnProfile?: boolean;
 }
 
-export default function TabListClassic({ onTabChange }: TabListClassicProps) {
-  const [activeTab, setActiveTab] = useState(tabs[0].id);
+export default function TabListClassic({ onTabChange, isOwnProfile = true }: TabListClassicProps) {
+  const visibleTabs = isOwnProfile ? tabs : tabs.filter(tab => tab.id !== 'liked');
+  const [activeTab, setActiveTab] = useState(visibleTabs[0].id);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -22,24 +26,38 @@ export default function TabListClassic({ onTabChange }: TabListClassicProps) {
 
   return (
     <div className="sticky top-0 z-20 -mx-6 px-6 bg-background/95 backdrop-blur-md">
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-[1fr_2fr_1fr_1fr] w-full overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
-            className="text-[#777] px-3 sm:px-6 md:px-9 w-full flex items-center justify-center font-bold text-xs sm:text-sm md:text-[15px] hover:bg-[#111] transition"
-          >
-            <span
-              className={cn(
-                "relative w-full py-3 sm:py-4 md:py-5 px-2",
-                activeTab === tab.id &&
-                  "text-white after:content-[''] after:h-[3px] after:w-full after:bg-[#A06AFF] after:rounded-[40px] after:absolute after:bottom-0 after:left-0",
-              )}
+      <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#5E5E5E] bg-[#000000] p-0.5 transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)]">
+        {visibleTabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          const isAllTab = tab.id === 'all';
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              aria-pressed={isActive}
+              onClick={() => handleTabClick(tab.id)}
+              className={`${isAllTab ? 'flex-none min-w-[60px]' : 'flex-1 min-w-[120px]'} px-3 py-0.75 text-xs font-semibold leading-tight transition-all duration-300 sm:px-4 sm:py-1 sm:text-sm relative group ${
+                isActive
+                  ? "rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,1),inset_0_0_12px_rgba(0,0,0,0.3)]"
+                  : "rounded-full text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/20 hover:to-[#482090]/20 hover:shadow-[0_8px_20px_-12px_rgba(160,106,255,0.5)]"
+              }`}
             >
-              {tab.label}
-            </span>
-          </button>
-        ))}
+              <span className="flex items-center justify-center gap-1.5">
+                <Icon className={`h-4 w-4 transition-transform duration-300 ${isActive ? "" : "group-hover:scale-110"}`} />
+                <span className={isAllTab ? "inline" : "hidden sm:inline"}>{tab.label}</span>
+              </span>
+              {/* Underline animation for inactive tabs - fade from center */}
+              {!isActive && (
+                <div className="absolute bottom-0 left-1/2 h-0.5 w-0 rounded-full transform -translate-x-1/2 group-hover:w-3/4 transition-all duration-300"
+                     style={{
+                       background: 'linear-gradient(90deg, transparent 0%, #A06AFF 50%, transparent 100%)'
+                     }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

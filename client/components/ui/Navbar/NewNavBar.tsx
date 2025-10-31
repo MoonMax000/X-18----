@@ -1,10 +1,12 @@
 import { FC, useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutVariant } from '../AppBackground/AppBackground';
 import { cn } from '@/lib/utils';
 import { navElements, NavElementProps } from './constants';
 import { ChevronDown, DoubleArrow, QuillPen } from './icons';
 import CreatePostModal from '@/components/CreatePostBox/CreatePostModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Props {
   variant?: LayoutVariant;
@@ -13,11 +15,31 @@ interface Props {
 }
 
 const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) => {
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [isPostComposerOpen, setIsPostComposerOpen] = useState(false);
 
   const toggleGroup = (title: string) => setOpenGroup(openGroup === title ? null : title);
+
+  // Auto-open group if current page is in its children
+  useEffect(() => {
+    const currentPath = location.pathname + location.search;
+    for (const el of navElements) {
+      if (el.children && el.children.length > 0) {
+        const hasActiveChild = el.children.some(child => {
+          if (!child.route) return false;
+          // Check both exact match and pathname-only match
+          return child.route === currentPath || child.route === location.pathname;
+        });
+        if (hasActiveChild) {
+          setOpenGroup(el.title);
+          break;
+        }
+      }
+    }
+  }, [location.pathname, location.search]);
 
   // Закрываем мобильное меню при навигации
   const handleNavClick = () => {
@@ -41,64 +63,98 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
   const renderElement = (el: NavElementProps, isMobile: boolean = false) => {
     if (el.children && el.children.length > 0) {
       const isGroupOpen = openGroup === el.title;
+      const buttonContent = (
+        <button
+          onClick={() => toggleGroup(el.title)}
+          className={cn(
+            'flex items-center justify-between w-full px-3 py-[14px] rounded-lg transition',
+            isMobile && 'py-3'
+          )}
+          aria-expanded={isGroupOpen}
+          aria-controls={`${el.title}-submenu`}
+        >
+          <div
+            className={cn('group flex items-center gap-2 pl-2 hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
+              'text-white border-l-[2px] border-purple': isGroupOpen,
+              'text-[#B0B0B0]': !isGroupOpen,
+              'ml-[5px]': isCollapsed && !isMobile,
+            })}
+            data-active={isGroupOpen ? 'true' : undefined}
+          >
+            <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
+            <span
+              className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
+                'opacity-0 w-0': isCollapsed && !isMobile,
+                'opacity-100 w-auto': !isCollapsed || isMobile,
+              })}
+            >
+              {el.title}
+            </span>
+          </div>
+          {(!isCollapsed || isMobile) && <ChevronDown className={cn('h-4 w-4 transition-transform flex-shrink-0', isGroupOpen && 'rotate-180')} />}
+        </button>
+      );
+
       return (
         <div key={el.title}>
-          <button
-            onClick={() => toggleGroup(el.title)}
-            className={cn(
-              'flex items-center justify-between w-full px-3 py-[14px] rounded-lg transition',
-              isMobile && 'py-3'
-            )}
-            aria-expanded={isGroupOpen}
-            aria-controls={`${el.title}-submenu`}
-          >
-            <div
-              className={cn('group flex items-center gap-2 pl-2 hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
-                'text-white border-l-[2px] border-purple': isGroupOpen,
-                'text-[#B0B0B0]': !isGroupOpen,
-                'ml-[5px]': isCollapsed && !isMobile,
+          {isCollapsed && !isMobile ? (
+            <Tooltip delayDuration={200}>
+              <TooltipTrigger asChild>
+                {buttonContent}
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+                <p>{el.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            buttonContent
+          )}
+          {isGroupOpen && (
+            <div id={`${el.title}-submenu`} className={cn('flex flex-col gap-1', isCollapsed && !isMobile ? 'ml-0 items-center' : 'ml-6')}>
+              {el.children.map((child) => {
+                const currentFullPath = location.pathname + location.search;
+                const isActiveRoute = child.route === currentFullPath || child.route === location.pathname;
+
+                const navLink = (
+                  <NavLink
+                    key={child.title}
+                    to={child.route ?? '#'}
+                    className={cn(isCollapsed && !isMobile ? 'px-0' : 'px-3')}
+                    onClick={handleNavClick}
+                  >
+                    {({ isActive }) => {
+                      const active = isActiveRoute || isActive;
+                      return (
+                        <div
+                          className={cn('group flex items-center gap-2 py-2 hover:custom-bg-blur hover:text-white overflow-hidden',
+                            active ? 'text-white' : 'text-[#B0B0B0]',
+                            isCollapsed && !isMobile ? 'justify-center' : 'pl-2 hover:border-l-[2px] hover:border-purple'
+                          )}
+                          data-active={active ? 'true' : undefined}
+                        >
+                          <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{child.icon}</div>
+                          {(!isCollapsed || isMobile) && (
+                            <span className='text-[15px] font-semibold whitespace-nowrap'>
+                              {child.title}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }}
+                  </NavLink>
+                );
+
+                return isCollapsed && !isMobile ? (
+                  <Tooltip key={child.title} delayDuration={200}>
+                    <TooltipTrigger asChild>
+                      {navLink}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+                      <p>{child.title}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : navLink;
               })}
-              data-active={isGroupOpen ? 'true' : undefined}
-            >
-              <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
-              <span
-                className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                  'opacity-0 w-0': isCollapsed && !isMobile,
-                  'opacity-100 w-auto': !isCollapsed || isMobile,
-                })}
-              >
-                {el.title}
-              </span>
-            </div>
-            {(!isCollapsed || isMobile) && <ChevronDown className={cn('h-4 w-4 transition-transform flex-shrink-0', isGroupOpen && 'rotate-180')} />}
-          </button>
-          {isGroupOpen && (!isCollapsed || isMobile) && (
-            <div id={`${el.title}-submenu`} className='ml-6 flex flex-col gap-1'>
-              {el.children.map((child) => (
-                <NavLink 
-                  key={child.title} 
-                  to={child.route ?? '#'} 
-                  className={cn('px-3')}
-                  onClick={handleNavClick}
-                >
-                  {({ isActive }) => (
-                    <div
-                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', isActive ? 'text-white' : 'text-[#B0B0B0]')}
-                      data-active={isActive ? 'true' : undefined}
-                    >
-                      <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{child.icon}</div>
-                      <span
-                        className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                          'opacity-0 w-0': isCollapsed && !isMobile,
-                          'opacity-100 w-auto': !isCollapsed || isMobile,
-                        })}
-                      >
-                        {child.title}
-                      </span>
-                    </div>
-                  )}
-                </NavLink>
-              ))}
             </div>
           )}
         </div>
@@ -106,34 +162,51 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
     }
 
     if (el.route) {
-      return (
-        <NavLink 
-          key={el.title} 
-          to={el.route} 
-          className={cn('px-3 py-[14px]', { 
+      const currentFullPath = location.pathname + location.search;
+      const isActiveRoute = el.route === currentFullPath || el.route === location.pathname;
+
+      const navLink = (
+        <NavLink
+          key={el.title}
+          to={el.route}
+          className={cn('px-3 py-[14px]', {
             'ml-[5px]': isCollapsed && !isMobile,
-            'py-3': isMobile 
+            'py-3': isMobile
           })}
           onClick={handleNavClick}
         >
-          {({ isActive }) => (
-            <div
-              className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', isActive ? 'text-white' : 'text-[#B0B0B0]')}
-              data-active={isActive ? 'true' : undefined}
-            >
-              <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
-              <span
-                className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                  'opacity-0 w-0': isCollapsed && !isMobile,
-                  'opacity-100 w-auto': !isCollapsed || isMobile,
-                })}
+          {({ isActive }) => {
+            const active = isActiveRoute || isActive;
+            return (
+              <div
+                className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', active ? 'text-white' : 'text-[#B0B0B0]')}
+                data-active={active ? 'true' : undefined}
               >
-                {el.title}
-              </span>
-            </div>
-          )}
+                <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
+                <span
+                  className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
+                    'opacity-0 w-0': isCollapsed && !isMobile,
+                    'opacity-100 w-auto': !isCollapsed || isMobile,
+                  })}
+                >
+                  {el.title}
+                </span>
+              </div>
+            );
+          }}
         </NavLink>
       );
+
+      return isCollapsed && !isMobile ? (
+        <Tooltip key={el.title} delayDuration={200}>
+          <TooltipTrigger asChild>
+            {navLink}
+          </TooltipTrigger>
+          <TooltipContent side="right" className="bg-[#1E1E1E] border-[#2A2A2A] text-white">
+            <p>{el.title}</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : navLink;
     }
 
     return (
@@ -180,13 +253,15 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               </div>
 
               <div className='flex flex-col gap-1'>
-                {navElements.slice(0, 1).map((el) => renderElement(el, false))}
-                <div
-                  className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
-                    'w-[190px]': !isCollapsed,
-                    'w-[40px]': isCollapsed,
-                  })}
-                />
+                {isAuthenticated && navElements.slice(0, 1).map((el) => renderElement(el, false))}
+                {isAuthenticated && (
+                  <div
+                    className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
+                      'w-[190px]': !isCollapsed,
+                      'w-[40px]': isCollapsed,
+                    })}
+                  />
+                )}
                 {navElements.slice(1).map((el) => renderElement(el, false))}
               </div>
             </div>
@@ -202,14 +277,14 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               type='button'
               onClick={() => setIsPostComposerOpen(true)}
               className={cn(
-                'relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
+                'group relative flex items-center justify-center rounded-full bg-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/60 focus-visible:ring-offset-0',
                 isCollapsed ? 'h-12 w-12' : 'h-12 w-full px-3'
               )}
               title="Open advanced Post composer"
             >
               <span className={cn('flex items-center gap-3 text-sm font-semibold text-white', isCollapsed ? 'justify-center' : 'justify-center')}>
-                <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)]'>
-                  <QuillPen className='h-4 w-4' />
+                <span className='flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_30px_-18px_rgba(160,106,255,0.9)] transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_16px_40px_-12px_rgba(160,106,255,0.95)]'>
+                  <QuillPen className='h-4 w-4 transition-transform duration-300 group-hover:rotate-12' />
                 </span>
                 {!isCollapsed && <span>Tweet</span>}
               </span>
@@ -246,8 +321,8 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
               {/* Navigation items */}
               <div className='flex flex-col gap-1'>
-                {navElements.slice(0, 1).map((el) => renderElement(el, true))}
-                <div className='my-3 sidebar-divider-gradient h-[2px]' />
+                {isAuthenticated && navElements.slice(0, 1).map((el) => renderElement(el, true))}
+                {isAuthenticated && <div className='my-3 sidebar-divider-gradient h-[2px]' />}
                 {navElements.slice(1).map((el) => renderElement(el, true))}
               </div>
             </div>

@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Search, TrendingUp, TrendingDown, Sparkles, DollarSign, Users, BarChart3, Activity, Code, Image, Video, FileText,
   MessageCircle, Heart, Repeat2, Bookmark, Share2, Eye, ChevronDown, Filter, Send, UserPlus, UserCheck, Flame, Star,
-  Zap, Lock, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
-  ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb
+  Zap, Lock, LockKeyhole, Crown, Info, SlidersHorizontal, X, Check, AlertCircle, LineChart, Clock, Shield, Hash, PlayCircle,
+  ChevronUp, Calendar, Globe, Maximize2, Save, BarChart, TrendingUpIcon, LayoutGrid, Lightbulb, Newspaper, GraduationCap,
+  Brain, Code2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import FollowButton from "@/components/PostCard/FollowButton";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
+import UserHoverCard from "@/components/PostCard/UserHoverCard";
+import { PostBadges } from "@/components/PostCard/PostBadges";
+import { SignalPostCard } from "@/components/PostCard/SignalPostCard";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,7 +31,7 @@ import { CommunitySentimentWidget } from "@/components/testLab/CommunitySentimen
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import NewsWidget, { type NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
 import FollowRecommendationsWidget from "@/components/SocialFeedWidgets/FollowRecommendationsWidget";
-import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS, DEFAULT_FOLLOW_RECOMMENDATIONS } from "@/components/SocialFeedWidgets/sidebarData";
+import { DEFAULT_SUGGESTED_PROFILES, DEFAULT_NEWS_ITEMS } from "@/components/SocialFeedWidgets/sidebarData";
 import InlineComposer from "@/components/socialComposer/InlineComposer";
 import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { ComposerBlockState, MediaItem } from "@/components/CreatePostBox/types";
@@ -35,6 +40,7 @@ import { CodeBlockModal } from "@/components/CreatePostBox/CodeBlockModal";
 import { MediaEditor } from "@/components/CreatePostBox/MediaEditor";
 import { MediaGrid } from "@/components/CreatePostBox/MediaGrid";
 import { useAdvancedComposer } from "@/components/CreatePostBox/useAdvancedComposer";
+import { PaidPostModal, PaidPostConfig } from "@/components/CreatePostBox/PaidPostModal";
 
 // Types
 type FeedTab = "all" | "ideas" | "opinions" | "analytics" | "soft" | "liked";
@@ -81,12 +87,23 @@ interface ComposerData {
   commentsEnabled: boolean;
 }
 
-// Filter Configuration
+// Filter Configuration (matching /testovaya style)
+const CATEGORY_CONFIG_MAP: Record<string, { icon: typeof TrendingUp; badgeClassName: string; label: string; color: string }> = {
+  'Signal': { icon: TrendingUp, badgeClassName: 'bg-[#2EBD85]/15 text-[#2EBD85]', label: 'Signal', color: '#2EBD85' },
+  'Macro': { icon: Brain, badgeClassName: 'bg-[#FFD166]/15 text-[#FFD166]', label: 'Macro', color: '#FFD166' },
+  'News': { icon: Newspaper, badgeClassName: 'bg-[#4D7CFF]/15 text-[#4D7CFF]', label: 'News', color: '#4D7CFF' },
+  'Education': { icon: GraduationCap, badgeClassName: 'bg-[#F78DA7]/15 text-[#F78DA7]', label: 'Education', color: '#F78DA7' },
+  'Analysis': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'Analysis', color: '#A06AFF' },
+  'Code': { icon: Code2, badgeClassName: 'bg-[#64B5F6]/15 text-[#64B5F6]', label: 'Code', color: '#64B5F6' },
+  'Video': { icon: Video, badgeClassName: 'bg-[#FF8A65]/20 text-[#FF8A65]', label: 'Video', color: '#FF8A65' },
+  'On-chain': { icon: BarChart3, badgeClassName: 'bg-[#A06AFF]/15 text-[#A06AFF]', label: 'On-chain', color: '#A06AFF' },
+};
+
 const FILTERS_CONFIG = {
   market: { type: 'select', opts: ['All', 'Crypto', 'Stocks', 'Forex', 'Futures', 'Commodities'] },
   price: { type: 'select', opts: ['All', 'Free', 'Paid', 'Subscription'] },
   period: { type: 'select', opts: ['All time', 'Today', '7d', '30d', 'YTD', 'Custom'] },
-  category: { type: 'chips', opts: ['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'] },
+  category: { type: 'chips', opts: ['Signal', 'Macro', 'News', 'Education', 'Analysis', 'Code', 'Video', 'On-chain'] },
   sort: { type: 'select', opts: ['Popular', 'New', 'Top 24h', 'Top 7d', 'Recent'] },
   sentiment: { type: 'chips', opts: ['Bullish', 'Bearish', 'Neutral'] },
   strategy: { type: 'chips', opts: ['TA', 'Quant', 'News', 'Options', 'On-chain'] },
@@ -94,7 +111,7 @@ const FILTERS_CONFIG = {
   direction: { type: 'select', opts: ['Long', 'Short'] },
   timeframe: { type: 'select', opts: ['15m', '1h', '4h', '1d', '1w'] },
   risk: { type: 'select', opts: ['Low', 'Medium', 'High'] },
-  accuracy: { type: 'buckets', opts: ['≥60%', '≥70%', '≥80%'] },
+  accuracy: { type: 'buckets', opts: ['≥60%', '≥70%', '���80%'] },
   minSamples: { type: 'select', opts: ['≥30', '≥50', '≥100'] },
   verified: { type: 'toggle' }
 } as const;
@@ -493,9 +510,9 @@ const TRENDING_TICKERS = [
 ];
 
 const TOP_AUTHORS = [
-  { name: "Alex Trader", handle: "@alextrader", avatar: "https://i.pravatar.cc/120?img=12", followers: "45.2K", isFollowing: false },
-  { name: "Crypto Whale", handle: "@cryptowhale", avatar: "https://i.pravatar.cc/120?img=33", followers: "38.5K", isFollowing: true },
-  { name: "Algo Dev", handle: "@algodev", avatar: "https://i.pravatar.cc/120?img=25", followers: "32.1K", isFollowing: false }
+  { name: "Alex Trader", handle: "@alextrader", avatar: "https://i.pravatar.cc/120?img=12", followers: 45200, isFollowing: false },
+  { name: "Crypto Whale", handle: "@cryptowhale", avatar: "https://i.pravatar.cc/120?img=33", followers: 38500, isFollowing: true },
+  { name: "Algo Dev", handle: "@algodev", avatar: "https://i.pravatar.cc/120?img=25", followers: 32100, isFollowing: false }
 ];
 
 const INITIAL_COMPOSER_STATE: ComposerData = {
@@ -535,15 +552,37 @@ function QuickComposer({
   const [isPaid, setIsPaid] = useState(false);
   const [replySetting, setReplySetting] = useState<"everyone" | "following" | "verified" | "mentioned">("everyone");
   const [isReplyMenuOpen, setIsReplyMenuOpen] = useState(false);
-  const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number; openBelow?: boolean } | null>(null);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
+  const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
+  const [paidConfig, setPaidConfig] = useState<PaidPostConfig | null>(null);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
 
+  // Post metadata for filtering
+  const [postMarket, setPostMarket] = useState<string>('Crypto');
+  const [postCategory, setPostCategory] = useState<string>('Analysis');
+  const [postSymbol, setPostSymbol] = useState<string>('');
+
+  // Category configuration with icons and colors
+  const categoryConfig = {
+    'News': { icon: Newspaper, color: '#4D7CFF', bg: 'bg-[#4D7CFF]/15' },
+    'Education': { icon: GraduationCap, color: '#F78DA7', bg: 'bg-[#F78DA7]/15' },
+    'Analysis': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Macro': { icon: Brain, color: '#FFD166', bg: 'bg-[#FFD166]/15' },
+    'On-chain': { icon: BarChart3, color: '#A06AFF', bg: 'bg-[#A06AFF]/15' },
+    'Code': { icon: Code2, color: '#64B5F6', bg: 'bg-[#64B5F6]/15' },
+    'Video': { icon: Video, color: '#FF8A65', bg: 'bg-[#FF8A65]/20' },
+    'Signal': { icon: TrendingUp, color: '#2EBD85', bg: 'bg-[#2EBD85]/15' },
+  };
+  const [postTimeframe, setPostTimeframe] = useState<string>('');
+  const [postRisk, setPostRisk] = useState<string>('');
+
   const replyButtonRef = useRef<HTMLButtonElement>(null);
+  const replyMenuRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -555,6 +594,9 @@ function QuickComposer({
     blocks,
     activeBlockId,
     addMedia,
+    removeMedia,
+    replaceMedia,
+    reorderMedia,
     insertCodeBlock,
     removeCodeBlock,
     updateBlockText,
@@ -588,7 +630,14 @@ function QuickComposer({
 
   const handleReplyButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
+    const menuHeight = 200;
+
+    // Check if there's enough space above
+    const spaceAbove = rect.top;
+    const shouldOpenBelow = spaceAbove < menuHeight;
+
+    const top = shouldOpenBelow ? rect.bottom + 10 : rect.top - 10;
+    setReplyMenuPosition({ top, left: rect.left, openBelow: shouldOpenBelow });
     setIsReplyMenuOpen((prev) => !prev);
   };
 
@@ -756,7 +805,7 @@ function QuickComposer({
     setEmojiPickerPosition(null);
   };
 
-  // Handle click outside emoji picker
+  // Handle click outside emoji picker and reply menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isEmojiPickerOpen &&
@@ -766,15 +815,22 @@ function QuickComposer({
           !emojiButtonRef.current.contains(event.target as Node)) {
         handleCloseEmojiPicker();
       }
+      if (isReplyMenuOpen &&
+          replyMenuRef.current &&
+          replyButtonRef.current &&
+          !replyMenuRef.current.contains(event.target as Node) &&
+          !replyButtonRef.current.contains(event.target as Node)) {
+        setIsReplyMenuOpen(false);
+      }
     };
 
-    if (isEmojiPickerOpen) {
+    if (isEmojiPickerOpen || isReplyMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [isEmojiPickerOpen]);
+  }, [isEmojiPickerOpen, isReplyMenuOpen]);
 
   // Update emoji picker position on scroll
   useEffect(() => {
@@ -819,7 +875,10 @@ function QuickComposer({
   };
 
   const handleMediaSave = (updatedMedia: MediaItem) => {
-    // The MediaEditor is integrated with the hook, so we just close it
+    const blockId = activeBlockId || blocks[0]?.id;
+    if (blockId) {
+      replaceMedia(blockId, updatedMedia);
+    }
     setEditingMedia(null);
   };
 
@@ -908,7 +967,7 @@ function QuickComposer({
             }
           }}
           maxLength={MAX_CHARS}
-          className="!min-h-[80px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0"
+          className="!min-h-[60px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0"
         />
 
         {/* Display Media Items */}
@@ -959,16 +1018,16 @@ function QuickComposer({
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between">
           <div>
             {text.length > 0 && (
               <button
                 ref={replyButtonRef}
                 type="button"
                 onClick={handleReplyButtonClick}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#A06AFF] transition-colors hover:bg-white/10"
               >
-                <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#1D9BF0]">
+                <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#A06AFF]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2Z"
@@ -1013,12 +1072,206 @@ function QuickComposer({
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between">
+        {/* Post Metadata Selectors */}
+        {text.length > 0 && (
+          <div className="mt-3 border-t border-[#1B1F27] pt-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {/* Market Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Market <span className="text-[#EF454A]">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postMarket}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['Crypto', 'Stocks', 'Forex', 'Commodities', 'Indices'].map((market) => (
+                        <button
+                          key={market}
+                          type="button"
+                          onClick={() => setPostMarket(market)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postMarket === market
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {market}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Category Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Category <span className="text-[#EF454A]">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="flex items-center gap-1.5 truncate">
+                        {(() => {
+                          const config = categoryConfig[postCategory as keyof typeof categoryConfig];
+                          const Icon = config.icon;
+                          return (
+                            <>
+                              <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: config.color }} />
+                              <span className="truncate">{postCategory}</span>
+                            </>
+                          );
+                        })()}
+                      </span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['News', 'Education', 'Analysis', 'Macro', 'On-chain', 'Code', 'Video', 'Signal'].map((category) => {
+                        const config = categoryConfig[category as keyof typeof categoryConfig];
+                        const Icon = config.icon;
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => setPostCategory(category)}
+                            className={cn(
+                              "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                              postCategory === category
+                                ? `${config.bg} font-semibold`
+                                : "text-[#D5D8E1] hover:bg-white/5"
+                            )}
+                          >
+                            <span className={cn(
+                              "flex h-5 w-5 shrink-0 items-center justify-center rounded",
+                              postCategory === category ? config.bg : "bg-[#2F3336]"
+                            )}>
+                              <Icon className="h-3 w-3" style={{ color: config.color }} />
+                            </span>
+                            <span style={{ color: postCategory === category ? config.color : undefined }}>
+                              {category}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Symbol Input */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Symbol
+                </label>
+                <input
+                  type="text"
+                  value={postSymbol}
+                  onChange={(e) => setPostSymbol(e.target.value.toUpperCase())}
+                  placeholder="BTC, ETH..."
+                  className="flex h-8 w-full rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] placeholder:text-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+                  maxLength={10}
+                />
+              </div>
+
+              {/* Timeframe Selector */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Timeframe
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postTimeframe || 'None'}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['', '15m', '1h', '4h', '1d', '1w'].map((tf) => (
+                        <button
+                          key={tf || 'none'}
+                          type="button"
+                          onClick={() => setPostTimeframe(tf)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postTimeframe === tf
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {tf || 'None'}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Risk Level */}
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
+                  Risk
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                    >
+                      <span className="truncate">{postRisk || 'None'}</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-28 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
+                    <div className="grid gap-0.5 text-xs">
+                      {['', 'Low', 'Medium', 'High'].map((risk) => (
+                        <button
+                          key={risk || 'none'}
+                          type="button"
+                          onClick={() => setPostRisk(risk)}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                            postRisk === risk
+                              ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                              : "text-[#D5D8E1] hover:bg-white/5"
+                          )}
+                        >
+                          {risk || 'None'}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
               type="button"
               className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
-              onClick={() => setMediaCount(prev => prev + 1)}
+              onClick={openMediaPicker}
+              title="Add video"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
@@ -1104,31 +1357,6 @@ function QuickComposer({
             </button>
             <button
               type="button"
-              onClick={() => videoInputRef.current?.click()}
-              className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
-              title="Add videos (MP4, WebM, MOV, etc.)"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M2 11C2 7.70017 2 6.05025 3.02513 5.02513C4.05025 4 5.70017 4 9 4H10C13.2998 4 14.9497 4 15.9749 5.02513C17 6.05025 17 7.70017 17 11V13C17 16.2998 17 17.9497 15.9749 18.9749C14.9497 20 13.2998 20 10 20H9C5.70017 20 4.05025 20 3.02513 18.9749C2 17.9497 2 16.2998 2 13V11Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M17 8.90585L17.1259 8.80196C19.2417 7.05623 20.2996 6.18336 21.1498 6.60482C22 7.02628 22 8.42355 22 11.2181V12.7819C22 15.5765 22 16.9737 21.1498 17.3952C20.2996 17.8166 19.2417 16.9438 17.1259 15.198L17 15.0941"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M11.5 11C12.3284 11 13 10.3284 13 9.5C13 8.67157 12.3284 8 11.5 8C10.6716 8 10 8.67157 10 9.5C10 10.3284 10.6716 11 11.5 11Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
               onClick={() => setIsCodeBlockOpen(true)}
               className="flex h-8 items-center justify-center gap-1.5 text-[#6C7280] transition-colors hover:text-[#A06AFF]"
             >
@@ -1185,8 +1413,8 @@ function QuickComposer({
                 className={cn(
                   "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                   sentiment === "bullish"
-                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A]"
-                    : "bg-transparent"
+                    ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A] hover:shadow-[0_4px_12px_rgba(46,189,133,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#2EBD85]/15"
                 )}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -1213,7 +1441,7 @@ function QuickComposer({
                 </span>
               </button>
 
-              <div className="h-5 w-px bg-white" />
+              <div className="h-5 w-px bg-[#1B1F27]" />
 
               <button
                 type="button"
@@ -1221,8 +1449,8 @@ function QuickComposer({
                 className={cn(
                   "flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                   sentiment === "bearish"
-                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414]"
-                    : "bg-transparent"
+                    ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414] hover:shadow-[0_4px_12px_rgba(255,38,38,0.4)] hover:brightness-110"
+                    : "bg-transparent hover:bg-[#EF454A]/15"
                 )}
               >
                 <span className={cn(
@@ -1252,12 +1480,19 @@ function QuickComposer({
 
             <button
               type="button"
-              onClick={() => setIsPaid(!isPaid)}
+              onClick={() => {
+                if (isPaid) {
+                  setIsPaid(false);
+                  setPaidConfig(null);
+                } else {
+                  setIsPaidModalOpen(true);
+                }
+              }}
               className={cn(
                 "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all",
                 isPaid
-                  ? "bg-gradient-to-l from-[#A06AFF] to-[#6B46C1]"
-                  : "bg-transparent border border-[#A06AFF]/40"
+                  ? "bg-gradient-to-l from-[#A06AFF] to-[#6B46C1] hover:shadow-[0_4px_12px_rgba(160,106,255,0.4)] hover:brightness-110"
+                  : "bg-transparent border border-[#A06AFF]/40 hover:bg-[#A06AFF]/15"
               )}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -1392,9 +1627,10 @@ function QuickComposer({
           {isReplyMenuOpen && replyMenuPosition &&
             createPortal(
               <div
-                className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3"
+                ref={replyMenuRef}
+                className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#16C784] bg-black shadow-2xl backdrop-blur-[100px] p-3"
                 style={{
-                  top: `${replyMenuPosition.top - 200}px`,
+                  top: replyMenuPosition.openBelow ? `${replyMenuPosition.top}px` : `${replyMenuPosition.top - 200}px`,
                   left: `${replyMenuPosition.left}px`,
                 }}
               >
@@ -1414,13 +1650,13 @@ function QuickComposer({
                       <svg
                         className="mt-0.5 h-4 w-4 shrink-0"
                         viewBox="0 0 24 24"
-                        fill={replySetting === opt.id ? "#1D9BF0" : "none"}
+                        fill={replySetting === opt.id ? "#A06AFF" : "none"}
                         stroke="currentColor"
                         strokeWidth="2"
                       >
                         <circle cx="12" cy="12" r="10" />
                         {replySetting === opt.id && (
-                          <circle cx="12" cy="12" r="4" fill="#1D9BF0" />
+                          <circle cx="12" cy="12" r="4" fill="#A06AFF" />
                         )}
                       </svg>
                       <div className="flex-1">
@@ -1445,7 +1681,7 @@ function QuickComposer({
           createPortal(
             <div
               ref={emojiPickerRef}
-              className="fixed z-[2300] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]"
+              className="fixed z-[2300] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#16C784] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]"
               style={{
                 top: `${emojiPickerPosition.top}px`,
                 left: `${emojiPickerPosition.left}px`,
@@ -1480,6 +1716,17 @@ function QuickComposer({
           initialBlocks={blocks}
           initialReplySetting={replySetting}
           initialSentiment={sentiment as any}
+        />
+
+        {/* Paid Post Settings Modal */}
+        <PaidPostModal
+          isOpen={isPaidModalOpen}
+          onClose={() => setIsPaidModalOpen(false)}
+          onSave={(config) => {
+            setPaidConfig(config);
+            setIsPaid(true);
+          }}
+          initialConfig={paidConfig || undefined}
         />
 
         {/* Hidden File Inputs */}
@@ -2029,6 +2276,7 @@ function AdvancedComposer({
 }
 
 export default function FeedTest() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FeedTab>("all");
   const [feedMode, setFeedMode] = useState<'recent' | 'hot'>('hot');
   const [filters, setFilters] = useState<Record<string, any>>({
@@ -2049,6 +2297,7 @@ export default function FeedTest() {
   const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(new Set(["@cryptowhale", "@marketnews"]));
   const [topAuthorsFollowing, setTopAuthorsFollowing] = useState<Set<string>>(new Set(["@cryptowhale"]));
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set(["1", "3", "5"]));
+  const [savedCategories, setSavedCategories] = useState<string[]>([]);
 
   // Composer state
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
@@ -2088,7 +2337,7 @@ export default function FeedTest() {
     });
   };
 
-  const activeConfig = useMemo(() => TABS_CONFIG[activeTab] || TABS_CONFIG.popular, [activeTab]);
+  const activeConfig = useMemo(() => TABS_CONFIG[activeTab] || TABS_CONFIG.all, [activeTab]);
 
   // Simulate new posts arriving
   useEffect(() => {
@@ -2127,6 +2376,11 @@ export default function FeedTest() {
     });
   };
 
+  const handlePostClick = (postId: string) => {
+    const post = displayedPosts.find(p => p.id === postId);
+    navigate(`/home/post/${postId}`, { state: post });
+  };
+
   const toggleTopAuthorFollow = (handle: string) => {
     setTopAuthorsFollowing(prev => {
       const newSet = new Set(prev);
@@ -2142,6 +2396,16 @@ export default function FeedTest() {
   const applyPreset = (preset: typeof SIGNAL_PRESETS[0]) => {
     setFilters(prev => ({ ...prev, ...preset.config }));
     setActivePreset(preset.key);
+  };
+
+  const saveCurrentCategory = () => {
+    if (filters.category && !savedCategories.includes(filters.category)) {
+      setSavedCategories(prev => [...prev, filters.category]);
+    }
+  };
+
+  const removeSavedCategory = (category: string) => {
+    setSavedCategories(prev => prev.filter(c => c !== category));
   };
 
   const handleExpandComposer = useCallback((data: Partial<ComposerData>) => {
@@ -2222,7 +2486,7 @@ export default function FeedTest() {
     const isPaidLocked = post.price !== "free";
 
     return (
-      <div key={post.id} className="border-b border-[#0F131A] bg-[#000000] p-4 transition-colors hover:bg-[#0A0D12]">
+      <div key={post.id} className="border-b border-[#16C784] bg-[#000000] p-4 transition-colors hover:bg-[#0A0D12]">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex gap-3 flex-1 pt-0.5">
             <Avatar className="h-10 w-10 flex-shrink-0">
@@ -2245,13 +2509,13 @@ export default function FeedTest() {
                 )}
               </div>
                 <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">��</span>
+                <span className="text-xs text-[#6C7280]">•</span>
                 <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Badge className="bg-green-500/20 text-[11px] font-semibold text-green-400 rounded-full">SIGNAL</Badge>
-            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
+            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#16C784] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
               {isFollowing ? "Following" : "Follow"}
             </Button>
@@ -2268,9 +2532,21 @@ export default function FeedTest() {
           <Badge className={cn("px-2.5 py-1 rounded-full font-semibold", post.risk === "high" ? "bg-red-500/20 text-red-400" : post.risk === "medium" ? "bg-yellow-500/20 text-yellow-400" : "bg-green-500/20 text-green-400")}>
             {post.risk?.toUpperCase()} RISK
           </Badge>
+          {post.price === "pay-per-post" && (
+            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
+              <DollarSign className="h-3 w-3" />
+              Pay-per-post
+            </Badge>
+          )}
+          {post.price === "subscribers-only" && (
+            <Badge className="gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full font-semibold">
+              <Crown className="h-3 w-3" />
+              Subscribers Only
+            </Badge>
+          )}
         </div>
 
-        <div className="mb-3 flex items-center gap-4 rounded-xl border border-[#0F131A] bg-[#000000] p-3">
+        <div className="mb-3 flex items-center gap-4 rounded-xl border border-[#16C784] bg-[#000000] p-3">
           <div className="flex items-center gap-1.5">
             <Shield className="h-4 w-4 text-green-400" />
             <span className="text-sm font-semibold text-green-400">Accuracy {post.accuracy}%</span>
@@ -2303,7 +2579,7 @@ export default function FeedTest() {
             </div>
           </div>
         ) : (
-          <div className="mb-3 flex gap-4 rounded-xl border border-[#0F131A] bg-[#000000] p-3">
+          <div className="mb-3 flex gap-4 rounded-xl border border-[#16C784] bg-[#000000] p-3">
             <div><span className="text-xs text-[#6C7280]">Entry</span> <span className="font-semibold text-white block">{post.entry}</span></div>
             <div><span className="text-xs text-[#6C7280]">Stop</span> <span className="font-semibold text-red-400 block">{post.stopLoss}</span></div>
             <div><span className="text-xs text-[#6C7280]">TP</span> <span className="font-semibold text-green-400 block">{post.takeProfit}</span></div>
@@ -2312,7 +2588,7 @@ export default function FeedTest() {
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="cursor-pointer text-sm text-blue-400 hover:text-blue-300 transition">{tag}</span>)}</div>}
 
-        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
+        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#16C784] pt-3 mt-3">
           <button className="flex items-center gap-1.5 transition hover:text-red-400 hover:scale-105"><Heart className="h-5 w-5" /><span className="text-sm font-medium">{post.likes}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-blue-400 hover:scale-105"><MessageCircle className="h-5 w-5" /><span className="text-sm font-medium">{post.comments}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-green-400 hover:scale-105"><Repeat2 className="h-5 w-5" /><span className="text-sm font-medium">{post.reposts}</span></button>
@@ -2329,32 +2605,29 @@ export default function FeedTest() {
     const isPaidLocked = post.price !== "free";
 
     return (
-      <div key={post.id} className="border-b border-[#0F131A] bg-[#000000] p-4">
+      <div key={post.id} className="border-b border-[#16C784] bg-[#000000] p-4">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex gap-3 flex-1 pt-0.5">
             <Avatar className="h-10 w-10 flex-shrink-0"><AvatarImage src={post.author.avatar} /><AvatarFallback>{post.author.name[0]}</AvatarFallback></Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-semibold text-white">{post.author.name}</span>
-                {post.author.verified && (
-                  <Badge className="h-5 bg-blue-500/20 px-1.5 text-[10px] text-blue-400 rounded-md flex items-center gap-0.5">
-                    <Check className="h-3 w-3" />
-                  </Badge>
-                )}
-                {post.author.isPremium && (
-                  <Badge className="h-5 bg-purple-500/20 px-1.5 text-[10px] text-purple-400 rounded-md flex items-center gap-0.5 font-semibold">
-                    <Crown className="h-3 w-3" />
-                  </Badge>
-                )}
-                <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">��</span>
-                <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
+                {post.author.verified && <VerifiedBadge size={16} />}
+                {post.author.handle ? (
+                  <span className="text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
+                ) : null}
+                <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
               </div>
+              <PostBadges
+                postType="code"
+                price={post.price || "free"}
+                isPaidLocked={isPaidLocked}
+                isFollowing={isFollowing}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge className="bg-orange-500/20 text-[11px] font-semibold text-orange-400 rounded-full">CODE</Badge>
-            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
+            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#16C784] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
             </Button>
           </div>
@@ -2362,13 +2635,13 @@ export default function FeedTest() {
 
         <p className="mb-3 text-[15px] text-[#E5E7EB]">{post.text}</p>
 
-        <div className="mb-3 flex gap-2">
-          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.market}</Badge>
-          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">{post.language}</Badge>
-          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#0F131A] rounded-full">Algo Trading</Badge>
+        <div className="mb-3 flex flex-wrap gap-2">
+          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#16C784] rounded-full">{post.market}</Badge>
+          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#16C784] rounded-full">{post.language}</Badge>
+          <Badge className="bg-[#000000] text-[#C5C9D3] border border-[#16C784] rounded-full">Algo Trading</Badge>
         </div>
 
-        <div className="mb-3 rounded-xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="mb-3 rounded-xl border border-[#16C784] bg-[#000000] p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Code className="h-4 w-4 text-orange-400" />
@@ -2393,7 +2666,7 @@ export default function FeedTest() {
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer transition">{tag}</span>)}</div>}
 
-        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
+        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#16C784] pt-3 mt-3">
           <button className="flex items-center gap-1.5 transition hover:text-red-400 hover:scale-105"><Heart className="h-5 w-5" /><span className="text-sm font-medium">{post.likes}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-blue-400 hover:scale-105"><MessageCircle className="h-5 w-5" /><span className="text-sm font-medium">{post.comments}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-green-400 hover:scale-105"><Repeat2 className="h-5 w-5" /><span className="text-sm font-medium">{post.reposts}</span></button>
@@ -2409,36 +2682,29 @@ export default function FeedTest() {
     const isPaidLocked = post.price !== "free";
 
     return (
-      <div key={post.id} className="border-b border-[#0F131A] bg-[#000000] p-4">
+      <div key={post.id} className="border-b border-[#16C784] bg-[#000000] p-4">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div className="flex gap-3 flex-1 pt-0.5">
             <Avatar className="h-10 w-10 flex-shrink-0"><AvatarImage src={post.author.avatar} /><AvatarFallback>{post.author.name[0]}</AvatarFallback></Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-semibold text-white">{post.author.name}</span>
-                {post.author.verified && (
-                  <Badge className="h-5 bg-blue-500/20 px-1.5 text-[10px] text-blue-400 rounded-md flex items-center gap-0.5">
-                    <Check className="h-3 w-3" />
-                  </Badge>
-                )}
-                {post.isEditorPick && (
-                  <Badge className="h-5 bg-yellow-500/20 px-1.5 text-[10px] text-yellow-400 rounded-md flex items-center gap-0.5 font-semibold">
-                    <Star className="h-3 w-3" />
-                  </Badge>
-                )}
-                <span className="text-xs text-[#6C7280]">{post.author.handle}</span>
-                <span className="text-xs text-[#6C7280]">·</span>
-                <span className="text-xs text-[#6C7280]">{post.timestamp}</span>
+                {post.author.verified && <VerifiedBadge size={16} />}
+                {post.author.handle ? (
+                  <span className="text-xs font-normal text-[#7C7C7C]">{post.author.handle}</span>
+                ) : null}
+                <span className="text-xs font-normal text-[#7C7C7C]">· {post.timestamp}</span>
               </div>
+              <PostBadges
+                postType={post.type as any}
+                price={post.price || "free"}
+                isPaidLocked={isPaidLocked}
+                isFollowing={isFollowing}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {post.price !== "free" && (
-              <Badge className="bg-purple-500/20 px-1.5 text-[10px] text-purple-400 rounded-md flex items-center gap-0.5">
-                <Lock className="h-3 w-3" />
-              </Badge>
-            )}
-            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#0F131A] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
+            <Button size="sm" variant={isFollowing ? "outline" : "default"} className={cn("h-7 gap-1 text-xs rounded-full", isFollowing ? "border-[#16C784] bg-[#000000] text-[#C5C9D3] hover:bg-[#0A0D12]" : "bg-blue-500 hover:bg-blue-600")} onClick={() => toggleFollow(post.author.handle)}>
               {isFollowing ? <UserCheck className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
             </Button>
           </div>
@@ -2461,7 +2727,7 @@ export default function FeedTest() {
 
         {post.tags && <div className="mb-3 flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={i} className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer transition">{tag}</span>)}</div>}
 
-        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#0F131A] pt-3 mt-3">
+        <div className="flex items-center gap-6 text-[#6C7280] border-t border-[#16C784] pt-3 mt-3">
           <button className="flex items-center gap-1.5 transition hover:text-red-400 hover:scale-105"><Heart className="h-5 w-5" /><span className="text-sm font-medium">{post.likes}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-blue-400 hover:scale-105"><MessageCircle className="h-5 w-5" /><span className="text-sm font-medium">{post.comments}</span></button>
           <button className="flex items-center gap-1.5 transition hover:text-green-400 hover:scale-105"><Repeat2 className="h-5 w-5" /><span className="text-sm font-medium">{post.reposts}</span></button>
@@ -2476,7 +2742,7 @@ export default function FeedTest() {
     <div className="flex min-h-screen w-full gap-6">
       <div className="flex-1 max-w-[720px]">
         {/* Quick Composer */}
-        <div className="mb-4 rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="mb-4 rounded-2xl border border-[#16C784] bg-[#000000] p-4">
           <QuickComposer onExpand={handleExpandComposer} />
         </div>
 
@@ -2491,7 +2757,7 @@ export default function FeedTest() {
           }}
         >
           {/* Tabs */}
-          <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#181B22] bg-[#000000] p-0.5">
+          <div className="mb-3 flex items-center overflow-x-auto rounded-full border border-[#16C784] bg-[#000000] p-0.5">
             {FEED_TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
@@ -2539,7 +2805,7 @@ export default function FeedTest() {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#16C784] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                       >
                         <span className="truncate">{filters.market || 'All'}</span>
                         <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2583,7 +2849,7 @@ export default function FeedTest() {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                        className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#16C784] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                       >
                         <span className="truncate">{filters.price || 'All'}</span>
                         <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2629,7 +2895,7 @@ export default function FeedTest() {
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#16C784] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.period || 'All time'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2667,13 +2933,13 @@ export default function FeedTest() {
                 {activeConfig?.visible?.includes('category') && (
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                      Категория
+                      Category
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
+                          className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border border-[#16C784] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
                         >
                           <span className="truncate">{filters.category || 'All'}</span>
                           <ChevronDown className="h-4 w-4 text-[#C4C7D4]" />
@@ -2695,25 +2961,48 @@ export default function FeedTest() {
                                 : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70",
                             )}
                           >
+                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2F3336]/60 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/70">
+                              All
+                            </span>
                             <span className="truncate">All</span>
                             {!filters.category ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
                           </button>
-                          {FILTERS_CONFIG.category.opts.map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => updateFilter('category', opt)}
-                              className={cn(
-                                "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
-                                filters.category === opt
-                                  ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                                  : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70",
-                              )}
-                            >
-                              <span className="truncate">{opt}</span>
-                              {filters.category === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
-                            </button>
-                          ))}
+                          {FILTERS_CONFIG.category.opts.map((opt) => {
+                            const config = CATEGORY_CONFIG_MAP[opt];
+                            const IconComponent = config?.icon || Sparkles;
+                            return (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => updateFilter('category', opt)}
+                                className={cn(
+                                  "flex items-center gap-2 rounded-[14px] border px-3 py-1.5 text-left font-medium transition-colors",
+                                  filters.category === opt
+                                    ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
+                                    : "border-transparent bg-white/5 text-[#C4C7D4] hover:border-[#A06AFF]/40 hover:bg-[#1C1430]/70",
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "flex h-6 w-6 items-center justify-center rounded-lg flex-shrink-0",
+                                    filters.category === opt ? config?.badgeClassName ?? "bg-[#2F3336] text-white/70" : "bg-[#2F3336] text-white/70",
+                                  )}
+                                >
+                                  <IconComponent
+                                    className="h-3.5 w-3.5"
+                                    style={{ color: config?.color }}
+                                  />
+                                </span>
+                                <span
+                                  className="truncate"
+                                  style={{ color: filters.category === opt && config?.color ? config.color : undefined }}
+                                >
+                                  {opt}
+                                </span>
+                                {filters.category === opt ? <Check className="ml-auto h-3.5 w-3.5" /> : null}
+                              </button>
+                            );
+                          })}
                         </div>
                       </PopoverContent>
                     </Popover>
@@ -2725,14 +3014,14 @@ export default function FeedTest() {
               {activeConfig?.visible?.includes('symbol') && (
                 <div className="flex flex-col gap-1">
                   <label className="text-[9px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                    Па����а/Актив
+                    Пара/Актив
                   </label>
                   <input
                     type="text"
                     placeholder="BTC, AAPL..."
                     value={filters.symbol || ''}
                     onChange={(e) => updateFilter('symbol', e.target.value)}
-                    className="h-[26px] w-[140px] rounded-[24px] border border-[#181B22] bg-[#000000] px-3 text-[12px] text-[#D5D8E1] placeholder-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF]/70 focus:outline-none focus:bg-[#1C1430]"
+                    className="h-[26px] w-[140px] rounded-[24px] border border-[#16C784] bg-[#000000] px-3 text-[12px] font-semibold text-[#D5D8E1] placeholder-[#6B7280] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430] focus:border-[#A06AFF]/70 focus:outline-none focus:bg-[#1C1430]"
                   />
                 </div>
               )}
@@ -2746,7 +3035,7 @@ export default function FeedTest() {
                     "inline-flex h-[26px] items-center gap-2 rounded-[24px] border px-3 text-[11px] font-semibold transition-colors",
                     filters.verified
                       ? "border-[#A06AFF]/70 bg-[#1C1430] text-white shadow-[0_8px_22px_-18px_rgba(160,106,255,0.7)]"
-                      : "border-[#181B22] bg-[#0C1014]/55 text-[#D5D8E1] backdrop-blur-[36px] hover:border-[#A06AFF]/50 hover:bg-[#120F1D]/60"
+                      : "border-[#16C784] bg-[#0C1014]/55 text-[#D5D8E1] backdrop-blur-[36px] hover:border-[#A06AFF]/50 hover:bg-[#120F1D]/60"
                   )}
                 >
                   <VerifiedBadge size={14} />
@@ -2754,10 +3043,33 @@ export default function FeedTest() {
                 </button>
               )}
 
+              {/* Save Filter Button */}
+              {filters.category && !savedCategories.includes(filters.category) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log('Saving category:', filters.category);
+                    console.log('Current saved categories:', savedCategories);
+                    saveCurrentCategory();
+                  }}
+                  className="inline-flex h-[26px] items-center gap-2 rounded-[24px] border-2 border-[#2EBD85] bg-[#2EBD85]/20 px-4 text-[12px] font-bold text-[#2EBD85] transition-all hover:bg-[#2EBD85]/30 hover:scale-105 shadow-lg"
+                >
+                  <Save className="h-4 w-4" />
+                  Save Filter
+                </button>
+              )}
+
+              {/* Debug info - remove after testing */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-[10px] text-white/50">
+                  Category: {filters.category || 'none'} | Saved: {savedCategories.join(', ') || 'none'}
+                </div>
+              )}
+
             </div>
 
             {/* Feed Mode Toggle - positioned on the right */}
-            <div className="inline-flex items-center rounded-full border border-[#0F131A] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] p-0.5 mb-0.5">
+            <div className="inline-flex items-center rounded-full border border-[#16C784] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px] p-0.5 mb-0.5">
               <button
                 type="button"
                 onClick={() => setFeedMode('recent')}
@@ -2800,7 +3112,7 @@ export default function FeedTest() {
                 </div>
               </div>
               <span className="font-bold text-white text-xs sm:text-sm group-hover:text-white transition">
-                {newPostsCount} {newPostsCount === 1 ? 'new post' : 'new posts'} available
+                {newPostsCount} new
               </span>
               <ChevronUp className="h-3 w-3 text-white group-hover:text-white group-hover:scale-110 transition-transform" />
             </button>
@@ -2811,22 +3123,132 @@ export default function FeedTest() {
         <ContinuousFeedTimeline
           posts={filteredPosts}
           onFollowToggle={(handle, isFollowing) => toggleFollow(handle)}
+          onPostClick={handlePostClick}
         />
       </div>
 
       {/* Right Sidebar */}
       <div className="hidden lg:block w-[340px] space-y-4">
+        {/* Мои рубрики */}
+        <section className="rounded-[24px] border border-[#16C784] bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+          <h3 className="text-lg font-semibold text-white">My Categories</h3>
+          {savedCategories.length === 0 ? (
+            <p className="mt-2 text-sm text-[#A3A6B4]">
+              You haven't saved any preferences yet. Choose categories in the filters and save them.
+            </p>
+          ) : (
+            <div className="mt-4 flex flex-col gap-2">
+              {savedCategories.map((category) => {
+                const config = CATEGORY_CONFIG_MAP[category];
+                const IconComponent = config?.icon || Sparkles;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => updateFilter('category', category)}
+                    className={cn(
+                      "group flex items-center justify-between rounded-2xl border border-[#16C784] bg-white/5 px-4 py-3 text-left transition hover:border-[#A06AFF]/40 hover:bg-[#A06AFF]/10",
+                      filters.category === category && "border-[#A06AFF]/70 bg-[#A06AFF]/20"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0",
+                          config?.badgeClassName ?? "bg-[#2F3336] text-white/70"
+                        )}
+                      >
+                        <IconComponent
+                          className="h-4 w-4"
+                          style={{ color: config?.color }}
+                        />
+                      </span>
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: config?.color || '#FFFFFF' }}
+                      >
+                        {category}
+                      </span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSavedCategory(category);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-[#8E92A0] hover:text-red-400"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Top Authors */}
+        <div className="rounded-2xl border border-[#16C784] bg-[#000000] p-4">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
+            <Users className="h-5 w-5 text-purple-400" />
+            Top Authors
+          </h3>
+          <div className="space-y-3">
+            {TOP_AUTHORS.map((author, idx) => {
+              const isFollowing = topAuthorsFollowing.has(author.handle);
+              return (
+                <div key={idx} className="flex items-center justify-between gap-3">
+                  <UserHoverCard
+                    author={{
+                      name: author.name,
+                      handle: author.handle,
+                      avatar: author.avatar,
+                      verified: false,
+                      followers: author.followers,
+                      following: Math.floor(Math.random() * 2000) + 100,
+                      bio: "Top cryptocurrency trader and analyst",
+                    }}
+                    isFollowing={isFollowing}
+                    onFollowToggle={() => toggleTopAuthorFollow(author.handle)}
+                    showFollowButton={true}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                      <Avatar className="h-10 w-10 flex-shrink-0">
+                        <AvatarImage src={author.avatar} alt={author.name} />
+                        <AvatarFallback>{author.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white truncate">{author.name}</div>
+                        <div className="text-sm text-[#6C7280] truncate">{author.handle}</div>
+                      </div>
+                    </div>
+                  </UserHoverCard>
+                  <FollowButton
+                    profileId={author.handle}
+                    size="compact"
+                    isFollowing={isFollowing}
+                    onToggle={() => toggleTopAuthorFollow(author.handle)}
+                    stopPropagation
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            className="mt-3 text-sm font-semibold text-[#A06AFF] transition-colors duration-200 hover:text-white"
+          >
+            View More
+          </button>
+        </div>
+
         {/* Fear & Greed Index Widget */}
         <FearGreedWidget score={32} />
 
         {/* Community Sentiment Widget */}
         <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
 
-        {/* Community Sentiment Widget */}
-        <CommunitySentimentWidget bullishPercent={82} votesText="1.9M votes" />
-
         {/* Trending Tickers */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
+        <div className="rounded-2xl border border-[#16C784] bg-[#000000] p-4">
           <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
             <Activity className="h-5 w-5 text-blue-400" />
             Trending Tickers
@@ -2872,73 +3294,9 @@ export default function FeedTest() {
         </div>
 
         {/* Social Widgets from x_Home */}
-        <SuggestedProfilesWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
         <NewsWidget items={DEFAULT_NEWS_ITEMS as NewsItem[]} />
-        <FollowRecommendationsWidget profiles={DEFAULT_FOLLOW_RECOMMENDATIONS} />
+        <FollowRecommendationsWidget profiles={DEFAULT_SUGGESTED_PROFILES} />
 
-        {/* Top Authors */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-            <Users className="h-5 w-5 text-purple-400" />
-            Top Authors
-          </h3>
-          <div className="space-y-3">
-            {TOP_AUTHORS.map((author, idx) => {
-              const isFollowing = topAuthorsFollowing.has(author.handle);
-              return (
-                <div key={idx} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Avatar className="h-10 w-10 flex-shrink-0">
-                      <AvatarImage src={author.avatar} alt={author.name} />
-                      <AvatarFallback>{author.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-white truncate">{author.name}</div>
-                      <div className="text-sm text-[#6C7280] truncate">{author.handle}</div>
-                    </div>
-                  </div>
-                  <FollowButton
-                    profileId={author.handle}
-                    size="compact"
-                    isFollowing={isFollowing}
-                    onToggle={() => toggleTopAuthorFollow(author.handle)}
-                    stopPropagation
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            className="mt-3 text-sm font-semibold text-[#A06AFF] transition-colors duration-200 hover:text-white"
-          >
-            View More
-          </button>
-        </div>
-
-        {/* Market Sentiment */}
-        <div className="rounded-2xl border border-[#0F131A] bg-[#000000] p-4">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-            <Sparkles className="h-5 w-5 text-yellow-400" />
-            Market Sentiment
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#C5C9D3]">Bullish</span>
-              <span className="text-sm font-semibold text-green-400">68%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[#1B1F27]">
-              <div className="h-full w-[68%] bg-gradient-to-r from-emerald-500 to-green-400 shadow-[0_0_16px_rgba(16,185,129,0.7)]" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#C5C9D3]">Bearish</span>
-              <span className="text-sm font-semibold text-red-400">32%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[#1B1F27]">
-              <div className="h-full w-[32%] bg-gradient-to-r from-rose-500 to-red-400 shadow-[0_0_16px_rgba(244,63,94,0.7)]" />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

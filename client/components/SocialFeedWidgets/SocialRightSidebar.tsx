@@ -8,7 +8,6 @@ import FollowRecommendationsWidget from "./FollowRecommendationsWidget";
 import NewsWidget, { type NewsItem } from "./TrendingTopicsWidget";
 import {
   DEFAULT_SUGGESTED_PROFILES,
-  DEFAULT_FOLLOW_RECOMMENDATIONS,
   DEFAULT_NEWS_ITEMS,
 } from "./sidebarData";
 
@@ -22,7 +21,7 @@ interface SocialRightSidebarProps {
 
 const SocialRightSidebar: FC<SocialRightSidebarProps> = ({
   profiles = DEFAULT_SUGGESTED_PROFILES,
-  followRecommendations = DEFAULT_FOLLOW_RECOMMENDATIONS,
+  followRecommendations = DEFAULT_SUGGESTED_PROFILES,
   newsItems = DEFAULT_NEWS_ITEMS,
   showSearch = true,
   className,
@@ -39,7 +38,7 @@ const SocialRightSidebar: FC<SocialRightSidebarProps> = ({
             <input
               type="search"
               placeholder="Поиск по авторам и темам"
-              className="w-full rounded-full border border-[#181B22] bg-background py-3 pl-11 pr-4 text-sm font-medium text-white placeholder:text-webGray shadow-[0_14px_30px_rgba(10,12,16,0.35)] transition focus:border-[#A06AFF] focus:outline-none focus:ring-2 focus:ring-[#A06AFF]/40"
+              className="w-full rounded-full border border-[#16C784] bg-background py-3 pl-11 pr-4 text-sm font-medium text-white placeholder:text-webGray transition-all duration-300 hover:border-[#B87AFF] hover:shadow-[0_0_20px_rgba(184,122,255,0.3)] focus:border-[#B87AFF] focus:outline-none focus:ring-2 focus:ring-[#B87AFF]"
             />
           </div>
         ) : null}

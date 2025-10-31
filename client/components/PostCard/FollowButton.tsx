@@ -70,18 +70,16 @@ const FollowButton: FC<FollowButtonProps> = ({
     if (following) {
       return {
         buttonClasses:
-          "border bg-transparent font-semibold transition-colors duration-200",
+          "border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset",
         buttonStyle: {
-          borderColor: BRAND_COLOR,
-          color: BRAND_COLOR,
-          backgroundColor: isHovered ? BRAND_HOVER_BACKGROUND : "transparent",
+          color: isHovered ? "#E5E7EB" : BRAND_COLOR,
         },
       };
     }
 
     return {
       buttonClasses:
-        "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_8px_24px_rgba(160,106,255,0.25)] transition-colors duration-200 hover:from-[#B57FFF] hover:to-[#5A2BA0]",
+        "border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent text-[#E5E7EB] font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset",
       buttonStyle: undefined,
     };
   }, [following, isHovered]);

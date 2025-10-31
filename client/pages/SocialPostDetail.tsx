@@ -1,7 +1,7 @@
-import { type FC, useMemo } from "react";
+import { type FC, useMemo, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import PostDetailView from "@/components/PostCard/PostDetailView";
+import UnifiedPostDetail from "@/components/PostCard/UnifiedPostDetail";
 import { getSocialPostById, type SocialPost } from "@/data/socialPosts";
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
@@ -10,6 +10,10 @@ const SocialPostDetail: FC = () => {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
   const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [postId]);
 
   const postFromState = location.state as SocialPost | undefined;
   const post = useMemo(() => {
@@ -26,7 +30,7 @@ const SocialPostDetail: FC = () => {
     if (location.key !== "default") {
       navigate(-1);
     } else {
-      navigate("/social/home");
+      navigate("/social/explore");
     }
   };
 
@@ -36,7 +40,7 @@ const SocialPostDetail: FC = () => {
         <div className="text-3xl font-semibold">Post not found</div>
         <button
           type="button"
-          onClick={() => navigate("/social/home")}
+          onClick={() => navigate("/social/explore")}
           className="rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-3 text-sm font-semibold text-white"
         >
           Back to feed
@@ -52,7 +56,7 @@ const SocialPostDetail: FC = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-[#482090]/20"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-[#ffffff]/[0.15] active:bg-[#ffffff]/[0.25]"
             aria-label="Back"
           >
             <svg
@@ -74,7 +78,7 @@ const SocialPostDetail: FC = () => {
           <h1 className="text-xl font-bold text-white">Post</h1>
         </div>
 
-        <PostDetailView post={post} />
+        <UnifiedPostDetail post={post} />
       </div>
 
       <aside className="sticky top-4 hidden h-fit w-[340px] flex-col gap-4 lg:flex">

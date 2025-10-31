@@ -38,9 +38,9 @@ export const defaultProfile: SocialProfileData = {
     url: "https://tyrian.trade",
   },
   joined: "Март 2021",
-  avatar: "https://i.pravatar.cc/300?img=33",
+  avatar: "https://api.builder.io/api/v1/image/assets/TEMP/8dcd522167ed749bb95dadfd1a39f43e695d33a0?width=500",
   cover:
-    "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1400&h=400&fit=crop",
+    "https://api.builder.io/api/v1/image/assets/TEMP/df14e9248350a32d57d5b54a31308a2e855bb11e?width=2118",
   stats: {
     tweets: 1480,
     following: 312,

@@ -17,7 +17,7 @@ const SocialPostPreview: FC = () => {
 
   useEffect(() => {
     if (!post) {
-      navigate("/social/compose", { replace: true });
+      navigate("/social/explore", { replace: true });
     }
   }, [post, navigate]);
 
@@ -50,14 +50,14 @@ const SocialPostPreview: FC = () => {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => navigate("/social/home")}
+            onClick={() => navigate("/social/explore")}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-6 py-2 text-sm font-semibold text-white transition hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)]"
           >
             Перейти в ленту
           </button>
           <button
             type="button"
-            onClick={() => navigate("/social/compose")}
+            onClick={() => navigate("/social/explore")}
             className="inline-flex items-center justify-center gap-2 rounded-full border border-[#181B22] px-6 py-2 text-sm font-semibold text-[#E3D8FF] transition hover:border-[#A06AFF]/40 hover:text-white"
           >
             Создать ещё пост

@@ -1,7 +1,7 @@
 export default function Updates() {
   return (
     <div className="container mx-auto max-w-4xl p-6">
-      <div className="rounded-3xl border border-[#181B22] bg-black p-6 sm:p-8">
+      <div className="rounded-3xl border border-widget-border bg-black p-6 sm:p-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">What's New</h1>
         <p className="text-[#B0B0B0] text-base">
           Stay updated with the latest features and improvements to Tyrian Trade.
