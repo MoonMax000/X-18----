@@ -60,11 +60,11 @@ func (h *StripeWebhookHandler) HandleWebhook(c *fiber.Ctx) error {
 
 	// Check if we've already processed this event (idempotency)
 	var existingEvent WebhookEvent
-	err = h.db.DB.QueryRow(`
-		SELECT id, event_id, processed 
-		FROM stripe_webhook_events 
+	err = h.db.DB.Raw(`
+		SELECT id, event_id, processed
+		FROM stripe_webhook_events
 		WHERE event_id = $1
-	`, event.ID).Scan(&existingEvent.ID, &existingEvent.EventID, &existingEvent.Processed)
+	`, event.ID).Scan(&existingEvent).Error
 
 	if err == nil && existingEvent.Processed {
 		log.Printf("[StripeWebhook] Event %s already processed, skipping", event.ID)
@@ -73,11 +73,11 @@ func (h *StripeWebhookHandler) HandleWebhook(c *fiber.Ctx) error {
 
 	// Store the event in the database
 	payloadJSON, _ := json.Marshal(event)
-	_, err = h.db.DB.Exec(`
+	err = h.db.DB.Exec(`
 		INSERT INTO stripe_webhook_events (event_id, event_type, payload, processed)
 		VALUES ($1, $2, $3, false)
 		ON CONFLICT (event_id) DO NOTHING
-	`, event.ID, event.Type, string(payloadJSON))
+	`, event.ID, event.Type, string(payloadJSON)).Error
 
 	if err != nil {
 		log.Printf("[StripeWebhook] Failed to store event: %v", err)
@@ -97,11 +97,11 @@ func (h *StripeWebhookHandler) HandleWebhook(c *fiber.Ctx) error {
 	}
 
 	now := time.Now()
-	_, err = h.db.DB.Exec(`
-		UPDATE stripe_webhook_events 
+	err = h.db.DB.Exec(`
+		UPDATE stripe_webhook_events
 		SET processed = $1, processing_error = $2, processed_at = $3
 		WHERE event_id = $4
-	`, processingErr == nil, errorStr, now, event.ID)
+	`, processingErr == nil, errorStr, now, event.ID).Error
 
 	if err != nil {
 		log.Printf("[StripeWebhook] Failed to update event status: %v", err)
@@ -198,18 +198,17 @@ func (h *StripeWebhookHandler) handleCustomerCreated(event *stripe.Event) error 
 
 	// Update user record with stripe_customer_id if email matches
 	if customer.Email != "" {
-		result, err := h.db.DB.Exec(`
-			UPDATE users 
+		result := h.db.DB.Exec(`
+			UPDATE users
 			SET stripe_customer_id = $1, updated_at = NOW()
 			WHERE email = $2 AND stripe_customer_id IS NULL
 		`, customer.ID, customer.Email)
 
-		if err != nil {
-			return fmt.Errorf("failed to update user stripe_customer_id: %w", err)
+		if result.Error != nil {
+			return fmt.Errorf("failed to update user stripe_customer_id: %w", result.Error)
 		}
 
-		rowsAffected, _ := result.RowsAffected()
-		if rowsAffected > 0 {
+		if result.RowsAffected > 0 {
 			log.Printf("[StripeWebhook] Updated user with email %s to have stripe_customer_id %s",
 				customer.Email, customer.ID)
 		}
@@ -237,14 +236,14 @@ func (h *StripeWebhookHandler) handleCustomerDeleted(event *stripe.Event) error 
 	log.Printf("[StripeWebhook] Customer deleted: %s", customer.ID)
 
 	// Remove stripe_customer_id from user
-	_, err := h.db.DB.Exec(`
-		UPDATE users 
+	result := h.db.DB.Exec(`
+		UPDATE users
 		SET stripe_customer_id = NULL, updated_at = NOW()
 		WHERE stripe_customer_id = $1
 	`, customer.ID)
 
-	if err != nil {
-		return fmt.Errorf("failed to clear user stripe_customer_id: %w", err)
+	if result.Error != nil {
+		return fmt.Errorf("failed to clear user stripe_customer_id: %w", result.Error)
 	}
 
 	return nil
