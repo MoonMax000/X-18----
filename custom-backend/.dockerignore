@@ -1,0 +1,62 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README.md
+LICENSE
+
+# Development
+.env
+.env.local
+.env.development
+.env.test
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.exe
+*.test
+*.out
+bin/
+dist/
+
+# Dependencies (will be downloaded in container)
+vendor/
+
+# Logs
+*.log
+logs/
+
+# Test files
+*_test.go
+test/
+testdata/
+
+# Temporary files
+tmp/
+temp/
+
+# Railway specific
+railway.json
+.railway/
+
+# Scripts
+*.sh
+scripts/
+
+# Other config files
+.editorconfig
+.prettierrc
+.eslintrc
