@@ -5,6 +5,7 @@ import { createServer } from "./server/index";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  publicDir: "public",
   server: {
     host: "::",
     port: process.env.PORT ? Number(process.env.PORT) : 5173,
