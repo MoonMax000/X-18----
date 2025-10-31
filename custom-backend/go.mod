@@ -1,4 +1,4 @@
-module github.com/yourusername/x18-backend
+module custom-backend
 
 go 1.24.0
 
