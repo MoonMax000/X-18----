@@ -8,6 +8,7 @@ on:
     paths:
       - 'client/**'
       - 'public/**'
+      - 'netlify/**'
       - 'package.json'
       - 'vite.config.ts'
       - '.github/workflows/deploy-netlify.yml'
@@ -42,7 +43,7 @@ jobs:
         run: pnpm run build
 
       - name: Copy _redirects file
-        run: cp public/_redirects dist/spa/_redirects
+        run: cp netlify/_redirects dist/spa/_redirects
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0
