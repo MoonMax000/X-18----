@@ -420,6 +420,10 @@ class CustomBackendAPI {
     return this.request<NewsItem[]>(`/widgets/news${queryString ? `?${queryString}` : ''}`);
   }
 
+  async getNewsById(id: string): Promise<NewsItem> {
+    return this.request<NewsItem>(`/widgets/news/${id}`);
+  }
+
   async getTrendingTickers(params?: { limit?: number; timeframe?: string }): Promise<TrendingTicker[]> {
     const query = new URLSearchParams();
     if (params?.limit) query.append('limit', params.limit.toString());

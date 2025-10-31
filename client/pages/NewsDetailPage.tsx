@@ -20,15 +20,8 @@ const NewsDetailPage: FC = () => {
       try {
         setIsLoading(true);
         setError(null);
-        // Получаем новость по ID
-        const data = await customBackendAPI.getAdminNews();
-        const newsItem = data.find((item) => item.id === id);
-        
-        if (!newsItem) {
-          setError('Новость не найдена');
-          return;
-        }
-        
+        // Получаем новость напрямую по ID
+        const newsItem = await customBackendAPI.getNewsById(id);
         setNews(newsItem);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Ошибка загрузки новости');

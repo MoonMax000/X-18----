@@ -11,10 +11,12 @@ type News struct {
 	ID          uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Title       string    `gorm:"type:varchar(255);not null" json:"title"`
 	Description string    `gorm:"type:text" json:"description"`
-	URL         string    `gorm:"type:text" json:"url"`
+	Content     string    `gorm:"type:text" json:"content,omitempty"` // Полный текст новости
+	URL         string    `gorm:"type:text" json:"url,omitempty"`     // Внешняя ссылка (опционально)
 	ImageURL    string    `gorm:"type:text" json:"image_url,omitempty"`
 	Category    string    `gorm:"type:varchar(50);index" json:"category"` // crypto, stocks, market
 	Source      string    `gorm:"type:varchar(100)" json:"source"`
+	Status      string    `gorm:"type:varchar(20);default:'draft';index" json:"status"` // draft, published
 	CreatedBy   uuid.UUID `gorm:"type:uuid;not null" json:"created_by"`
 	IsActive    bool      `gorm:"default:true;index" json:"is_active"`
 	PublishedAt time.Time `gorm:"index" json:"published_at"`

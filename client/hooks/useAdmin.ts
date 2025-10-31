@@ -34,7 +34,10 @@ export function useAdminNews() {
       setIsLoading(true);
       setError(null);
       const data = await customBackendAPI.getAdminNews(params);
-      setNews(Array.isArray(data) ? data : []);
+      // Backend возвращает объект {news: [...], total, limit, offset}
+      // Нам нужен только массив новостей
+      const newsArray = Array.isArray(data) ? data : (data as any)?.news || [];
+      setNews(newsArray);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить новости');
       setNews([]);

@@ -258,6 +258,7 @@ func main() {
 
 	// Widgets routes (public)
 	widgets := apiGroup.Group("/widgets")
+	widgets.Get("/news/:id", widgetsHandler.GetNewsById)
 	widgets.Get("/news", widgetsHandler.GetNews)
 	widgets.Get("/trending-tickers", widgetsHandler.GetTrendingTickers)
 	widgets.Get("/top-authors", widgetsHandler.GetTopAuthors)

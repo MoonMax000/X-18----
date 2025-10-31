@@ -20,6 +20,26 @@ func NewWidgetsHandler(db *database.Database) *WidgetsHandler {
 	}
 }
 
+// GetNewsById возвращает одну новость по ID
+// GET /api/widgets/news/:id
+func (h *WidgetsHandler) GetNewsById(c *fiber.Ctx) error {
+	newsID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid news ID",
+		})
+	}
+
+	var news models.News
+	if err := h.db.DB.Where("id = ? AND is_active = ?", newsID, true).First(&news).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "News not found",
+		})
+	}
+
+	return c.JSON(news)
+}
+
 // GetNews возвращает активные новости
 // GET /api/widgets/news?limit=10&category=crypto
 func (h *WidgetsHandler) GetNews(c *fiber.Ctx) error {

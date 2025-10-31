@@ -32,10 +32,12 @@ func (h *AdminHandler) CreateNews(c *fiber.Ctx) error {
 	var req struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
+		Content     string `json:"content"`
 		URL         string `json:"url"`
 		ImageURL    string `json:"image_url"`
 		Category    string `json:"category"`
 		Source      string `json:"source"`
+		Status      string `json:"status"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
@@ -45,26 +47,35 @@ func (h *AdminHandler) CreateNews(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Printf("[Admin] CreateNews: Request data - Title: %s, URL: %s, Category: %s\n", req.Title, req.URL, req.Category)
+	fmt.Printf("[Admin] CreateNews: Request data - Title: %s, Status: %s, Category: %s\n", req.Title, req.Status, req.Category)
 
 	// Валидация
-	if req.Title == "" || req.URL == "" {
-		fmt.Printf("[Admin] CreateNews: Validation failed - empty title or URL\n")
+	if req.Title == "" {
+		fmt.Printf("[Admin] CreateNews: Validation failed - empty title\n")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Title and URL are required",
+			"error": "Title is required",
 		})
 	}
+
+	// Определяем статус и is_active
+	status := req.Status
+	if status == "" {
+		status = "draft"
+	}
+	isActive := (status == "published")
 
 	// Создаем новость
 	news := models.News{
 		Title:       req.Title,
 		Description: req.Description,
+		Content:     req.Content,
 		URL:         req.URL,
 		ImageURL:    req.ImageURL,
 		Category:    req.Category,
 		Source:      req.Source,
+		Status:      status,
 		CreatedBy:   userID,
-		IsActive:    true,
+		IsActive:    isActive,
 		PublishedAt: time.Now(),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -141,10 +152,12 @@ func (h *AdminHandler) UpdateNews(c *fiber.Ctx) error {
 	var req struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
+		Content     string `json:"content"`
 		URL         string `json:"url"`
 		ImageURL    string `json:"image_url"`
 		Category    string `json:"category"`
 		Source      string `json:"source"`
+		Status      string `json:"status"`
 		IsActive    *bool  `json:"is_active"`
 	}
 
@@ -155,7 +168,7 @@ func (h *AdminHandler) UpdateNews(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Printf("[Admin] UpdateNews: Update request - Title: %s, IsActive: %v\n", req.Title, req.IsActive)
+	fmt.Printf("[Admin] UpdateNews: Update request - Title: %s, Status: %s\n", req.Title, req.Status)
 
 	// Получаем новость
 	var news models.News
@@ -173,6 +186,9 @@ func (h *AdminHandler) UpdateNews(c *fiber.Ctx) error {
 	if req.Description != "" {
 		news.Description = req.Description
 	}
+	if req.Content != "" {
+		news.Content = req.Content
+	}
 	if req.URL != "" {
 		news.URL = req.URL
 	}
@@ -184,6 +200,11 @@ func (h *AdminHandler) UpdateNews(c *fiber.Ctx) error {
 	}
 	if req.Source != "" {
 		news.Source = req.Source
+	}
+	if req.Status != "" {
+		news.Status = req.Status
+		// Синхронизируем is_active со статусом
+		news.IsActive = (req.Status == "published")
 	}
 	if req.IsActive != nil {
 		news.IsActive = *req.IsActive
