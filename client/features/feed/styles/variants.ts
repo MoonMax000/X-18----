@@ -59,14 +59,14 @@ export const CARD_VARIANTS = {
 
 // ============ ТАБЫ ============
 export const TAB_VARIANTS = {
-  // Мобильная версия: горизонтальный скролл
-  // Десктоп версия (md+): grid с несколькими колонками
-  container: "mb-4 w-full rounded-[20px] border border-widget-border bg-[#000000] p-1.5 flex gap-1.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-4 md:overflow-x-visible lg:grid-cols-7",
+  // Одна линия с горизонтальным скроллом на всех устройствах
+  // Компактный дизайн для размещения всех табов
+  container: "mb-4 w-full rounded-[20px] border border-widget-border bg-[#000000] p-1.5 flex gap-1 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:gap-1.5",
 
   item: (isActive: boolean, isAll: boolean = false) => {
-    // На мобильных минимальная ширина для нормального отображения
-    const base = "flex-shrink-0 min-w-[90px] md:w-full";
-    const styles = "px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-[16px] transition-all duration-200 text-center whitespace-nowrap snap-center";
+    // Компактные размеры для всех экранов
+    const base = "flex-shrink-0 min-w-[70px] md:min-w-[80px]";
+    const styles = "px-2.5 py-1.5 text-[11px] md:text-xs font-semibold rounded-[14px] transition-all duration-200 text-center whitespace-nowrap snap-center";
     const activeStyles = isActive
       ? "bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.65)]"
       : "text-[#9CA3AF] hover:text-white hover:bg-gradient-to-r hover:from-[#A06AFF]/15 hover:to-[#482090]/15";
