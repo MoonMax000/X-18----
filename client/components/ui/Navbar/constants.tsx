@@ -5,13 +5,11 @@ import {
   BadgeCheck as MarketIcon,
   CreditCard as BoxIcon,
   Compass as ExploreIcon,
-  MessageSpark as MessageIcon,
   NotificationBell as NotificationIcon,
   QuillPen as ComposeIcon,
-  Activity as ActivityIcon,
 } from "./icons";
 import DashboardNavIcon from "./DashboardNavIcon";
-import { Newspaper } from "lucide-react";
+import { Newspaper, User, Telescope } from "lucide-react";
 
 export interface NavElementProps {
   icon: ReactNode;
@@ -28,17 +26,17 @@ export const navElements: NavElementProps[] = [
     route: "/social",
     children: [
       {
-        icon: <ActivityIcon className="h-5 w-5" />,
+        icon: <HomeIcon className="h-5 w-5" />,
         title: "Home",
         route: "/feedtest",
       },
       {
-        icon: <BoxIcon className="h-5 w-5" />,
+        icon: <User className="h-5 w-5" />,
         title: "Profile",
         route: "/profile-page",
       },
       {
-        icon: <ExploreIcon className="h-5 w-5" />,
+        icon: <Telescope className="h-5 w-5" />,
         title: "Explore",
         route: "/social/explore",
       },
@@ -46,11 +44,6 @@ export const navElements: NavElementProps[] = [
         icon: <Newspaper className="h-5 w-5" />,
         title: "News",
         route: "/news",
-      },
-      {
-        icon: <MessageIcon className="h-5 w-5" />,
-        title: "Messages",
-        route: "/social/messages",
       },
     ],
   },
