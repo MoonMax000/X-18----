@@ -9,6 +9,7 @@ on:
       - 'client/**'
       - 'public/**'
       - 'netlify/**'
+      - 'netlify.toml'
       - 'package.json'
       - 'vite.config.ts'
       - '.github/workflows/deploy-netlify.yml'
