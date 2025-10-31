@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useAdminNews } from '@/hooks/useAdmin';
-import { Plus, Edit, Trash2, Eye, EyeOff, X, ExternalLink } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, X, ExternalLink, Upload, Loader2 } from 'lucide-react';
 import type { NewsItem, CreateNewsData } from '@/services/api/custom-backend';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { customBackendAPI } from '@/services/api/custom-backend';
 
 export function AdminNews() {
   const { news, isLoading, error, fetchNews, createNews, updateNews, deleteNews } = useAdminNews();
   const [showModal, setShowModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateNewsData>({
     title: '',
     description: '',
@@ -19,6 +22,20 @@ export function AdminNews() {
     source: '',
     is_active: true,
   });
+
+  // Популярные источники новостей
+  const popularSources = [
+    'RBC',
+    'Ведомости',
+    'Коммерсантъ',
+    'Reuters',
+    'Bloomberg',
+    'TechCrunch',
+    'CoinDesk',
+    'Forbes',
+    'The Guardian',
+    'Другой источник',
+  ];
 
   useEffect(() => {
     fetchNews();
@@ -59,6 +76,7 @@ export function AdminNews() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingNews(null);
+    setUploadError(null);
     setFormData({
       title: '',
       description: '',
@@ -68,6 +86,35 @@ export function AdminNews() {
       source: '',
       is_active: true,
     });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Пожалуйста, выберите изображение');
+      return;
+    }
+
+    // Проверка размера (макс 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Размер изображения не должен превышать 5MB');
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      setUploadError(null);
+      
+      const media = await customBackendAPI.uploadMedia(file);
+      setFormData({ ...formData, image_url: media.url });
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Ошибка загрузки изображения');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   if (isLoading && news.length === 0) {
@@ -216,53 +263,120 @@ export function AdminNews() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Заголовок *
+                  Заголовок новости *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
+                  placeholder="Например: Запуск новой функции в платформе"
+                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Описание *
+                  Краткое описание *
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors resize-none"
+                  placeholder="Опишите суть новости в 2-3 предложениях..."
+                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors resize-none"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  URL новости *
+                  Ссылка на полную статью *
                 </label>
                 <input
                   type="url"
                   value={formData.url}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
+                  placeholder="https://example.com/full-article"
+                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
                   required
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Ссылка на оригинальную статью, куда перейдет пользователь при клике
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  URL изображения
+                  Обложка новости
                 </label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
-                />
+                
+                {formData.image_url ? (
+                  <div className="space-y-3">
+                    <div className="relative h-40 rounded-lg overflow-hidden bg-onyxGrey border border-widget-border">
+                      <img
+                        src={formData.image_url}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: '' })}
+                        className="absolute top-2 right-2 p-1.5 bg-red/80 hover:bg-red text-white rounded-lg transition-colors"
+                        title="Удалить изображение"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-gray-300 hover:text-white hover:border-tyrian transition-colors text-sm"
+                    >
+                      Изменить изображение
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="image-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-widget-border rounded-lg cursor-pointer bg-onyxGrey hover:bg-onyxGrey/50 hover:border-tyrian transition-all"
+                    >
+                      {isUploadingImage ? (
+                        <div className="flex flex-col items-center">
+                          <Loader2 className="w-8 h-8 text-tyrian animate-spin mb-2" />
+                          <span className="text-sm text-gray-400">Загрузка...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                          <span className="text-sm text-gray-400 mb-1">
+                            Нажмите для загрузки изображения
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            PNG, JPG, GIF до 5MB
+                          </span>
+                        </div>
+                      )}
+                    </label>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={isUploadingImage}
+                    />
+                  </div>
+                )}
+                
+                {uploadError && (
+                  <p className="mt-2 text-xs text-red">{uploadError}</p>
+                )}
+                
+                <p className="mt-1 text-xs text-gray-500">
+                  Рекомендуется изображение 16:9 (например, 1200x675px)
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -287,15 +401,24 @@ export function AdminNews() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Источник *
+                    Источник новости *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.source}
                     onChange={(e) => setFormData({ ...formData, source: e.target.value })}
                     className="w-full px-3 py-2 border border-widget-border rounded-lg bg-onyxGrey text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
                     required
-                  />
+                  >
+                    <option value="">Выберите источник</option>
+                    {popularSources.map((source) => (
+                      <option key={source} value={source}>
+                        {source}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Название издания или источника
+                  </p>
                 </div>
               </div>
 
