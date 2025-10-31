@@ -208,12 +208,36 @@ export default function FeedTest() {
     <div className="flex min-h-screen w-full gap-6">
       <div className="flex-1 max-w-[720px] min-w-0">
         {user && (
-          <div className="mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
-            <QuickComposer 
-              onExpand={handleExpandComposer}
-              onPostCreated={refresh}
-            />
-          </div>
+          <>
+            {/* Desktop: Full QuickComposer */}
+            <div className="hidden md:block mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
+              <QuickComposer 
+                onExpand={handleExpandComposer}
+                onPostCreated={refresh}
+              />
+            </div>
+
+            {/* Mobile: Compact Create Post Button */}
+            <button
+              onClick={() => setIsAdvancedComposerOpen(true)}
+              className="md:hidden mb-4 w-full flex items-center gap-3 rounded-2xl border border-widget-border bg-[#000000] p-4 hover:bg-[#0A0A0A] transition-colors"
+            >
+              <div className="flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#6B46C1] to-[#482090] flex items-center justify-center">
+                  <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium text-white">Создать пост</p>
+                <p className="text-xs text-gray-400">Поделитесь идеями, сигналами или анализом</p>
+              </div>
+              <svg className="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
         )}
 
         <div className="sticky top-0 z-30 -mx-2 sm:-mx-4 md:-mx-6 px-2 sm:px-4 md:px-6 bg-black py-2">
