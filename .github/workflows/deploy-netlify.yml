@@ -41,6 +41,9 @@ jobs:
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
         run: pnpm run build
 
+      - name: Copy _redirects file
+        run: cp public/_redirects dist/spa/_redirects
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0
         with:
