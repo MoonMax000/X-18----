@@ -11,11 +11,11 @@ import (
 	"github.com/gofiber/websocket/v2"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"github.com/yourusername/x18-backend/configs"
-	"github.com/yourusername/x18-backend/internal/auth"
-	"github.com/yourusername/x18-backend/internal/cache"
-	"github.com/yourusername/x18-backend/internal/database"
-	"github.com/yourusername/x18-backend/internal/models"
+	"custom-backend/configs"
+	"custom-backend/internal/auth"
+	"custom-backend/internal/cache"
+	"custom-backend/internal/database"
+	"custom-backend/internal/models"
 )
 
 type WebSocketHandler struct {

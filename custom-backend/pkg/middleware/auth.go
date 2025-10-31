@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/yourusername/x18-backend/configs"
-	"github.com/yourusername/x18-backend/internal/auth"
+	"custom-backend/configs"
+	"custom-backend/internal/auth"
 )
 
 // JWTMiddleware validates JWT token and injects user info into context

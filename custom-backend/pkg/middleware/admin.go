@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/yourusername/x18-backend/internal/database"
-	"github.com/yourusername/x18-backend/internal/models"
+	"custom-backend/internal/database"
+	"custom-backend/internal/models"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

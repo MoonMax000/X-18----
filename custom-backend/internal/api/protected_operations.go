@@ -2,12 +2,12 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/yourusername/x18-backend/configs"
-	"github.com/yourusername/x18-backend/internal/cache"
-	"github.com/yourusername/x18-backend/internal/database"
-	"github.com/yourusername/x18-backend/internal/models"
-	"github.com/yourusername/x18-backend/internal/services"
-	"github.com/yourusername/x18-backend/pkg/utils"
+	"custom-backend/configs"
+	"custom-backend/internal/cache"
+	"custom-backend/internal/database"
+	"custom-backend/internal/models"
+	"custom-backend/internal/services"
+	"custom-backend/pkg/utils"
 )
 
 // ProtectedOperationsHandler handles operations that require TOTP verification

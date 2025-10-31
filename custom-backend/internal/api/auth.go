@@ -7,14 +7,14 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/yourusername/x18-backend/configs"
-	"github.com/yourusername/x18-backend/internal/auth"
-	"github.com/yourusername/x18-backend/internal/cache"
-	"github.com/yourusername/x18-backend/internal/database"
-	"github.com/yourusername/x18-backend/internal/models"
-	"github.com/yourusername/x18-backend/internal/services"
-	"github.com/yourusername/x18-backend/pkg/email"
-	"github.com/yourusername/x18-backend/pkg/utils"
+	"custom-backend/configs"
+	"custom-backend/internal/auth"
+	"custom-backend/internal/cache"
+	"custom-backend/internal/database"
+	"custom-backend/internal/models"
+	"custom-backend/internal/services"
+	"custom-backend/pkg/email"
+	"custom-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 

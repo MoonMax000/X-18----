@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/yourusername/x18-backend/internal/database"
+	"custom-backend/internal/database"
 )
 
 type NotificationPreferencesHandler struct {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/yourusername/x18-backend/configs"
-	"github.com/yourusername/x18-backend/internal/models"
+	"custom-backend/configs"
+	"custom-backend/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

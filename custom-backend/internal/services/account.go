@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/yourusername/x18-backend/internal/cache"
-	"github.com/yourusername/x18-backend/internal/models"
+	"custom-backend/internal/cache"
+	"custom-backend/internal/models"
 	"gorm.io/gorm"
 )
 

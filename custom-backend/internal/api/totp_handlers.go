@@ -6,10 +6,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/yourusername/x18-backend/internal/cache"
-	"github.com/yourusername/x18-backend/internal/models"
-	"github.com/yourusername/x18-backend/internal/services"
-	"github.com/yourusername/x18-backend/pkg/utils"
+	"custom-backend/internal/cache"
+	"custom-backend/internal/models"
+	"custom-backend/internal/services"
+	"custom-backend/pkg/utils"
 	"gorm.io/gorm"
 )
 

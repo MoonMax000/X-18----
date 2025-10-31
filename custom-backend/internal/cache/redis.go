@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/yourusername/x18-backend/configs"
+	"custom-backend/configs"
 )
 
 type Cache struct {

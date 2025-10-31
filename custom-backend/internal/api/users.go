@@ -5,10 +5,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/yourusername/x18-backend/internal/cache"
-	"github.com/yourusername/x18-backend/internal/database"
-	"github.com/yourusername/x18-backend/internal/models"
-	"github.com/yourusername/x18-backend/pkg/middleware"
+	"custom-backend/internal/cache"
+	"custom-backend/internal/database"
+	"custom-backend/internal/models"
+	"custom-backend/pkg/middleware"
 	"gorm.io/gorm"
 )
 

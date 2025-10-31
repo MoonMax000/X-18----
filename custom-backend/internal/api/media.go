@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/yourusername/x18-backend/internal/database"
-	"github.com/yourusername/x18-backend/internal/models"
-	"github.com/yourusername/x18-backend/pkg/utils"
+	"custom-backend/internal/database"
+	"custom-backend/internal/models"
+	"custom-backend/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
