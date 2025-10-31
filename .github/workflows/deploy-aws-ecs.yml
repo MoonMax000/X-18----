@@ -70,10 +70,19 @@ jobs:
             --task-definition ${{ env.ECS_TASK_DEFINITION }} \
             --query taskDefinition > task-definition.json
 
-      - name: Update task definition with DB_SSLMODE
+      - name: Update task definition with environment variables
         run: |
           # Add DB_SSLMODE environment variable to task definition
           jq '.containerDefinitions[0].environment += [{"name": "DB_SSLMODE", "value": "require"}]' task-definition.json > task-definition-updated.json
+          mv task-definition-updated.json task-definition.json
+
+          # Add S3 Storage configuration
+          jq '.containerDefinitions[0].environment += [
+            {"name": "USE_S3_STORAGE", "value": "true"},
+            {"name": "S3_BUCKET", "value": "tyriantrade-media"},
+            {"name": "AWS_REGION", "value": "us-east-1"},
+            {"name": "CLOUDFRONT_DOMAIN", "value": "d1xltpuqw8istm.cloudfront.net"}
+          ]' task-definition.json > task-definition-updated.json
           mv task-definition-updated.json task-definition.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition

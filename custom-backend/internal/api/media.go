@@ -1,13 +1,16 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"custom-backend/internal/database"
 	"custom-backend/internal/models"
+	"custom-backend/pkg/storage"
 	"custom-backend/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,35 +19,51 @@ import (
 
 type MediaHandler struct {
 	db           *database.Database
-	uploadDir    string
+	s3Storage    *storage.S3Storage
+	uploadDir    string // Kept for local temp processing
 	maxFileSize  int64
 	allowedTypes map[string]bool
+	useS3        bool // Feature flag for gradual migration
 }
 
 func NewMediaHandler(db *database.Database) *MediaHandler {
-	// Определяем путь хранения в зависимости от окружения
+	// Check if S3 should be used
+	useS3 := os.Getenv("USE_S3_STORAGE") != "false" // Default to true
+
+	var s3Storage *storage.S3Storage
+	var err error
+
+	if useS3 {
+		s3Storage, err = storage.NewS3Storage()
+		if err != nil {
+			fmt.Printf("⚠️  Failed to initialize S3 storage: %v\n", err)
+			fmt.Printf("⚠️  Falling back to local filesystem storage\n")
+			useS3 = false
+		} else {
+			fmt.Printf("✅ Media storage: S3 + CloudFront enabled\n")
+		}
+	} else {
+		fmt.Printf("📁 Media storage: Local filesystem (development mode)\n")
+	}
+
+	// Определяем путь хранения для временных файлов (даже при S3)
 	uploadDir := os.Getenv("STORAGE_PATH")
 	if uploadDir == "" {
-		// Для локальной разработки используем ./storage/media
 		uploadDir = "./storage/media"
 	} else {
-		// Для production добавляем /media к пути
 		uploadDir = filepath.Join(uploadDir, "media")
 	}
 
-	// Создаем директорию для загрузок если не существует
+	// Создаем директорию для temp обработки
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		// Логируем ошибку, но продолжаем работу
-		fmt.Printf("Warning: Failed to create upload directory %s: %v\n", uploadDir, err)
+		fmt.Printf("Warning: Failed to create temp directory %s: %v\n", uploadDir, err)
 	}
-
-	// Логируем используемый путь
-	fmt.Printf("Media storage initialized at: %s\n", uploadDir)
 
 	return &MediaHandler{
 		db:          db,
+		s3Storage:   s3Storage,
 		uploadDir:   uploadDir,
-		maxFileSize: 10 * 1024 * 1024, // 10MB
+		maxFileSize: 50 * 1024 * 1024, // 50MB (increased for videos)
 		allowedTypes: map[string]bool{
 			"image/jpeg": true,
 			"image/jpg":  true,
@@ -54,6 +73,7 @@ func NewMediaHandler(db *database.Database) *MediaHandler {
 			"video/mp4":  true,
 			"video/webm": true,
 		},
+		useS3: useS3,
 	}
 }
 
@@ -106,45 +126,37 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 	ext := filepath.Ext(file.Filename)
 	safeFilename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
 	tempPath := filepath.Join(h.uploadDir, "temp_"+safeFilename)
-	finalPath := filepath.Join(h.uploadDir, safeFilename)
 
-	// Сохраняем временный файл
-	fmt.Printf("Saving file to: %s\n", tempPath)
+	// Сохраняем временный файл для обработки
+	fmt.Printf("Saving temp file to: %s\n", tempPath)
 	if err := c.SaveFile(file, tempPath); err != nil {
-		fmt.Printf("Error saving file: %v\n", err)
+		fmt.Printf("Error saving temp file: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to save file",
 		})
 	}
-	fmt.Printf("File saved successfully to: %s\n", tempPath)
-
-	// URL для доступа к файлу (используем переменную окружения для BASE_URL)
-	baseURL := os.Getenv("BASE_URL")
-	if baseURL == "" {
-		baseURL = "http://localhost:8080" // fallback для локальной разработки
-	}
+	defer os.Remove(tempPath) // Удалим temp файл в любом случае
 
 	// Обрабатываем медиа в зависимости от типа
 	var processedPath string
 	var width, height int
 	var thumbnailURL string
+	var thumbnailKey string
 
 	if mediaType == utils.MediaTypeImage || mediaType == utils.MediaTypeGIF {
 		// Re-encode изображения для удаления EXIF и безопасности
-		processedPath = finalPath
+		processedPath = filepath.Join(h.uploadDir, safeFilename)
 		err = utils.ReencodeImage(tempPath, processedPath, 4096, 4096)
 		if err != nil {
-			os.Remove(tempPath)
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "Failed to process image: " + err.Error(),
 			})
 		}
+		defer os.Remove(processedPath) // Удалим обработанный файл после загрузки
 
 		// Получаем размеры
 		width, height, err = utils.GetImageDimensions(processedPath)
 		if err != nil {
-			os.Remove(tempPath)
-			os.Remove(processedPath)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Failed to get image dimensions",
 			})
@@ -154,20 +166,12 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		thumbnailFilename := "thumb_" + safeFilename
 		thumbnailPath := filepath.Join(h.uploadDir, thumbnailFilename)
 		if err := utils.GenerateThumbnail(processedPath, thumbnailPath, 400, 400); err == nil {
-			thumbnailURL = fmt.Sprintf("%s/storage/media/%s", baseURL, thumbnailFilename)
+			defer os.Remove(thumbnailPath) // Удалим после загрузки
+			thumbnailKey = "media/thumbnails/" + thumbnailFilename
 		}
-
-		// Удаляем временный файл
-		os.Remove(tempPath)
 	} else {
-		// Для видео просто перемещаем файл
-		processedPath = finalPath
-		if err := os.Rename(tempPath, processedPath); err != nil {
-			os.Remove(tempPath)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to process video",
-			})
-		}
+		// Для видео используем temp файл напрямую
+		processedPath = tempPath
 	}
 
 	// Вычисляем хеш для обнаружения дубликатов (только для изображений)
@@ -176,8 +180,70 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		imageHash, _ = utils.CalculateImageHash(processedPath)
 	}
 
-	// URL для доступа к файлу
-	fileURL := fmt.Sprintf("%s/storage/media/%s", baseURL, safeFilename)
+	// Загружаем в S3 или сохраняем локально
+	var fileURL string
+	var s3Key string
+
+	if h.useS3 && h.s3Storage != nil {
+		// S3 Upload Path
+		ctx := context.Background()
+		s3Key = fmt.Sprintf("media/%s", safeFilename)
+
+		// Открываем обработанный файл для загрузки в S3
+		processedFile, err := os.Open(processedPath)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to read processed file",
+			})
+		}
+		defer processedFile.Close()
+
+		// Загружаем основной файл в S3
+		fileURL, err = h.s3Storage.UploadFile(ctx, s3Key, processedFile, mimeType)
+		if err != nil {
+			fmt.Printf("Error uploading to S3: %v\n", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to upload to S3",
+			})
+		}
+
+		// Загружаем thumbnail в S3 (если существует)
+		if thumbnailKey != "" {
+			thumbnailPath := filepath.Join(h.uploadDir, "thumb_"+safeFilename)
+			thumbFile, err := os.Open(thumbnailPath)
+			if err == nil {
+				defer thumbFile.Close()
+				thumbnailURL, err = h.s3Storage.UploadFile(ctx, thumbnailKey, thumbFile, "image/jpeg")
+				if err != nil {
+					fmt.Printf("Warning: Failed to upload thumbnail: %v\n", err)
+					thumbnailURL = "" // Не критично, просто не будет thumbnail
+				}
+			}
+		}
+
+		fmt.Printf("✅ File uploaded to S3: %s\n", fileURL)
+	} else {
+		// Local Filesystem Path (fallback)
+		finalPath := filepath.Join(h.uploadDir, safeFilename)
+		if err := os.Rename(processedPath, finalPath); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to save processed file",
+			})
+		}
+
+		baseURL := os.Getenv("BASE_URL")
+		if baseURL == "" {
+			baseURL = "http://localhost:8080"
+		}
+
+		fileURL = fmt.Sprintf("%s/storage/media/%s", baseURL, safeFilename)
+
+		if thumbnailKey != "" {
+			thumbnailURL = fmt.Sprintf("%s/storage/media/thumb_%s", baseURL, safeFilename)
+		}
+
+		fmt.Printf("📁 File saved locally: %s\n", fileURL)
+	}
 
 	// Опциональный alt text
 	altText := c.FormValue("alt_text", "")
@@ -200,10 +266,13 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 	}
 
 	if err := h.db.DB.Create(&media).Error; err != nil {
-		// Удаляем файлы если не удалось сохранить в БД
-		os.Remove(processedPath)
-		if thumbnailURL != "" {
-			os.Remove(filepath.Join(h.uploadDir, "thumb_"+safeFilename))
+		// Если не удалось сохранить в БД, нужно удалить файл из S3
+		if h.useS3 && h.s3Storage != nil && s3Key != "" {
+			ctx := context.Background()
+			h.s3Storage.DeleteFile(ctx, s3Key)
+			if thumbnailKey != "" {
+				h.s3Storage.DeleteFile(ctx, thumbnailKey)
+			}
 		}
 		fmt.Printf("Error saving media record: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -211,12 +280,7 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Printf("Media saved successfully: ID=%s, URL=%s, Path=%s\n", media.ID, media.URL, finalPath)
-
-	// Проверяем что файл действительно существует
-	if _, err := os.Stat(finalPath); os.IsNotExist(err) {
-		fmt.Printf("WARNING: File doesn't exist after save: %s\n", finalPath)
-	}
+	fmt.Printf("✅ Media saved successfully: ID=%s, URL=%s\n", media.ID, media.URL)
 
 	return c.Status(fiber.StatusCreated).JSON(media)
 }
@@ -274,10 +338,36 @@ func (h *MediaHandler) DeleteMedia(c *fiber.Ctx) error {
 		})
 	}
 
-	// Удаляем файл
-	filename := filepath.Base(media.URL)
-	filepath := filepath.Join(h.uploadDir, filename)
-	os.Remove(filepath)
+	// Удаляем файл из S3 или локальной ФС
+	if h.useS3 && h.s3Storage != nil {
+		// Extract S3 key from CloudFront URL
+		// URL format: https://d1xltpuqw8istm.cloudfront.net/media/uuid.jpg
+		s3Key := strings.TrimPrefix(media.URL, "https://"+os.Getenv("CLOUDFRONT_DOMAIN")+"/")
+
+		ctx := context.Background()
+		if err := h.s3Storage.DeleteFile(ctx, s3Key); err != nil {
+			fmt.Printf("Warning: Failed to delete from S3: %v\n", err)
+			// Не критично, продолжаем удаление из БД
+		}
+
+		// Удаляем thumbnail если есть
+		if media.ThumbnailURL != "" {
+			thumbKey := strings.TrimPrefix(media.ThumbnailURL, "https://"+os.Getenv("CLOUDFRONT_DOMAIN")+"/")
+			h.s3Storage.DeleteFile(ctx, thumbKey)
+		}
+	} else {
+		// Локальное удаление
+		filename := filepath.Base(media.URL)
+		filePath := filepath.Join(h.uploadDir, filename)
+		os.Remove(filePath)
+
+		// Удаляем thumbnail
+		if media.ThumbnailURL != "" {
+			thumbFilename := filepath.Base(media.ThumbnailURL)
+			thumbPath := filepath.Join(h.uploadDir, thumbFilename)
+			os.Remove(thumbPath)
+		}
+	}
 
 	// Удаляем запись из БД
 	if err := h.db.DB.Delete(&media).Error; err != nil {
@@ -396,7 +486,25 @@ func (h *MediaHandler) StreamMedia(c *fiber.Ctx) error {
 		}
 	}
 
-	// Получаем путь к файлу
+	// Если используется S3, генерируем presigned URL и редиректим
+	if h.useS3 && h.s3Storage != nil {
+		// Extract S3 key from CloudFront URL
+		s3Key := strings.TrimPrefix(media.URL, "https://"+os.Getenv("CLOUDFRONT_DOMAIN")+"/")
+
+		ctx := context.Background()
+		// Генерируем presigned URL на 1 час
+		presignedURL, err := h.s3Storage.GetPresignedURL(ctx, s3Key, 1*time.Hour)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to generate presigned URL",
+			})
+		}
+
+		// Редирект на presigned URL
+		return c.Redirect(presignedURL, fiber.StatusTemporaryRedirect)
+	}
+
+	// Локальная файловая система (fallback)
 	filename := filepath.Base(media.URL)
 	filePath := filepath.Join(h.uploadDir, filename)
 
