@@ -43,8 +43,8 @@ jobs:
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
         run: pnpm run build
 
-      - name: Copy _redirects file
-        run: cp netlify/_redirects dist/spa/_redirects
+      - name: Create _redirects file for SPA routing
+        run: echo "/*    /index.html   200" > dist/spa/_redirects
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0
