@@ -46,6 +46,13 @@ jobs:
       - name: Create _redirects file for SPA routing
         run: echo "/*    /index.html   200" > dist/spa/_redirects
 
+      - name: Verify _redirects file
+        run: |
+          echo "Contents of dist/spa:"
+          ls -la dist/spa/
+          echo "Contents of _redirects:"
+          cat dist/spa/_redirects
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0
         with:
