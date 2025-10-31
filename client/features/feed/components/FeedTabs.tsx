@@ -25,7 +25,7 @@ export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
           >
             <span className="flex items-center justify-center gap-1.5">
               <Icon className="h-4 w-4 shrink-0" />
-              <span className={isAll ? "inline" : "hidden sm:inline"}>{tab.label}</span>
+              <span className={isActive ? "inline" : "hidden sm:inline"}>{tab.label}</span>
             </span>
           </button>
         );
