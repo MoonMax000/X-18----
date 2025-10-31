@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { authFetch } from '../lib/auth-fetch';
 
 interface SecuritySettings {
   is_2fa_enabled: boolean;
@@ -31,12 +32,7 @@ export function useSecuritySettings() {
   const fetchSettings = useCallback(async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/auth/2fa/settings', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authFetch.fetch('/auth/2fa/settings');
 
       if (response.ok) {
         const data = await response.json();
@@ -53,18 +49,15 @@ export function useSecuritySettings() {
 
   const updateSettings = useCallback(async (updates: Partial<SecuritySettings & { verification_code?: string }>) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      
       // Handle 2FA enable/disable
       if (updates.is_2fa_enabled !== undefined) {
         const endpoint = updates.is_2fa_enabled 
-          ? '/api/auth/2fa/enable' 
-          : '/api/auth/2fa/disable';
+          ? '/auth/2fa/enable' 
+          : '/auth/2fa/disable';
         
-        const response = await fetch(endpoint, {
+        const response = await authFetch.fetch(endpoint, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -80,10 +73,9 @@ export function useSecuritySettings() {
 
       // Handle backup contact updates
       if (updates.backup_email !== undefined || updates.backup_phone !== undefined) {
-        const response = await fetch('/api/auth/backup-contact', {
+        const response = await authFetch.fetch('/users/backup-contact', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -120,12 +112,7 @@ export function useSessions() {
   const fetchSessions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/auth/sessions', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authFetch.fetch('/sessions');
 
       if (response.ok) {
         const data = await response.json();
@@ -142,12 +129,8 @@ export function useSessions() {
 
   const revokeSession = useCallback(async (sessionId: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/auth/sessions/${sessionId}`, {
+      const response = await authFetch.fetch(`/sessions/${sessionId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
 
       if (!response.ok) {
@@ -178,8 +161,9 @@ export function useAccountRecovery() {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('/api/auth/password/reset', {
+      const response = await authFetch.fetch('/auth/password/reset', {
         method: 'POST',
+        skipAuth: true,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -204,8 +188,9 @@ export function useAccountRecovery() {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('/api/auth/password/reset/confirm', {
+      const response = await authFetch.fetch('/auth/password/reset/confirm', {
         method: 'POST',
+        skipAuth: true,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -237,8 +222,9 @@ export function use2FALogin() {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('/api/auth/login/2fa', {
+      const response = await authFetch.fetch('/auth/login/2fa', {
         method: 'POST',
+        skipAuth: true,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -252,11 +238,9 @@ export function use2FALogin() {
 
       const data = await response.json();
       
-      // Store tokens
-      localStorage.setItem('auth_token', data.token);
-      if (data.refresh_token) {
-        localStorage.setItem('refresh_token', data.refresh_token);
-      }
+      // Store tokens using custom_token (not auth_token)
+      localStorage.setItem('custom_token', data.token);
+      localStorage.setItem('custom_user', JSON.stringify(data.user));
 
       return data;
     } catch (err) {

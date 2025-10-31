@@ -41,7 +41,7 @@ export function useProtectedOperations() {
         headers['X-TOTP-Code'] = totpCode;
       }
 
-      const response = await authFetch.fetch('/api/auth/password/change', {
+      const response = await authFetch.fetch('/auth/password/change', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
@@ -82,7 +82,7 @@ export function useProtectedOperations() {
         headers['X-TOTP-Code'] = totpCode;
       }
 
-      const response = await authFetch.fetch('/api/users/email/change', {
+      const response = await authFetch.fetch('/users/email/change', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
@@ -123,7 +123,7 @@ export function useProtectedOperations() {
         headers['X-TOTP-Code'] = totpCode;
       }
 
-      const response = await authFetch.fetch('/api/users/phone/change', {
+      const response = await authFetch.fetch('/users/phone/change', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
