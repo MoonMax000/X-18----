@@ -10,6 +10,7 @@ import { getAvatarUrl } from "@/lib/avatar-utils";
 import { formatTimeAgo } from "@/lib/time-utils";
 import { useAuth } from "@/contexts/AuthContext";
 import NewsWidget from "@/components/SocialFeedWidgets/NewsWidget";
+import TrendingNewsWidget from "@/components/SocialFeedWidgets/TrendingNewsWidget";
 import TrendingTickersWidget from "@/components/SocialFeedWidgets/TrendingTickersWidget";
 import TopAuthorsWidget from "@/components/SocialFeedWidgets/TopAuthorsWidget";
 import MyEarningsWidget from "@/components/SocialFeedWidgets/MyEarningsWidget";
@@ -241,6 +242,7 @@ export default function FeedTest() {
       <div className="hidden lg:block w-[340px]">
         <div className="sticky top-20 space-y-4">
           <NewsWidget limit={5} />
+          <TrendingNewsWidget title="Актуальное" limit={5} showAvatars={true} />
           <TrendingTickersWidget limit={10} timeframe="24h" />
           <TopAuthorsWidget limit={5} timeframe="7d" />
           {user && (
