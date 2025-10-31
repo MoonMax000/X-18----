@@ -164,13 +164,21 @@ func (m *Media) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-// Session represents a user session with refresh token
+// Session represents a user session with refresh token and device tracking
 type Session struct {
 	ID               uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	UserID           uuid.UUID `gorm:"type:uuid;not null;index:idx_user_sessions" json:"user_id"`
 	RefreshTokenHash string    `gorm:"size:255;not null;index:idx_token" json:"-"`
 	ExpiresAt        time.Time `gorm:"not null" json:"expires_at"`
 	CreatedAt        time.Time `json:"created_at"`
+
+	// Device tracking fields
+	DeviceType   string     `gorm:"size:20" json:"device_type,omitempty"` // mobile, tablet, desktop
+	Browser      string     `gorm:"size:50" json:"browser,omitempty"`     // Chrome, Firefox, Safari, etc.
+	OS           string     `gorm:"size:50" json:"os,omitempty"`          // Windows, macOS, Linux, Android, iOS
+	IPAddress    string     `gorm:"size:45" json:"ip_address,omitempty"`  // IPv4 or IPv6
+	UserAgent    string     `gorm:"size:500" json:"user_agent,omitempty"` // Full user agent string
+	LastActiveAt *time.Time `json:"last_active_at,omitempty"`             // Last activity timestamp
 
 	User User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 }

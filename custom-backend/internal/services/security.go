@@ -367,25 +367,25 @@ func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshT
 	// Get client IP
 	ipAddress := GetClientIP(c)
 
-	// Create session
+	// Get current time for last activity
+	now := time.Now()
+
+	// Create session with full device tracking info
 	session := models.Session{
 		UserID:           userID,
 		RefreshTokenHash: refreshTokenHash,
 		ExpiresAt:        expiresAt,
+		DeviceType:       deviceType,
+		Browser:          browser,
+		OS:               os,
+		IPAddress:        ipAddress,
+		UserAgent:        userAgent,
+		LastActiveAt:     &now,
 	}
-
-	// Note: These fields would need to be added to the Session model
-	// For now, we'll just save the basic session
-	// In a real implementation, you'd extend the Session model or use ExtendedSession
 
 	if err := ss.db.Create(&session).Error; err != nil {
 		return nil, err
 	}
-
-	// Log session info (for now, just for tracking)
-	// You could store this in a separate table or extend the Session model
-	fmt.Printf("Session created - IP: %s, Device: %s, Browser: %s, OS: %s\n",
-		ipAddress, deviceType, browser, os)
 
 	return &session, nil
 }
