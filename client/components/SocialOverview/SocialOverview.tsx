@@ -1,9 +1,12 @@
-import { type FC, type ReactNode, useState, memo } from "react";
+import { type FC, type ReactNode, useState, memo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { CARD_VARIANTS } from "@/features/feed/styles";
 import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";
 import PurchasedPostsWidget from "@/features/feed/components/widgets/PurchasedPostsWidget";
-import { Eye, Heart, MessageCircle } from "lucide-react";
+import { Eye, Heart, MessageCircle, Loader2 } from "lucide-react";
+import { useProfileStats } from "@/hooks/useProfileStats";
+import { formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
 
 const sectionCardClass = cn(
   CARD_VARIANTS.widget.default,
@@ -15,7 +18,6 @@ const statCardClass = cn(
   "flex flex-col gap-2 bg-[#0C101480] border border-widget-border/80 p-4 md:p-5 transition-colors hover:border-[#A06AFF]/40"
 );
 
-const listItemClass = "flex items-center gap-3 rounded-2xl border border-transparent bg-white/5 p-3 transition-colors hover:border-[#A06AFF]/35 hover:bg-white/10";
 const sectionTitleClass = "text-xl font-bold text-white";
 const sectionSubtitleClass = "text-xs font-semibold uppercase tracking-wide text-[#8B98A5]";
 
@@ -142,32 +144,21 @@ const ActivityItem: FC<{
   );
 };
 
-const getCategoryBadge = (category: "crypto" | "trading" | "analysis") => {
-  const badges = {
-    crypto: { label: "Crypto", bg: "#A06AFF" },
-    trading: { label: "Trading", bg: "#2EBD85" },
-    analysis: { label: "Analysis", bg: "#FFB84D" },
-  };
-  return badges[category];
-};
-
 const formatNumber = (num: number): string => {
   if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
   return num.toString();
 };
 
 const SocialOverview: FC = () => {
-  const mockStats = {
-    posts: 142,
-    postsChange: "12%",
-    likes: 2847,
-    likesChange: "23%",
-    comments: 563,
-    commentsChange: "8%",
-    followers: 1542,
-    followersChange: "15%",
-  };
+  const { stats, activity: realActivity, topPosts: realTopPosts, followerGrowth: growthData, isLoading, refetchFollowerGrowth } = useProfileStats();
+  const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
 
+  // Refetch follower growth when time range changes
+  useEffect(() => {
+    refetchFollowerGrowth(subscriberTimeRange);
+  }, [subscriberTimeRange, refetchFollowerGrowth]);
+
+  // Mock data for subscriptions and purchases (будет заменено позже)
   const mockSubscriptions = [
     {
       authorId: "1",
@@ -189,16 +180,6 @@ const SocialOverview: FC = () => {
       totalPosts: 234,
       newPostsThisWeek: 5,
     },
-    {
-      authorId: "3",
-      authorName: "Tech Trader",
-      authorHandle: "@techtrader",
-      authorAvatar: "https://i.pravatar.cc/120?img=34",
-      subscribedAt: "2024-01-20",
-      price: 19,
-      totalPosts: 89,
-      newPostsThisWeek: 2,
-    },
   ];
 
   const mockPurchasedPosts = [
@@ -213,130 +194,7 @@ const SocialOverview: FC = () => {
       views: 5,
       thumbnail: "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=200&h=200&fit=crop",
     },
-    {
-      postId: "p2",
-      title: "Advanced Options Trading: Iron Condor Strategy Deep Dive",
-      authorName: "Market Maven",
-      authorHandle: "@marketmaven",
-      authorAvatar: "https://i.pravatar.cc/120?img=23",
-      purchasedAt: "2024-03-08",
-      price: 15,
-      views: 12,
-      thumbnail: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=200&h=200&fit=crop",
-    },
-    {
-      postId: "p3",
-      title: "AI Stocks: The Next Wave of Tech Dominance",
-      authorName: "Tech Trader",
-      authorHandle: "@techtrader",
-      authorAvatar: "https://i.pravatar.cc/120?img=34",
-      purchasedAt: "2024-03-05",
-      price: 12,
-      views: 8,
-    },
   ];
-
-  const mockActivity = [
-    { type: "follow" as const, user: "Maria_Crypto", action: "подписался на вас", time: "5 мин назад" },
-    { type: "like" as const, user: "TraderAlex", action: "лайкнул ваш пост о Bitcoin", time: "12 мин назад" },
-    { type: "comment" as const, user: "CryptoGuru", action: "прокомментировал ваш анализ", time: "1 час назад" },
-    { type: "follow" as const, user: "ETH_investor", action: "подписался на вас", time: "2 часа назад" },
-    { type: "like" as const, user: "DayTrader_Pro", action: "лайкнул ваш пост", time: "3 часа назад" },
-  ];
-
-  const mockTopPosts = [
-    {
-      id: "1",
-      title: "Bitcoin достиг новог�� максимума! Анализ текущей ��итуации",
-      likes: 342,
-      comments: 87,
-      views: 5420,
-      date: "15 марта",
-      thumbnail: "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=300&h=200&fit=crop",
-      category: "crypto" as const,
-    },
-    {
-      id: "2",
-      title: "5 правил успешного трейдинга в 2024 году",
-      likes: 289,
-      comments: 64,
-      views: 4850,
-      date: "14 марта",
-      thumbnail: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&h=200&fit=crop",
-      category: "trading" as const,
-    },
-    {
-      id: "3",
-      title: "Ethereum: что ждет нас в ближайшие месяцы?",
-      likes: 215,
-      comments: 52,
-      views: 3920,
-      date: "13 марта",
-      thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=300&h=200&fit=crop",
-      category: "analysis" as const,
-    },
-  ];
-
-  /* НЕ ДЛЯ MVP - Данные для отключенных виджетов */
-  /*
-  const socialUpdates = [
-    {
-      avatar: "https://api.builder.io/api/v1/image/assets/TEMP/7746a2e8ebde2c6e52ec623079f09df3e63924fe?width=88",
-      title: "Sophia Light",
-      subtitle: "Check out new ETH Analysis...",
-      timestamp: "5 мин назад",
-    },
-    {
-      avatar: "https://api.builder.io/api/v1/image/assets/TEMP/23996870cb880292839824f9010dd522308f5fac?width=88",
-      title: "Market Chat",
-      subtitle: "3 новых сообщения в группе",
-      timestamp: "12 мин назад",
-    },
-    {
-      avatar: "https://api.builder.io/api/v1/image/assets/TEMP/68682742732be9f94522a43dd137511874548bb4?width=88",
-      title: "Macro Outlook 2025",
-      subtitle: "17 новых сообщений",
-      timestamp: "1 час назад",
-    },
-  ];
-
-  const groupChats = [
-    {
-      image: "https://api.builder.io/api/v1/image/assets/TEMP/a41932045d11fb04b12ef9336587c545788a4897?width=88",
-      name: "Crypto Basics - Live Q&A",
-      subscribers: "72 подписчика",
-    },
-    {
-      image: "https://api.builder.io/api/v1/image/assets/TEMP/2fed6ad136bda82afad8c1217f85da48694cef42?width=88",
-      name: "Macro Outlook 2025",
-      subscribers: "2 369 подписчиков",
-    },
-    {
-      image: "https://api.builder.io/api/v1/image/assets/TEMP/5eb00142623d95405333abe65d6e36c1831036f7?width=88",
-      name: "Ask Jane: Portfolio Diversification",
-      subscribers: "86 подписчиков",
-    },
-    {
-      image: "https://api.builder.io/api/v1/image/assets/TEMP/128f58d068f62f85b2902e36565aaef59e190b49?width=88",
-      name: "Fed Policy & Inflation",
-      subscribers: "823 подписчика",
-    },
-    {
-      image: "https://api.builder.io/api/v1/image/assets/TEMP/193725c84dab4dcd05d7a90347c68161b6a82c94?width=88",
-      name: "ETH ETF Approval: What's Next?",
-      subscribers: "72 подписчика",
-    },
-  ];
-  */
-
-  const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
-
-  const followerGrowthData = {
-    week: [85, 90, 88, 92, 87, 95, 100],
-    month: [42, 58, 45, 72, 65, 88, 95, 78, 92, 85, 98, 100, 85, 90, 88, 92, 87, 95, 100, 75, 82, 78, 85, 80, 90, 88, 92, 87, 95, 100],
-  };
-
-  const followerGrowth = followerGrowthData[subscriberTimeRange];
 
   const engagementMetrics = [
     {
@@ -359,15 +217,49 @@ const SocialOverview: FC = () => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Convert follower growth data to percentages
+  const maxGrowth = Math.max(...(growthData?.map(d => d.count) || [1]));
+  const growthPercentages = growthData?.map(d => Math.round((d.count / maxGrowth) * 100)) || [];
+
   return (
     <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-8 md:gap-10">
+      {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
-        <StatCard label="Посты за месяц" value={mockStats.posts} change={mockStats.postsChange} isPositive />
-        <StatCard label="Лайки" value={mockStats.likes} change={mockStats.likesChange} isPositive />
-        <StatCard label="Комментарии" value={mockStats.comments} change={mockStats.commentsChange} isPositive />
-        <StatCard label="Подписчики" value={mockStats.followers} change={mockStats.followersChange} isPositive />
+        <StatCard 
+          label="Посты за месяц" 
+          value={stats?.posts_this_month || 0} 
+          change={stats?.posts_change ? `${stats.posts_change.toFixed(1)}%` : undefined}
+          isPositive={stats ? stats.posts_change >= 0 : true}
+        />
+        <StatCard 
+          label="Лайки" 
+          value={stats?.total_likes || 0} 
+          change={stats?.likes_change ? `${stats.likes_change.toFixed(1)}%` : undefined}
+          isPositive={stats ? stats.likes_change >= 0 : true}
+        />
+        <StatCard 
+          label="Комментарии" 
+          value={stats?.total_comments || 0} 
+          change={stats?.comments_change ? `${stats.comments_change.toFixed(1)}%` : undefined}
+          isPositive={stats ? stats.comments_change >= 0 : true}
+        />
+        <StatCard 
+          label="Подписчики" 
+          value={stats?.total_followers || 0} 
+          change={stats?.followers_change ? `${stats.followers_change.toFixed(1)}%` : undefined}
+          isPositive={stats ? stats.followers_change >= 0 : true}
+        />
       </div>
 
+      {/* Follower Growth Chart */}
       <SectionCard>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <h3 className={sectionTitleClass}>Рост подписчиков</h3>
@@ -399,142 +291,92 @@ const SocialOverview: FC = () => {
           </div>
         </div>
         <div className="relative mt-6 h-48 flex items-end gap-2">
-          {followerGrowth.map((height, index) => (
-            <div key={index} className="group flex flex-1 flex-col items-center gap-2">
-              <div className="relative w-full">
-                <div
-                  className="w-full rounded-t-lg bg-gradient-to-t from-[#A06AFF] to-[#482090] transition-all hover:opacity-80 cursor-pointer"
-                  style={{ height: `${height}%` }}
-                  title={`${height}%`}
-                />
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/90 border border-[#A06AFF] rounded px-2 py-1 text-xs font-bold text-white whitespace-nowrap z-10">
-                  {height}%
+          {growthPercentages.length > 0 ? (
+            growthPercentages.map((height, index) => (
+              <div key={index} className="group flex flex-1 flex-col items-center gap-2">
+                <div className="relative w-full">
+                  <div
+                    className="w-full rounded-t-lg bg-gradient-to-t from-[#A06AFF] to-[#482090] transition-all hover:opacity-80 cursor-pointer"
+                    style={{ height: `${height}%` }}
+                    title={`${growthData?.[index]?.count || 0} подписчиков`}
+                  />
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/90 border border-[#A06AFF] rounded px-2 py-1 text-xs font-bold text-white whitespace-nowrap z-10">
+                    {growthData?.[index]?.count || 0}
+                  </div>
                 </div>
+                <span className="text-xs text-[#B0B0B0]">{growthData?.[index]?.date || index + 1}</span>
               </div>
-              <span className="text-xs text-[#B0B0B0]">{subscriberTimeRange === "week" ? ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"][index] : index + 1}</span>
+            ))
+          ) : (
+            <div className="flex items-center justify-center w-full h-full text-gray-400">
+              Нет данных
             </div>
-          ))}
+          )}
         </div>
       </SectionCard>
 
+      {/* Activity and Top Posts */}
       <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
         <SectionCard>
           <h3 className={sectionTitleClass}>Последняя активность</h3>
           <div className="mt-4 flex flex-col gap-3">
-            {mockActivity.map((activity, index) => (
-              <ActivityItem key={`${activity.user}-${index}`} {...activity} />
-            ))}
+            {realActivity && realActivity.length > 0 ? (
+              realActivity.map((item, index) => (
+                <ActivityItem 
+                  key={`${item.username}-${index}`}
+                  type={item.type}
+                  user={item.user}
+                  action={item.action}
+                  time={formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: ru })}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                Нет активности
+              </div>
+            )}
           </div>
-          <button
-            type="button"
-            className="mt-5 w-full rounded-full border border-widget-border/80 bg-black/40 px-4 py-2 text-sm font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/35 hover:text-white"
-          >
-            Посмотреть все →
-          </button>
         </SectionCard>
 
         <SectionCard>
           <h3 className={sectionTitleClass}>Популярные посты</h3>
           <div className="mt-4 flex flex-col divide-y divide-[#181B22]">
-            {mockTopPosts.map((post) => {
-              const badge = getCategoryBadge(post.category);
-              return (
+            {realTopPosts && realTopPosts.length > 0 ? (
+              realTopPosts.map((post) => (
                 <article
                   key={post.id}
                   className="group flex items-center gap-4 py-4 transition-colors hover:bg-white/[0.02] first:pt-0"
                 >
-                  {post.thumbnail && (
-                    <img src={post.thumbnail} alt="" className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] object-cover" />
-                  )}
-                  {!post.thumbnail && <div className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] bg-[#0A0D12]" />}
+                  <div className="h-14 w-20 flex-shrink-0 rounded-xl border border-[#181B22] bg-[#0A0D12]" />
 
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="truncate text-sm font-bold text-white">{post.title}</h3>
-                      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: badge.bg }}>
-                        {badge.label}
-                      </span>
-                    </div>
+                    <h3 className="truncate text-sm font-bold text-white">
+                      {post.content?.substring(0, 60)}...
+                    </h3>
                     <div className="flex items-center gap-3 text-xs text-[#6C7280]">
-                      <span>{post.date}</span>
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        <span>{formatNumber(post.views)}</span>
-                      </div>
+                      <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ru })}</span>
                       <div className="flex items-center gap-1">
                         <Heart className="h-3 w-3" />
-                        <span>{formatNumber(post.likes)}</span>
+                        <span>{formatNumber(post.likes_count)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MessageCircle className="h-3 w-3" />
-                        <span>{formatNumber(post.comments)}</span>
+                        <span>{formatNumber(post.replies_count)}</span>
                       </div>
                     </div>
                   </div>
                 </article>
-              );
-            })}
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                Нет постов
+              </div>
+            )}
           </div>
         </SectionCard>
       </div>
 
-      {/* ============================================
-          НЕ ДЛЯ MVP ВЕРСИИ
-          Следующие виджеты отключены для MVP:
-          - Социальные уведомления
-          - Группы, которые вы отслеживаете
-          ============================================
-      <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
-        <SectionCard>
-          <div className="flex items-center justify-between">
-            <h3 className={sectionTitleClass}>Социальные уведомления</h3>
-            <span className="text-xs font-semibold text-[#A06AFF]">19 новых взаимодействий</span>
-          </div>
-          <div className="mt-4 flex flex-col gap-3">
-            {socialUpdates.map((update, index) => (
-              <div key={`${update.title}-${index}`} className={listItemClass}>
-                <img src={update.avatar} alt={update.title} className="h-11 w-11 rounded-full object-cover" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-bold text-white">{update.title}</span>
-                    <span className="text-xs font-semibold text-[#B0B0B0]">{update.timestamp}</span>
-                  </div>
-                  <span className="text-sm text-[#B0B0B0]">{update.subtitle}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            className="mt-5 w-full rounded-full border border-widget-border/80 bg-black/40 px-4 py-2 text-sm font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/35 hover:text-white"
-          >
-            Открыть сообщения →
-          </button>
-        </SectionCard>
-
-        <SectionCard>
-          <h3 className={sectionTitleClass}>Гру��пы, которые вы отслеживаете</h3>
-          <div className="mt-4 flex flex-col gap-3">
-            {groupChats.map((chat, index) => (
-              <div key={`${chat.name}-${index}`} className={listItemClass}>
-                <img src={chat.image} alt={chat.name} className="h-11 w-11 rounded-full object-cover" />
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold text-primary">{chat.name}</span>
-                  <span className="text-xs font-semibold text-[#B0B0B0]">{chat.subscribers}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            className="mt-5 w-full rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
-          >
-            Посмотреть все группы →
-          </button>
-        </SectionCard>
-      </div>
-      ============================================ */}
-
+      {/* Subscriptions and Purchases */}
       <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
         <div className="h-full">
           <SubscriptionsWidget subscriptions={mockSubscriptions} />
@@ -544,6 +386,7 @@ const SocialOverview: FC = () => {
         </div>
       </div>
 
+      {/* Engagement Metrics */}
       <SectionCard>
         <h3 className={sectionTitleClass}>Метрики вовлеченности</h3>
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">

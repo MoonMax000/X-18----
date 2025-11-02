@@ -162,6 +162,7 @@ func main() {
 	accountHandler := api.NewAccountHandler(db.DB, redisCache)
 	protectedOpsHandler := api.NewProtectedOperationsHandler(db, redisCache, cfg)
 	referralHandler := api.NewReferralHandler(db)
+	profileStatsHandler := api.NewProfileStatsHandler(db)
 
 	// Stripe webhook handler
 	stripeWebhookSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
@@ -252,6 +253,12 @@ func main() {
 		middleware.JWTMiddleware(cfg),
 		middleware.TOTPRequired(securityService),
 		protectedOpsHandler.ChangePhone)
+
+	// Profile stats routes (protected)
+	users.Get("/me/stats", middleware.JWTMiddleware(cfg), profileStatsHandler.GetUserStats)
+	users.Get("/me/activity", middleware.JWTMiddleware(cfg), profileStatsHandler.GetUserActivity)
+	users.Get("/me/top-posts", middleware.JWTMiddleware(cfg), profileStatsHandler.GetTopPosts)
+	users.Get("/me/follower-growth", middleware.JWTMiddleware(cfg), profileStatsHandler.GetFollowerGrowth)
 
 	// Posts routes
 	posts := apiGroup.Group("/posts")
