@@ -612,8 +612,11 @@ export interface User {
   posts_count: number;
   private_account: boolean;
   role?: string;
+  first_name?: string;
+  last_name?: string;
   location?: string;
   website?: string;
+  sectors?: string; // JSON string containing array of sector IDs
   created_at: string;
   updated_at?: string;
 }

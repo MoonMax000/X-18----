@@ -114,23 +114,50 @@ const ProfileOverview: FC = () => {
   const saveTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
   const sectorDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Sync with Redux store when currentUser changes
+  // Load user data from API on mount
   useEffect(() => {
-    setFirstName(currentUser.first_name || "");
-    setLastName(currentUser.last_name || "");
-    setUsername(currentUser.username);
-    setOriginalUsername(currentUser.username);
-    setBio(currentUser.bio);
-    setLocation(currentUser.location || "");
-    setWebsite(currentUser.website || "");
-    if (currentUser.role) setRole(currentUser.role);
-  }, [currentUser]);
-
-  // Fetch username change status
-  useEffect(() => {
-    const fetchUsernameStatus = async () => {
+    const loadUserData = async () => {
       try {
         const response = await customBackendAPI.getMe();
+        
+        // Initialize all fields from API
+        setFirstName(response.first_name || "");
+        setLastName(response.last_name || "");
+        setUsername(response.username);
+        setOriginalUsername(response.username);
+        setLocation(response.location || "");
+        setWebsite(response.website || "");
+        setRole(response.role || "");
+        setBio(response.bio || "");
+        
+        // Parse sectors from JSON string
+        if (response.sectors) {
+          try {
+            const sectorsData = JSON.parse(response.sectors);
+            setSelectedSectors(Array.isArray(sectorsData) ? sectorsData : []);
+          } catch (e) {
+            console.warn("Failed to parse sectors:", e);
+            setSelectedSectors([]);
+          }
+        } else {
+          setSelectedSectors([]);
+        }
+        
+        // Update Redux store with real data
+        dispatch(updateProfile({
+          first_name: response.first_name,
+          last_name: response.last_name,
+          name: response.first_name && response.last_name 
+            ? `${response.first_name} ${response.last_name}`.trim()
+            : response.display_name,
+          username: response.username,
+          bio: response.bio,
+          role: response.role,
+          location: response.location,
+          website: response.website,
+        }));
+        
+        // Username change tracking
         const changesCount = (response as any).username_changes_count || 0;
         const lastChangeAt = (response as any).last_username_change_at;
 
@@ -146,12 +173,12 @@ const ProfileOverview: FC = () => {
           }
         }
       } catch (error) {
-        console.error("Failed to fetch username status:", error);
+        console.error("Failed to load user data:", error);
       }
     };
 
-    fetchUsernameStatus();
-  }, []);
+    loadUserData();
+  }, []); // Load once on mount
 
   // Close sector dropdown when clicking outside
   useEffect(() => {
