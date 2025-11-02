@@ -16,6 +16,7 @@ const KycSettings = lazy(() => import("@/components/KycSettings/KycSettings"));
 const ApiSettings = lazy(() => import("@/components/ApiSettings/ApiSettings"));
 const LiveStreamingSettings = lazy(() => import("@/components/LiveStreamingSettings/LiveStreamingSettings"));
 const ProfileOverview = lazy(() => import("@/components/ProfileOverview/ProfileOverview"));
+const ProfileSecuritySettings = lazy(() => import("@/components/socialProfile/ProfileSecuritySettings"));
 const SocialOverview = lazy(() => import("@/components/SocialOverview/SocialOverview"));
 const MyPosts = lazy(() => import("@/components/MyPosts/MyPosts"));
 const Subscriptions = lazy(() => import("@/components/Subscriptions/Subscriptions"));
@@ -1325,6 +1326,7 @@ const ProfileNew: FC = () => {
           {activeTab === "social" && activeSocialSubTab === "monetization" && <Monetization />}
 
           {activeTab === "profile" && activeProfileSubTab === "profile" && <ProfileOverview />}
+          {activeTab === "profile" && activeProfileSubTab === "security" && <ProfileSecuritySettings />}
           {activeTab === "profile" && activeProfileSubTab === "notifications" && <NotificationsSettings />}
           {activeTab === "profile" && activeProfileSubTab === "billing" && <BillingSettings />}
           {activeTab === "profile" && activeProfileSubTab === "referrals" && <ReferralsSettings />}
