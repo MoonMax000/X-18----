@@ -190,7 +190,7 @@ export default function FeedTest() {
             <h3 className="text-lg font-semibold">Failed to load feed</h3>
             <p className="text-sm text-muted-foreground mt-2">{error}</p>
             <p className="text-xs text-muted-foreground mt-4">
-              Make sure GoToSocial is running at {import.meta.env.VITE_API_URL || '/api'}
+              Make sure custom-backend is running at {import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}
             </p>
           </div>
           <button
