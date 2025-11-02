@@ -93,19 +93,32 @@ jobs:
       run: pnpm install
 
     - name: Build frontend
-      env:
-        VITE_API_URL: https://api.tyriantrade.com
-        VITE_APP_URL: https://social.tyriantrade.com
-        VITE_APP_ENV: production
       run: |
+        echo "📦 Copying production environment file..."
         cp client/.env.aws.production .env.production
+        cat .env.production
+        echo ""
+        echo "🔨 Building frontend..."
         pnpm run build:client
 
     - name: Verify build output
       run: |
-        echo "Checking dist/spa directory..."
+        echo "📁 Checking build output structure..."
+        echo "=== Root dist/ directory ==="
         ls -la dist/
-        ls -la dist/spa/ || echo "dist/spa not found!"
+        echo ""
+        echo "=== dist/spa/ directory ==="
+        if [ -d "dist/spa" ]; then
+          ls -la dist/spa/
+          echo ""
+          echo "✅ dist/spa exists with $(find dist/spa -type f | wc -l) files"
+        else
+          echo "❌ dist/spa not found!"
+          echo ""
+          echo "=== Contents of dist/ ==="
+          find dist -type f
+          exit 1
+        fi
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
