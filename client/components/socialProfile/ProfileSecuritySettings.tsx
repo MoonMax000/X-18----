@@ -1011,30 +1011,37 @@ export default function ProfileSecuritySettings() {
   return (
     <div className="min-h-[600px]">
       {/* Tabs Navigation */}
-      <div className="flex gap-2 mb-6 border-b border-widget-border overflow-x-auto">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap",
-                activeTab === tab.id
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-400 hover:text-white"
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className="flex justify-center mb-6">
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 md:py-2 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
+                  activeTab === tab.id
+                    ? "bg-gradient-to-r from-primary to-[#482090] text-white backdrop-blur-[58.33px]"
+                    : "border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-webGray hover:text-white backdrop-blur-[58.33px]"
+                )}
+              >
+                <Icon className={cn(
+                  "w-3.5 h-3.5 md:w-4 md:h-4",
+                  activeTab === tab.id ? "text-white" : "text-webGray"
+                )} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Tab Content */}
-      <div className="max-w-2xl">
-        {renderContent()}
+      <div className="flex justify-center">
+        <div className="w-full max-w-2xl">
+          {renderContent()}
+        </div>
       </div>
 
       {/* TOTP Setup Modal */}

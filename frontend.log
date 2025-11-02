@@ -17,3 +17,4 @@ warn - If this is content and not a class, replace it with `duration-&lsqb;600ms
 5:23:03 PM [vite] (client) hmr update /client/global.css, /client/components/socialProfile/ProfileSecuritySettings.tsx
 5:24:22 PM [vite] (client) hmr update /client/global.css, /client/components/socialProfile/ProfileSecuritySettings.tsx
 5:39:52 PM [vite] (client) hmr update /client/global.css, /client/components/socialProfile/ProfileSecuritySettings.tsx
+5:44:57 PM [vite] (client) hmr update /client/global.css, /client/components/socialProfile/ProfileSecuritySettings.tsx
