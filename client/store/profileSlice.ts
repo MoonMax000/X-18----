@@ -4,6 +4,8 @@ export interface ProfileData {
   name: string;
   username: string;
   bio: string;
+  first_name?: string;
+  last_name?: string;
   role?: string;
   location?: string;
   website?: string;
