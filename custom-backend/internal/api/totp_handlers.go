@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"custom-backend/internal/cache"
 	"custom-backend/internal/models"
 	"custom-backend/internal/services"
 	"custom-backend/pkg/utils"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -49,11 +50,17 @@ func NewTOTPHandler(db *gorm.DB, cache *cache.Cache) *TOTPHandler {
 //	}
 func (h *TOTPHandler) GenerateTOTPSecret(c *fiber.Ctx) error {
 	// Get user from context (set by auth middleware)
-	userIDStr := c.Locals("userID").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
@@ -120,11 +127,17 @@ func (h *TOTPHandler) GenerateTOTPSecret(c *fiber.Ctx) error {
 //	}
 func (h *TOTPHandler) VerifyAndEnableTOTP(c *fiber.Ctx) error {
 	// Get user from context
-	userIDStr := c.Locals("userID").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
@@ -205,11 +218,17 @@ func (h *TOTPHandler) VerifyAndEnableTOTP(c *fiber.Ctx) error {
 //	}
 func (h *TOTPHandler) DisableTOTP(c *fiber.Ctx) error {
 	// Get user from context
-	userIDStr := c.Locals("userID").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
@@ -272,11 +291,17 @@ func (h *TOTPHandler) DisableTOTP(c *fiber.Ctx) error {
 //	}
 func (h *TOTPHandler) VerifyTOTP(c *fiber.Ctx) error {
 	// Get user from context
-	userIDStr := c.Locals("userID").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
@@ -321,11 +346,17 @@ func (h *TOTPHandler) VerifyTOTP(c *fiber.Ctx) error {
 //	}
 func (h *TOTPHandler) GetTOTPStatus(c *fiber.Ctx) error {
 	// Get user from context
-	userIDStr := c.Locals("userID").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
@@ -364,11 +395,17 @@ func (h *TOTPHandler) GetTOTPStatus(c *fiber.Ctx) error {
 //	}
 func (h *TOTPHandler) RegenerateBackupCodes(c *fiber.Ctx) error {
 	// Get user from context
-	userIDStr := c.Locals("userID").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
