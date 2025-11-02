@@ -166,6 +166,8 @@ export default function ProfileSecuritySettings() {
   ];
 
   const getDeviceIcon = (deviceType: string) => {
+    if (!deviceType) return <Monitor className="w-5 h-5" />;
+    
     switch (deviceType.toLowerCase()) {
       case 'mobile':
         return <Smartphone className="w-5 h-5" />;
