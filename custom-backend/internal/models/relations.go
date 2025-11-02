@@ -180,6 +180,9 @@ type Session struct {
 	UserAgent    string     `gorm:"size:500" json:"user_agent,omitempty"` // Full user agent string
 	LastActiveAt *time.Time `json:"last_active_at,omitempty"`             // Last activity timestamp
 
+	// Computed field (not stored in DB)
+	IsCurrent bool `gorm:"-" json:"is_current"`
+
 	User User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 }
 

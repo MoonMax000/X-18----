@@ -565,14 +565,33 @@ export default function ProfileSecuritySettings() {
           <div className="flex w-full max-w-[1059px] flex-col gap-6">
             <section className="w-full">
               <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
-                <div className="flex items-center gap-3">
-                  <Smartphone className="w-6 h-6 text-primary" />
-                  <div>
-                    <h3 className="text-xl font-bold text-white sm:text-2xl">User Sessions</h3>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Active devices on your account. End session if unrecognized
-                    </p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Smartphone className="w-6 h-6 text-primary" />
+                    <div>
+                      <h3 className="text-xl font-bold text-white sm:text-2xl">User Sessions</h3>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Active devices on your account. End session if unrecognized
+                      </p>
+                    </div>
                   </div>
+                  {sessions && sessions.length > 1 && (
+                    <button
+                      onClick={() => {
+                        if (confirm('Завершить все сессии кроме текущей?')) {
+                          sessions.forEach(session => {
+                            if (!session.is_current) {
+                              revokeSession(session.id);
+                            }
+                          });
+                        }
+                      }}
+                      className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-red-500/20 px-4 text-xs font-bold text-red-400 backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm border border-red-500/30 whitespace-nowrap"
+                    >
+                      <X className="w-4 h-4" />
+                      Завершить все остальные
+                    </button>
+                  )}
                 </div>
 
                 {sessionsLoading ? (

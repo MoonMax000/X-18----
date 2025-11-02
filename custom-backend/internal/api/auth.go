@@ -782,6 +782,9 @@ func (h *AuthHandler) GetSessions(c *fiber.Ctx) error {
 		})
 	}
 
+	// Get session ID from context (set by JWT middleware)
+	currentSessionID := c.Locals("sessionID")
+
 	// Get all active sessions
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
 	sessions, err := sessionService.GetActiveSessions(userID.(uuid.UUID))
@@ -789,6 +792,13 @@ func (h *AuthHandler) GetSessions(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to fetch sessions",
 		})
+	}
+
+	// Mark current session
+	for i := range sessions {
+		if currentSessionID != nil {
+			sessions[i].IsCurrent = sessions[i].ID.String() == currentSessionID.(string)
+		}
 	}
 
 	return c.JSON(fiber.Map{
