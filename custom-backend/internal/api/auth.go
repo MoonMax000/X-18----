@@ -126,6 +126,20 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		})
 	}
 
+	// Generate unique referral code for the new user
+	referralCode := models.ReferralCode{
+		ID:        uuid.New(),
+		UserID:    user.ID,
+		Code:      utils.GenerateReferralCode(),
+		TotalUses: 0,
+		IsActive:  true,
+	}
+
+	if err := h.db.DB.Create(&referralCode).Error; err != nil {
+		log.Printf("Failed to create referral code: %v", err)
+		// Don't fail registration if referral code creation fails
+	}
+
 	// Generate email verification code
 	securityService := services.NewSecurityService(h.db.DB, h.cache)
 	verificationCode, err := securityService.GenerateVerificationCode(
