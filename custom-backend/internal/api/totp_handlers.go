@@ -91,7 +91,7 @@ func (h *TOTPHandler) GenerateTOTPSecret(c *fiber.Ctx) error {
 	// Format secret for display
 	formattedSecret := utils.FormatTOTPSecret(secret)
 
-	// Store the secret and backup codes temporarily in cache
+	// Store the secret and backup codes temporarily in cache (30 minutes)
 	// They will be permanently saved when user verifies and enables TOTP
 	cacheKey := fmt.Sprintf("totp_setup:%s", userID.String())
 	setupData := map[string]interface{}{
@@ -99,7 +99,17 @@ func (h *TOTPHandler) GenerateTOTPSecret(c *fiber.Ctx) error {
 		"backup_codes": backupCodes,
 	}
 	setupDataJSON, _ := json.Marshal(setupData)
-	h.cache.Set(cacheKey, string(setupDataJSON), 15*60) // 15 minutes
+
+	// Store in cache with 30 minute expiry
+	if h.cache != nil {
+		h.cache.Set(cacheKey, string(setupDataJSON), 30*60)
+	}
+
+	// FALLBACK: Also store in database temporarily (will be cleared after enable)
+	// This ensures setup works even if Redis fails
+	h.db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"totp_secret": secret, // Temporary storage - will be encrypted on enable
+	})
 
 	return c.JSON(fiber.Map{
 		"secret":           secret,
@@ -157,24 +167,41 @@ func (h *TOTPHandler) VerifyAndEnableTOTP(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get temporary secret from cache
+	// Try to get temporary secret from cache first
+	var secret string
 	cacheKey := fmt.Sprintf("totp_setup:%s", userID.String())
-	setupDataJSON, exists := h.cache.Get(cacheKey)
-	if !exists {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "No TOTP setup found. Please generate a new secret first.",
-		})
+
+	if h.cache != nil {
+		if setupDataJSON, exists := h.cache.Get(cacheKey); exists {
+			// Parse JSON data from cache
+			var setupData map[string]interface{}
+			if err := json.Unmarshal([]byte(setupDataJSON), &setupData); err == nil {
+				if sec, ok := setupData["secret"].(string); ok {
+					secret = sec
+				}
+			}
+		}
 	}
 
-	// Parse JSON data
-	var setupData map[string]interface{}
-	if err := json.Unmarshal([]byte(setupDataJSON), &setupData); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to parse setup data",
-		})
-	}
+	// FALLBACK: If cache is empty or failed, try getting from database
+	if secret == "" {
+		var user models.User
+		if err := h.db.First(&user, "id = ?", userID).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "User not found",
+			})
+		}
 
-	secret := setupData["secret"].(string)
+		// Check if there's a temporary secret in DB (from generate step)
+		if user.TOTPSecret == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "No TOTP setup found. Please generate a new secret first.",
+			})
+		}
+
+		// Use the unencrypted secret from DB (it will be encrypted when we call EnableTOTP)
+		secret = user.TOTPSecret
+	}
 
 	// Verify the TOTP code
 	if !utils.ValidateTOTPCode(req.Code, secret) {
