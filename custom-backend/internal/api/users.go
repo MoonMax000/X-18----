@@ -3,12 +3,13 @@ package api
 import (
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"custom-backend/internal/cache"
 	"custom-backend/internal/database"
 	"custom-backend/internal/models"
 	"custom-backend/pkg/middleware"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -102,6 +103,7 @@ func (h *UsersHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 
 	type UpdateRequest struct {
+		Username          *string  `json:"username"`
 		FirstName         *string  `json:"first_name"`
 		LastName          *string  `json:"last_name"`
 		DisplayName       *string  `json:"display_name"`
@@ -132,8 +134,49 @@ func (h *UsersHandler) UpdateProfile(c *fiber.Ctx) error {
 		})
 	}
 
+	// Check username change restrictions (Twitter-like: 3 free changes, then once per week)
+	if req.Username != nil && *req.Username != user.Username {
+		// Check if username is already taken
+		var existingUser models.User
+		if err := h.db.DB.Where("username = ? AND id != ?", *req.Username, userID).First(&existingUser).Error; err == nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Username already taken",
+			})
+		}
+
+		// Check change limits
+		if user.UsernameChangesCount >= 3 {
+			// After 3 changes, only allow once per week
+			if user.LastUsernameChangeAt != nil {
+				weekAgo := time.Now().Add(-7 * 24 * time.Hour)
+				if user.LastUsernameChangeAt.After(weekAgo) {
+					// Calculate hours until next change allowed
+					nextChangeTime := user.LastUsernameChangeAt.Add(7 * 24 * time.Hour)
+					hoursLeft := int(time.Until(nextChangeTime).Hours())
+					daysLeft := hoursLeft / 24
+					hoursLeft = hoursLeft % 24
+
+					return c.Status(400).JSON(fiber.Map{
+						"error": fiber.Map{
+							"message":        "Username can only be changed once per week after 3 changes",
+							"days_left":      daysLeft,
+							"hours_left":     hoursLeft,
+							"next_change_at": nextChangeTime.Format(time.RFC3339),
+						},
+					})
+				}
+			}
+		}
+	}
+
 	// Update fields
 	updates := make(map[string]interface{})
+	if req.Username != nil && *req.Username != user.Username {
+		updates["username"] = *req.Username
+		updates["username_changes_count"] = user.UsernameChangesCount + 1
+		now := time.Now()
+		updates["last_username_change_at"] = &now
+	}
 	if req.FirstName != nil {
 		updates["first_name"] = *req.FirstName
 	}

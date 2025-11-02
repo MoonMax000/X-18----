@@ -1,9 +1,10 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
 import { updateProfile } from "@/store/profileSlice";
 import type { RootState } from "@/store/store";
 import { customAuth } from "@/services/auth/custom-backend-auth";
+import { customBackendAPI } from "@/services/api/custom-backend";
 
 const SECTORS = [
   { id: "stock", label: "Stock Market" },
@@ -30,11 +31,11 @@ const ProfileOverview: FC = () => {
   const currentUser = useSelector((state: RootState) => state.profile.currentUser);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveError, setSaveError] = useState<string>('');
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [displayName, setDisplayName] = useState(currentUser.name);
   const [username, setUsername] = useState(currentUser.username);
   const [location, setLocation] = useState(currentUser.location || "");
   const [website, setWebsite] = useState(currentUser.website || "");
@@ -45,102 +46,187 @@ const ProfileOverview: FC = () => {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
   const [usernameVerified] = useState(true);
+  const [usernameChangesLeft, setUsernameChangesLeft] = useState<number | null>(null);
+  const [nextUsernameChangeDate, setNextUsernameChangeDate] = useState<string | null>(null);
+  const [originalUsername, setOriginalUsername] = useState(currentUser.username);
+  
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sectorDropdownRef = useRef<HTMLDivElement>(null);
 
   // Sync with Redux store when currentUser changes
   useEffect(() => {
-    setDisplayName(currentUser.name);
     setUsername(currentUser.username);
+    setOriginalUsername(currentUser.username);
     setBio(currentUser.bio);
     setLocation(currentUser.location || "");
     setWebsite(currentUser.website || "");
     if (currentUser.role) setRole(currentUser.role);
   }, [currentUser]);
 
-  // Auto-save to Redux (debounced)
+  // Fetch username change status
   useEffect(() => {
-    const timer = setTimeout(() => {
-      dispatch(updateProfile({
-        name: displayName,
-        username,
-        bio,
-        role,
-        location: location || undefined,
-        website: website || undefined,
-      }));
-    }, 800);
+    const fetchUsernameStatus = async () => {
+      try {
+        const response = await customBackendAPI.getMe();
+        const changesCount = (response as any).username_changes_count || 0;
+        const lastChangeAt = (response as any).last_username_change_at;
+        
+        if (changesCount < 3) {
+          setUsernameChangesLeft(3 - changesCount);
+          setNextUsernameChangeDate(null);
+        } else {
+          setUsernameChangesLeft(0);
+          if (lastChangeAt) {
+            const lastChange = new Date(lastChangeAt);
+            const nextChange = new Date(lastChange.getTime() + 7 * 24 * 60 * 60 * 1000);
+            setNextUsernameChangeDate(nextChange.toISOString());
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch username status:", error);
+      }
+    };
+    
+    fetchUsernameStatus();
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [displayName, username, bio, role, location, website, dispatch]);
+  // Close sector dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sectorDropdownRef.current && !sectorDropdownRef.current.contains(event.target as Node)) {
+        setIsSectorDropdownOpen(false);
+      }
+    };
+    
+    if (isSectorDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSectorDropdownOpen]);
 
-  const handleReset = () => {
-    setFirstName("");
-    setLastName("");
-    setDisplayName("");
-    setLocation("");
-    setWebsite("");
-    setRole("");
-    setSelectedSectors([]);
-    setBio("");
-  };
-
-  const handleSave = async () => {
+  // Auto-save function
+  const autoSave = async () => {
     try {
-      setIsSaving(true);
+      setSaveStatus('saving');
+      setSaveError('');
       
-      // Prepare update data
+      // Prepare update data - only send fields that have values
       const updateData: any = {};
       
-      if (firstName) updateData.first_name = firstName;
-      if (lastName) updateData.last_name = lastName;
-      if (displayName) updateData.display_name = displayName;
-      if (bio) updateData.bio = bio;
-      if (location) updateData.location = location;
-      if (website) updateData.website = website;
+      // Include username if it changed
+      if (username?.trim() && username !== originalUsername) {
+        updateData.username = username.trim();
+      }
+      if (firstName?.trim()) updateData.first_name = firstName.trim();
+      if (lastName?.trim()) updateData.last_name = lastName.trim();
+      if (bio?.trim()) updateData.bio = bio.trim();
+      if (location?.trim()) updateData.location = location.trim();
+      if (website?.trim()) {
+        // Auto-add https:// if no protocol specified
+        let url = website.trim();
+        if (!url.match(/^https?:\/\//i)) {
+          url = `https://${url}`;
+        }
+        updateData.website = url;
+        setWebsite(url); // Update local state with formatted URL
+      }
       if (role) updateData.role = role;
       if (selectedSectors.length > 0) {
         updateData.sectors = JSON.stringify(selectedSectors);
       }
       
-      // Send to backend
-      const token = customAuth.getAccessToken();
-      if (!token) {
-        throw new Error('Not authenticated');
+      // Only save if there's something to update
+      if (Object.keys(updateData).length === 0) {
+        setSaveStatus('idle');
+        return;
       }
       
-      const response = await fetch('http://localhost:8080/api/users/me', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
+      // Send to backend using API service
+      const response = await customBackendAPI.updateProfile(updateData);
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update profile');
-      }
+      // Update Redux store with response - auto-generate display name from first+last
+      const displayName = (response as any).first_name && (response as any).last_name 
+        ? `${(response as any).first_name} ${(response as any).last_name}`.trim()
+        : response.display_name;
       
-      const updatedUser = await response.json();
-      
-      // Update Redux store
       dispatch(updateProfile({
-        name: updatedUser.display_name,
-        username: updatedUser.username,
-        bio: updatedUser.bio,
-        role: updatedUser.role,
-        location: updatedUser.location || undefined,
-        website: updatedUser.website || undefined,
+        name: displayName,
+        username: response.username,
+        bio: response.bio,
+        role: response.role,
+        location: response.location || undefined,
+        website: response.website || undefined,
       }));
       
-      alert("Profile updated successfully!");
+      // Update username tracking if username was changed
+      if (username !== originalUsername) {
+        setOriginalUsername(response.username);
+        const changesCount = (response as any).username_changes_count || 0;
+        if (changesCount < 3) {
+          setUsernameChangesLeft(3 - changesCount);
+          setNextUsernameChangeDate(null);
+        } else {
+          setUsernameChangesLeft(0);
+          const lastChangeAt = (response as any).last_username_change_at;
+          if (lastChangeAt) {
+            const lastChange = new Date(lastChangeAt);
+            const nextChange = new Date(lastChange.getTime() + 7 * 24 * 60 * 60 * 1000);
+            setNextUsernameChangeDate(nextChange.toISOString());
+          }
+        }
+      }
+      
+      setSaveStatus('saved');
+      
+      // Reset to idle after 2 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 2000);
     } catch (error: any) {
-      console.error("Failed to save profile:", error);
-      alert(`Failed to save profile: ${error?.message || 'Please try again.'}`);
-    } finally {
-      setIsSaving(false);
+      console.error("Failed to auto-save profile:", error);
+      setSaveStatus('error');
+      
+      // Handle username change limit error
+      if (error?.response?.data?.error && typeof error.response.data.error === 'object') {
+        const errorData = error.response.data.error;
+        if (errorData.message && errorData.days_left !== undefined) {
+          setSaveError(`${errorData.message}. Next change in ${errorData.days_left} days and ${errorData.hours_left} hours.`);
+        } else {
+          setSaveError(errorData.message || 'Failed to save changes');
+        }
+      } else {
+        setSaveError(error?.response?.data?.error || error?.message || 'Failed to save changes');
+      }
+      
+      // Reset error after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setSaveError('');
+      }, 3000);
     }
   };
+
+  // Auto-save when fields change (debounced)
+  useEffect(() => {
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Set new timeout for auto-save (1.5 seconds after last change)
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave();
+    }, 1500);
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [firstName, lastName, bio, location, website, role, selectedSectors]);
 
   const toggleSector = (sectorId: string) => {
     setSelectedSectors((prev) =>
@@ -148,6 +234,8 @@ const ProfileOverview: FC = () => {
         ? prev.filter((s) => s !== sectorId)
         : [...prev, sectorId]
     );
+    // Auto-close dropdown after selection
+    setIsSectorDropdownOpen(false);
   };
 
   if (isLoading) {
@@ -197,54 +285,47 @@ const ProfileOverview: FC = () => {
         </div>
       </div>
 
-      {/* Display Name & Username */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex flex-col gap-2 flex-1">
-          <label
-            className="text-xs font-bold text-[#B0B0B0] uppercase"
-            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-          >
-            Display name
-          </label>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
-            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-            placeholder="Enter display name"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2 flex-1">
+      {/* Username */}
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-center">
           <label
             className="text-xs font-bold text-[#B0B0B0] uppercase"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
           >
             User name
           </label>
-          <div className="flex px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)]">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="flex-1 bg-transparent text-[15px] font-bold text-white focus:outline-none"
-              style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-              placeholder="username"
-              disabled
-            />
-            {usernameVerified && (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M4.1665 12.083C4.1665 12.083 5.4165 12.083 7.08317 14.9997C7.08317 14.9997 11.7155 7.36078 15.8332 5.83301"
-                  stroke="#2EBD85"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </div>
+          {usernameChangesLeft !== null && (
+            <span className="text-xs text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+              {usernameChangesLeft > 0 ? (
+                `${usernameChangesLeft} free ${usernameChangesLeft === 1 ? 'change' : 'changes'} left`
+              ) : nextUsernameChangeDate ? (
+                `Next change: ${new Date(nextUsernameChangeDate).toLocaleDateString()}`
+              ) : (
+                'Limited to 1 change per week'
+              )}
+            </span>
+          )}
+        </div>
+        <div className="flex px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)]">
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="flex-1 bg-transparent text-[15px] font-bold text-white focus:outline-none"
+            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+            placeholder="username"
+          />
+          {usernameVerified && (
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M4.1665 12.083C4.1665 12.083 5.4165 12.083 7.08317 14.9997C7.08317 14.9997 11.7155 7.36078 15.8332 5.83301"
+                stroke="#2EBD85"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </div>
       </div>
 
@@ -280,7 +361,7 @@ const ProfileOverview: FC = () => {
             onChange={(e) => setWebsite(e.target.value)}
             className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
             style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-            placeholder="https://"
+            placeholder="example.com"
           />
         </div>
       </div>
@@ -348,7 +429,7 @@ const ProfileOverview: FC = () => {
           >
             Sector
           </label>
-          <div className="relative">
+          <div className="relative" ref={sectorDropdownRef}>
             <button
               onClick={() => setIsSectorDropdownOpen(!isSectorDropdownOpen)}
               className="flex w-full px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset"
@@ -454,36 +535,45 @@ const ProfileOverview: FC = () => {
         />
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-6">
-        <button
-          onClick={handleReset}
-          disabled={isSaving}
-          className="group relative flex justify-center items-center gap-2 px-6 py-3 min-w-[180px] overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#E6E6E6]/20 via-[#E6E6E6]/5 to-transparent text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/20 hover:via-[#A06AFF]/10 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          <span
-            className="relative z-10 text-[15px] font-bold text-white text-center"
-            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-          >
-            Reset
-          </span>
-        </button>
-
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="group relative flex justify-center items-center gap-2 px-6 py-3 min-w-[180px] overflow-hidden rounded-full border border-[#525252] bg-gradient-to-r from-[#A06AFF]/20 via-[#A06AFF]/10 to-transparent text-sm font-medium transition-all duration-300 hover:border-[#A06AFF] hover:from-[#A06AFF]/30 hover:via-[#A06AFF]/15 hover:to-transparent hover:shadow-lg hover:shadow-[#A06AFF]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-inset disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          <span
-            className="relative z-10 text-[15px] font-bold text-white text-center"
-            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </span>
-        </button>
-      </div>
+      {/* Save Status Indicator */}
+      {saveStatus !== 'idle' && (
+        <div className="flex items-center gap-2 text-sm">
+          {saveStatus === 'saving' && (
+            <>
+              <div className="w-4 h-4 border-2 border-[#A06AFF] border-t-transparent rounded-full animate-spin" />
+              <span className="text-[#B0B0B0] font-medium">Saving changes...</span>
+            </>
+          )}
+          {saveStatus === 'saved' && (
+            <>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M4.1665 12.083C4.1665 12.083 5.4165 12.083 7.08317 14.9997C7.08317 14.9997 11.7155 7.36078 15.8332 5.83301"
+                  stroke="#2EBD85"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-[#2EBD85] font-medium">Changes saved</span>
+            </>
+          )}
+          {saveStatus === 'error' && (
+            <>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 6.66699V10.0003M10 13.3337H10.0083M18.3333 10.0003C18.3333 14.6027 14.6024 18.3337 10 18.3337C5.39763 18.3337 1.66667 14.6027 1.66667 10.0003C1.66667 5.39795 5.39763 1.66699 10 1.66699C14.6024 1.66699 18.3333 5.39795 18.3333 10.0003Z"
+                  stroke="#EF4444"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-[#EF4444] font-medium">{saveError || 'Failed to save'}</span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

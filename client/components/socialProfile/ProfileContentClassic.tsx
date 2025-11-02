@@ -384,9 +384,11 @@ export default function ProfileContentClassic({
                   </svg>
                   <a
                     href={profile.website.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-[15px] font-normal leading-5 text-[#A06AFF] hover:underline"
                   >
-                    {profile.website.label}
+                    {profile.website.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                   </a>
                 </div>
               )}

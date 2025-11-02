@@ -99,6 +99,11 @@ class CustomBackendAPI {
     return this.request<User>('/users/me');
   }
 
+  // Alias for getCurrentUser (used for username change tracking)
+  async getMe(): Promise<User> {
+    return this.getCurrentUser();
+  }
+
   async getUser(id: string): Promise<User> {
     return this.request<User>(`/users/${id}`);
   }
@@ -606,6 +611,9 @@ export interface User {
   following_count: number;
   posts_count: number;
   private_account: boolean;
+  role?: string;
+  location?: string;
+  website?: string;
   created_at: string;
   updated_at?: string;
 }

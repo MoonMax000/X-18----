@@ -48,6 +48,10 @@ type User struct {
 	IsDeleted           bool       `gorm:"default:false" json:"is_deleted"`
 	DeletionRequestedAt *time.Time `json:"deletion_requested_at,omitempty"`
 
+	// Username change tracking (Twitter-like: 3 free changes, then once per week)
+	UsernameChangesCount int        `gorm:"default:0" json:"username_changes_count"`
+	LastUsernameChangeAt *time.Time `json:"last_username_change_at,omitempty"`
+
 	// Monetization
 	Verified          bool    `gorm:"default:false" json:"verified"`
 	SubscriptionPrice float64 `gorm:"type:decimal(10,2);default:0" json:"subscription_price"`
