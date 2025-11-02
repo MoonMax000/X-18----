@@ -5,54 +5,10 @@ import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { useFeedFilters } from "@/features/feed/hooks/useFeedFilters";
 import type { ComposerData } from "@/features/feed/types";
 import type { NewsItem } from "@/components/SocialFeedWidgets/TrendingTopicsWidget";
-import { TRENDING_TICKERS, TOP_AUTHORS } from "@/features/feed/mocks";
+import { TRENDING_TICKERS, TOP_AUTHORS, MOCK_POSTS } from "@/features/feed/mocks";
 import { QuickComposer, FeedTabs, FeedFilters, RightSidebar, NewPostsBanner } from "@/features/feed/components";
 
-// NEW: Import GoToSocial hooks
-import { useGTSTimeline } from "@/hooks/useGTSTimeline";
-import { getTrending, getSuggestedProfiles } from "@/services/api/gotosocial";
-import type { GTSStatus } from "@/services/api/gotosocial";
-
-// NEW: Convert GoToSocial status to our Post format
-function gtsStatusToPost(status: GTSStatus): any {
-  return {
-    id: status.id,
-    type: status.custom_metadata?.post_type || 'general',
-    text: status.content,
-    author: {
-      name: status.account.display_name,
-      handle: `@${status.account.username}`,
-      avatar: status.account.avatar,
-      verified: status.account.verified || false,
-      tier: 'free',
-      isFollowing: false,
-    },
-    timestamp: status.created_at,
-    engagement: {
-      likes: status.favourites_count,
-      comments: status.replies_count,
-      reposts: status.reblogs_count,
-      bookmarks: 0,
-    },
-    media: status.media_attachments.map(m => ({
-      id: m.id,
-      url: m.url,
-      type: m.type,
-      alt: m.description,
-    })),
-    // Trading signal metadata
-    ticker: status.custom_metadata?.ticker,
-    sentiment: status.custom_metadata?.sentiment,
-    direction: status.custom_metadata?.direction,
-    timeframe: status.custom_metadata?.timeframe,
-    risk: status.custom_metadata?.risk,
-    entry: status.custom_metadata?.entry,
-    stopLoss: status.custom_metadata?.stop_loss,
-    takeProfit: status.custom_metadata?.take_profit,
-    market: status.custom_metadata?.market,
-    category: status.custom_metadata?.post_type,
-  };
-}
+// TODO: Implement real feed fetching from custom-backend API
 
 export default function FeedTestReady() {
   const {
@@ -67,24 +23,12 @@ export default function FeedTestReady() {
     applyToPosts
   } = useFeedFilters("all");
 
-  // NEW: Use real GoToSocial timeline
-  const {
-    statuses,
-    isLoading,
-    loadMore,
-    newCount,
-    loadNew,
-    refresh,
-  } = useGTSTimeline({
-    type: feedMode === 'all' ? 'public' : feedMode === 'following' ? 'home' : 'public',
-    limit: 20,
-    autoRefresh: true,
-    refreshInterval: 60000, // 1 minute
-  });
-
+  // TODO: Replace with real API calls to custom-backend
+  const [posts] = useState(MOCK_POSTS);
   const [followingAuthors, setFollowingAuthors] = useState<Set<string>>(new Set());
   const [isAdvancedComposerOpen, setIsAdvancedComposerOpen] = useState(false);
   const [advancedComposerData, setAdvancedComposerData] = useState<Partial<ComposerData>>({});
+  const [newCount] = useState(0);
 
   const handleExpandComposer = useCallback((data: Partial<ComposerData>) => {
     setAdvancedComposerData(data);
@@ -99,28 +43,25 @@ export default function FeedTestReady() {
     });
   }, []);
 
-  // NEW: Convert GoToSocial statuses to our Post format
-  const posts = useMemo(
-    () => statuses.map(gtsStatusToPost),
-    [statuses]
-  );
-
   const filteredPosts = useMemo(
     () => applyToPosts(posts, followingAuthors),
     [applyToPosts, posts, followingAuthors]
   );
 
-  // NEW: Loading state
-  if (isLoading && posts.length === 0) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading feed...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleRefresh = useCallback(() => {
+    // TODO: Implement refresh logic with custom-backend API
+    console.log('Refresh feed');
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    // TODO: Implement load more with custom-backend API
+    console.log('Load more posts');
+  }, []);
+
+  const handleLoadNew = useCallback(() => {
+    // TODO: Implement load new posts with custom-backend API
+    console.log('Load new posts');
+  }, []);
 
   return (
     <div className="flex min-h-screen w-full gap-6">
@@ -130,7 +71,7 @@ export default function FeedTestReady() {
         <div className="mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
           <QuickComposer 
             onExpand={handleExpandComposer}
-            onPostCreated={refresh} // NEW: Refresh feed after post
+            onPostCreated={handleRefresh}
           />
         </div>
 
@@ -147,14 +88,14 @@ export default function FeedTestReady() {
         </div>
 
         {/* New Posts Notice */}
-        <NewPostsBanner count={newCount} onClick={loadNew} />
+        <NewPostsBanner count={newCount} onClick={handleLoadNew} />
 
         {/* Feed Timeline */}
         <ContinuousFeedTimeline 
           posts={filteredPosts} 
           onFollowToggle={toggleFollow}
-          onLoadMore={loadMore} // NEW: Infinite scroll
-          isLoading={isLoading}
+          onLoadMore={handleLoadMore}
+          isLoading={false}
         />
       </div>
 
@@ -187,7 +128,7 @@ export default function FeedTestReady() {
           }] : [],
         }] : undefined}
         initialSentiment={advancedComposerData.sentiment || 'neutral'}
-        onPostCreated={refresh} // NEW: Refresh feed after post
+        onPostCreated={handleRefresh}
       />
     </div>
   );

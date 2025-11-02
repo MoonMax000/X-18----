@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProfilePageLayout from "@/components/socialProfile/ProfilePageLayout";
 import { useCustomUserProfile } from "@/hooks/useCustomUserProfile";
 import { useAuth } from "@/contexts/AuthContext";
-import { convertUserToGTSAccount, convertPostToGTSStatus } from "@/lib/custom-to-gts-converters";
 
 export default function OtherProfilePage() {
   const { handle } = useParams<{ handle: string }>();
@@ -17,10 +15,6 @@ export default function OtherProfilePage() {
     fetchPosts: true,
     fetchFollowers: true, // Needed to determine if current user is following this profile
   });
-
-  // Convert to GTS types for UI compatibility
-  const gtsProfile = profile ? convertUserToGTSAccount(profile) : null;
-  const gtsPosts = posts.map(post => convertPostToGTSStatus(post));
 
   // Determine if this is user's own profile
   const isOwnProfile = currentUser && profile 
@@ -58,5 +52,5 @@ export default function OtherProfilePage() {
     );
   }
 
-  return <ProfilePageLayout isOwnProfile={isOwnProfile} profile={gtsProfile} posts={gtsPosts} initialFollowingState={isFollowing} />;
+  return <ProfilePageLayout isOwnProfile={isOwnProfile} profile={profile} posts={posts} initialFollowingState={isFollowing} />;
 }

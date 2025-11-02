@@ -8,12 +8,12 @@ import TopAuthorsWidget from "@/components/SocialFeedWidgets/TopAuthorsWidget";
 import MyEarningsWidget from "@/components/SocialFeedWidgets/MyEarningsWidget";
 import MyActivityWidget from "@/components/SocialFeedWidgets/MyActivityWidget";
 import MySubscriptionsWidget from "@/components/SocialFeedWidgets/MySubscriptionsWidget";
-import type { GTSAccount, GTSStatus } from "@/services/api/gotosocial";
+import type { User, Post } from "@/services/api/custom-backend";
 
 interface ProfilePageLayoutProps {
   isOwnProfile: boolean;
-  profile?: GTSAccount | null;
-  posts?: GTSStatus[];
+  profile: User | null;
+  posts?: Post[];
   initialFollowingState?: boolean;
 }
 

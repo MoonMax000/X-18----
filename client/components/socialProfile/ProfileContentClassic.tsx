@@ -11,13 +11,12 @@ import ProfileTweetsClassic from "./ProfileTweetsClassic";
 import ProfileSecuritySettings from "./ProfileSecuritySettings";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
-import type { GTSAccount, GTSStatus } from "@/services/api/gotosocial";
-import { convertGTSAccountToSocialProfile } from "@/lib/gts-converters";
+import type { User, Post } from "@/services/api/custom-backend";
 
 interface ProfileContentClassicProps {
   isOwnProfile?: boolean;
-  profile?: GTSAccount | null;
-  posts?: GTSStatus[];
+  profile?: User | null;
+  posts?: Post[];
   isFollowing?: boolean;
   onFollowToggle?: (userId: string, currentState: boolean) => Promise<void>;
 }
@@ -85,33 +84,49 @@ export default function ProfileContentClassic({
       if (externalProfile && externalPosts) {
         setIsLoading(true);
 
-        // Convert GTSAccount to SocialProfileData using centralized converter
-        const profileData = convertGTSAccountToSocialProfile(externalProfile);
+        // Convert User to SocialProfileData
+        const profileData: SocialProfileData = {
+          id: externalProfile.id,
+          name: externalProfile.display_name || externalProfile.username,
+          username: externalProfile.username,
+          bio: externalProfile.bio || '',
+          avatar: externalProfile.avatar_url || '',
+          cover: externalProfile.header_url || '',
+          location: '',
+          website: externalProfile.website ? { label: externalProfile.website, url: externalProfile.website } : undefined,
+          joined: new Date(externalProfile.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }),
+          stats: {
+            tweets: externalProfile.posts_count || 0,
+            following: externalProfile.following_count || 0,
+            followers: externalProfile.followers_count || 0,
+            likes: 0,
+          },
+        };
         setProfile(profileData);
 
-        // Convert GTSStatus[] to SocialPost[]
-        const convertedPosts: SocialPost[] = externalPosts.map(status => ({
-          id: status.id,
-          title: status.content.substring(0, 100).replace(/<[^>]*>/g, ''),
-          preview: status.content.replace(/<[^>]*>/g, ''),
+        // Convert Post[] to SocialPost[]
+        const convertedPosts: SocialPost[] = externalPosts.map(post => ({
+          id: post.id,
+          title: post.content?.substring(0, 100) || '',
+          preview: post.content || '',
           author: {
-            name: status.account.display_name,
-            handle: `@${status.account.username}`,
-            avatar: status.account.avatar,
+            name: post.user?.display_name || post.user?.username || 'Unknown',
+            handle: `@${post.user?.username || 'unknown'}`,
+            avatar: post.user?.avatar_url || '',
           },
-          timestamp: status.created_at,
-          likes: status.favourites_count,
-          comments: status.replies_count,
-          shares: status.reblogs_count,
-          isLiked: status.favourited || false,
-          isBookmarked: status.bookmarked || false,
-          type: (status.custom_metadata?.post_type as SocialPostType) || 'article',
-          sentiment: (status.custom_metadata?.sentiment as SentimentType) || 'bullish',
-          category: status.custom_metadata?.post_type || 'General',
+          timestamp: post.created_at,
+          likes: post.likes_count || 0,
+          comments: post.replies_count || 0,
+          shares: post.retweets_count || 0,
+          isLiked: post.is_liked || false,
+          isBookmarked: post.is_bookmarked || false,
+          type: 'article' as SocialPostType,
+          sentiment: 'bullish' as SentimentType,
+          category: 'General',
         }));
 
         setPosts(convertedPosts);
-        setLikedPosts([]); // Liked posts not available yet
+        setLikedPosts([]);
         setIsLoading(false);
         return;
       }

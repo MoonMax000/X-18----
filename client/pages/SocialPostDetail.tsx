@@ -1,125 +1,38 @@
-import { type FC, useMemo, useState, useEffect } from "react";
+import { type FC, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import PostDetailView from "@/components/PostCard/PostDetailView";
 import { getSocialPostById, type SocialPost } from "@/data/socialPosts";
 import SuggestedProfilesWidget from "@/components/SocialFeedWidgets/SuggestedProfilesWidget";
 import { DEFAULT_SUGGESTED_PROFILES } from "@/components/SocialFeedWidgets/sidebarData";
-import { useGTSStatus } from "@/hooks/useGTSStatus";
-import { getCurrentAccount } from "@/services/api/gotosocial";
-import type { GTSStatus, GTSAccount } from "@/services/api/gotosocial";
 
-// Convert GTSStatus to SocialPost format
-function convertGTSStatusToSocialPost(
-  status: GTSStatus, 
-  currentUser: GTSAccount | null
-): SocialPost {
-  const getRelativeTime = (dateString: string): string => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "только что";
-    if (diffMins < 60) return `${diffMins}м`;
-    if (diffHours < 24) return `${diffHours}ч`;
-    if (diffDays < 7) return `${diffDays}д`;
-    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
-  };
-
-  // Extract text content (remove HTML tags)
-  const textContent = status.content.replace(/<[^>]*>/g, "");
-  
-  // Extract hashtags
-  const hashtags = status.tags?.map(tag => tag.name) || [];
-
-  // Determine sentiment (TODO: add custom metadata support)
-  // For now, default to bullish
-  const sentiment: "bullish" | "bearish" = "bullish";
-
-  // Determine if video or article
-  const hasVideo = status.media_attachments?.some(m => m.type === "video" || m.type === "gifv");
-  const hasImage = status.media_attachments?.some(m => m.type === "image");
-
-  return {
-    id: status.id,
-    type: hasVideo ? "video" : "article",
-    author: {
-      name: status.account.display_name || status.account.username,
-      avatar: status.account.avatar,
-      handle: `@${status.account.acct}`,
-      verified: status.account.verified,
-      bio: status.account.note?.replace(/<[^>]*>/g, ""),
-      followers: status.account.followers_count,
-      following: status.account.following_count,
-      isCurrentUser: currentUser?.id === status.account.id,
-    },
-    timestamp: getRelativeTime(status.created_at),
-    title: textContent.split('\n')[0].substring(0, 100), // First line as title
-    body: textContent,
-    preview: textContent.substring(0, 200),
-    videoUrl: status.media_attachments?.find(m => m.type === "video")?.url,
-    mediaUrl: status.media_attachments?.find(m => m.type === "image")?.url,
-    sentiment,
-    likes: status.favourites_count,
-    comments: status.replies_count,
-    hashtags,
-    views: 0, // TODO: Add view tracking
-    
-    // TODO: Add when custom metadata backend is ready
-    isPremium: false,
-    price: undefined,
-    subscriptionPrice: undefined,
-    unlocked: true,
-    audience: status.visibility === "public" ? "everyone" : "followers",
-  };
+// TODO: Implement real post fetching from custom-backend API
+function fetchPostFromAPI(postId: string): SocialPost | undefined {
+  // Fallback to local mock data for now
+  return getSocialPostById(postId);
 }
 
 const SocialPostDetail: FC = () => {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
   const location = useLocation();
-  const [currentUser, setCurrentUser] = useState<GTSAccount | null>(null);
-
-  // Get current user
-  useEffect(() => {
-    getCurrentAccount().then(setCurrentUser).catch(console.error);
-  }, []);
 
   const postFromState = location.state as SocialPost | undefined;
   
-  // Try to fetch from GoToSocial API
-  const {
-    status: gtsStatus,
-    context,
-    isLoading,
-    error,
-  } = useGTSStatus({
-    statusId: postId || "",
-    fetchContext: true,
-  });
-
-  // Convert GTS status to UI format or use local mock
+  // Get post data
   const post = useMemo(() => {
     // Priority 1: Post from navigation state
     if (postFromState) {
       return postFromState;
     }
 
-    // Priority 2: Post from GoToSocial API
-    if (gtsStatus && currentUser) {
-      return convertGTSStatusToSocialPost(gtsStatus, currentUser);
-    }
-
-    // Priority 3: Fallback to local mock data
+    // Priority 2: Fetch from API (TODO: implement custom-backend API)
     if (postId) {
-      return getSocialPostById(postId);
+      return fetchPostFromAPI(postId) || getSocialPostById(postId);
     }
 
     return undefined;
-  }, [postFromState, gtsStatus, currentUser, postId]);
+  }, [postFromState, postId]);
 
   const handleBack = () => {
     if (location.key !== "default") {
@@ -129,8 +42,11 @@ const SocialPostDetail: FC = () => {
     }
   };
 
-  // Loading state
-  if (isLoading && !postFromState) {
+  // Loading state - removed as we're using sync data for now
+  const isLoading = false;
+  const error = null;
+  
+  if (false) {
     return (
       <div className="flex w-full gap-8">
         <div className="flex-1 max-w-[720px]">
@@ -292,38 +208,7 @@ const SocialPostDetail: FC = () => {
 
         <PostDetailView post={post} />
 
-        {/* Comments Section - TODO: Implement with context.descendants */}
-        {context && context.descendants.length > 0 && (
-          <div className="mt-8 rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">
-              Комментарии ({context.descendants.length})
-            </h2>
-            <div className="space-y-4">
-              {context.descendants.slice(0, 5).map((reply) => (
-                <div key={reply.id} className="flex gap-3 p-3 rounded-lg bg-[#0A0A0A]/50">
-                  <img 
-                    src={reply.account.avatar} 
-                    alt={reply.account.display_name}
-                    className="h-10 w-10 rounded-full"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white text-sm">
-                        {reply.account.display_name}
-                      </span>
-                      <span className="text-xs text-[#6C7080]">
-                        @{reply.account.acct}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-white/90" 
-                       dangerouslySetInnerHTML={{ __html: reply.content }} 
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Comments Section - TODO: Implement with custom-backend API */}
       </div>
 
       <aside className="sticky top-4 hidden h-fit w-[340px] flex-col gap-4 lg:flex">

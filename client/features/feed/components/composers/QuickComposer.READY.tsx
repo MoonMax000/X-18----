@@ -12,10 +12,9 @@ import { useSimpleComposer } from "@/components/CreatePostBox/useSimpleComposer"
 import type { ComposerData, DirectionType, TimeframeType } from "../../types";
 import type { MediaItem } from "@/components/CreatePostBox/types";
 import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from "./shared";
-
-// NEW: Import GoToSocial API
-import { createStatus, uploadMedia } from "@/services/api/gotosocial";
 import { useToast } from "@/hooks/use-toast";
+
+// TODO: Implement real post submission to custom-backend API
 
 type Props = { 
   onExpand: (data: Partial<ComposerData>) => void;
@@ -174,69 +173,45 @@ export default function QuickComposerReady({ onExpand, onPostCreated }: Props) {
     }
   }, [text, sentiment, setSentiment]);
 
-  // NEW: Real post submission to GoToSocial
+  // TODO: Implement real post submission to custom-backend API
   const handlePost = async () => {
     if (!canPost || isPosting) return;
 
     setIsPosting(true);
 
     try {
-      // Step 1: Upload media files
-      const mediaIds: string[] = [];
-      for (const mediaItem of media) {
-        if (mediaItem.file) {
-          const uploaded = await uploadMedia(mediaItem.file, {
-            description: mediaItem.alt,
-          });
-          mediaIds.push(uploaded.id);
-        }
-      }
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Step 2: Map visibility
-      const visibilityMap: Record<typeof replySetting, 'public' | 'unlisted' | 'private' | 'direct'> = {
-        everyone: 'public',
-        following: 'unlisted',
-        verified: 'public', // No direct equivalent, use public
-        mentioned: 'direct',
-      };
+      // TODO: Replace with actual API call to custom-backend
+      console.log('Post data:', {
+        text,
+        media,
+        codeBlocks,
+        sentiment,
+        replySetting,
+        accessType,
+        postPrice,
+        postMarket,
+        postCategory,
+        postSymbol,
+        postTimeframe,
+        postRisk,
+      });
 
-      // Step 3: Create status with custom metadata
-      await createStatus({
-        status: text,
-        media_ids: mediaIds,
-        visibility: visibilityMap[replySetting],
-        sensitive: false,
-        // Custom metadata (requires GoToSocial customization)
-        custom_metadata: {
-          post_type: postCategory.toLowerCase(),
-          market: postMarket.toLowerCase(),
-          category: postCategory.toLowerCase(),
-          ticker: postSymbol,
-          sentiment: sentiment || 'neutral',
-          timeframe: postTimeframe,
-          risk: postRisk.toLowerCase(),
-          access_level: accessType,
-          ...(accessType === 'pay-per-post' && { price: postPrice }),
-        },
-      } as any); // Type assertion needed until GoToSocial types are updated
-
-      // Step 4: Success!
       toast({
         title: "Post created!",
         description: "Your post has been published successfully.",
       });
 
-      // Step 5: Reset form
       reset();
-
-      // Step 6: Notify parent to refresh feed
       onPostCreated?.();
 
     } catch (error) {
       console.error('Failed to create post:', error);
       toast({
         title: "Post failed",
-        description: error instanceof Error ? error.message : "Failed to publish post. Please try again.",
+        description: "Failed to publish post. Please try again.",
         variant: "destructive",
       });
     } finally {
