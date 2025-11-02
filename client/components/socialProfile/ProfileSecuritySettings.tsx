@@ -461,456 +461,537 @@ export default function ProfileSecuritySettings() {
     switch (activeTab) {
       case 'account':
         return (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Account Information</h3>
-              <p className="text-sm text-gray-400">
-                Manage your primary account contact information.
-              </p>
-              {totpStatus?.enabled && (
-                <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/20">
-                  <p className="text-xs text-primary flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Changes to email or phone require TOTP verification
-                  </p>
+          <div className="flex w-full max-w-[1059px] flex-col gap-6">
+            <section className="w-full">
+              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-6 h-6 text-primary" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white sm:text-2xl">Account Information</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Manage your primary account contact information
+                    </p>
+                  </div>
                 </div>
-              )}
-            </div>
+                
+                {totpStatus?.enabled && (
+                  <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                    <p className="text-xs text-primary flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Changes to email or phone require TOTP verification
+                    </p>
+                  </div>
+                )}
 
-            {loadingUserData ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                {loadingUserData ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {/* Email Block */}
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                          <Mail className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white md:text-[15px]">Email</p>
+                          <p className="text-xs text-gray-400">{userEmail || 'Not set'}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setIsEmailModalOpen(true)}
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-4 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm"
+                      >
+                        Change
+                      </button>
+                    </div>
+
+                    {/* Password Block */}
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                          <Key className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white md:text-[15px]">Password</p>
+                          <p className="text-xs text-gray-400">Protect your account with a strong password</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('password')}
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-4 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm"
+                      >
+                        Change
+                      </button>
+                    </div>
+
+                    {/* Phone Block */}
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                          <Phone className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white md:text-[15px]">Phone number</p>
+                          <p className="text-xs text-gray-400">{userPhone || 'Not set'}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setIsPhoneModalOpen(true)}
+                        className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-4 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm"
+                      >
+                        {userPhone ? 'Change' : 'Add'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-3">
-                {/* Email Block */}
-                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-300">Email</p>
-                        <p className="text-sm text-white">{userEmail || 'Not set'}</p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => setIsEmailModalOpen(true)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      Change
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Password Block */}
-                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Key className="w-5 h-5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-300">Password</p>
-                        <p className="text-xs text-gray-500">Change your password to update & protect your account</p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => setActiveTab('password')}
-                      size="sm"
-                      variant="outline"
-                    >
-                      Change
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Phone Block */}
-                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-300">Phone number</p>
-                        <p className="text-sm text-white">{userPhone || 'Not set'}</p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => setIsPhoneModalOpen(true)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      {userPhone ? 'Change' : 'Add'}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+            </section>
           </div>
         );
 
       case 'sessions':
         return (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Active Sessions</h3>
-              <p className="text-sm text-gray-400">
-                These devices are currently logged in to your account. Revoke access if you don't recognize a device.
-              </p>
-            </div>
+          <div className="flex w-full max-w-[1059px] flex-col gap-6">
+            <section className="w-full">
+              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
+                <div className="flex items-center gap-3">
+                  <Smartphone className="w-6 h-6 text-primary" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white sm:text-2xl">Active Sessions</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Manage devices logged into your account
+                    </p>
+                  </div>
+                </div>
 
-            {sessionsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {sessions?.map((session: Session) => (
-                  <div
-                    key={session.id}
-                    className={cn(
-                      "p-4 rounded-lg border bg-black/40",
-                      session.is_current 
-                        ? "border-primary/50 bg-primary/5" 
-                        : "border-widget-border"
-                    )}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        {getDeviceIcon(session.device_type)}
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-white">
-                              {session.browser} on {session.os}
-                            </span>
-                            {session.is_current && (
-                              <span className="text-xs px-2 py-0.5 rounded bg-primary/20 text-primary">
-                                Current
-                              </span>
-                            )}
+                {sessionsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {sessions?.map((session: Session) => (
+                      <div
+                        key={session.id}
+                        className={cn(
+                          "p-4 rounded-2xl border backdrop-blur-[50px]",
+                          session.is_current 
+                            ? "border-primary/50 bg-[rgba(160,106,255,0.1)]" 
+                            : "border-[#181B22] bg-[rgba(11,14,17,0.5)]"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                              {getDeviceIcon(session.device_type)}
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-white text-sm md:text-[15px]">
+                                  {session.browser} on {session.os}
+                                </span>
+                                {session.is_current && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/30 text-primary font-bold">
+                                    Current
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
+                                <span className="flex items-center gap-1">
+                                  <Globe className="w-3 h-3" />
+                                  {session.ip_address}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {session.last_active && !isNaN(new Date(session.last_active).getTime()) ? (
+                                    <>Active {formatDistanceToNow(new Date(session.last_active))} ago</>
+                                  ) : (
+                                    <>Recently active</>
+                                  )}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <Globe className="w-3 h-3" />
-                              {session.ip_address}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {session.last_active && !isNaN(new Date(session.last_active).getTime()) ? (
-                                <>Active {formatDistanceToNow(new Date(session.last_active))} ago</>
-                              ) : (
-                                <>Recently active</>
-                              )}
-                            </span>
-                          </div>
+                          {!session.is_current && (
+                            <button
+                              onClick={() => revokeSession(session.id)}
+                              className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-red-500/20 px-4 text-xs font-bold text-red-400 backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm border border-red-500/30"
+                            >
+                              Revoke
+                            </button>
+                          )}
                         </div>
                       </div>
-                      {!session.is_current && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => revokeSession(session.id)}
-                        >
-                          Revoke
-                        </Button>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
+            </section>
           </div>
         );
 
       case 'twofa':
         return (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Two-Factor Authentication (TOTP)</h3>
-              <p className="text-sm text-gray-400">
-                Add an extra layer of security using authenticator apps like Google Authenticator, Microsoft Authenticator, or Authy.
-              </p>
-            </div>
-
-            {totpLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : (
-              <>
-                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Shield className="w-5 h-5 text-primary" />
-                      <div>
-                        <p className="font-medium text-white">TOTP Two-Factor Authentication</p>
-                        <p className="text-sm text-gray-400">
-                          {totpStatus?.enabled ? 'Enabled ✓' : 'Disabled'}
-                        </p>
-                      </div>
-                    </div>
-                    {!totpStatus?.enabled ? (
-                      <Button onClick={handleSetupTOTP} size="sm">
-                        <Shield className="w-4 h-4 mr-2" />
-                        Enable 2FA
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => setIsDisableTOTPOpen(true)} 
-                        variant="destructive" 
-                        size="sm"
-                      >
-                        Disable 2FA
-                      </Button>
-                    )}
+          <div className="flex w-full max-w-[1059px] flex-col gap-6">
+            <section className="w-full">
+              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-6 h-6 text-primary" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white sm:text-2xl">Two-Factor Authentication</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Add extra security with authenticator apps
+                    </p>
                   </div>
                 </div>
 
-                {totpStatus?.enabled && (
-                  <div className="p-4 rounded-lg border border-widget-border bg-black/40 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-300">Backup Codes</p>
-                      <Button 
-                        onClick={handleRegenerateBackupCodes}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Regenerate
-                      </Button>
+                {totpLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {/* TOTP Status Block */}
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "flex h-10 w-10 items-center justify-center rounded-full",
+                          totpStatus?.enabled ? "bg-green-500/20" : "bg-primary/20"
+                        )}>
+                          <Shield className={cn(
+                            "w-5 h-5",
+                            totpStatus?.enabled ? "text-green-500" : "text-primary"
+                          )} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white md:text-[15px]">TOTP Authentication</p>
+                          <p className="text-xs text-gray-400">
+                            {totpStatus?.enabled ? 'Enabled ✓' : 'Not enabled'}
+                          </p>
+                        </div>
+                      </div>
+                      {!totpStatus?.enabled ? (
+                        <button
+                          onClick={handleSetupTOTP}
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-4 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm"
+                        >
+                          <Shield className="w-4 h-4" />
+                          Enable 2FA
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setIsDisableTOTPOpen(true)}
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-red-500/20 px-4 text-xs font-bold text-red-400 backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm border border-red-500/30"
+                        >
+                          Disable 2FA
+                        </button>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-400">
-                      Save your backup codes in a safe place. They can be used if you lose access to your authenticator app.
-                    </p>
+
+                    {/* Backup Codes Block */}
+                    {totpStatus?.enabled && (
+                      <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Key className="w-4 h-4 text-primary" />
+                            <p className="text-sm font-bold text-white md:text-[15px]">Backup Codes</p>
+                          </div>
+                          <button
+                            onClick={handleRegenerateBackupCodes}
+                            className="inline-flex h-7 items-center justify-center gap-1 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] px-3 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90"
+                          >
+                            Regenerate
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-400">
+                          Save your backup codes in a safe place. Use them if you lose access to your authenticator app.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
-              </>
-            )}
+              </div>
+            </section>
           </div>
         );
 
       case 'backup':
         return (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Резервные контакты</h3>
-              <p className="text-sm text-gray-400">
-                Добавьте резервные email и телефон для восстановления доступа к аккаунту.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Резервный Email
-                  </label>
-                  {savingStatus === 'saving' && (
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Сохранение...
-                    </span>
-                  )}
-                  {savingStatus === 'saved' && (
-                    <span className="text-xs text-green-400 flex items-center gap-1">
-                      <Check className="w-3 h-3" />
-                      Сохранено ✓
-                    </span>
-                  )}
+          <div className="flex w-full max-w-[1059px] flex-col gap-6">
+            <section className="w-full">
+              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold text-white sm:text-2xl">Резервные контакты</h3>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Для восстановления доступа к аккаунту
+                        </p>
+                      </div>
+                      {savingStatus === 'saving' && (
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Сохранение...
+                        </span>
+                      )}
+                      {savingStatus === 'saved' && (
+                        <span className="text-xs text-green-400 flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          Сохранено ✓
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <Input
-                  type="email"
-                  value={backupEmail}
-                  onChange={(e) => setBackupEmail(e.target.value)}
-                  placeholder="backup@example.com"
-                  className="bg-black/40 border-widget-border"
-                />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Резервный телефон
-                </label>
-                <Input
-                  type="tel"
-                  value={backupPhone}
-                  onChange={(e) => setBackupPhone(e.target.value)}
-                  placeholder="+1234567890"
-                  className="bg-black/40 border-widget-border"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Изменения сохраняются автоматически
-                </p>
+                <div className="flex flex-col gap-4">
+                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                      Резервный Email
+                    </label>
+                    <Input
+                      type="email"
+                      value={backupEmail}
+                      onChange={(e) => setBackupEmail(e.target.value)}
+                      placeholder="backup@example.com"
+                      className="bg-black/40 border-widget-border"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                      Резервный телефон
+                    </label>
+                    <Input
+                      type="tel"
+                      value={backupPhone}
+                      onChange={(e) => setBackupPhone(e.target.value)}
+                      placeholder="+1234567890"
+                      className="bg-black/40 border-widget-border"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-primary text-center">
+                    💡 Изменения сохраняются автоматически
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
           </div>
         );
 
       case 'password':
         return (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Смена пароля</h3>
-              <p className="text-sm text-gray-400">
-                Защитите свой аккаунт, используя надёжный пароль (минимум 8 символов).
-              </p>
-              {totpStatus?.enabled && (
-                <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/20">
-                  <p className="text-xs text-primary flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Для смены пароля потребуется TOTP код
-                  </p>
+          <div className="flex w-full max-w-[1059px] flex-col gap-6">
+            <section className="w-full">
+              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
+                <div className="flex items-center gap-3">
+                  <Key className="w-6 h-6 text-primary" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white sm:text-2xl">Смена пароля</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Используйте надёжный пароль (минимум 8 символов)
+                    </p>
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {passwordChangeSuccess && (
-              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <p className="text-sm text-green-400 flex items-center gap-2">
-                  <Check className="w-4 h-4" />
-                  Пароль успешно изменён!
-                </p>
-              </div>
-            )}
-
-            {protectedOpsError && !requiresTOTP && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                <p className="text-sm text-red-400 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  {protectedOpsError}
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Текущий пароль
-                </label>
-                <Input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="bg-black/40 border-widget-border"
-                  disabled={protectedOpsLoading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Новый пароль
-                </label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-black/40 border-widget-border"
-                  disabled={protectedOpsLoading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Подтвердите новый пароль
-                </label>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-black/40 border-widget-border"
-                  disabled={protectedOpsLoading}
-                />
-              </div>
-
-              <Button 
-                onClick={handlePasswordChange} 
-                className="w-full"
-                disabled={
-                  !currentPassword || 
-                  !newPassword || 
-                  !confirmPassword || 
-                  protectedOpsLoading
-                }
-              >
-                {protectedOpsLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Изменение...
-                  </>
-                ) : (
-                  'Изменить пароль'
+                
+                {totpStatus?.enabled && (
+                  <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                    <p className="text-xs text-primary flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Для смены пароля потребуется TOTP код
+                    </p>
+                  </div>
                 )}
-              </Button>
-            </div>
+
+                {passwordChangeSuccess && (
+                  <div className="p-3 rounded-2xl bg-green-500/10 border border-green-500/20">
+                    <p className="text-sm text-green-400 flex items-center gap-2">
+                      <Check className="w-4 h-4" />
+                      Пароль успешно изменён!
+                    </p>
+                  </div>
+                )}
+
+                {protectedOpsError && !requiresTOTP && (
+                  <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20">
+                    <p className="text-sm text-red-400 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      {protectedOpsError}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-4">
+                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                      Текущий пароль
+                    </label>
+                    <Input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="bg-black/40 border-widget-border"
+                      disabled={protectedOpsLoading}
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                      Новый пароль
+                    </label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-black/40 border-widget-border"
+                      disabled={protectedOpsLoading}
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                      Подтвердите новый пароль
+                    </label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-black/40 border-widget-border"
+                      disabled={protectedOpsLoading}
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handlePasswordChange}
+                    disabled={
+                      !currentPassword || 
+                      !newPassword || 
+                      !confirmPassword || 
+                      protectedOpsLoading
+                    }
+                    className={cn(
+                      "w-full py-3 flex items-center justify-center gap-2 rounded-full text-sm font-bold text-white backdrop-blur-[50px] transition-all",
+                      (!currentPassword || !newPassword || !confirmPassword || protectedOpsLoading)
+                        ? "bg-gradient-to-r from-gray-600 to-gray-700 opacity-50 cursor-not-allowed"
+                        : "bg-gradient-to-r from-primary to-[#482090] hover:opacity-90"
+                    )}
+                  >
+                    {protectedOpsLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Изменение...
+                      </>
+                    ) : (
+                      'Изменить пароль'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </section>
           </div>
         );
 
       case 'delete':
         return (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Account Deactivation</h3>
-              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                <div className="flex gap-2">
-                  <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-yellow-200">
-                    <p className="font-medium mb-1">30-Day Recovery Period</p>
-                    <p>Your account will be deactivated and you'll have 30 days to restore it. After 30 days, the account will be permanently deleted.</p>
+          <div className="flex w-full max-w-[1059px] flex-col gap-6">
+            <section className="w-full">
+              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
+                <div className="flex items-center gap-3">
+                  <Trash2 className="w-6 h-6 text-red-400" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white sm:text-2xl">Account Deactivation</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Temporarily or permanently delete your account
+                    </p>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {recoveryInfo?.is_deactivated ? (
-              <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <p className="font-medium text-red-200 mb-2">Account is Deactivated</p>
-                  <p className="text-sm text-red-300">
-                    Deletion scheduled for: {new Date(recoveryInfo.deletion_scheduled_at).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm text-red-300">
-                    Days remaining: {recoveryInfo.days_remaining}
-                  </p>
-                </div>
-                <Button onClick={handleAccountRestore} className="w-full">
-                  Restore My Account
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Reason for deactivation (optional)
-                  </label>
-                  <Input
-                    type="text"
-                    value={deleteReason}
-                    onChange={(e) => setDeleteReason(e.target.value)}
-                    placeholder="Why are you leaving?"
-                    className="bg-black/40 border-widget-border"
-                  />
+                <div className="p-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
+                  <div className="flex gap-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-yellow-200">
+                      <p className="font-bold mb-1">30-Day Recovery Period</p>
+                      <p>Your account will be deactivated and you'll have 30 days to restore it. After 30 days, the account will be permanently deleted.</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Type DELETE to confirm
-                  </label>
-                  <Input
-                    type="text"
-                    value={deleteConfirmation}
-                    onChange={(e) => setDeleteConfirmation(e.target.value)}
-                    placeholder="Type DELETE"
-                    className="bg-black/40 border-widget-border"
-                  />
-                </div>
+                {recoveryInfo?.is_deactivated ? (
+                  <div className="flex flex-col gap-4">
+                    <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20">
+                      <p className="font-bold text-red-200 mb-3 text-sm md:text-[15px]">Account is Deactivated</p>
+                      <div className="space-y-2 text-sm text-red-300">
+                        <p>
+                          <span className="font-medium">Deletion scheduled:</span>{' '}
+                          {new Date(recoveryInfo.deletion_scheduled_at).toLocaleDateString()}
+                        </p>
+                        <p>
+                          <span className="font-medium">Days remaining:</span> {recoveryInfo.days_remaining}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleAccountRestore}
+                      className="w-full py-3 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] text-sm font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90"
+                    >
+                      Restore My Account
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                        Reason for deactivation (optional)
+                      </label>
+                      <Input
+                        type="text"
+                        value={deleteReason}
+                        onChange={(e) => setDeleteReason(e.target.value)}
+                        placeholder="Why are you leaving?"
+                        className="bg-black/40 border-widget-border"
+                      />
+                    </div>
 
-                <Button 
-                  onClick={handleAccountDeactivation} 
-                  variant="destructive"
-                  className="w-full"
-                  disabled={deleteConfirmation !== 'DELETE'}
-                >
-                  Deactivate My Account
-                </Button>
+                    <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
+                        Type DELETE to confirm
+                      </label>
+                      <Input
+                        type="text"
+                        value={deleteConfirmation}
+                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                        placeholder="Type DELETE"
+                        className="bg-black/40 border-widget-border uppercase"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleAccountDeactivation}
+                      disabled={deleteConfirmation !== 'DELETE'}
+                      className={cn(
+                        "w-full py-3 flex items-center justify-center gap-2 rounded-full text-sm font-bold text-white backdrop-blur-[50px] transition-all",
+                        deleteConfirmation !== 'DELETE'
+                          ? "bg-gradient-to-r from-gray-600 to-gray-700 opacity-50 cursor-not-allowed"
+                          : "bg-gradient-to-r from-red-600 to-red-700 hover:opacity-90"
+                      )}
+                    >
+                      Deactivate My Account
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+            </section>
           </div>
         );
 
