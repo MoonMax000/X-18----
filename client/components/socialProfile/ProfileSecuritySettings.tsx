@@ -594,7 +594,11 @@ export default function ProfileSecuritySettings() {
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              Active {formatDistanceToNow(new Date(session.last_active))} ago
+                              {session.last_active && !isNaN(new Date(session.last_active).getTime()) ? (
+                                <>Active {formatDistanceToNow(new Date(session.last_active))} ago</>
+                              ) : (
+                                <>Recently active</>
+                              )}
                             </span>
                           </div>
                         </div>
