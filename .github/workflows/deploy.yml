@@ -90,9 +90,7 @@ jobs:
         version: 8
 
     - name: Install dependencies
-      run: |
-        cd client
-        pnpm install
+      run: pnpm install
 
     - name: Build frontend
       env:
@@ -100,8 +98,7 @@ jobs:
         VITE_APP_URL: https://social.tyriantrade.com
         VITE_APP_ENV: production
       run: |
-        cd client
-        cp .env.aws.production .env.production
+        cp client/.env.aws.production .env.production
         pnpm run build
 
     - name: Configure AWS credentials
@@ -112,9 +109,7 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Deploy to S3
-      run: |
-        cd client
-        aws s3 sync dist/spa/ s3://$S3_BUCKET/ --delete
+      run: aws s3 sync dist/spa/ s3://$S3_BUCKET/ --delete
 
     - name: Invalidate CloudFront
       run: |
