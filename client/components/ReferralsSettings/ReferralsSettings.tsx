@@ -1,13 +1,44 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useReferrals } from "@/hooks/useReferrals";
+import { Loader2 } from "lucide-react";
 
 const ReferralsSettings: FC = () => {
   const [activeTab, setActiveTab] = useState<"active" | "inactive">("active");
+  const { stats, code, invitations, isLoading, getReferralLink, copyReferralLink, refetchInvitations } = useReferrals();
+  const [showCopied, setShowCopied] = useState(false);
+
+  useEffect(() => {
+    refetchInvitations(activeTab);
+  }, [activeTab, refetchInvitations]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("https://trading.example.com/ref/beautydoe");
-    // Could add a toast notification here
+    const success = copyReferralLink();
+    if (success) {
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    }
   };
+
+  // Вычисляем текущий тир
+  const getCurrentTier = () => {
+    if (!stats) return 1;
+    const completed = stats.completed_invites;
+    if (completed >= 11) return 3;
+    if (completed >= 6) return 2;
+    return 1;
+  };
+
+  const currentTier = getCurrentTier();
+  const referralLink = getReferralLink();
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full max-w-[1059px] items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full max-w-[1059px] flex-col items-center gap-8">
@@ -31,19 +62,19 @@ const ReferralsSettings: FC = () => {
               <span className="text-xs font-bold uppercase text-webGray">
                 Invites Sent
               </span>
-              <span className="text-2xl font-bold text-white">0</span>
+              <span className="text-2xl font-bold text-white">{stats?.total_invites || 0}</span>
             </div>
             <div className="flex h-[116px] flex-col justify-between gap-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] p-4 backdrop-blur-[50px]">
               <span className="text-xs font-bold uppercase text-webGray">
                 Successful Referrals
               </span>
-              <span className="text-2xl font-bold text-white">0</span>
+              <span className="text-2xl font-bold text-white">{stats?.completed_invites || 0}</span>
             </div>
             <div className="flex h-[116px] flex-col justify-between gap-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] p-4 backdrop-blur-[50px]">
               <span className="text-xs font-bold uppercase text-webGray">
                 Total Earnings
               </span>
-              <span className="text-2xl font-bold text-white">$0</span>
+              <span className="text-2xl font-bold text-white">${stats?.total_earnings.toFixed(2) || '0.00'}</span>
             </div>
           </div>
         </div>
@@ -59,37 +90,49 @@ const ReferralsSettings: FC = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="flex flex-1 items-center gap-2 rounded-lg border border-[#181B22] bg-[rgba(12,16,20,0.5)] px-4 py-3 shadow-[0_4px_8px_rgba(0,0,0,0.24)] backdrop-blur-[50px]">
               <span className="flex-1 truncate text-sm font-bold text-white sm:text-[15px]">
-                https://trading.example.com/ref/beautydoe
+                {referralLink || 'Loading...'}
               </span>
             </div>
             <button
               onClick={handleCopy}
-              className="inline-flex h-8 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-3 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:w-auto sm:text-sm"
+              disabled={!referralLink}
+              className="inline-flex h-8 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-3 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto sm:text-sm"
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <g clipPath="url(#clip0_copy)">
-                  <path
-                    d="M14.1365 7.48466C14.1345 5.02621 14.0973 3.75279 13.3815 2.88086C13.2434 2.71247 13.089 2.55808 12.9206 2.41989C12.0007 1.66504 10.6341 1.66504 7.90077 1.66504C5.16746 1.66504 3.8008 1.66504 2.88095 2.41989C2.71255 2.55807 2.55814 2.71247 2.41994 2.88086C1.66504 3.80066 1.66504 5.16722 1.66504 7.90035C1.66504 10.6335 1.66504 12 2.41994 12.9198C2.55813 13.0882 2.71255 13.2426 2.88095 13.3808C3.75293 14.0964 5.02644 14.1336 7.48506 14.1356"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M11.6903 7.52087L14.1617 7.48535M11.6786 18.3348L14.15 18.2992M18.3097 11.6855L18.2864 14.1519M7.50866 11.6968L7.48535 14.1632M9.5728 7.52087C8.8788 7.64517 7.76489 7.77302 7.50866 9.20774M16.2456 18.2992C16.9414 18.1857 18.0571 18.0749 18.3355 16.6442M16.2456 7.52087C16.9396 7.64517 18.0535 7.77302 18.3097 9.20774M9.58338 18.2982C8.88938 18.1742 7.77538 18.047 7.51836 16.6124"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </g>
-                <defs>
-                  <clipPath id="clip0_copy">
-                    <rect width="20" height="20" fill="white" />
-                  </clipPath>
-                </defs>
-              </svg>
-              Copy
+              {showCopied ? (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <g clipPath="url(#clip0_copy)">
+                      <path
+                        d="M14.1365 7.48466C14.1345 5.02621 14.0973 3.75279 13.3815 2.88086C13.2434 2.71247 13.089 2.55808 12.9206 2.41989C12.0007 1.66504 10.6341 1.66504 7.90077 1.66504C5.16746 1.66504 3.8008 1.66504 2.88095 2.41989C2.71255 2.55807 2.55814 2.71247 2.41994 2.88086C1.66504 3.80066 1.66504 5.16722 1.66504 7.90035C1.66504 10.6335 1.66504 12 2.41994 12.9198C2.55813 13.0882 2.71255 13.2426 2.88095 13.3808C3.75293 14.0964 5.02644 14.1336 7.48506 14.1356"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M11.6903 7.52087L14.1617 7.48535M11.6786 18.3348L14.15 18.2992M18.3097 11.6855L18.2864 14.1519M7.50866 11.6968L7.48535 14.1632M9.5728 7.52087C8.8788 7.64517 7.76489 7.77302 7.50866 9.20774M16.2456 18.2992C16.9414 18.1857 18.0571 18.0749 18.3355 16.6442M16.2456 7.52087C16.9396 7.64517 18.0535 7.77302 18.3097 9.20774M9.58338 18.2982C8.88938 18.1742 7.77538 18.047 7.51836 16.6124"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_copy">
+                        <rect width="20" height="20" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  Copy
+                </>
+              )}
             </button>
           </div>
 
@@ -140,7 +183,12 @@ const ReferralsSettings: FC = () => {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Tier 1 */}
-            <div className="flex flex-col gap-6 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] p-4 backdrop-blur-[50px]">
+            <div className={cn(
+              "flex flex-col gap-6 rounded-2xl border p-4 backdrop-blur-[50px]",
+              currentTier === 1 
+                ? "border-primary bg-[rgba(114,78,43,0.2)]" 
+                : "border-[#181B22] bg-[rgba(11,14,17,0.5)]"
+            )}>
               <div className="flex items-center gap-2">
                 <div className="relative h-5 w-[18px]">
                   <svg width="18" height="20" viewBox="0 0 18 20" fill="none">
@@ -181,7 +229,12 @@ const ReferralsSettings: FC = () => {
             </div>
 
             {/* Tier 2 */}
-            <div className="flex flex-col gap-6 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] p-4 backdrop-blur-[50px]">
+            <div className={cn(
+              "flex flex-col gap-6 rounded-2xl border p-4 backdrop-blur-[50px]",
+              currentTier === 2 
+                ? "border-primary bg-[rgba(155,228,255,0.1)]" 
+                : "border-[#181B22] bg-[rgba(11,14,17,0.5)]"
+            )}>
               <div className="flex items-center gap-2">
                 <div className="relative h-5 w-[18px]">
                   <svg width="19" height="20" viewBox="0 0 19 20" fill="none">
@@ -224,7 +277,12 @@ const ReferralsSettings: FC = () => {
             </div>
 
             {/* Tier 3 */}
-            <div className="flex flex-col gap-6 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] p-4 backdrop-blur-[50px]">
+            <div className={cn(
+              "flex flex-col gap-6 rounded-2xl border p-4 backdrop-blur-[50px]",
+              currentTier === 3 
+                ? "border-primary bg-[rgba(220,185,157,0.1)]" 
+                : "border-[#181B22] bg-[rgba(11,14,17,0.5)]"
+            )}>
               <div className="flex items-center gap-2">
                 <div className="relative h-5 w-[18px]">
                   <svg width="19" height="20" viewBox="0 0 19 20" fill="none">
@@ -277,7 +335,7 @@ const ReferralsSettings: FC = () => {
               Your Invitations
             </h2>
             <span className="text-lg font-bold text-primary sm:text-[19px]">
-              0 USDT
+              ${stats?.total_earnings.toFixed(2) || '0.00'}
             </span>
           </div>
 
@@ -306,38 +364,78 @@ const ReferralsSettings: FC = () => {
             </button>
           </div>
 
-          {/* Empty State */}
-          <div className="flex h-48 flex-col items-center justify-center gap-2">
-            <svg width="48" height="48" viewBox="0 0 49 48" fill="none">
-              <path
-                d="M44.5 24C44.5 12.9543 35.5456 4 24.5 4C13.4543 4 4.5 12.9543 4.5 24C4.5 35.0456 13.4543 44 24.5 44C35.5456 44 44.5 35.0456 44.5 24Z"
-                stroke="#B0B0B0"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M24.9844 34V24C24.9844 23.0572 24.9844 22.5858 24.6914 22.2928C24.3986 22 23.9272 22 22.9844 22"
-                stroke="#B0B0B0"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M24.4844 16H24.5024"
-                stroke="#B0B0B0"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <h3 className="text-lg font-bold text-white sm:text-[19px]">
-              Nothing Found
-            </h3>
-            <p className="text-center text-sm font-normal text-webGray sm:text-[15px]">
-              You haven't invited anyone yet.
-              <br />
-              Invite friends and earn rewards.
-            </p>
-          </div>
+          {/* Invitations List */}
+          {invitations.length === 0 ? (
+            <div className="flex h-48 flex-col items-center justify-center gap-2">
+              <svg width="48" height="48" viewBox="0 0 49 48" fill="none">
+                <path
+                  d="M44.5 24C44.5 12.9543 35.5456 4 24.5 4C13.4543 4 4.5 12.9543 4.5 24C4.5 35.0456 13.4543 44 24.5 44C35.5456 44 44.5 35.0456 44.5 24Z"
+                  stroke="#B0B0B0"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M24.9844 34V24C24.9844 23.0572 24.9844 22.5858 24.6914 22.2928C24.3986 22 23.9272 22 22.9844 22"
+                  stroke="#B0B0B0"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M24.4844 16H24.5024"
+                  stroke="#B0B0B0"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <h3 className="text-lg font-bold text-white sm:text-[19px]">
+                Nothing Found
+              </h3>
+              <p className="text-center text-sm font-normal text-webGray sm:text-[15px]">
+                You haven't invited anyone yet.
+                <br />
+                Invite friends and earn rewards.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {invitations.map((invitation) => (
+                <div
+                  key={invitation.id}
+                  className="flex items-center justify-between rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] p-4 backdrop-blur-[50px]"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-bold text-white sm:text-[15px]">
+                      Referral Code: {invitation.code}
+                    </span>
+                    <span className="text-xs font-normal text-webGray sm:text-sm">
+                      {new Date(invitation.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "rounded-full px-3 py-1 text-xs font-bold sm:text-sm",
+                      invitation.status === 'completed' 
+                        ? "bg-green/20 text-green"
+                        : invitation.status === 'rewarded'
+                        ? "bg-primary/20 text-primary"
+                        : "bg-yellow-500/20 text-yellow-500"
+                    )}>
+                      {invitation.status === 'completed' 
+                        ? 'Completed' 
+                        : invitation.status === 'rewarded'
+                        ? 'Rewarded'
+                        : 'Pending'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

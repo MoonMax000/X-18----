@@ -161,6 +161,7 @@ func main() {
 	totpHandler := api.NewTOTPHandler(db.DB, redisCache)
 	accountHandler := api.NewAccountHandler(db.DB, redisCache)
 	protectedOpsHandler := api.NewProtectedOperationsHandler(db, redisCache, cfg)
+	referralHandler := api.NewReferralHandler(db)
 
 	// Stripe webhook handler
 	stripeWebhookSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
@@ -287,6 +288,12 @@ func main() {
 	// Notification Preferences routes (protected)
 	apiGroup.Get("/notification-preferences", middleware.JWTMiddleware(cfg), notificationPreferencesHandler.GetNotificationPreferences)
 	apiGroup.Put("/notification-preferences", middleware.JWTMiddleware(cfg), notificationPreferencesHandler.UpdateNotificationPreferences)
+
+	// Referral routes (protected)
+	referrals := apiGroup.Group("/referrals", middleware.JWTMiddleware(cfg))
+	referrals.Get("/stats", referralHandler.GetReferralStats)
+	referrals.Get("/code", referralHandler.GetReferralCode)
+	referrals.Get("/invitations", referralHandler.GetReferralInvitations)
 
 	// Media routes
 	media := apiGroup.Group("/media")

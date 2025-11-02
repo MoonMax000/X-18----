@@ -3,20 +3,10 @@
 > vite
 
 
-  VITE v7.1.12  ready in 160 ms
+  VITE v7.1.12  ready in 250 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: http://192.168.2.44:5173/
-  ➜  Network: http://169.254.118.130:5173/
 
 warn - The class `duration-[600ms]` is ambiguous and matches multiple utilities.
 warn - If this is content and not a class, replace it with `duration-&lsqb;600ms&rsqb;` to silence this warning.
-11:28:53 AM [vite] (client) hmr update /client/global.css
-11:32:51 AM [vite] (client) hmr update /client/global.css
-11:32:51 AM [vite] (client) hmr update /client/global.css
-11:32:51 AM [vite] (client) hmr update /client/global.css
-11:33:45 AM [vite] (client) hmr update /client/global.css
-11:34:19 AM [vite] (client) hmr update /client/global.css
-11:34:43 AM [vite] (client) hmr update /client/global.css
-11:35:28 AM [vite] (client) hmr update /client/global.css
-11:35:56 AM [vite] (client) hmr update /client/global.css

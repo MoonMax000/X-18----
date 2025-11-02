@@ -112,7 +112,7 @@ echo ""
 echo -e "${YELLOW}⚙️  Configuring frontend for custom backend...${NC}"
 cat > .env.local << 'EOF'
 # Custom Backend Configuration
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8080
 VITE_BACKEND_TYPE=custom
 
 # Resend Email (optional)
