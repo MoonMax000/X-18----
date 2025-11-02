@@ -25,7 +25,7 @@ const ROLES = [
   "Swing Trader",
 ];
 
-type FieldStatus = 'idle' | 'saving' | 'saved' | 'error';
+type FieldStatus = 'idle' | 'loading' | 'saving' | 'saved' | 'error';
 
 interface FieldStatusIndicatorProps {
   status: FieldStatus;
@@ -37,6 +37,9 @@ const FieldStatusIndicator: FC<FieldStatusIndicatorProps> = ({ status, error }) 
 
   return (
     <span className="text-xs font-medium flex items-center gap-1">
+      {status === 'loading' && (
+        <div className="w-3 h-3 border-2 border-[#A06AFF] border-t-transparent rounded-full animate-spin" />
+      )}
       {status === 'saving' && (
         <>
           <div className="w-3 h-3 border-2 border-[#A06AFF] border-t-transparent rounded-full animate-spin" />
@@ -118,6 +121,18 @@ const ProfileOverview: FC = () => {
   useEffect(() => {
     const loadUserData = async () => {
       try {
+        // Set loading status for all fields
+        setFieldStatus({
+          firstName: 'loading',
+          lastName: 'loading',
+          username: 'loading',
+          location: 'loading',
+          website: 'loading',
+          role: 'loading',
+          sectors: 'loading',
+          bio: 'loading',
+        });
+
         const response = await customBackendAPI.getMe();
         
         // Initialize all fields from API
@@ -142,6 +157,18 @@ const ProfileOverview: FC = () => {
         } else {
           setSelectedSectors([]);
         }
+
+        // Reset all statuses to idle after loading
+        setFieldStatus({
+          firstName: 'idle',
+          lastName: 'idle',
+          username: 'idle',
+          location: 'idle',
+          website: 'idle',
+          role: 'idle',
+          sectors: 'idle',
+          bio: 'idle',
+        });
         
         // Update Redux store with real data
         dispatch(updateProfile({
@@ -461,27 +488,14 @@ const ProfileOverview: FC = () => {
               )}
             </div>
           </div>
-          <div className="flex px-4 py-3 justify-between items-center rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)]">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="flex-1 bg-transparent text-[15px] font-bold text-white focus:outline-none"
-              style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
-              placeholder="username"
-            />
-            {usernameVerified && fieldStatus.username === 'idle' && (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M4.1665 12.083C4.1665 12.083 5.4165 12.083 7.08317 14.9997C7.08317 14.9997 11.7155 7.36078 15.8332 5.83301"
-                  stroke="#2EBD85"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </div>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="flex px-4 py-3 items-center gap-2 rounded-xl border border-[#181B22] bg-black shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] text-[15px] font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-inset"
+            style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+            placeholder="username"
+          />
         </div>
 
         <div className="flex flex-col gap-2 flex-1">
