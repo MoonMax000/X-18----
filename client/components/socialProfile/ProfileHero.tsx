@@ -100,10 +100,21 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   };
 
   // Save cropped avatar
-  const handleSaveAvatar = async (croppedImageUrl: string) => {
+  const handleSaveAvatar = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      // TODO: Upload to backend
-      setAvatarUrl(croppedImageUrl);
+      // Convert Blob to File for upload
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+      
+      // Upload to backend
+      const { customBackendAPI } = await import('@/services/api/custom-backend');
+      const mediaResponse = await customBackendAPI.uploadMedia(file);
+      
+      // Update profile with new avatar URL
+      await customBackendAPI.updateProfile({
+        avatar_url: mediaResponse.url,
+      });
+      
+      setAvatarUrl(mediaResponse.url);
       toast.success('Avatar updated successfully');
     } catch (error) {
       console.error('Failed to save avatar:', error);
@@ -112,10 +123,21 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   };
 
   // Save cropped cover
-  const handleSaveCover = async (croppedImageUrl: string) => {
+  const handleSaveCover = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      // TODO: Upload to backend
-      setCoverUrl(croppedImageUrl);
+      // Convert Blob to File for upload
+      const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' });
+      
+      // Upload to backend
+      const { customBackendAPI } = await import('@/services/api/custom-backend');
+      const mediaResponse = await customBackendAPI.uploadMedia(file);
+      
+      // Update profile with new header URL
+      await customBackendAPI.updateProfile({
+        header_url: mediaResponse.url,
+      });
+      
+      setCoverUrl(mediaResponse.url);
       toast.success('Cover photo updated successfully');
     } catch (error) {
       console.error('Failed to save cover:', error);
@@ -287,7 +309,7 @@ const ProfileHero: FC<ProfileHeroProps> = ({
           cropShape="round"
           aspect={1}
           onCropComplete={(croppedUrl, blob) => {
-            handleSaveAvatar(croppedUrl);
+            handleSaveAvatar(croppedUrl, blob);
           }}
           onClose={() => {
             setShowAvatarCrop(false);
@@ -305,7 +327,7 @@ const ProfileHero: FC<ProfileHeroProps> = ({
           cropShape="rect"
           aspect={3}
           onCropComplete={(croppedUrl, blob) => {
-            handleSaveCover(croppedUrl);
+            handleSaveCover(croppedUrl, blob);
           }}
           onClose={() => {
             setShowCoverCrop(false);
