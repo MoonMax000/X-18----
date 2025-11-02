@@ -1,5 +1,8 @@
 import type { FC } from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDebounce } from "@/hooks/useDebounce";
+import { cn } from "@/lib/utils";
 
 import SuggestedProfilesWidget, {
   type SuggestedProfile,
@@ -182,36 +185,111 @@ const exploreNews: NewsItem[] = [
 const DEFAULT_CATEGORY = categories[0];
 
 const SocialExplore: FC = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<ExploreCategory>(DEFAULT_CATEGORY);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const [followingTopics, setFollowingTopics] = useState<Set<string>>(new Set());
 
   const filteredCollections = useMemo(() => {
-    if (activeCategory === DEFAULT_CATEGORY) {
-      return exploreCollections;
+    let collections = exploreCollections;
+
+    // Filter by category
+    if (activeCategory !== DEFAULT_CATEGORY) {
+      const matching = collections.filter((collection) =>
+        collection.topics.includes(activeCategory),
+      );
+      collections = matching.length > 0 ? matching : collections;
     }
 
-    const matching = exploreCollections.filter((collection) =>
-      collection.topics.includes(activeCategory),
-    );
+    // Filter by search query
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
+      collections = collections.filter((collection) =>
+        collection.title.toLowerCase().includes(query) ||
+        collection.description.toLowerCase().includes(query) ||
+        collection.topics.some(topic => topic.toLowerCase().includes(query))
+      );
+    }
 
-    return matching.length > 0 ? matching : exploreCollections;
-  }, [activeCategory]);
+    return collections;
+  }, [activeCategory, debouncedSearch]);
 
   const filteredStories = useMemo(() => {
-    if (activeCategory === DEFAULT_CATEGORY) {
-      return featuredStories;
+    let stories = featuredStories;
+
+    // Filter by category
+    if (activeCategory !== DEFAULT_CATEGORY) {
+      stories = stories.filter((story) => story.tags.includes(activeCategory));
     }
 
-    return featuredStories.filter((story) => story.tags.includes(activeCategory));
-  }, [activeCategory]);
+    // Filter by search query
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
+      stories = stories.filter((story) =>
+        story.title.toLowerCase().includes(query) ||
+        story.summary.toLowerCase().includes(query) ||
+        story.tags.some(tag => tag.toLowerCase().includes(query)) ||
+        story.author.toLowerCase().includes(query)
+      );
+    }
+
+    return stories;
+  }, [activeCategory, debouncedSearch]);
 
   const highlightedNews = useMemo(() => {
-    if (activeCategory === DEFAULT_CATEGORY) {
-      return exploreNews;
+    let news = exploreNews;
+
+    // Filter by category
+    if (activeCategory !== DEFAULT_CATEGORY) {
+      const matching = news.filter((item) => item.category === activeCategory);
+      news = matching.length > 0 ? matching : news;
     }
 
-    const matching = exploreNews.filter((item) => item.category === activeCategory);
-    return matching.length > 0 ? matching : exploreNews;
-  }, [activeCategory]);
+    // Filter by search query
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
+      news = news.filter((item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      );
+    }
+
+    return news;
+  }, [activeCategory, debouncedSearch]);
+
+  const handleFollowTopic = useCallback((topicId: string) => {
+    setFollowingTopics(prev => {
+      const next = new Set(prev);
+      if (next.has(topicId)) {
+        next.delete(topicId);
+      } else {
+        next.add(topicId);
+      }
+      return next;
+    });
+    // TODO: Call API to follow/unfollow topic
+    console.log('Following topic:', topicId);
+  }, []);
+
+  const handleOpenCollection = useCallback((collectionId: string) => {
+    // TODO: Navigate to collection detail page
+    console.log('Opening collection:', collectionId);
+    // navigate(`/social/collection/${collectionId}`);
+  }, [navigate]);
+
+  const handleOpenStory = useCallback((storyId: string) => {
+    // TODO: Navigate to story detail page
+    console.log('Opening story:', storyId);
+    // navigate(`/social/story/${storyId}`);
+  }, [navigate]);
+
+  const handleCreateList = useCallback(() => {
+    // TODO: Open create list modal
+    console.log('Creating new list');
+  }, []);
+
+  const hasResults = filteredCollections.length > 0 || filteredStories.length > 0 || highlightedNews.length > 0;
 
   return (
     <div className="flex w-full justify-center pb-12">
@@ -220,6 +298,8 @@ const SocialExplore: FC = () => {
           <div className="relative">
             <input
               type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Поиск тем, людей и списков"
               className="w-full rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.8)] py-3 pl-12 pr-4 text-sm font-medium text-white placeholder:text-[#6C7080] shadow-[0_14px_30px_rgba(10,12,16,0.35)] transition focus:border-[#A06AFF] focus:outline-none focus:ring-2 focus:ring-[#A06AFF]/40"
             />
@@ -241,48 +321,84 @@ const SocialExplore: FC = () => {
             onSelect={setActiveCategory}
           />
 
-          <SpotlightCard />
+          {!debouncedSearch && <SpotlightCard />}
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {filteredCollections.map((collection) => (
-              <CollectionCard key={collection.id} collection={collection} />
-            ))}
-          </div>
-
-          <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
-            <h3 className="text-lg font-semibold text-white">Что в фокусе</h3>
-            <div className="mt-4 flex flex-col divide-y divide-white/5">
-              {highlightedNews.map((item, index) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3 text-left transition hover:bg-white/5"
-                >
-                  <span className="text-sm font-medium text-white/40">{index + 1}</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs uppercase tracking-[0.2em] text-white/40">{item.category}</span>
-                    <span className="text-sm font-semibold text-white">{item.title}</span>
-                    <span className="text-xs text-white/50">
-                      {item.publishedAgo}
-                      {item.engagement ? ` · ${item.engagement}` : ""}
-                    </span>
-                  </div>
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-white/60">
-                    Следить
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {filteredStories.length > 0 ? (
-            <div className="flex flex-col gap-4">
-              {filteredStories.map((story) => (
-                <StoryCard key={story.id} story={story} />
-              ))}
+          {!hasResults && debouncedSearch ? (
+            <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-[#181B22] bg-[rgba(12,16,20,0.4)] p-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#A06AFF]/20 text-[#A06AFF]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M20 20L17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white">Ничего не найдено по запросу "{debouncedSearch}"</h3>
+              <p className="max-w-[360px] text-sm text-[#B0B0B0]">
+                Попробуйте изменить поисковый запрос или выбрать другую категорию
+              </p>
             </div>
           ) : (
-            <EmptyExploreState activeCategory={activeCategory} />
+            <>
+              {filteredCollections.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {filteredCollections.map((collection) => (
+                    <CollectionCard 
+                      key={collection.id} 
+                      collection={collection}
+                      onOpen={() => handleOpenCollection(collection.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {highlightedNews.length > 0 && (
+            <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
+              <h3 className="text-lg font-semibold text-white">Что в фокусе</h3>
+              <div className="mt-4 flex flex-col divide-y divide-white/5">
+                {highlightedNews.map((item, index) => {
+                  const isFollowing = followingTopics.has(item.id);
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleFollowTopic(item.id)}
+                      className="grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3 text-left transition hover:bg-white/5"
+                    >
+                      <span className="text-sm font-medium text-white/40">{index + 1}</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs uppercase tracking-[0.2em] text-white/40">{item.category}</span>
+                        <span className="text-sm font-semibold text-white">{item.title}</span>
+                        <span className="text-xs text-white/50">
+                          {item.publishedAgo}
+                          {item.engagement ? ` · ${item.engagement}` : ""}
+                        </span>
+                      </div>
+                      <span className={cn(
+                        "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                        isFollowing 
+                          ? "border-primary bg-primary/20 text-primary"
+                          : "border-white/10 text-white/60 hover:border-primary hover:text-primary"
+                      )}>
+                        {isFollowing ? 'Отслеживается' : 'Следить'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {filteredStories.length > 0 && (
+            <div className="flex flex-col gap-4">
+              {filteredStories.map((story) => (
+                <StoryCard 
+                  key={story.id} 
+                  story={story}
+                  onOpen={() => handleOpenStory(story.id)}
+                />
+              ))}
+            </div>
           )}
         </section>
 
@@ -296,6 +412,7 @@ const SocialExplore: FC = () => {
             </p>
             <button
               type="button"
+              onClick={handleCreateList}
               className="mt-4 inline-flex items-center gap-2 rounded-full border border-transparent bg-gradient-to-r from-[#A06AFF] to-[#482090] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:shadow-[0_12px_30px_-20px_rgba(160,106,255,0.9)]"
             >
               Создать список
@@ -368,10 +485,11 @@ const SpotlightCard: FC = () => (
 
 interface CollectionCardProps {
   collection: ExploreCollection;
+  onOpen: () => void;
 }
 
-const CollectionCard: FC<CollectionCardProps> = ({ collection }) => (
-  <article className="flex h-full flex-col justify-between rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5 shadow-[0_14px_30px_rgba(10,12,16,0.35)]">
+const CollectionCard: FC<CollectionCardProps> = ({ collection, onOpen }) => (
+  <article className="flex h-full flex-col justify-between rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5 shadow-[0_14px_30px_rgba(10,12,16,0.35)] transition-all hover:border-[#A06AFF]/50 hover:shadow-[0_14px_30px_rgba(160,106,255,0.25)] cursor-pointer group">
     <div className="flex flex-col gap-3">
       <span
         className={`inline-flex w-max items-center gap-2 rounded-full bg-gradient-to-r ${collection.accent} px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/90`}
@@ -390,7 +508,11 @@ const CollectionCard: FC<CollectionCardProps> = ({ collection }) => (
     </div>
     <button
       type="button"
-      className="mt-6 inline-flex w-max items-center gap-2 rounded-full border border-transparent bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:border-white/30 hover:bg-white/20"
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+      className="mt-6 inline-flex w-max items-center gap-2 rounded-full border border-transparent bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:border-white/30 hover:bg-white/20 group-hover:bg-gradient-to-r group-hover:from-[#A06AFF] group-hover:to-[#482090]"
     >
       Открыть подборку
     </button>
@@ -399,10 +521,14 @@ const CollectionCard: FC<CollectionCardProps> = ({ collection }) => (
 
 interface StoryCardProps {
   story: ExploreStory;
+  onOpen: () => void;
 }
 
-const StoryCard: FC<StoryCardProps> = ({ story }) => (
-  <article className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-6 transition hover:border-[#A06AFF]/50">
+const StoryCard: FC<StoryCardProps> = ({ story, onOpen }) => (
+  <article 
+    onClick={onOpen}
+    className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-6 transition-all hover:border-[#A06AFF]/50 hover:shadow-[0_14px_30px_rgba(160,106,255,0.25)] cursor-pointer"
+  >
     <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[#6C7080]">
       <span>{story.category}</span>
       <span className="h-[2px] w-8 rounded-full bg-[#6C7080]/50" />
