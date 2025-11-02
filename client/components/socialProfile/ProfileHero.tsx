@@ -4,8 +4,7 @@ import { profileButtonStyles } from "./profileButtonStyles";
 import TipModal from "@/components/monetization/TipModal";
 import { DollarSign, Camera } from "lucide-react";
 import { toast } from "sonner";
-import { AvatarCropModal } from "./AvatarCropModal";
-import { CoverCropModal } from "./CoverCropModal";
+import ImageCropModal from "@/components/common/ImageCropModal";
 
 interface ProfileHeroProps {
   profile: SocialProfileData;
@@ -282,9 +281,14 @@ const ProfileHero: FC<ProfileHeroProps> = ({
 
       {/* Avatar Crop Modal */}
       {showAvatarCrop && tempAvatarUrl && (
-        <AvatarCropModal
+        <ImageCropModal
+          isOpen={showAvatarCrop}
           imageUrl={tempAvatarUrl}
-          onSave={handleSaveAvatar}
+          cropShape="round"
+          aspect={1}
+          onCropComplete={(croppedUrl, blob) => {
+            handleSaveAvatar(croppedUrl);
+          }}
           onClose={() => {
             setShowAvatarCrop(false);
             setTempAvatarUrl(null);
@@ -295,9 +299,14 @@ const ProfileHero: FC<ProfileHeroProps> = ({
 
       {/* Cover Crop Modal */}
       {showCoverCrop && tempCoverUrl && (
-        <CoverCropModal
+        <ImageCropModal
+          isOpen={showCoverCrop}
           imageUrl={tempCoverUrl}
-          onSave={handleSaveCover}
+          cropShape="rect"
+          aspect={3}
+          onCropComplete={(croppedUrl, blob) => {
+            handleSaveCover(croppedUrl);
+          }}
           onClose={() => {
             setShowCoverCrop(false);
             setTempCoverUrl(null);

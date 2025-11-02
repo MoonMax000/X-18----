@@ -1,10 +1,11 @@
 /**
  * Создает обрезанное изображение из исходного изображения
- * используя координаты обрезки
+ * используя координаты обрезки и опциональную ротацию
  */
 export async function getCroppedImg(
   imageSrc: string,
   pixelCrop: { x: number; y: number; width: number; height: number },
+  rotation: number = 0,
 ): Promise<string> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -14,21 +15,36 @@ export async function getCroppedImg(
     throw new Error('No 2d context');
   }
 
-  // Устанавливаем размер canvas равным размеру обрезанной области
+  const maxSize = Math.max(image.width, image.height);
+  const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
+
+  // Устанавливаем размер canvas с учетом ротации
+  canvas.width = safeArea;
+  canvas.height = safeArea;
+
+  // Переносим центр в середину canvas
+  ctx.translate(safeArea / 2, safeArea / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.translate(-safeArea / 2, -safeArea / 2);
+
+  // Рисуем изображение
+  ctx.drawImage(
+    image,
+    safeArea / 2 - image.width * 0.5,
+    safeArea / 2 - image.height * 0.5,
+  );
+
+  const data = ctx.getImageData(0, 0, safeArea, safeArea);
+
+  // Устанавливаем финальный размер canvas
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
 
-  // Рисуем обрезанную часть изображения
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    pixelCrop.width,
-    pixelCrop.height,
+  // Вставляем обрезанное изображение
+  ctx.putImageData(
+    data,
+    0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x,
+    0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y,
   );
 
   // Конвертируем canvas в blob URL
