@@ -114,7 +114,7 @@ jobs:
     - name: Deploy to S3
       run: |
         cd client
-        aws s3 sync dist/ s3://$S3_BUCKET/ --delete
+        aws s3 sync dist/spa/ s3://$S3_BUCKET/ --delete
 
     - name: Invalidate CloudFront
       run: |
