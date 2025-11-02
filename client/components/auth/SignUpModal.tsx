@@ -137,18 +137,24 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
       console.log('🔄 Registering user with custom backend...');
       
       // Register using Custom Backend API
-      // This returns user data and tokens in one call
-      await customAuth.register({
+      const result = await customAuth.register({
         username,
         email: authMethod === 'email' ? email : `${phone}@phone.temp`,
         password,
         display_name: username,
       });
 
-      console.log('✅ Registration successful! User authenticated and tokens saved.');
-
-      // Show verification modal (for email confirmation if needed)
-      setShowVerification(true);
+      // Проверяем требуется ли email verification
+      if (result.requires_email_verification) {
+        console.log('✅ Registration successful! Email verification required.');
+        setShowVerification(true); // Показываем окно ввода кода
+      } else {
+        // Старая логика (если вернулись токены) - не должно произойти
+        console.log('✅ Registration successful! User authenticated (legacy flow).');
+        // Токены уже сохранены в customAuth.register()
+        // Можно перенаправить на dashboard или показать success
+        window.location.href = '/dashboard';
+      }
     } catch (error) {
       console.error('❌ Registration error:', error);
       

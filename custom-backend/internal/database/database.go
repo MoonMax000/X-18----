@@ -6,6 +6,7 @@ import (
 
 	"custom-backend/configs"
 	"custom-backend/internal/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -53,6 +54,8 @@ func (d *Database) AutoMigrate() error {
 		&models.Session{},
 		&models.Subscription{},
 		&models.Purchase{},
+		&models.News{},
+		&models.VerificationCode{},
 	)
 
 	if err != nil {

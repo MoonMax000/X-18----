@@ -5,8 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"custom-backend/configs"
 	"custom-backend/internal/auth"
 	"custom-backend/internal/cache"
@@ -15,6 +13,9 @@ import (
 	"custom-backend/internal/services"
 	"custom-backend/pkg/email"
 	"custom-backend/pkg/utils"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -22,10 +23,10 @@ type AuthHandler struct {
 	db          *database.Database
 	cache       *cache.Cache
 	config      *configs.Config
-	emailClient *email.ResendClient
+	emailClient email.EmailClient
 }
 
-func NewAuthHandler(db *database.Database, cache *cache.Cache, config *configs.Config, emailClient *email.ResendClient) *AuthHandler {
+func NewAuthHandler(db *database.Database, cache *cache.Cache, config *configs.Config, emailClient email.EmailClient) *AuthHandler {
 	return &AuthHandler{
 		db:          db,
 		cache:       cache,
@@ -134,67 +135,31 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	)
 	if err != nil {
 		log.Printf("Failed to generate verification code: %v", err)
-	} else if h.emailClient != nil && h.emailClient.APIKey != "" {
-		// Send verification email
-		if err := h.emailClient.SendVerificationEmail(user.Email, verificationCode.Code); err != nil {
-			log.Printf("Failed to send verification email: %v", err)
-		}
-	}
-
-	// Generate tokens
-	tokens, err := auth.GenerateTokenPair(
-		user.ID,
-		user.Username,
-		user.Email,
-		user.Role, // Добавляем роль
-		h.config.JWT.AccessSecret,
-		h.config.JWT.RefreshSecret,
-		h.config.JWT.AccessExpiry,
-		h.config.JWT.RefreshExpiry,
-	)
-	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to generate tokens",
+			"error": "Failed to generate verification code",
 		})
 	}
 
-	// Store refresh token in database
-	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
-	session := models.Session{
-		UserID:           user.ID,
-		RefreshTokenHash: refreshTokenHash,
-		ExpiresAt:        time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour),
+	// Send verification email
+	if h.emailClient != nil {
+		if err := h.emailClient.SendVerificationEmail(user.Email, verificationCode.Code); err != nil {
+			log.Printf("Failed to send verification email: %v", err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to send verification email",
+			})
+		}
+	} else {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Email service not configured",
+		})
 	}
-	h.db.DB.Create(&session)
 
-	// Устанавливаем refresh token в HttpOnly cookie
-	c.Cookie(&fiber.Cookie{
-		Name:     "refresh_token",
-		Value:    tokens.RefreshToken,
-		HTTPOnly: true,
-		Secure:   h.config.Server.Env == "production", // HTTPS только в production
-		SameSite: "Lax",                               // Изменяем на Lax для лучшей совместимости
-		MaxAge:   86400 * h.config.JWT.RefreshExpiry,  // дни в секунды
-		Path:     "/",                                 // Доступен для всего домена
+	// НЕ генерируем токены - возвращаем требование email verification
+	return c.Status(201).JSON(fiber.Map{
+		"user":                        user.ToMe(),
+		"requires_email_verification": true,
+		"message":                     "Please check your email for verification code",
 	})
-
-	// Проверяем заголовок для обратной совместимости
-	includeRefreshToken := c.Get("X-Include-Refresh-Token") == "true"
-
-	// Создаем ответ БЕЗ refresh_token
-	response := fiber.Map{
-		"user":         user.ToMe(),
-		"access_token": tokens.AccessToken,
-		"token_type":   "Bearer",
-		"expires_in":   tokens.ExpiresIn,
-	}
-
-	// Включаем refresh_token только если клиент явно запросил (для обратной совместимости)
-	if includeRefreshToken {
-		response["refresh_token"] = tokens.RefreshToken
-	}
-
-	return c.Status(201).JSON(response)
 }
 
 // Login handles user login with security features
@@ -282,7 +247,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		}
 
 		// Send 2FA code via email if method is email
-		if user.VerificationMethod == "email" && h.emailClient != nil && h.emailClient.APIKey != "" {
+		if user.VerificationMethod == "email" && h.emailClient != nil {
 			if err := h.emailClient.Send2FAEmail(user.Email, code.Code); err != nil {
 				log.Printf("Failed to send 2FA email: %v", err)
 			}
@@ -597,7 +562,8 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 // POST /api/auth/verify/email
 func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 	type VerifyRequest struct {
-		Code string `json:"code" validate:"required,len=6"`
+		Email string `json:"email" validate:"required,email"`
+		Code  string `json:"code" validate:"required,len=6"`
 	}
 
 	var req VerifyRequest
@@ -607,17 +573,17 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user from context
-	userID := c.Locals("userID")
-	if userID == nil {
-		return c.Status(401).JSON(fiber.Map{
-			"error": "Unauthorized",
+	// Find user by email
+	var user models.User
+	if err := h.db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "User not found",
 		})
 	}
 
 	// Verify code
 	securityService := services.NewSecurityService(h.db.DB, h.cache)
-	valid, err := securityService.VerifyCode(userID.(uuid.UUID), req.Code, models.VerificationTypeEmail)
+	valid, err := securityService.VerifyCode(user.ID, req.Code, models.VerificationTypeEmail)
 	if err != nil || !valid {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid or expired verification code",
@@ -625,10 +591,61 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 	}
 
 	// Update user's email verification status
-	h.db.DB.Model(&models.User{}).Where("id = ?", userID).Update("is_email_verified", true)
+	h.db.DB.Model(&user).Update("is_email_verified", true)
 
+	// Generate tokens after successful verification
+	tokens, err := auth.GenerateTokenPair(
+		user.ID,
+		user.Username,
+		user.Email,
+		user.Role,
+		h.config.JWT.AccessSecret,
+		h.config.JWT.RefreshSecret,
+		h.config.JWT.AccessExpiry,
+		h.config.JWT.RefreshExpiry,
+	)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to generate tokens",
+		})
+	}
+
+	// Create session
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
+	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
+
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, expiresAt)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to create session",
+		})
+	}
+
+	// Update last active
+	now := time.Now()
+	user.LastActiveAt = &now
+	h.db.DB.Save(&user)
+
+	// Set refresh token cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    tokens.RefreshToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
+		Path:     "/",
+	})
+
+	// Return tokens
 	return c.JSON(fiber.Map{
-		"message": "Email verified successfully",
+		"user":         user.ToMe(),
+		"access_token": tokens.AccessToken,
+		"token_type":   "Bearer",
+		"expires_in":   tokens.ExpiresIn,
+		"session_id":   session.ID,
+		"message":      "Email verified successfully",
 	})
 }
 
@@ -669,7 +686,7 @@ func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
 	}
 
 	// Send password reset email
-	if h.emailClient != nil && h.emailClient.APIKey != "" {
+	if h.emailClient != nil {
 		if err := h.emailClient.SendPasswordResetEmail(user.Email, code.Code); err != nil {
 			log.Printf("Failed to send password reset email: %v", err)
 		}
@@ -900,7 +917,7 @@ func (h *AuthHandler) Enable2FA(c *fiber.Ctx) error {
 	}
 
 	// Send verification code via email if method is email
-	if req.Method == "email" && h.emailClient != nil && h.emailClient.APIKey != "" {
+	if req.Method == "email" && h.emailClient != nil {
 		if err := h.emailClient.Send2FAEmail(user.Email, code.Code); err != nil {
 			log.Printf("Failed to send 2FA setup email: %v", err)
 		}
@@ -1192,7 +1209,7 @@ func (h *AuthHandler) ResendVerificationEmail(c *fiber.Ctx) error {
 	}
 
 	// Send email if client is configured
-	if h.emailClient != nil && h.emailClient.APIKey != "" {
+	if h.emailClient != nil {
 		if err := emailMethod(user.Email, code.Code); err != nil {
 			log.Printf("Failed to resend verification email: %v", err)
 			return c.Status(500).JSON(fiber.Map{

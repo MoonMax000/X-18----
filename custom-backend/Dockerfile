@@ -20,7 +20,8 @@ COPY . .
 # Build the application
 # CGO_ENABLED=0 for static binary
 # -ldflags for smaller binary size
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
+# GOARCH=amd64 for AWS Fargate compatibility
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo \
     -ldflags="-w -s" \
     -o /app/server \
     ./cmd/server

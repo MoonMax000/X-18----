@@ -100,21 +100,53 @@ func main() {
 	// Initialize WebSocket hub
 	api.InitWebSocketHub(redisCache)
 
-	// Initialize Resend email client
-	resendAPIKey := os.Getenv("RESEND_API_KEY")
-	resendFromEmail := os.Getenv("RESEND_FROM_EMAIL")
-	if resendFromEmail == "" {
-		resendFromEmail = "noreply@tyriantrade.com"
+	// Initialize email client based on EMAIL_PROVIDER
+	var emailClient email.EmailClient
+	emailProvider := os.Getenv("EMAIL_PROVIDER")
+	if emailProvider == "" {
+		emailProvider = "resend" // Default to Resend for backward compatibility
 	}
-	resendClient := email.NewResendClient(resendAPIKey, resendFromEmail, "Tyrian Trade")
-	if resendAPIKey == "" {
-		log.Println("⚠️  Warning: RESEND_API_KEY not set - email sending will be disabled")
-	} else {
-		log.Printf("✅ Resend email client initialized (from: %s)", resendFromEmail)
+
+	switch emailProvider {
+	case "ses":
+		// AWS SES configuration
+		awsRegion := os.Getenv("AWS_REGION")
+		if awsRegion == "" {
+			awsRegion = "us-east-1"
+		}
+		sesFromEmail := os.Getenv("SES_FROM_EMAIL")
+		if sesFromEmail == "" {
+			sesFromEmail = "noreply@tyriantrade.com"
+		}
+
+		sesClient, err := email.NewSESClient(awsRegion, sesFromEmail, "Tyrian Trade")
+		if err != nil {
+			log.Fatalf("❌ Failed to initialize AWS SES client: %v", err)
+		}
+		emailClient = sesClient
+		log.Printf("✅ AWS SES email client initialized (region: %s, from: %s)", awsRegion, sesFromEmail)
+
+	case "resend":
+		// Resend configuration
+		resendAPIKey := os.Getenv("RESEND_API_KEY")
+		resendFromEmail := os.Getenv("RESEND_FROM_EMAIL")
+		if resendFromEmail == "" {
+			resendFromEmail = "noreply@tyriantrade.com"
+		}
+
+		emailClient = email.NewResendClient(resendAPIKey, resendFromEmail, "Tyrian Trade")
+		if resendAPIKey == "" {
+			log.Println("⚠️  Warning: RESEND_API_KEY not set - email sending will be disabled")
+		} else {
+			log.Printf("✅ Resend email client initialized (from: %s)", resendFromEmail)
+		}
+
+	default:
+		log.Fatalf("❌ Invalid EMAIL_PROVIDER: %s (must be 'ses' or 'resend')", emailProvider)
 	}
 
 	// Initialize handlers
-	authHandler := api.NewAuthHandler(db, redisCache, cfg, resendClient)
+	authHandler := api.NewAuthHandler(db, redisCache, cfg, emailClient)
 	usersHandler := api.NewUsersHandler(db, redisCache)
 	postsHandler := api.NewPostsHandler(db)
 	timelineHandler := api.NewTimelineHandler(db)

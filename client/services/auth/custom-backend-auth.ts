@@ -45,9 +45,9 @@ class CustomBackendAuthService {
   /**
    * Register a new user account
    * @param params - Registration parameters (username, email, password)
-   * @returns Auth response with access token
+   * @returns Auth response with access token or requires_email_verification flag
    */
-  async register({ username, email, password, display_name }: RegisterParams): Promise<AuthResponse> {
+  async register({ username, email, password, display_name }: RegisterParams): Promise<any> {
     console.log('=== Custom Backend Registration ===');
     console.log('Username:', username);
     console.log('Email:', email);
@@ -73,9 +73,52 @@ class CustomBackendAuthService {
     const data = await response.json();
     console.log('✅ Registration successful');
 
-    // Store only access token and user
+    // Проверяем требуется ли email verification
+    if (data.requires_email_verification) {
+      console.log('📧 Email verification required');
+      return data; // Возвращаем без сохранения токенов
+    }
+
+    // Старая логика - если вернулись токены (для обратной совместимости)
+    if (data.access_token) {
+      localStorage.setItem('custom_token', data.access_token);
+      localStorage.setItem('custom_user', JSON.stringify(data.user));
+    }
+
+    return data;
+  }
+
+  /**
+   * Verify email with code
+   * @param email - User email
+   * @param code - Verification code from email
+   * @returns Auth response with tokens
+   */
+  async verifyEmail(email: string, code: string): Promise<AuthResponse> {
+    console.log('=== Custom Backend Email Verification ===');
+    console.log('Email:', email);
+
+    const response = await fetch(`${this.baseUrl}/auth/verify/email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        email,
+        code,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('❌ Email verification failed:', error);
+      throw new Error(error.error || 'Verification failed');
+    }
+
+    const data = await response.json();
+    console.log('✅ Email verified successfully');
+
+    // Сохраняем токены ТОЛЬКО после успешной verification
     localStorage.setItem('custom_token', data.access_token);
-    // Не сохраняем refresh_token - он в HttpOnly cookie
     localStorage.setItem('custom_user', JSON.stringify(data.user));
 
     return data;

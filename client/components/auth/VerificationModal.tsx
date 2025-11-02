@@ -1,5 +1,7 @@
 import { FC, useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { customAuth } from '@/services/auth/custom-backend-auth';
 
 interface VerificationModalProps {
   isOpen: boolean;
@@ -85,6 +87,8 @@ export const VerificationModal: FC<VerificationModalProps> = ({
     inputRefs.current[focusIndex]?.focus();
   };
 
+  const navigate = useNavigate();
+
   const handleVerify = async () => {
     const fullCode = code.join('');
 
@@ -94,35 +98,28 @@ export const VerificationModal: FC<VerificationModalProps> = ({
     }
 
     try {
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-
-      const response = await fetch(`${BACKEND_URL}/api/v1/auth/verify-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: fullCode }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Success - close modal
-        console.log('Verification successful!', data);
-        onClose();
-      } else {
-        // Handle errors
-        if (data.error?.includes('expired')) {
-          setError('expired');
-        } else if (data.error?.includes('Invalid')) {
-          setError('invalid');
-        } else {
-          setError('invalid');
-        }
-      }
+      console.log('🔄 Verifying email with code:', fullCode);
+      
+      // Call verifyEmail from customAuth service
+      await customAuth.verifyEmail(contact, fullCode);
+      
+      console.log('✅ Email verified successfully! Redirecting to dashboard...');
+      
+      // Navigate to dashboard after successful verification
+      navigate('/dashboard');
+      onClose();
     } catch (error) {
-      console.error('Verification error:', error);
-      setError('invalid');
+      console.error('❌ Verification error:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : '';
+      
+      if (errorMessage.includes('expired')) {
+        setError('expired');
+      } else if (errorMessage.includes('Invalid')) {
+        setError('invalid');
+      } else {
+        setError('invalid');
+      }
     }
   };
 
@@ -131,20 +128,32 @@ export const VerificationModal: FC<VerificationModalProps> = ({
     setError(null);
     inputRefs.current[0]?.focus();
 
-    // TODO: Call resend email API endpoint
-    console.log('Resending verification code to:', contact);
+    try {
+      console.log('🔄 Resending verification code to:', contact);
+      
+      // Call resend verification endpoint
+      // Note: This requires user to be authenticated first
+      // For new registrations, we might need a different approach
+      const response = await fetch(`${customAuth['baseUrl']}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          type: 'email',
+        }),
+      });
 
-    // For now, just log. Backend needs a resend endpoint
-    // try {
-    //   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-    //   await fetch(`${BACKEND_URL}/api/v1/auth/resend-verification`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ email: contact }),
-    //   });
-    // } catch (error) {
-    //   console.error('Resend error:', error);
-    // }
+      if (!response.ok) {
+        throw new Error('Failed to resend code');
+      }
+
+      console.log('✅ Verification code resent successfully');
+    } catch (error) {
+      console.error('❌ Resend error:', error);
+      // Show error to user (можно добавить toast notification)
+    }
   };
 
   // Auto-verify when all 6 digits are entered

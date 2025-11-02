@@ -1,0 +1,128 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "backend",
+            "image": "506675684508.dkr.ecr.us-east-1.amazonaws.com/tyriantrade-backend:ses-migration",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "S3_BUCKET",
+                    "value": "tyriantrade-media"
+                },
+                {
+                    "name": "REDIS_HOST",
+                    "value": "tyriantrade-redis.w5vtc9.0001.use1.cache.amazonaws.com"
+                },
+                {
+                    "name": "AWS_REGION",
+                    "value": "us-east-1"
+                },
+                {
+                    "name": "RESEND_FROM_EMAIL",
+                    "value": "noreply@tyriantrade.com"
+                },
+                {
+                    "name": "PORT",
+                    "value": "8080"
+                },
+                {
+                    "name": "DB_PORT",
+                    "value": "5432"
+                },
+                {
+                    "name": "DB_USER",
+                    "value": "dbadmin"
+                },
+                {
+                    "name": "USE_S3_STORAGE",
+                    "value": "true"
+                },
+                {
+                    "name": "RESEND_API_KEY",
+                    "value": "re_9Ap7LRbN_Mcj6Dm8xKDkSeMpX3NWxPBjF"
+                },
+                {
+                    "name": "EMAIL_PROVIDER",
+                    "value": "ses"
+                },
+                {
+                    "name": "DB_NAME",
+                    "value": "tyriantrade"
+                },
+                {
+                    "name": "DB_HOST",
+                    "value": "tyriantrade-db.c01iqwikc9ht.us-east-1.rds.amazonaws.com"
+                },
+                {
+                    "name": "CORS_ORIGIN",
+                    "value": "https://social.tyriantrade.com,http://localhost:5173"
+                },
+                {
+                    "name": "CLOUDFRONT_DOMAIN",
+                    "value": "d1xltpuqw8istm.cloudfront.net"
+                },
+                {
+                    "name": "REDIS_PORT",
+                    "value": "6379"
+                },
+                {
+                    "name": "JWT_SECRET",
+                    "value": "ffe29af2f7bb9b687514844ffb26aa7122c5539ecf33549172461b37b8770ae5"
+                },
+                {
+                    "name": "SES_FROM_EMAIL",
+                    "value": "noreply@tyriantrade.com"
+                },
+                {
+                    "name": "DB_SSLMODE",
+                    "value": "require"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "DB_PASSWORD",
+                    "valueFrom": "arn:aws:ssm:us-east-1:506675684508:parameter/tyriantrade/db/password"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/tyriantrade/backend",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "backend"
+                }
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:8080/health || exit 1"
+                ],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 60
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "tyriantrade-backend",
+    "taskRoleArn": "arn:aws:iam::506675684508:role/tyriantrade-ecs-task-role",
+    "executionRoleArn": "arn:aws:iam::506675684508:role/tyriantrade-ecs-execution-role",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "1024"
+}
