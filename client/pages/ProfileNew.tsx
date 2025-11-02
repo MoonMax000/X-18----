@@ -1,27 +1,15 @@
-import { FC, lazy, Suspense, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { useAuth } from "@/contexts/AuthContext";
-import { setProfile } from "@/store/profileSlice";
+import { FC, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import UserHeader from "@/components/UserHeader/UserHeader";
-import GamificationPanel from "@/components/UserHeader/GamificationPanel";
-import TabLoader from "@/components/common/TabLoader";
+import NotificationsSettings from "@/components/NotificationsSettings/NotificationsSettings";
+import BillingSettings from "@/components/BillingSettings/BillingSettings";
+import ReferralsSettings from "@/components/ReferralsSettings/ReferralsSettings";
+import KycSettings from "@/components/KycSettings/KycSettings";
+import LiveStreamingSettings from "@/components/LiveStreamingSettings/LiveStreamingSettings";
 import { cn } from "@/lib/utils";
 
-// Lazy load heavy tab components
-const NotificationsSettings = lazy(() => import("@/components/NotificationsSettings/NotificationsSettings"));
-const BillingSettings = lazy(() => import("@/components/BillingSettings/BillingSettings"));
-const ReferralsSettings = lazy(() => import("@/components/ReferralsSettings/ReferralsSettings"));
-const KycSettings = lazy(() => import("@/components/KycSettings/KycSettings"));
-const ApiSettings = lazy(() => import("@/components/ApiSettings/ApiSettings"));
-const LiveStreamingSettings = lazy(() => import("@/components/LiveStreamingSettings/LiveStreamingSettings"));
-const ProfileOverview = lazy(() => import("@/components/ProfileOverview/ProfileOverview"));
-const SocialOverview = lazy(() => import("@/components/SocialOverview/SocialOverview"));
-const MyPosts = lazy(() => import("@/components/MyPosts/MyPosts"));
-const Subscriptions = lazy(() => import("@/components/Subscriptions/Subscriptions"));
-const Monetization = lazy(() => import("@/components/monetization/Monetization"));
-
 type Tab =
+  | "dashboard"
   | "profile"
   | "marketplace"
   | "streaming"
@@ -39,7 +27,8 @@ type ProfileSubTab =
 type SocialSubTab =
   | "overview"
   | "posts"
-  | "subscriptions"
+  | "channels"
+  | "chats"
   | "monetization";
 
 type PortfolioSubTab = "my" | "following";
@@ -61,14 +50,27 @@ type StreamingSubTab =
   | "notifications"
   | "subscriptions";
 
-const DASHBOARD_WIDGET_VISIBILITY = {
-  myRevenue: false,
-  liveStreaming: false,
-  aiAssistant: false,
-  followingPortfolios: false,
-} as const;
-
 const tabs = [
+  {
+    id: "dashboard" as Tab,
+    label: "Dashboard",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+        <path
+          d="M10.5 15V12.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M2.45884 11.0116C2.16466 9.09716 2.01757 8.14002 2.37949 7.29148C2.74141 6.44293 3.54437 5.86235 5.1503 4.70121L6.35017 3.83366C8.34792 2.38922 9.34678 1.66699 10.4994 1.66699C11.6519 1.66699 12.6508 2.38922 14.6485 3.83366L15.8484 4.70121C17.4544 5.86235 18.2573 6.44293 18.6192 7.29148C18.9811 8.14002 18.834 9.09716 18.5399 11.0116L18.289 12.644C17.8719 15.3577 17.6634 16.7147 16.6902 17.5242C15.7169 18.3337 14.294 18.3337 11.4484 18.3337H9.55037C6.70463 18.3337 5.28177 18.3337 4.30852 17.5242C3.33526 16.7147 3.12674 15.3577 2.70971 12.644L2.45884 11.0116Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
   {
     id: "profile" as Tab,
     label: "Profile",
@@ -89,33 +91,32 @@ const tabs = [
       </svg>
     ),
   },
-  // MARKETPLACE TAB - DISABLED
-  // {
-  //   id: "marketplace" as Tab,
-  //   label: "Marketplace",
-  //   icon: (
-  //     <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
-  //       <path
-  //         d="M3 9.15625V12.9108C3 15.2706 3 16.4506 3.73223 17.1837C4.46447 17.9168 5.64297 17.9168 8 17.9168H13C15.357 17.9168 16.5355 17.9168 17.2677 17.1837C18 16.4506 18 15.2706 18 12.9108V9.15625"
-  //         stroke="currentColor"
-  //         strokeWidth="1.5"
-  //       />
-  //       <path
-  //         d="M13 14.1475C12.4299 14.6535 11.5223 14.9808 10.5 14.9808C9.47764 14.9808 8.57008 14.6535 8 14.1475"
-  //         stroke="currentColor"
-  //         strokeWidth="1.5"
-  //         strokeLinecap="round"
-  //       />
-  //       <path
-  //         d="M15.3305 2.08623L5.62567 2.11046C4.17719 2.03585 3.80581 3.1526 3.80581 3.69851C3.80581 4.18677 3.74294 4.89856 2.85518 6.23636C1.96742 7.57416 2.03413 7.97158 2.53474 8.8977C2.95021 9.66636 4.00699 9.96661 4.558 10.0171C6.30817 10.0569 7.15969 8.54353 7.15969 7.4798C8.0279 10.1525 10.4971 10.1525 11.5973 9.84686C12.6996 9.5407 13.6439 8.4447 13.8667 7.4798C13.9966 8.67895 14.391 9.37861 15.556 9.85945C16.7629 10.3574 17.8007 9.59628 18.3215 9.10828C18.8422 8.62036 19.1764 7.53712 18.2481 6.34653C17.608 5.52545 17.3411 4.75195 17.2535 3.95025C17.2027 3.48573 17.1581 2.98658 16.8318 2.66894C16.3548 2.20474 15.6705 2.06389 15.3305 2.08623Z"
-  //         stroke="currentColor"
-  //         strokeWidth="1.5"
-  //         strokeLinecap="round"
-  //         strokeLinejoin="round"
-  //       />
-  //     </svg>
-  //   ),
-  // },
+  {
+    id: "marketplace" as Tab,
+    label: "Marketplace",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+        <path
+          d="M3 9.15625V12.9108C3 15.2706 3 16.4506 3.73223 17.1837C4.46447 17.9168 5.64297 17.9168 8 17.9168H13C15.357 17.9168 16.5355 17.9168 17.2677 17.1837C18 16.4506 18 15.2706 18 12.9108V9.15625"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M13 14.1475C12.4299 14.6535 11.5223 14.9808 10.5 14.9808C9.47764 14.9808 8.57008 14.6535 8 14.1475"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M15.3305 2.08623L5.62567 2.11046C4.17719 2.03585 3.80581 3.1526 3.80581 3.69851C3.80581 4.18677 3.74294 4.89856 2.85518 6.23636C1.96742 7.57416 2.03413 7.97158 2.53474 8.8977C2.95021 9.66636 4.00699 9.96661 4.558 10.0171C6.30817 10.0569 7.15969 8.54353 7.15969 7.4798C8.0279 10.1525 10.4971 10.1525 11.5973 9.84686C12.6996 9.5407 13.6439 8.4447 13.8667 7.4798C13.9966 8.67895 14.391 9.37861 15.556 9.85945C16.7629 10.3574 17.8007 9.59628 18.3215 9.10828C18.8422 8.62036 19.1764 7.53712 18.2481 6.34653C17.608 5.52545 17.3411 4.75195 17.2535 3.95025C17.2027 3.48573 17.1581 2.98658 16.8318 2.66894C16.3548 2.20474 15.6705 2.06389 15.3305 2.08623Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
   {
     id: "streaming" as Tab,
     label: "Live Streaming",
@@ -194,6 +195,13 @@ const tabs = [
     ),
   },
 ];
+
+const DASHBOARD_WIDGET_VISIBILITY = {
+  myRevenue: false,
+  liveStreaming: false,
+  aiAssistant: false,
+  followingPortfolios: false,
+} as const;
 
 const profileSubTabs = [
   {
@@ -349,46 +357,30 @@ const profileSubTabs = [
   },
   {
     id: "api" as ProfileSubTab,
-    label: "API & Integrations",
+    label: "API",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path
-          d="M5.83398 10.833H3.33398C2.41351 10.833 1.66732 10.0868 1.66732 9.16634V5.83301C1.66732 4.91253 2.41351 4.16634 3.33398 4.16634H5.83398C6.75446 4.16634 7.50065 4.91253 7.50065 5.83301V9.16634C7.50065 10.0868 6.75446 10.833 5.83398 10.833Z"
+          d="M2.08398 9.99967C2.08398 6.26772 2.08398 4.40175 3.24335 3.24237C4.40273 2.08301 6.2687 2.08301 10.0007 2.08301C13.7326 2.08301 15.5986 2.08301 16.758 3.24237C17.9173 4.40175 17.9173 6.26772 17.9173 9.99967C17.9173 13.7316 17.9173 15.5976 16.758 16.757C15.5986 17.9163 13.7326 17.9163 10.0007 17.9163C6.2687 17.9163 4.40273 17.9163 3.24335 16.757C2.08398 15.5976 2.08398 13.7316 2.08398 9.99967Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M5.00065 11.25L6.25065 7.5L7.81315 11.25M5.00065 11.25L4.58398 12.5M5.00065 11.25H7.81315M7.81315 11.25L8.33398 12.5"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M16.6673 10.833H14.1673C13.2468 10.833 12.5007 10.0868 12.5007 9.16634V5.83301C12.5007 4.91253 13.2468 4.16634 14.1673 4.16634H16.6673C17.5878 4.16634 18.334 4.91253 18.334 5.83301V9.16634C18.334 10.0868 17.5878 10.833 16.6673 10.833Z"
+          d="M10.416 10V8.08333C10.416 7.92822 10.416 7.85068 10.4364 7.78791C10.4776 7.66106 10.5771 7.56161 10.7039 7.52039C10.7667 7.5 10.8443 7.5 10.9993 7.5H12.0827C12.773 7.5 13.3327 8.05964 13.3327 8.75C13.3327 9.44033 12.773 10 12.0827 10H10.416ZM10.416 10V12.5"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M16.6673 18.333H14.1673C13.2468 18.333 12.5007 17.5868 12.5007 16.6663V13.333C12.5007 12.4125 13.2468 11.6663 14.1673 11.6663H16.6673C17.5878 11.6663 18.334 12.4125 18.334 13.333V16.6663C18.334 17.5868 17.5878 18.333 16.6673 18.333Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M5.83398 18.333H3.33398C2.41351 18.333 1.66732 17.5868 1.66732 16.6663V13.333C1.66732 12.4125 2.41351 11.6663 3.33398 11.6663H5.83398C6.75446 11.6663 7.50065 12.4125 7.50065 13.333V16.6663C7.50065 17.5868 6.75446 18.333 5.83398 18.333Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M7.5 7.5H12.5"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M7.5 15H12.5"
+          d="M15.416 7.5V12.5"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
@@ -437,7 +429,7 @@ const profileSubTabs = [
 const socialSubTabs = [
   {
     id: "overview" as SocialSubTab,
-    label: "Обзор",
+    label: "Overview",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
@@ -469,7 +461,7 @@ const socialSubTabs = [
   },
   {
     id: "posts" as SocialSubTab,
-    label: "Мои посты",
+    label: "My Posts",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
@@ -495,47 +487,26 @@ const socialSubTabs = [
     ),
   },
   {
-    id: "subscriptions" as SocialSubTab,
-    label: "Мои подписки",
+    id: "channels" as SocialSubTab,
+    label: "My Channels",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
-          d="M13.4154 9.16667C13.4154 7.55583 12.1095 6.25 10.4987 6.25C8.88786 6.25 7.58203 7.55583 7.58203 9.16667C7.58203 10.7775 8.88786 12.0833 10.4987 12.0833C12.1095 12.0833 13.4154 10.7775 13.4154 9.16667Z"
+          d="M12.9386 3.67618L7.3946 6.33742C6.96793 6.54223 6.51203 6.59355 6.04729 6.48943C5.74314 6.4213 5.59105 6.38723 5.46858 6.37325C3.94786 6.19959 3 7.40318 3 8.78724V9.54674C3 10.9308 3.94786 12.1344 5.46858 11.9607C5.59105 11.9467 5.74315 11.9127 6.04729 11.8446C6.51203 11.7404 6.96793 11.7917 7.3946 11.9966L12.9386 14.6578C14.2112 15.2687 14.8475 15.5742 15.557 15.3361C16.2664 15.098 16.5099 14.5871 16.997 13.5653C18.3343 10.7597 18.3343 7.57437 16.997 4.76862C16.5099 3.74687 16.2664 3.236 15.557 2.99791C14.8475 2.75982 14.2112 3.06527 12.9386 3.67618Z"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M13.4022 9.45825C13.6705 9.53958 13.9551 9.58333 14.2499 9.58333C15.8607 9.58333 17.1666 8.2775 17.1666 6.66667C17.1666 5.05583 15.8607 3.75 14.2499 3.75C12.7375 3.75 11.4939 4.90117 11.3477 6.37511"
+          d="M11.332 14.1663V14.583C11.332 15.6531 11.332 16.1881 11.1454 16.4902C10.8964 16.8929 10.4414 17.1205 9.96978 17.0779C9.61611 17.0461 9.18811 16.725 8.33203 16.083L7.33203 15.333C6.51747 14.7221 6.33203 14.3512 6.33203 13.333V12.083"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M9.65095 6.37511C9.5047 4.90117 8.26113 3.75 6.7487 3.75C5.13786 3.75 3.83203 5.05583 3.83203 6.66667C3.83203 8.2775 5.13786 9.58333 6.7487 9.58333C7.04354 9.58333 7.32816 9.53958 7.59642 9.45825"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M18.8333 13.7499C18.8333 11.4488 16.7813 9.58325 14.25 9.58325"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M15.0846 16.2499C15.0846 13.9488 13.0326 12.0833 10.5013 12.0833C7.96999 12.0833 5.91797 13.9488 5.91797 16.2499"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M6.7513 9.58325C4.21999 9.58325 2.16797 11.4488 2.16797 13.7499"
+          d="M6.75 11.667V6.66699"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
@@ -545,8 +516,29 @@ const socialSubTabs = [
     ),
   },
   {
+    id: "chats" as SocialSubTab,
+    label: "My Chats",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+        <path
+          d="M17.168 7.50033C16.5053 4.17912 13.4286 1.66699 9.73405 1.66699C5.55588 1.66699 2.16797 4.87967 2.16797 8.84199C2.16797 10.7458 2.94979 12.4757 4.22509 13.7593C4.50588 14.042 4.69334 14.4282 4.61769 14.8256C4.49282 15.4754 4.20985 16.0816 3.79551 16.5867C4.88566 16.7877 6.01919 16.6067 6.99131 16.0942C7.33496 15.9132 7.50678 15.8226 7.62803 15.8042C7.7129 15.7913 7.82346 15.8033 8.0013 15.8338"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9.66797 13.5517C9.66797 15.9732 11.7203 17.9365 14.2513 17.9365C14.5489 17.9368 14.8456 17.9093 15.138 17.8545C15.3484 17.8149 15.4536 17.7952 15.5271 17.8064C15.6005 17.8176 15.7046 17.873 15.9128 17.9837C16.5016 18.2968 17.1883 18.4074 17.8487 18.2846C17.5977 17.9759 17.4263 17.6055 17.3506 17.2083C17.3048 16.9655 17.4184 16.7295 17.5885 16.5567C18.3611 15.7722 18.8346 14.7152 18.8346 13.5517C18.8346 11.1303 16.7823 9.16699 14.2513 9.16699C11.7203 9.16699 9.66797 11.1303 9.66797 13.5517Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
     id: "monetization" as SocialSubTab,
-    label: "Монетизация",
+    label: "Monetization",
     icon: (
       <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
         <path
@@ -1052,97 +1044,74 @@ const streamingSubTabs = [
 
 const ProfileNew: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  
+  // Read tab from URL on initial load
+  const tabFromUrl = searchParams.get('tab') as Tab | null;
+  const profileSubTabFromUrl = searchParams.get('profileSubTab') as ProfileSubTab | null;
+  const socialSubTabFromUrl = searchParams.get('socialSubTab') as SocialSubTab | null;
+  const portfolioSubTabFromUrl = searchParams.get('portfolioSubTab') as PortfolioSubTab | null;
+  const marketplaceSubTabFromUrl = searchParams.get('marketplaceSubTab') as MarketplaceSubTab | null;
+  const streamingSubTabFromUrl = searchParams.get('streamingSubTab') as StreamingSubTab | null;
+  
+  const [activeTab, setActiveTab] = useState<Tab>(tabFromUrl || "dashboard");
+  const [activeProfileSubTab, setActiveProfileSubTab] =
+    useState<ProfileSubTab>(profileSubTabFromUrl || "profile");
+  const [activeSocialSubTab, setActiveSocialSubTab] =
+    useState<SocialSubTab>(socialSubTabFromUrl || "overview");
+  const [activePortfolioSubTab, setActivePortfolioSubTab] =
+    useState<PortfolioSubTab>(portfolioSubTabFromUrl || "my");
+  const [activeMarketplaceSubTab, setActiveMarketplaceSubTab] =
+    useState<MarketplaceSubTab>(marketplaceSubTabFromUrl || "products");
+  const [activeStreamingSubTab, setActiveStreamingSubTab] =
+    useState<StreamingSubTab>(streamingSubTabFromUrl || "profile");
 
-  // Redirect to /feedtest if user is not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      console.log('⚠️ User not authenticated, redirecting to /feedtest');
-      navigate('/feedtest', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-
-  // Sync AuthContext user data to Redux on mount
-  useEffect(() => {
-    console.log('🔍 ProfileNew useEffect - user from AuthContext:', user);
-    
-    if (user) {
-      console.log('📸 Avatar URL from AuthContext:', user.avatar_url);
-      console.log('🖼️ Header URL from AuthContext:', user.header_url);
-      
-      // Helper function to check if string is empty or whitespace
-      const isEmptyString = (str: string | undefined | null): boolean => {
-        return !str || str.trim() === '';
-      };
-      
-      const profileData = {
-        name: user.display_name || user.username,
-        username: user.username,
-        bio: user.bio || '',
-        avatar: isEmptyString(user.avatar_url) ? undefined : user.avatar_url,
-        cover: isEmptyString(user.header_url) ? undefined : user.header_url,
-        location: '',
-        website: '',
-        joined: new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        stats: {
-          tweets: user.posts_count || 0,
-          following: user.following_count || 0,
-          followers: user.followers_count || 0,
-        },
-        isVerified: user.verified,
-        isPremium: false,
-        level: 42,
-      };
-      
-      console.log('✅ Dispatching setProfile with data:', profileData);
-      console.log('📸 Avatar after processing:', profileData.avatar);
-      console.log('🖼️ Cover after processing:', profileData.cover);
-      dispatch(setProfile(profileData));
-    }
-  }, [user, dispatch]);
-
-  // Get active tab from URL or default
-  const activeTab = (searchParams.get('tab') as Tab) || 'social';
-  const activeProfileSubTab = (searchParams.get('profileTab') as ProfileSubTab) || 'profile';
-  const activeSocialSubTab = (searchParams.get('socialTab') as SocialSubTab) || 'overview';
-  const activePortfolioSubTab = (searchParams.get('portfolioTab') as PortfolioSubTab) || 'my';
-  const activeMarketplaceSubTab = (searchParams.get('marketplaceTab') as MarketplaceSubTab) || 'products';
-  const activeStreamingSubTab = (searchParams.get('streamingTab') as StreamingSubTab) || 'profile';
-
-  // Update URL when tab changes
-  const setActiveTab = (tab: Tab) => {
-    setSearchParams({ tab });
+  // Handler to update both state and URL
+  const handleTabChange = (newTab: Tab) => {
+    setActiveTab(newTab);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', newTab);
+    setSearchParams(params);
   };
 
-  const setActiveProfileSubTab = (tab: ProfileSubTab) => {
-    setSearchParams({ tab: activeTab, profileTab: tab });
+  const handleProfileSubTabChange = (newSubTab: ProfileSubTab) => {
+    setActiveProfileSubTab(newSubTab);
+    const params = new URLSearchParams(searchParams);
+    params.set('profileSubTab', newSubTab);
+    setSearchParams(params);
   };
 
-  const setActiveSocialSubTab = (tab: SocialSubTab) => {
-    setSearchParams({ tab: activeTab, socialTab: tab });
+  const handleSocialSubTabChange = (newSubTab: SocialSubTab) => {
+    setActiveSocialSubTab(newSubTab);
+    const params = new URLSearchParams(searchParams);
+    params.set('socialSubTab', newSubTab);
+    setSearchParams(params);
   };
 
-  const setActivePortfolioSubTab = (tab: PortfolioSubTab) => {
-    setSearchParams({ tab: activeTab, portfolioTab: tab });
+  const handlePortfolioSubTabChange = (newSubTab: PortfolioSubTab) => {
+    setActivePortfolioSubTab(newSubTab);
+    const params = new URLSearchParams(searchParams);
+    params.set('portfolioSubTab', newSubTab);
+    setSearchParams(params);
   };
 
-  const setActiveMarketplaceSubTab = (tab: MarketplaceSubTab) => {
-    setSearchParams({ tab: activeTab, marketplaceTab: tab });
+  const handleMarketplaceSubTabChange = (newSubTab: MarketplaceSubTab) => {
+    setActiveMarketplaceSubTab(newSubTab);
+    const params = new URLSearchParams(searchParams);
+    params.set('marketplaceSubTab', newSubTab);
+    setSearchParams(params);
   };
 
-  const setActiveStreamingSubTab = (tab: StreamingSubTab) => {
-    setSearchParams({ tab: activeTab, streamingTab: tab });
+  const handleStreamingSubTabChange = (newSubTab: StreamingSubTab) => {
+    setActiveStreamingSubTab(newSubTab);
+    const params = new URLSearchParams(searchParams);
+    params.set('streamingSubTab', newSubTab);
+    setSearchParams(params);
   };
 
   return (
     <div className="flex flex-col gap-6">
-      {/* User Header with Gamification */}
-      <div className="flex flex-col lg:flex-row items-start justify-start gap-4 w-full">
-        <UserHeader isOwn={true} />
-        <GamificationPanel className="hidden lg:block flex-1" />
-      </div>
+      {/* User Header */}
+      <UserHeader isOwn={true} />
 
       {/* Navigation Tabs */}
       <div className="flex flex-col items-center gap-4">
@@ -1152,7 +1121,7 @@ const ProfileNew: FC = () => {
             .map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-3 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                   activeTab === tab.id
@@ -1176,7 +1145,7 @@ const ProfileNew: FC = () => {
             {profileSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
-                onClick={() => setActiveProfileSubTab(subTab.id)}
+                onClick={() => handleProfileSubTabChange(subTab.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                   activeProfileSubTab === subTab.id
@@ -1205,7 +1174,7 @@ const ProfileNew: FC = () => {
             {socialSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
-                onClick={() => setActiveSocialSubTab(subTab.id)}
+                onClick={() => handleSocialSubTabChange(subTab.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                   activeSocialSubTab === subTab.id
@@ -1234,7 +1203,7 @@ const ProfileNew: FC = () => {
             {portfolioSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
-                onClick={() => setActivePortfolioSubTab(subTab.id)}
+                onClick={() => handlePortfolioSubTabChange(subTab.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                   activePortfolioSubTab === subTab.id
@@ -1257,13 +1226,13 @@ const ProfileNew: FC = () => {
           </div>
         )}
 
-        {/* MARKETPLACE SUB-NAVIGATION - DISABLED */}
-        {/* {activeTab === "marketplace" && (
+        {/* Marketplace Sub-Navigation */}
+        {activeTab === "marketplace" && (
           <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
             {marketplaceSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
-                onClick={() => setActiveMarketplaceSubTab(subTab.id)}
+                onClick={() => handleMarketplaceSubTabChange(subTab.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                   activeMarketplaceSubTab === subTab.id
@@ -1284,7 +1253,7 @@ const ProfileNew: FC = () => {
               </button>
             ))}
           </div>
-        )} */}
+        )}
 
         {/* Live Streaming Sub-Navigation */}
         {activeTab === "streaming" && (
@@ -1292,7 +1261,7 @@ const ProfileNew: FC = () => {
             {streamingSubTabs.map((subTab) => (
               <button
                 key={subTab.id}
-                onClick={() => setActiveStreamingSubTab(subTab.id)}
+                onClick={() => handleStreamingSubTabChange(subTab.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-[32px] text-xs md:text-sm font-bold transition-all whitespace-nowrap",
                   activeStreamingSubTab === subTab.id
@@ -1318,23 +1287,7 @@ const ProfileNew: FC = () => {
 
       {/* Tab content */}
       <div className="mt-4">
-        <Suspense fallback={<TabLoader />}>
-          {activeTab === "social" && activeSocialSubTab === "overview" && <SocialOverview />}
-          {activeTab === "social" && activeSocialSubTab === "posts" && <MyPosts />}
-          {activeTab === "social" && activeSocialSubTab === "subscriptions" && <Subscriptions />}
-          {activeTab === "social" && activeSocialSubTab === "monetization" && <Monetization />}
-
-          {activeTab === "profile" && activeProfileSubTab === "profile" && <ProfileOverview />}
-          {activeTab === "profile" && activeProfileSubTab === "notifications" && <NotificationsSettings />}
-          {activeTab === "profile" && activeProfileSubTab === "billing" && <BillingSettings />}
-          {activeTab === "profile" && activeProfileSubTab === "referrals" && <ReferralsSettings />}
-          {activeTab === "profile" && activeProfileSubTab === "api" && <ApiSettings />}
-          {activeTab === "profile" && activeProfileSubTab === "kyc" && <KycSettings />}
-
-          {activeTab === "streaming" && <LiveStreamingSettings activeTab={activeStreamingSubTab} />}
-        </Suspense>
-
-        {false && (
+        {activeTab === "dashboard" && (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {/* My Revenue Card */}
@@ -2157,9 +2110,9 @@ const ProfileNew: FC = () => {
           </div>
         )}
 
-        {false && (
+        {activeTab === "profile" && activeProfileSubTab === "profile" && (
           <div className="flex flex-col gap-6">
-            {/* Old profile form - kept for reference */}
+            {/* Profile Form */}
             <div className="flex flex-col gap-6">
               {/* Display Name and Username */}
               <div className="flex flex-col md:flex-row gap-4">
@@ -2693,6 +2646,21 @@ const ProfileNew: FC = () => {
           </div>
         )}
 
+        {activeTab === "profile" && activeProfileSubTab === "notifications" && (
+          <NotificationsSettings />
+        )}
+
+        {activeTab === "profile" && activeProfileSubTab === "billing" && (
+          <BillingSettings />
+        )}
+
+        {activeTab === "profile" && activeProfileSubTab === "referrals" && (
+          <ReferralsSettings />
+        )}
+
+        {activeTab === "profile" && activeProfileSubTab === "kyc" && (
+          <KycSettings />
+        )}
 
         {activeTab === "profile" &&
           activeProfileSubTab !== "profile" &&
@@ -2711,15 +2679,27 @@ const ProfileNew: FC = () => {
             </div>
           )}
 
-        {/* MARKETPLACE CONTENT - DISABLED */}
-        {/* {activeTab === "marketplace" && (
+        {activeTab === "marketplace" && (
           <div className="container-card p-6">
             <h2 className="text-2xl font-bold text-white">Marketplace</h2>
             <p className="mt-2 text-sm text-webGray">
               Browse and purchase trading tools, indicators, and strategies.
             </p>
           </div>
-        )} */}
+        )}
+
+        {activeTab === "streaming" && (
+          <LiveStreamingSettings activeTab={activeStreamingSubTab} />
+        )}
+
+        {activeTab === "social" && (
+          <div className="container-card p-6">
+            <h2 className="text-2xl font-bold text-white">Social Network</h2>
+            <p className="mt-2 text-sm text-webGray">
+              Connect with other traders and share insights.
+            </p>
+          </div>
+        )}
 
         {activeTab === "portfolios" && (
           <div className="container-card p-6">
