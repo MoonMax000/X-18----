@@ -69,12 +69,29 @@ export default function ProfileSecuritySettings() {
     resetError: resetProtectedOpsError,
   } = useProtectedOperations();
   
-  const [activeTab, setActiveTab] = useState<'sessions' | 'twofa' | 'backup' | 'password' | 'delete'>('sessions');
+  const [activeTab, setActiveTab] = useState<'account' | 'sessions' | 'twofa' | 'backup' | 'password' | 'delete'>('account');
+  
+  // User data
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [userPhone, setUserPhone] = useState<string>('');
+  const [loadingUserData, setLoadingUserData] = useState(true);
   
   // TOTP Verification Modal State
   const [totpModalOpen, setTotpModalOpen] = useState(false);
   const [pendingOperation, setPendingOperation] = useState<((code: string) => Promise<void>) | null>(null);
   const [operationType, setOperationType] = useState('');
+  
+  // Email Change Modal
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [emailChangeSuccess, setEmailChangeSuccess] = useState(false);
+  
+  // Phone Change Modal
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
+  const [phonePassword, setPhonePassword] = useState('');
+  const [phoneChangeSuccess, setPhoneChangeSuccess] = useState(false);
   
   // TOTP States
   const [totpStatus, setTotpStatus] = useState<{ enabled: boolean; has_backup_codes: boolean } | null>(null);
@@ -108,11 +125,26 @@ export default function ProfileSecuritySettings() {
   // Password change success state
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
 
-  // Load TOTP status
+  // Load user data and TOTP status
   useEffect(() => {
+    loadUserData();
     loadTOTPStatus();
     loadRecoveryInfo();
   }, []);
+
+  const loadUserData = async () => {
+    setLoadingUserData(true);
+    try {
+      const { customBackendAPI } = await import('@/services/api/custom-backend');
+      const user = await customBackendAPI.getMe();
+      setUserEmail(user.email || '');
+      setUserPhone(user.phone || '');
+    } catch (err) {
+      console.error('Error loading user data:', err);
+    } finally {
+      setLoadingUserData(false);
+    }
+  };
 
   const loadTOTPStatus = async () => {
     const status = await getTOTPStatus();
@@ -125,6 +157,7 @@ export default function ProfileSecuritySettings() {
   };
 
   const tabs = [
+    { id: 'account', label: 'Account', icon: Mail },
     { id: 'sessions', label: 'Active Sessions', icon: Smartphone },
     { id: 'twofa', label: 'Two-Factor Auth', icon: Shield },
     { id: 'backup', label: 'Backup Contacts', icon: Mail },
@@ -281,6 +314,108 @@ export default function ProfileSecuritySettings() {
     }
   };
 
+  const handleEmailChange = async () => {
+    if (!newEmail || !emailPassword) {
+      alert('Пожалуйста, заполните все поля');
+      return;
+    }
+
+    setEmailChangeSuccess(false);
+    resetProtectedOpsError();
+
+    try {
+      await changeEmail({
+        newEmail,
+        currentPassword: emailPassword,
+      });
+      
+      // Success!
+      setUserEmail(newEmail);
+      setNewEmail('');
+      setEmailPassword('');
+      setEmailChangeSuccess(true);
+      
+      setTimeout(() => {
+        setEmailChangeSuccess(false);
+        setIsEmailModalOpen(false);
+      }, 2000);
+    } catch (err: any) {
+      if (requiresTOTP) {
+        // Open TOTP modal
+        setPendingOperation(() => async (code: string) => {
+          await changeEmail(
+            {
+              newEmail,
+              currentPassword: emailPassword,
+            },
+            code
+          );
+          setUserEmail(newEmail);
+          setNewEmail('');
+          setEmailPassword('');
+          setEmailChangeSuccess(true);
+          setTimeout(() => {
+            setEmailChangeSuccess(false);
+            setIsEmailModalOpen(false);
+          }, 2000);
+        });
+        setOperationType('изменить email');
+        setTotpModalOpen(true);
+      }
+    }
+  };
+
+  const handlePhoneChange = async () => {
+    if (!newPhone || !phonePassword) {
+      alert('Пожалуйста, заполните все поля');
+      return;
+    }
+
+    setPhoneChangeSuccess(false);
+    resetProtectedOpsError();
+
+    try {
+      await changePhone({
+        newPhone,
+        currentPassword: phonePassword,
+      });
+      
+      // Success!
+      setUserPhone(newPhone);
+      setNewPhone('');
+      setPhonePassword('');
+      setPhoneChangeSuccess(true);
+      
+      setTimeout(() => {
+        setPhoneChangeSuccess(false);
+        setIsPhoneModalOpen(false);
+      }, 2000);
+    } catch (err: any) {
+      if (requiresTOTP) {
+        // Open TOTP modal
+        setPendingOperation(() => async (code: string) => {
+          await changePhone(
+            {
+              newPhone,
+              currentPassword: phonePassword,
+            },
+            code
+          );
+          setUserPhone(newPhone);
+          setNewPhone('');
+          setPhonePassword('');
+          setPhoneChangeSuccess(true);
+          setTimeout(() => {
+            setPhoneChangeSuccess(false);
+            setIsPhoneModalOpen(false);
+          }, 2000);
+        });
+        setOperationType('изменить телефон');
+        setTotpModalOpen(true);
+      }
+    }
+  };
+
   const handleTOTPVerify = async (code: string) => {
     if (pendingOperation) {
       try {
@@ -322,6 +457,94 @@ export default function ProfileSecuritySettings() {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'account':
+        return (
+          <div className="space-y-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-white mb-2">Account Information</h3>
+              <p className="text-sm text-gray-400">
+                Manage your primary account contact information.
+              </p>
+              {totpStatus?.enabled && (
+                <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-primary flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Changes to email or phone require TOTP verification
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {loadingUserData ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Email Block */}
+                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-300">Email</p>
+                        <p className="text-sm text-white">{userEmail || 'Not set'}</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setIsEmailModalOpen(true)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Password Block */}
+                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Key className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-300">Password</p>
+                        <p className="text-xs text-gray-500">Change your password to update & protect your account</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setActiveTab('password')}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Phone Block */}
+                <div className="p-4 rounded-lg border border-widget-border bg-black/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-300">Phone number</p>
+                        <p className="text-sm text-white">{userPhone || 'Not set'}</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setIsPhoneModalOpen(true)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {userPhone ? 'Change' : 'Add'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
       case 'sessions':
         return (
           <div className="space-y-4">
@@ -913,6 +1136,229 @@ export default function ProfileSecuritySettings() {
                 disabled={disableTotpCode.length !== 6 || totpLoading}
               >
                 {totpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Disable 2FA'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Change Modal */}
+      {isEmailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-[#0C1015] rounded-lg p-6 w-full max-w-md border border-widget-border">
+            <h3 className="text-lg font-semibold text-white mb-4">Изменить Email</h3>
+            
+            {emailChangeSuccess && (
+              <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                <p className="text-sm text-green-400 flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Email успешно изменён!
+                </p>
+              </div>
+            )}
+
+            {protectedOpsError && !requiresTOTP && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-sm text-red-400 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  {protectedOpsError}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Текущий Email
+                </label>
+                <Input
+                  type="email"
+                  value={userEmail}
+                  disabled
+                  className="bg-black/60 border-widget-border text-gray-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Новый Email
+                </label>
+                <Input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="newemail@example.com"
+                  className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Текущий пароль (для подтверждения)
+                </label>
+                <Input
+                  type="password"
+                  value={emailPassword}
+                  onChange={(e) => setEmailPassword(e.target.value)}
+                  className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
+                />
+              </div>
+
+              {totpStatus?.enabled && (
+                <div className="p-2 rounded bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-primary flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    После нажатия "Изменить" потребуется TOTP код
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEmailModalOpen(false);
+                  setNewEmail('');
+                  setEmailPassword('');
+                  setEmailChangeSuccess(false);
+                  resetProtectedOpsError();
+                }}
+                className="flex-1"
+                disabled={protectedOpsLoading}
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={handleEmailChange}
+                className="flex-1"
+                disabled={!newEmail || !emailPassword || protectedOpsLoading}
+              >
+                {protectedOpsLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Изменение...
+                  </>
+                ) : (
+                  'Изменить'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phone Change Modal */}
+      {isPhoneModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-[#0C1015] rounded-lg p-6 w-full max-w-md border border-widget-border">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              {userPhone ? 'Изменить телефон' : 'Добавить телефон'}
+            </h3>
+            
+            {phoneChangeSuccess && (
+              <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                <p className="text-sm text-green-400 flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Телефон успешно {userPhone ? 'изменён' : 'добавлен'}!
+                </p>
+              </div>
+            )}
+
+            {protectedOpsError && !requiresTOTP && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-sm text-red-400 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  {protectedOpsError}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {userPhone && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Текущий телефон
+                  </label>
+                  <Input
+                    type="tel"
+                    value={userPhone}
+                    disabled
+                    className="bg-black/60 border-widget-border text-gray-500"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {userPhone ? 'Новый телефон' : 'Телефон'}
+                </label>
+                <Input
+                  type="tel"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  placeholder="+1234567890"
+                  className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Формат: +код страны и номер (например, +79123456789)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Текущий пароль (для подтверждения)
+                </label>
+                <Input
+                  type="password"
+                  value={phonePassword}
+                  onChange={(e) => setPhonePassword(e.target.value)}
+                  className="bg-black/40 border-widget-border"
+                  disabled={protectedOpsLoading}
+                />
+              </div>
+
+              {totpStatus?.enabled && (
+                <div className="p-2 rounded bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-primary flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    После нажатия "{userPhone ? 'Изменить' : 'Добавить'}" потребуется TOTP код
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsPhoneModalOpen(false);
+                  setNewPhone('');
+                  setPhonePassword('');
+                  setPhoneChangeSuccess(false);
+                  resetProtectedOpsError();
+                }}
+                className="flex-1"
+                disabled={protectedOpsLoading}
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={handlePhoneChange}
+                className="flex-1"
+                disabled={!newPhone || !phonePassword || protectedOpsLoading}
+              >
+                {protectedOpsLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {userPhone ? 'Изменение...' : 'Добавление...'}
+                  </>
+                ) : (
+                  userPhone ? 'Изменить' : 'Добавить'
+                )}
               </Button>
             </div>
           </div>
