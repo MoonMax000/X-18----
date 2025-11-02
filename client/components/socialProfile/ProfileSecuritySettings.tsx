@@ -186,6 +186,14 @@ export default function ProfileSecuritySettings() {
     }
   };
 
+  const handleRegenerateTOTPSetup = async () => {
+    const data = await generateTOTP();
+    if (data) {
+      setTotpSetupData(data);
+      setTotpVerifyCode(''); // Clear entered code
+    }
+  };
+
   const handleEnableTOTP = async () => {
     if (totpVerifyCode.length !== 6) return;
     
@@ -1041,9 +1049,23 @@ export default function ProfileSecuritySettings() {
               <>
                 <div className="space-y-4">
                   <div className="p-4 rounded-lg bg-black/40 border border-widget-border">
-                    <p className="text-sm text-gray-300 mb-3">
-                      1. Scan this QR code with your authenticator app:
-                    </p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm text-gray-300">
+                        1. Scan this QR code with your authenticator app:
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRegenerateTOTPSetup}
+                        disabled={totpLoading}
+                      >
+                        {totpLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <QrCode className="w-3 h-3" />
+                        )}
+                      </Button>
+                    </div>
                     <div className="flex justify-center mb-3">
                       <img 
                         src={totpSetupData.qr_code} 
@@ -1051,10 +1073,10 @@ export default function ProfileSecuritySettings() {
                         className="w-48 h-48 rounded"
                       />
                     </div>
-                    <p className="text-xs text-gray-400 text-center">
+                    <p className="text-xs text-gray-400 text-center mb-2">
                       Or enter this code manually:
                     </p>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-2">
                       <code className="flex-1 p-2 bg-black/60 rounded text-xs text-white font-mono text-center">
                         {totpSetupData.formatted_secret}
                       </code>
@@ -1066,6 +1088,9 @@ export default function ProfileSecuritySettings() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      💡 Click <QrCode className="w-3 h-3 inline" /> to generate a new QR code
+                    </p>
                   </div>
 
                   <div>
