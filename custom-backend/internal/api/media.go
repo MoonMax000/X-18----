@@ -173,7 +173,7 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 				"error": "Failed to process image: " + err.Error(),
 			})
 		}
-		defer os.Remove(processedPath) // Удалим обработанный файл после загрузки
+		// НЕ удаляем processedPath для локального хранилища - он становится finalPath
 
 		// Получаем размеры
 		width, height, err = utils.GetImageDimensions(processedPath)
@@ -243,14 +243,15 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		}
 
 		fmt.Printf("✅ File uploaded to S3: %s\n", fileURL)
+
+		// Удаляем локальный processedPath только для S3
+		if processedPath != "" {
+			os.Remove(processedPath)
+		}
 	} else {
 		// Local Filesystem Path (fallback)
-		finalPath := filepath.Join(h.uploadDir, safeFilename)
-		if err := os.Rename(processedPath, finalPath); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to save processed file",
-			})
-		}
+		// processedPath уже находится в правильном месте с правильным именем
+		// НЕ нужно делать rename, файл уже там где нужно
 
 		baseURL := os.Getenv("BASE_URL")
 		if baseURL == "" {
