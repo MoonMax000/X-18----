@@ -124,6 +124,27 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 
 	// Генерируем безопасное имя файла
 	ext := filepath.Ext(file.Filename)
+
+	// Fallback: если расширение пустое, определяем по MIME типу
+	if ext == "" {
+		switch mimeType {
+		case "image/jpeg", "image/jpg":
+			ext = ".jpg"
+		case "image/png":
+			ext = ".png"
+		case "image/gif":
+			ext = ".gif"
+		case "image/webp":
+			ext = ".webp"
+		case "video/mp4":
+			ext = ".mp4"
+		case "video/webm":
+			ext = ".webm"
+		default:
+			ext = ".jpg" // Default fallback
+		}
+	}
+
 	safeFilename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
 	tempPath := filepath.Join(h.uploadDir, "temp_"+safeFilename)
 
