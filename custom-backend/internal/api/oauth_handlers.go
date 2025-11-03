@@ -366,7 +366,7 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	}
 
 	// Generate tokens
-	tokens, err := auth.GenerateTokenPair(
+	tokenPair, err := auth.GenerateTokenPair(
 		user.ID,
 		user.Username,
 		user.Email,
@@ -377,6 +377,7 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		h.config.JWT.RefreshExpiry,
 	)
 	if err != nil {
+		log.Printf("Failed to generate tokens for OAuth user %s: %v", user.ID, err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to generate tokens",
 		})
@@ -384,11 +385,18 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 
 	// Create session
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
-	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
+	refreshTokenHash, hashErr := utils.HashPassword(tokenPair.TokenPair.RefreshToken)
+	if hashErr != nil {
+		log.Printf("Failed to hash refresh token: %v", hashErr)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to process tokens",
+		})
+	}
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 
-	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokens.RefreshJTI, expiresAt)
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokenPair.RefreshJTI, expiresAt)
 	if err != nil {
+		log.Printf("Failed to create session for OAuth user %s: %v", user.ID, err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create session",
 		})
@@ -397,12 +405,14 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	// Update last active
 	now := time.Now()
 	user.LastActiveAt = &now
-	h.db.DB.Save(&user)
+	if err := h.db.DB.Save(&user).Error; err != nil {
+		log.Printf("Failed to update last active for user %s: %v", user.ID, err)
+	}
 
 	// Set refresh token cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
-		Value:    tokens.RefreshToken,
+		Value:    tokenPair.TokenPair.RefreshToken,
 		HTTPOnly: true,
 		Secure:   h.config.Server.Env == "production",
 		SameSite: "Lax",
@@ -412,9 +422,9 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 
 	return c.JSON(fiber.Map{
 		"user":         user.ToMe(),
-		"access_token": tokens.AccessToken,
+		"access_token": tokenPair.TokenPair.AccessToken,
 		"token_type":   "Bearer",
-		"expires_in":   tokens.ExpiresIn,
+		"expires_in":   tokenPair.TokenPair.ExpiresIn,
 		"session_id":   session.ID,
 	})
 }
@@ -538,7 +548,7 @@ func (h *OAuthHandler) ConfirmOAuthLinking(c *fiber.Ctx) error {
 	h.cache.Delete(cacheKey)
 
 	// Generate tokens for immediate login
-	tokens, tokenErr := auth.GenerateTokenPair(
+	tokenPair, tokenErr := auth.GenerateTokenPair(
 		user.ID,
 		user.Username,
 		user.Email,
@@ -549,6 +559,7 @@ func (h *OAuthHandler) ConfirmOAuthLinking(c *fiber.Ctx) error {
 		h.config.JWT.RefreshExpiry,
 	)
 	if tokenErr != nil {
+		log.Printf("Failed to generate tokens for OAuth linking: %v", tokenErr)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to generate tokens",
 		})
@@ -556,11 +567,18 @@ func (h *OAuthHandler) ConfirmOAuthLinking(c *fiber.Ctx) error {
 
 	// Create session
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
-	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
+	refreshTokenHash, hashErr := utils.HashPassword(tokenPair.TokenPair.RefreshToken)
+	if hashErr != nil {
+		log.Printf("Failed to hash refresh token: %v", hashErr)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to process tokens",
+		})
+	}
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 
-	session, sessionErr := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokens.RefreshJTI, expiresAt)
+	session, sessionErr := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokenPair.RefreshJTI, expiresAt)
 	if sessionErr != nil {
+		log.Printf("Failed to create session for OAuth linking: %v", sessionErr)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create session",
 		})
@@ -569,7 +587,7 @@ func (h *OAuthHandler) ConfirmOAuthLinking(c *fiber.Ctx) error {
 	// Set refresh token cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
-		Value:    tokens.RefreshToken,
+		Value:    tokenPair.TokenPair.RefreshToken,
 		HTTPOnly: true,
 		Secure:   h.config.Server.Env == "production",
 		SameSite: "Lax",
@@ -580,9 +598,9 @@ func (h *OAuthHandler) ConfirmOAuthLinking(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message":      "OAuth provider linked successfully",
 		"user":         user.ToMe(),
-		"access_token": tokens.AccessToken,
+		"access_token": tokenPair.TokenPair.AccessToken,
 		"token_type":   "Bearer",
-		"expires_in":   tokens.ExpiresIn,
+		"expires_in":   tokenPair.TokenPair.ExpiresIn,
 		"session_id":   session.ID,
 	})
 }
