@@ -1,6 +1,9 @@
 import { FC, useState, memo } from "react";
 import { cn } from "@/lib/utils";
-import { Users, UserPlus } from "lucide-react";
+import { Users, UserPlus, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
+import type { User as ApiUser } from "@/services/api/custom-backend";
 
 interface User {
   id: string;
@@ -13,67 +16,25 @@ interface User {
   isPremium: boolean;
 }
 
-const mockFollowers: User[] = [
-  {
-    id: "1",
-    name: "Sarah Anderson",
-    username: "@sarah_trader",
-    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/avatar1",
-    tier: "premium",
-    followers: 12450,
-    isFollowing: true,
-    isPremium: true,
-  },
-  {
-    id: "2",
-    name: "Mike Johnson",
-    username: "@mike_crypto",
-    tier: "pro",
-    followers: 8732,
-    isFollowing: false,
-    isPremium: true,
-  },
-  {
-    id: "3",
-    name: "Emily Chen",
-    username: "@emily_analyst",
-    tier: "free",
-    followers: 3421,
-    isFollowing: true,
-    isPremium: false,
-  },
-];
+// Convert API User to UI User format
+const convertApiUserToUiUser = (apiUser: ApiUser, isFollowingUser: boolean): User => {
+  // Determine tier based on subscription_price
+  let tier: "free" | "premium" | "pro" = "free";
+  if (apiUser.subscription_price > 0) {
+    tier = apiUser.subscription_price >= 10 ? "pro" : "premium";
+  }
 
-const mockFollowing: User[] = [
-  {
-    id: "4",
-    name: "John Doe",
-    username: "@johndoe",
-    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/avatar2",
-    tier: "premium",
-    followers: 25300,
-    isFollowing: true,
-    isPremium: true,
-  },
-  {
-    id: "5",
-    name: "Lisa Wang",
-    username: "@lisa_defi",
-    tier: "pro",
-    followers: 18900,
-    isFollowing: true,
-    isPremium: true,
-  },
-  {
-    id: "6",
-    name: "Alex Smith",
-    username: "@alexsmith",
-    tier: "free",
-    followers: 5670,
-    isFollowing: true,
-    isPremium: false,
-  },
-];
+  return {
+    id: apiUser.id,
+    name: apiUser.display_name || `${apiUser.first_name || ''} ${apiUser.last_name || ''}`.trim() || apiUser.username,
+    username: apiUser.username.startsWith('@') ? apiUser.username : `@${apiUser.username}`,
+    avatar: apiUser.avatar_url,
+    tier,
+    followers: apiUser.followers_count,
+    isFollowing: isFollowingUser,
+    isPremium: apiUser.subscription_price > 0,
+  };
+};
 
 const getTierBadge = (tier: "free" | "premium" | "pro") => {
   const badges = {
@@ -143,29 +104,55 @@ const UserCard: FC<{ user: User; onFollowToggle: (id: string) => void }> = ({ us
 
 const Subscriptions: FC = () => {
   const [activeSection, setActiveSection] = useState<"followers" | "following">("following");
-  const [followers, setFollowers] = useState(mockFollowers);
-  const [following, setFollowing] = useState(mockFollowing);
+  const { user: currentUser } = useAuth();
+  
+  const {
+    followers: apiFollowers,
+    following: apiFollowing,
+    isLoadingFollowers,
+    isLoadingFollowing,
+    error,
+    followUser,
+    unfollowUser,
+  } = useSubscriptions(currentUser?.id);
 
-  const handleFollowToggle = (id: string) => {
-    if (activeSection === "followers") {
-      setFollowers((prev) =>
-        prev.map((user) =>
-          user.id === id ? { ...user, isFollowing: !user.isFollowing } : user
-        )
-      );
-    } else {
-      setFollowing((prev) =>
-        prev.map((user) =>
-          user.id === id ? { ...user, isFollowing: !user.isFollowing } : user
-        )
-      );
+  console.log('[Subscriptions] Current user:', currentUser?.id);
+  console.log('[Subscriptions] API Followers:', apiFollowers.length);
+  console.log('[Subscriptions] API Following:', apiFollowing.length);
+
+  // Convert API users to UI format
+  const followers = apiFollowers.map(user => convertApiUserToUiUser(user, true));
+  const following = apiFollowing.map(user => convertApiUserToUiUser(user, true));
+
+  const handleFollowToggle = async (id: string) => {
+    const user = activeSection === "followers" 
+      ? followers.find(u => u.id === id)
+      : following.find(u => u.id === id);
+
+    if (!user) return;
+
+    try {
+      if (user.isFollowing) {
+        await unfollowUser(id);
+      } else {
+        await followUser(id);
+      }
+    } catch (err) {
+      console.error('[Subscriptions] Error toggling follow:', err);
     }
   };
 
   const currentUsers = activeSection === "followers" ? followers : following;
+  const isLoading = activeSection === "followers" ? isLoadingFollowers : isLoadingFollowing;
 
   return (
     <div className="mx-auto flex w-full max-w-[1059px] flex-col gap-6">
+      {error && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-center text-red-400">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 rounded-3xl border border-[#181B22] bg-black p-6 backdrop-blur-[50px]">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
@@ -200,13 +187,17 @@ const Subscriptions: FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {currentUsers.map((user) => (
-          <UserCard key={user.id} user={user} onFollowToggle={handleFollowToggle} />
-        ))}
-      </div>
-
-      {currentUsers.length === 0 && (
+      {isLoading ? (
+        <div className="flex items-center justify-center rounded-3xl border border-[#181B22] bg-black p-12 backdrop-blur-[50px]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#A06AFF]" />
+        </div>
+      ) : currentUsers.length > 0 ? (
+        <div className="flex flex-col gap-3">
+          {currentUsers.map((user) => (
+            <UserCard key={user.id} user={user} onFollowToggle={handleFollowToggle} />
+          ))}
+        </div>
+      ) : (
         <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-[#181B22] bg-black p-12 text-center backdrop-blur-[50px]">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#A06AFF]/10">
             <Users className="h-8 w-8 text-[#A06AFF]" />

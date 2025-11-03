@@ -1,9 +1,13 @@
-import { FC, useState, memo } from "react";
+import { FC, useState, memo, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Search, BarChart3, Trash2, Eye, Heart, MessageCircle, Plus, LayoutList, LayoutGrid } from "lucide-react";
+import { ChevronDown, Search, BarChart3, Trash2, Eye, Heart, MessageCircle, Plus, LayoutList, LayoutGrid, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BUTTON_VARIANTS } from "@/features/feed/styles";
 import { LAB_CATEGORY_CONFIG, type LabCategory, LAB_CATEGORY_MAP } from "@/components/testLab/categoryConfig";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserPosts } from "@/hooks/useUserPosts";
+import type { Post as ApiPost } from "@/services/api/custom-backend";
+import { formatTimeAgo } from "@/lib/time-utils";
 
 type PostStatus = "published" | "draft";
 type PostType = "all" | "premium" | "free";
@@ -25,71 +29,111 @@ interface Post {
   tags?: string[];
 }
 
-const mockPosts: Post[] = [
-  {
-    id: "1",
-    title: "Bitcoin Price Analysis Q2 2025",
-    text: "An in-depth analysis of Bitcoin's price movements during Q2 2025, including key resistance levels, support zones...",
-    thumbnail: "https://api.builder.io/api/v1/image/assets/TEMP/dbe2cb77af13e1f5ccc8611b585b1172d4491793",
-    date: "2h ago",
-    status: "published",
-    category: "analytics",
-    isPremium: true,
-    views: 12450,
-    likes: 320,
-    comments: 85,
-    tags: ["#Bitcoin", "#Analysis"],
-  },
-  {
-    id: "2",
-    title: "Ethereum 2.0: The Complete Guide",
-    text: "Everything you need to know about Ethereum 2.0, including staking requirements, technical improvements...",
-    thumbnail: "https://api.builder.io/api/v1/image/assets/TEMP/6c1636b94ab2935c85143c790d37c26781b4f015",
-    date: "5h ago",
-    status: "published",
-    category: "education",
-    isPremium: false,
-    views: 9872,
-    likes: 124,
-    comments: 287,
-    tags: ["#Ethereum", "#ETH2.0"],
-  },
-  {
-    id: "3",
-    title: "Top 5 DeFi Projects to Watch in 2025",
-    text: "A comprehensive review of the most promising DeFi projects in 2025, with analysis of their technology...",
-    date: "1d ago",
-    status: "published",
-    category: "forecasts",
-    isPremium: true,
-    views: 7345,
-    likes: 63,
-    comments: 195,
-    tags: ["#DeFi"],
-  },
-  {
-    id: "4",
-    title: "NFT Market Recovery: What's Next?",
-    text: "An opinion piece on the current state of the NFT market, recent trends, and predictions for the future...",
-    date: "2d ago",
-    status: "draft",
-    category: "text",
-    isPremium: false,
-    views: 0,
-    likes: 0,
-    comments: 0,
-  },
-];
+// Convert API post to UI post format
+function convertApiPostToUiPost(apiPost: ApiPost): Post {
+  // Extract category and ensure it's valid
+  const metadataCategory = apiPost.metadata?.category as LabCategory | undefined;
+  const category: LabCategory = metadataCategory && LAB_CATEGORY_MAP[metadataCategory] 
+    ? metadataCategory 
+    : "text";
+  
+  console.log('[MyPosts] Converting post:', {
+    postId: apiPost.id,
+    rawCategory: metadataCategory,
+    finalCategory: category,
+    categoryExists: !!LAB_CATEGORY_MAP[category],
+    metadata: apiPost.metadata,
+  });
+  
+  const isPremium = apiPost.metadata?.is_premium === true || apiPost.metadata?.is_premium === "true";
+  
+  // Extract first media as thumbnail
+  const thumbnail = apiPost.media?.[0]?.url;
+  
+  // Extract title from content (first line or truncated content)
+  const lines = apiPost.content.split('\n');
+  const title = lines[0].length > 100 ? lines[0].substring(0, 100) + '...' : lines[0];
+  const text = lines.length > 1 ? lines.slice(1).join('\n') : apiPost.content;
+  
+  return {
+    id: apiPost.id,
+    title: title || "Untitled Post",
+    text: text || apiPost.content,
+    thumbnail,
+    date: formatTimeAgo(apiPost.created_at),
+    status: "published" as PostStatus, // API only returns published posts
+    category,
+    isPremium,
+    views: 0, // Not available from API yet
+    likes: apiPost.likes_count || 0,
+    comments: apiPost.replies_count || 0,
+    tags: apiPost.metadata?.tags as string[] | undefined,
+  };
+}
 
 const MyPosts: FC = () => {
+  const { user } = useAuth();
+  const { posts: apiPosts, isLoading, error } = useUserPosts(user?.id);
+  
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
   const [typeFilter, setTypeFilter] = useState<PostType>("all");
   const [dateSort, setDateSort] = useState<DateSort>("newest");
   const [categoryFilter, setCategoryFilter] = useState<"all" | LabCategory>("all");
-
+  const [searchQuery, setSearchQuery] = useState("");
 
   const formatNumber = (num: number) => (num >= 1000 ? `${(num / 1000).toFixed(1)}K` : num);
+
+  // Convert API posts to UI format
+  const allPosts = useMemo(() => {
+    console.log('[MyPosts] Converting API posts:', {
+      count: apiPosts.length,
+      userId: user?.id,
+      username: user?.username,
+    });
+    return apiPosts.map(convertApiPostToUiPost);
+  }, [apiPosts, user?.id, user?.username]);
+
+  // Apply filters
+  const filteredPosts = useMemo(() => {
+    let filtered = [...allPosts];
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (post) =>
+          post.title.toLowerCase().includes(query) ||
+          post.text.toLowerCase().includes(query) ||
+          post.tags?.some((tag) => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((post) => post.status === statusFilter);
+    }
+
+    // Type filter
+    if (typeFilter === "premium") {
+      filtered = filtered.filter((post) => post.isPremium);
+    } else if (typeFilter === "free") {
+      filtered = filtered.filter((post) => !post.isPremium);
+    }
+
+    // Category filter
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((post) => post.category === categoryFilter);
+    }
+
+    // Date sort
+    // Note: Since we already get posts sorted by date from API, we just reverse if needed
+    if (dateSort === "oldest") {
+      filtered = filtered.reverse();
+    }
+
+    return filtered;
+  }, [allPosts, searchQuery, statusFilter, typeFilter, categoryFilter, dateSort]);
 
   const statusOptions = [
     { value: "all" as const, label: "All" },
@@ -116,6 +160,46 @@ const MyPosts: FC = () => {
     })),
   ];
 
+  // Loading state
+  if (isLoading && allPosts.length === 0) {
+    return (
+      <div className="mx-auto flex w-full max-w-[1059px] flex-col items-center justify-center gap-4 py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-[#6C7280]">Загрузка постов...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="mx-auto flex w-full max-w-[1059px] flex-col items-center justify-center gap-4 rounded-3xl border border-[#181B22] bg-black p-12 backdrop-blur-[50px]">
+        <div className="rounded-full bg-red-500/10 p-4">
+          <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-bold text-white">Ошибка загрузки постов</h3>
+        <p className="text-center text-sm text-[#6C7280]">{error}</p>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (allPosts.length === 0) {
+    return (
+      <div className="mx-auto flex w-full max-w-[1059px] flex-col items-center justify-center gap-4 rounded-3xl border border-[#181B22] bg-black p-12 backdrop-blur-[50px]">
+        <div className="rounded-full bg-primary/10 p-4">
+          <MessageCircle className="h-8 w-8 text-primary" />
+        </div>
+        <h3 className="text-lg font-bold text-white">У вас пока нет постов</h3>
+        <p className="text-center text-sm text-[#6C7280]">
+          Создайте свой первый пост на странице ленты, и он появится здесь
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-[1059px] flex-col gap-6">
       <div className="flex flex-col gap-4 rounded-3xl border border-[#181B22] bg-black p-6 backdrop-blur-[50px]">
@@ -137,6 +221,8 @@ const MyPosts: FC = () => {
               <input
                 type="text"
                 placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent text-sm text-white placeholder:text-[#6C7280] focus:outline-none"
               />
             </div>
@@ -275,10 +361,23 @@ const MyPosts: FC = () => {
         </div>
       </div>
 
-      {viewMode === "list" ? (
+      {filteredPosts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-[#181B22] bg-black p-12 backdrop-blur-[50px]">
+          <Search className="h-8 w-8 text-[#6C7280]" />
+          <p className="text-sm text-[#6C7280]">Посты не найдены с выбранными фильтрами</p>
+        </div>
+      ) : viewMode === "list" ? (
         <div className="flex flex-col divide-y divide-[#181B22]">
-          {mockPosts.map((post) => {
+          {filteredPosts.map((post) => {
             const categoryConfig = LAB_CATEGORY_MAP[post.category];
+            if (!categoryConfig) {
+              console.error('[MyPosts] Invalid category for post:', {
+                postId: post.id,
+                category: post.category,
+                availableCategories: Object.keys(LAB_CATEGORY_MAP),
+              });
+              return null;
+            }
             const CategoryIcon = categoryConfig.icon;
             return (
               <article
@@ -344,8 +443,16 @@ const MyPosts: FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {mockPosts.map((post) => {
+          {filteredPosts.map((post) => {
             const categoryConfig = LAB_CATEGORY_MAP[post.category];
+            if (!categoryConfig) {
+              console.error('[MyPosts] Invalid category for post:', {
+                postId: post.id,
+                category: post.category,
+                availableCategories: Object.keys(LAB_CATEGORY_MAP),
+              });
+              return null;
+            }
             const CategoryIcon = categoryConfig.icon;
             return (
               <article
