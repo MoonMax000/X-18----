@@ -48,6 +48,11 @@ COPY --from=builder /app/server .
 # Copy migrations (if needed at runtime)
 COPY --from=builder /app/internal/database/migrations ./migrations
 
+# Create directory for Apple keys and copy the key file
+RUN mkdir -p /app/apple-keys
+COPY AuthKey_4QUQ4U396S.p8 /app/apple-keys/
+RUN chmod 600 /app/apple-keys/AuthKey_4QUQ4U396S.p8
+
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
 

@@ -19,6 +19,7 @@ import (
 	"custom-backend/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -52,6 +53,9 @@ func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.
 			},
 			Endpoint: google.Endpoint,
 		}
+		log.Printf("✅ Google OAuth configured: ClientID=%s", config.OAuth.Google.ClientID[:6]+"...")
+	} else {
+		log.Printf("⚠️ Google OAuth not configured - missing CLIENT_ID")
 	}
 
 	// Initialize Apple OAuth
@@ -59,7 +63,7 @@ func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.
 		// Parse Apple private key
 		privateKey, err := configs.ParseApplePrivateKey(config.OAuth.Apple)
 		if err != nil {
-			log.Printf("Warning: Failed to parse Apple Private Key: %v", err)
+			log.Printf("❌ Failed to parse Apple Private Key: %v", err)
 		} else {
 			// Generate Apple Client Secret (JWT)
 			clientSecret, err := utils.GenerateAppleClientSecret(
@@ -69,9 +73,10 @@ func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.
 				privateKey,
 			)
 			if err != nil {
-				log.Printf("Warning: Failed to generate Apple Client Secret: %v", err)
+				log.Printf("❌ Failed to generate Apple Client Secret: %v", err)
 			} else {
-				log.Printf("✅ Apple Client Secret generated successfully")
+				log.Printf("✅ Apple OAuth configured: ClientID=%s, TeamID=%s",
+					config.OAuth.Apple.ClientID, config.OAuth.Apple.TeamID)
 				handler.appleOAuth = &oauth2.Config{
 					ClientID:     config.OAuth.Apple.ClientID,
 					ClientSecret: clientSecret,
@@ -84,6 +89,8 @@ func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.
 				}
 			}
 		}
+	} else {
+		log.Printf("⚠️ Apple OAuth not configured - missing credentials")
 	}
 
 	return handler
@@ -91,21 +98,32 @@ func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.
 
 // GoogleUser represents Google user info
 type GoogleUser struct {
-	ID            string `json:"id"`
+	ID            string `json:"sub"` // Google uses "sub" for user ID in OIDC
 	Email         string `json:"email"`
 	VerifiedEmail bool   `json:"verified_email"`
 	Name          string `json:"name"`
 	GivenName     string `json:"given_name"`
 	FamilyName    string `json:"family_name"`
 	Picture       string `json:"picture"`
+	HD            string `json:"hd,omitempty"` // Hosted domain for G Suite accounts
 }
 
-// AppleUser represents Apple user info
+// AppleUser represents Apple user info from ID token
 type AppleUser struct {
-	Sub            string `json:"sub"`
+	Sub            string `json:"sub"` // User ID
+	Email          string `json:"email"`
+	EmailVerified  string `json:"email_verified"` // "true" or "false" as string
+	IsPrivateEmail string `json:"is_private_email"`
+	RealUserStatus int    `json:"real_user_status"` // 0: unsupported, 1: unknown, 2: likely real
+}
+
+// AppleIDTokenClaims represents the full Apple ID token structure
+type AppleIDTokenClaims struct {
+	jwt.RegisteredClaims
 	Email          string `json:"email"`
 	EmailVerified  string `json:"email_verified"`
-	IsPrivateEmail string `json:"is_private_email"`
+	AuthTime       int64  `json:"auth_time"`
+	NonceSupported bool   `json:"nonce_supported"`
 }
 
 // generateState creates a random state token for OAuth
@@ -163,6 +181,16 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	// Get code and state from query params
 	code := c.Query("code")
 	state := c.Query("state")
+	errorParam := c.Query("error")
+
+	// Check for OAuth error
+	if errorParam != "" {
+		errorDesc := c.Query("error_description", "Unknown error")
+		log.Printf("ERROR: OAuth provider returned error: %s - %s", errorParam, errorDesc)
+		return c.Status(400).JSON(fiber.Map{
+			"error": fmt.Sprintf("OAuth error: %s", errorDesc),
+		})
+	}
 
 	log.Printf("Code present: %v, State present: %v", code != "", state != "")
 
@@ -177,7 +205,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	cachedProvider, found := h.cache.Get(fmt.Sprintf("oauth_state:%s", state))
 	log.Printf("State verification - found: %v, provider: %s", found, cachedProvider)
 
-	if cachedProvider != "google" {
+	if !found || cachedProvider != "google" {
 		log.Printf("ERROR: Invalid state - expected 'google', got '%s'", cachedProvider)
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid state parameter",
@@ -190,18 +218,21 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 
 	// Exchange code for token
 	log.Printf("Exchanging code for token...")
-	token, err := h.googleOAuth.Exchange(context.Background(), code)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	token, err := h.googleOAuth.Exchange(ctx, code)
 	if err != nil {
 		log.Printf("ERROR: Failed to exchange token: %v", err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to exchange authorization code",
 		})
 	}
-	log.Printf("Token exchange successful")
+	log.Printf("Token exchange successful, AccessToken present: %v", token.AccessToken != "")
 
 	// Check if token is nil
-	if token == nil {
-		log.Printf("ERROR: Received nil token after exchange")
+	if token == nil || token.AccessToken == "" {
+		log.Printf("ERROR: Received invalid token after exchange")
 		return c.Status(500).JSON(fiber.Map{"error": "empty token from provider"})
 	}
 
@@ -220,6 +251,14 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	}
 	defer resp.Body.Close()
 	log.Printf("User info response status: %d", resp.StatusCode)
+
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("ERROR: Non-200 status from Google: %d, body: %s", resp.StatusCode, string(body))
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to get user information from Google",
+		})
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -248,6 +287,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 // GET /api/auth/apple
 func (h *OAuthHandler) AppleLogin(c *fiber.Ctx) error {
 	if h.appleOAuth == nil {
+		log.Printf("ERROR: Apple OAuth not configured in handler")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Apple OAuth not configured",
 		})
@@ -265,6 +305,8 @@ func (h *OAuthHandler) AppleLogin(c *fiber.Ctx) error {
 		oauth2.SetAuthURLParam("response_type", "code id_token"),
 	)
 
+	log.Printf("Generated Apple OAuth URL for redirect: %s", h.config.OAuth.Apple.RedirectURL)
+
 	return c.JSON(fiber.Map{
 		"url": url,
 	})
@@ -272,8 +314,21 @@ func (h *OAuthHandler) AppleLogin(c *fiber.Ctx) error {
 
 // AppleCallback handles Apple OAuth callback
 // POST /api/auth/apple/callback
-func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) error {
+func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
+	// Panic recovery for debugging
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("🔥 PANIC in AppleCallback: %v", r)
+			err = c.Status(500).JSON(fiber.Map{"error": "internal server error"})
+		}
+	}()
+
+	log.Printf("=== Apple OAuth Callback Started ===")
+	log.Printf("Request Method: %s", c.Method())
+	log.Printf("Content-Type: %s", c.Get("Content-Type"))
+
 	if h.appleOAuth == nil {
+		log.Printf("ERROR: Apple OAuth not configured")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Apple OAuth not configured",
 		})
@@ -283,16 +338,37 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) error {
 	code := c.FormValue("code")
 	state := c.FormValue("state")
 	idToken := c.FormValue("id_token")
+	user := c.FormValue("user") // Only sent on first authorization
+
+	log.Printf("Code present: %v, State present: %v, ID Token present: %v",
+		code != "", state != "", idToken != "")
+
+	if user != "" {
+		log.Printf("Apple user data (first login only): %s", user)
+	}
+
+	// Check for error
+	if errorParam := c.FormValue("error"); errorParam != "" {
+		errorDesc := c.FormValue("error_description", "Unknown error")
+		log.Printf("ERROR: Apple returned error: %s - %s", errorParam, errorDesc)
+		return c.Status(400).JSON(fiber.Map{
+			"error": fmt.Sprintf("Apple OAuth error: %s", errorDesc),
+		})
+	}
 
 	if code == "" || state == "" {
+		log.Printf("ERROR: Missing required parameters - code: %v, state: %v", code != "", state != "")
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Missing code or state parameter",
 		})
 	}
 
 	// Verify state
-	cachedProvider, _ := h.cache.Get(fmt.Sprintf("oauth_state:%s", state))
-	if cachedProvider != "apple" {
+	cachedProvider, found := h.cache.Get(fmt.Sprintf("oauth_state:%s", state))
+	log.Printf("State verification - found: %v, provider: %s", found, cachedProvider)
+
+	if !found || cachedProvider != "apple" {
+		log.Printf("ERROR: Invalid state - expected 'apple', got '%s'", cachedProvider)
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid state parameter",
 		})
@@ -300,33 +376,78 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) error {
 
 	// Delete used state
 	h.cache.Delete(fmt.Sprintf("oauth_state:%s", state))
+	log.Printf("State deleted from cache")
 
-	// For Apple, we can decode the id_token to get user info
-	// In production, you should verify the JWT signature
+	// Exchange code for tokens
+	log.Printf("Exchanging code for token...")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	token, err := h.appleOAuth.Exchange(ctx, code)
+	if err != nil {
+		log.Printf("ERROR: Failed to exchange Apple token: %v", err)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to exchange authorization code",
+		})
+	}
+	log.Printf("Token exchange successful")
+
+	// Extract user info from id_token
 	var appleUser AppleUser
-	if idToken != "" {
-		// Decode ID token (simplified - in production, verify signature)
-		// For now, we'll exchange the code for user info
-		token, err := h.appleOAuth.Exchange(context.Background(), code)
+
+	// Get id_token from exchange response or form data
+	receivedIDToken, ok := token.Extra("id_token").(string)
+	if !ok || receivedIDToken == "" {
+		receivedIDToken = idToken
+	}
+
+	if receivedIDToken != "" {
+		log.Printf("Parsing Apple ID token...")
+
+		// Parse JWT without verification (Apple doesn't provide easy way to get public keys)
+		// In production, you should verify the signature using Apple's public keys
+		parser := jwt.NewParser(jwt.WithoutClaimsValidation())
+		var claims AppleIDTokenClaims
+
+		_, _, err := parser.ParseUnverified(receivedIDToken, &claims)
 		if err != nil {
-			log.Printf("Failed to exchange token: %v", err)
+			log.Printf("ERROR: Failed to parse Apple ID token: %v", err)
 			return c.Status(500).JSON(fiber.Map{
-				"error": "Failed to exchange authorization code",
+				"error": "Failed to parse Apple ID token",
 			})
 		}
 
-		// Apple doesn't provide a user info endpoint
-		// We need to decode the id_token JWT
-		// For simplicity, we'll use the token's extra data
-		if _, ok := token.Extra("id_token").(string); ok {
-			// In production, verify and decode the JWT properly
-			// For now, return basic info
-			appleUser.Email = c.FormValue("user") // Apple sends user data in first login only
+		appleUser.Sub = claims.Subject
+		appleUser.Email = claims.Email
+		appleUser.EmailVerified = claims.EmailVerified
+
+		log.Printf("Parsed Apple user: Sub=%s, Email=%s, EmailVerified=%s",
+			appleUser.Sub, appleUser.Email, appleUser.EmailVerified)
+	} else {
+		log.Printf("WARNING: No ID token received from Apple")
+		return c.Status(500).JSON(fiber.Map{
+			"error": "No ID token received from Apple",
+		})
+	}
+
+	// Handle first-time authorization user data
+	var displayName string
+	if user != "" {
+		var userData struct {
+			Name struct {
+				FirstName string `json:"firstName"`
+				LastName  string `json:"lastName"`
+			} `json:"name"`
+		}
+		if err := json.Unmarshal([]byte(user), &userData); err == nil {
+			displayName = fmt.Sprintf("%s %s", userData.Name.FirstName, userData.Name.LastName)
+			log.Printf("Parsed first-time user name: %s", displayName)
 		}
 	}
 
 	// Process OAuth login/registration
-	return h.processOAuthUser(c, "apple", appleUser.Sub, appleUser.Email, "", "", appleUser.EmailVerified == "true")
+	log.Printf("Processing OAuth user...")
+	return h.processOAuthUser(c, "apple", appleUser.Sub, appleUser.Email, displayName, "", appleUser.EmailVerified == "true")
 }
 
 // processOAuthUser handles user creation or login for OAuth providers
@@ -339,22 +460,36 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		}
 	}()
 
-	log.Printf("processOAuthUser called: provider=%s, providerID=%s, email=%s, name=%s", provider, providerID, email, name)
+	log.Printf("=== Processing OAuth User ===")
+	log.Printf("Provider: %s, ProviderID: %s, Email: %s, Name: %s, EmailVerified: %v",
+		provider, providerID, email, name, emailVerified)
+
+	// Validate required fields
+	if providerID == "" {
+		log.Printf("ERROR: Empty provider ID")
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Invalid OAuth response: missing user ID",
+		})
+	}
 
 	var (
 		user      models.User
 		tokenPair *auth.TokenPairWithJTI
 		session   *models.Session
+		isNewUser bool
 	)
 
 	// Try to find user by OAuth provider
 	err = h.db.DB.Where("oauth_provider = ? AND oauth_provider_id = ?", provider, providerID).First(&user).Error
+	log.Printf("Search by OAuth provider result: found=%v, err=%v", err == nil, err)
 
 	if err == gorm.ErrRecordNotFound {
 		// Check if email already exists
 		if email != "" {
 			existingUser := models.User{}
 			if err := h.db.DB.Where("email = ?", email).First(&existingUser).Error; err == nil {
+				log.Printf("Email already exists for user: %s", existingUser.ID)
+
 				// SECURITY: Email exists but account is not linked
 				// Store linking request in cache for user confirmation
 				linkingToken := generateState()
@@ -372,6 +507,17 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 					"message":                  "An account with this email already exists. Please confirm to link your OAuth account.",
 				})
 			} else {
+				log.Printf("Creating new user with OAuth...")
+				isNewUser = true
+
+				// Validate email
+				if email == "" {
+					log.Printf("ERROR: No email provided by OAuth provider")
+					return c.Status(400).JSON(fiber.Map{
+						"error": "Email not provided by OAuth provider. Please grant email permissions.",
+					})
+				}
+
 				// Create new user
 				username := generateUsernameFromEmail(email)
 				// Ensure username is unique
@@ -389,10 +535,12 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 				}
 
 				if err := h.db.DB.Create(&user).Error; err != nil {
+					log.Printf("ERROR: Failed to create user: %v", err)
 					return c.Status(500).JSON(fiber.Map{
 						"error": "Failed to create user",
 					})
 				}
+				log.Printf("Created new user: ID=%s, Username=%s", user.ID, user.Username)
 
 				// Generate referral code
 				referralCode := models.ReferralCode{
@@ -402,21 +550,28 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 					TotalUses: 0,
 					IsActive:  true,
 				}
-				h.db.DB.Create(&referralCode)
+				if err := h.db.DB.Create(&referralCode).Error; err != nil {
+					log.Printf("WARNING: Failed to create referral code: %v", err)
+				}
 			}
 		} else {
+			log.Printf("ERROR: No email provided by OAuth provider")
 			return c.Status(400).JSON(fiber.Map{
 				"error": "Email not provided by OAuth provider",
 			})
 		}
 	} else if err != nil {
+		log.Printf("ERROR: Database error: %v", err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Database error",
 		})
+	} else {
+		log.Printf("Found existing user: ID=%s, Username=%s", user.ID, user.Username)
 	}
 
 	// Check if 2FA is enabled
 	if user.Is2FAEnabled {
+		log.Printf("User has 2FA enabled, requiring verification")
 		return c.Status(200).JSON(fiber.Map{
 			"requires_2fa":        true,
 			"verification_method": user.VerificationMethod,
@@ -425,6 +580,7 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	}
 
 	// Generate tokens
+	log.Printf("Generating authentication tokens...")
 	tokenPair, err = auth.GenerateTokenPair(
 		user.ID,
 		user.Username,
@@ -436,17 +592,19 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		h.config.JWT.RefreshExpiry,
 	)
 	if err != nil {
-		log.Printf("Failed to generate tokens for OAuth user %s: %v", user.ID, err)
+		log.Printf("ERROR: Failed to generate tokens: %v", err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to generate tokens",
 		})
 	}
+	log.Printf("Tokens generated successfully")
 
 	// Create session
+	log.Printf("Creating user session...")
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
 	refreshTokenHash, hashErr := utils.HashPassword(tokenPair.TokenPair.RefreshToken)
 	if hashErr != nil {
-		log.Printf("Failed to hash refresh token: %v", hashErr)
+		log.Printf("ERROR: Failed to hash refresh token: %v", hashErr)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to process tokens",
 		})
@@ -455,17 +613,18 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 
 	session, err = sessionService.CreateSession(user.ID, c, refreshTokenHash, tokenPair.RefreshJTI, expiresAt)
 	if err != nil {
-		log.Printf("Failed to create session for OAuth user %s: %v", user.ID, err)
+		log.Printf("ERROR: Failed to create session: %v", err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create session",
 		})
 	}
+	log.Printf("Session created: ID=%s", session.ID)
 
 	// Update last active
 	now := time.Now()
 	user.LastActiveAt = &now
 	if err := h.db.DB.Save(&user).Error; err != nil {
-		log.Printf("Failed to update last active for user %s: %v", user.ID, err)
+		log.Printf("WARNING: Failed to update last active: %v", err)
 	}
 
 	// Set refresh token cookie
@@ -479,13 +638,23 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		Path:     "/",
 	})
 
-	return c.JSON(fiber.Map{
+	log.Printf("OAuth login successful for user: %s", user.ID)
+
+	// Add flag to indicate if this is a new user registration
+	response := fiber.Map{
 		"user":         user.ToMe(),
 		"access_token": tokenPair.TokenPair.AccessToken,
 		"token_type":   "Bearer",
 		"expires_in":   tokenPair.TokenPair.ExpiresIn,
 		"session_id":   session.ID,
-	})
+	}
+
+	if isNewUser {
+		response["is_new_user"] = true
+		response["message"] = "Account created successfully"
+	}
+
+	return c.JSON(response)
 }
 
 // generateUsernameFromEmail creates a username from email
