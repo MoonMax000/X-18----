@@ -9,8 +9,7 @@ import { getAvatarUrl, getCoverUrl } from "@/lib/avatar-utils";
 import { Camera, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ImageCropModal from "@/components/common/ImageCropModal";
-import { useAuth } from "@/contexts/AuthContext";
-import { compressBlob } from "@/lib/image-compression";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 interface ProfileData {
   name: string;
@@ -50,12 +49,12 @@ const UserHeader: FC<Props> = ({
   onAvatarUpload,
   onCoverUpload
 }) => {
-  const { refreshUser } = useAuth();
+  const { uploadAvatar: uploadAvatarFn, uploadCover: uploadCoverFn, uploadProgress, isUploading, uploadType } = useImageUpload();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const currentUser = useSelector((state: RootState) => state.profile.currentUser);
   
-  // Upload states
+  // Local UI states
   const [avatarUrl, setAvatarUrl] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
   const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
@@ -63,9 +62,6 @@ const UserHeader: FC<Props> = ({
   const [showAvatarCrop, setShowAvatarCrop] = useState(false);
   const [showCoverCrop, setShowCoverCrop] = useState(false);
   const [isHoveringCover, setIsHoveringCover] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadType, setUploadType] = useState<'avatar' | 'cover' | null>(null);
   
   // Debug logs
   console.log('👤 UserHeader - currentUser from Redux:', currentUser);
@@ -170,98 +166,23 @@ const UserHeader: FC<Props> = ({
     noClick: true,
   });
 
-  // Upload with progress tracking
-  const uploadWithProgress = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const token = localStorage.getItem('custom_token');
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response.url);
-          } catch (err) {
-            reject(new Error('Failed to parse response'));
-          }
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('Network error during upload'));
-      });
-
-      xhr.open('POST', `${baseUrl}/api/media/upload`);
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
-      xhr.send(formData);
-    });
-  };
-
-  // Save cropped avatar
+  // Save cropped avatar using hook
   const handleSaveAvatar = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      setIsUploading(true);
-      setUploadType('avatar');
-      setUploadProgress(0);
-      
-      const file = await compressBlob(blob, 'avatar.jpg');
-      const { customBackendAPI } = await import('@/services/api/custom-backend');
-      const mediaUrl = await uploadWithProgress(file);
-      
-      await customBackendAPI.updateProfile({ avatar_url: mediaUrl });
+      const mediaUrl = await uploadAvatarFn(blob);
       setAvatarUrl(mediaUrl);
-      await refreshUser();
-      
-      toast.success('Аватар успешно обновлен');
     } catch (error) {
-      console.error('Failed to save avatar:', error);
-      toast.error('Ошибка при сохранении аватара');
-    } finally {
-      setIsUploading(false);
-      setUploadType(null);
-      setUploadProgress(0);
+      // Error already handled in hook
     }
   };
 
-  // Save cropped cover
+  // Save cropped cover using hook
   const handleSaveCover = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      setIsUploading(true);
-      setUploadType('cover');
-      setUploadProgress(0);
-      
-      const file = await compressBlob(blob, 'cover.jpg');
-      const { customBackendAPI } = await import('@/services/api/custom-backend');
-      const mediaUrl = await uploadWithProgress(file);
-      
-      await customBackendAPI.updateProfile({ header_url: mediaUrl });
+      const mediaUrl = await uploadCoverFn(blob);
       setCoverUrl(mediaUrl);
-      await refreshUser();
-      
-      toast.success('Обложка успешно обновлена');
     } catch (error) {
-      console.error('Failed to save cover:', error);
-      toast.error('Ошибка при сохранении обложки');
-    } finally {
-      setIsUploading(false);
-      setUploadType(null);
-      setUploadProgress(0);
+      // Error already handled in hook
     }
   };
 
