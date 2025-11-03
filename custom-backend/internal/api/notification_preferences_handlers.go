@@ -1,9 +1,10 @@
 package api
 
 import (
+	"custom-backend/internal/database"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"custom-backend/internal/database"
 )
 
 type NotificationPreferencesHandler struct {
@@ -39,7 +40,19 @@ type NotificationPreferences struct {
 // GetNotificationPreferences возвращает настройки уведомлений текущего пользователя
 // GET /api/notification-preferences
 func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(uuid.UUID)
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID",
+		})
+	}
 
 	var prefs NotificationPreferences
 	var emailNotifications bool
@@ -109,7 +122,19 @@ func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx
 // UpdateNotificationPreferences обновляет настройки уведомлений
 // PUT /api/notification-preferences
 func (h *NotificationPreferencesHandler) UpdateNotificationPreferences(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(uuid.UUID)
+	userIDVal := c.Locals("userID")
+	if userIDVal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID",
+		})
+	}
 
 	var req NotificationPreferences
 	if err := c.BodyParser(&req); err != nil {
