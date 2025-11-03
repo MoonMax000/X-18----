@@ -160,6 +160,14 @@ const SocialOverview: FC = () => {
   const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
 
   // Create profile data for ProfileHero
+  console.log('[SocialOverview] Creating profileData:');
+  console.log('[SocialOverview] - user from AuthContext:', user);
+  console.log('[SocialOverview] - user.avatar_url:', user?.avatar_url);
+  console.log('[SocialOverview] - user.header_url:', user?.header_url);
+  console.log('[SocialOverview] - currentUser from Redux:', currentUser);
+  console.log('[SocialOverview] - currentUser.avatar:', currentUser?.avatar);
+  console.log('[SocialOverview] - currentUser.cover:', currentUser?.cover);
+  
   const profileData = {
     id: user?.id || '',
     name: user?.display_name || currentUser?.name || 'User',
@@ -177,6 +185,10 @@ const SocialOverview: FC = () => {
       likes: stats?.total_likes || 0,
     },
   };
+  
+  console.log('[SocialOverview] Final profileData:', profileData);
+  console.log('[SocialOverview] Final profileData.avatar:', profileData.avatar);
+  console.log('[SocialOverview] Final profileData.cover:', profileData.cover);
 
   // Refetch follower growth when time range changes
   useEffect(() => {

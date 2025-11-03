@@ -41,8 +41,12 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   
   // Update local state when props change
   useEffect(() => {
+    console.log('[ProfileHero] Props changed - updating local state:');
+    console.log('[ProfileHero] - New profile.avatar:', profile.avatar);
+    console.log('[ProfileHero] - New profile.cover:', profile.cover);
     setAvatarUrl(profile.avatar);
     setCoverUrl(profile.cover);
+    console.log('[ProfileHero] - State updated');
   }, [profile.avatar, profile.cover]);
   const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
   const [tempCoverUrl, setTempCoverUrl] = useState<string | null>(null);
