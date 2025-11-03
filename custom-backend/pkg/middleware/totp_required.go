@@ -4,16 +4,18 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 // TOTPRequired middleware checks if user has TOTP enabled and validates the provided code
 // This should be used for sensitive operations like password/email/phone changes
 func TOTPRequired(securityService interface {
-	VerifyTOTPCode(userID uint, code string) (bool, error)
+	VerifyTOTPCode(userID uuid.UUID, code string) (bool, error)
 }) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get user ID from context (set by auth middleware)
-		userID := c.Locals("user_id")
+		// JWT middleware sets "userID" (camelCase), not "user_id"
+		userID := c.Locals("userID")
 		if userID == nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "User not authenticated",
@@ -51,7 +53,7 @@ func TOTPRequired(securityService interface {
 		}
 
 		// Verify the TOTP code
-		uid, ok := userID.(uint)
+		uid, ok := userID.(uuid.UUID)
 		if !ok {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Invalid user ID type",
@@ -85,7 +87,8 @@ func TOTPOptional(securityService interface {
 }) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get user ID from context
-		userID := c.Locals("user_id")
+		// JWT middleware sets "userID" (camelCase), not "user_id"
+		userID := c.Locals("userID")
 		if userID == nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "User not authenticated",

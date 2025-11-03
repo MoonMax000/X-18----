@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"github.com/pquerna/otp"
 	"custom-backend/internal/cache"
 	"custom-backend/internal/models"
 	"custom-backend/pkg/utils"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/pquerna/otp"
 	"gorm.io/gorm"
 )
 
@@ -237,10 +238,10 @@ func (s *SecurityService) GetUserTOTPStatus(userID uint) (bool, error) {
 
 // VerifyTOTPCode verifies a TOTP code for a user
 // Note: Backup codes support will be added in a future update
-func (s *SecurityService) VerifyTOTPCode(userID uint, code string) (bool, error) {
-	// Get user to find their UUID
+func (s *SecurityService) VerifyTOTPCode(userID uuid.UUID, code string) (bool, error) {
+	// Get user
 	var user models.User
-	if err := s.db.First(&user, userID).Error; err != nil {
+	if err := s.db.First(&user, "id = ?", userID).Error; err != nil {
 		return false, fmt.Errorf("user not found: %w", err)
 	}
 
