@@ -77,8 +77,13 @@ func main() {
 		ErrorHandler: customErrorHandler,
 	})
 
-	// Global middleware
-	app.Use(recover.New())
+	// Global middleware with stack trace for debugging
+	app.Use(recover.New(recover.Config{
+		EnableStackTrace: true,
+		StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
+			log.Printf("🔥 PANIC: %v", e)
+		},
+	}))
 	app.Use(logger.New(logger.Config{
 		Format: "[${time}] ${status} - ${method} ${path} (${latency})\n",
 	}))

@@ -2,9 +2,6 @@ package utils
 
 import (
 	"crypto/ecdsa"
-	"crypto/x509"
-	"encoding/pem"
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,13 +9,8 @@ import (
 
 // GenerateAppleClientSecret creates a JWT token for Apple OAuth
 // according to Apple's specifications
-func GenerateAppleClientSecret(teamID, keyID, clientID, privateKeyPEM string) (string, error) {
-	// Parse private key
-	privateKey, err := parsePrivateKey(privateKeyPEM)
-	if err != nil {
-		return "", err
-	}
-
+// privateKey should be parsed using configs.ParseApplePrivateKey
+func GenerateAppleClientSecret(teamID, keyID, clientID string, privateKey *ecdsa.PrivateKey) (string, error) {
 	// Create token claims
 	now := time.Now()
 	claims := jwt.RegisteredClaims{
@@ -40,26 +32,4 @@ func GenerateAppleClientSecret(teamID, keyID, clientID, privateKeyPEM string) (s
 	}
 
 	return signedToken, nil
-}
-
-// parsePrivateKey parses PEM encoded ECDSA private key
-func parsePrivateKey(privateKeyPEM string) (*ecdsa.PrivateKey, error) {
-	block, _ := pem.Decode([]byte(privateKeyPEM))
-	if block == nil {
-		return nil, errors.New("failed to parse PEM block containing the key")
-	}
-
-	// Try parsing as PKCS8 format first
-	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if err != nil {
-		// Try parsing as EC private key
-		return x509.ParseECPrivateKey(block.Bytes)
-	}
-
-	ecKey, ok := key.(*ecdsa.PrivateKey)
-	if !ok {
-		return nil, errors.New("not an ECDSA private key")
-	}
-
-	return ecKey, nil
 }

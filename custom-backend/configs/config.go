@@ -1,9 +1,14 @@
 package configs
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -56,11 +61,12 @@ type GoogleOAuthConfig struct {
 }
 
 type AppleOAuthConfig struct {
-	ClientID    string
-	TeamID      string
-	KeyID       string
-	PrivateKey  string
-	RedirectURL string
+	ClientID       string
+	TeamID         string
+	KeyID          string
+	PrivateKey     string
+	PrivateKeyPath string
+	RedirectURL    string
 }
 
 func LoadConfig() *Config {
@@ -98,14 +104,67 @@ func LoadConfig() *Config {
 				RedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:8080/api/auth/google/callback"),
 			},
 			Apple: AppleOAuthConfig{
-				ClientID:    getEnv("APPLE_CLIENT_ID", ""),
-				TeamID:      getEnv("APPLE_TEAM_ID", ""),
-				KeyID:       getEnv("APPLE_KEY_ID", ""),
-				PrivateKey:  getEnv("APPLE_PRIVATE_KEY", ""),
-				RedirectURL: getEnv("APPLE_REDIRECT_URL", "http://localhost:8080/api/auth/apple/callback"),
+				ClientID:       getEnv("APPLE_CLIENT_ID", ""),
+				TeamID:         getEnv("APPLE_TEAM_ID", ""),
+				KeyID:          getEnv("APPLE_KEY_ID", ""),
+				PrivateKey:     getEnv("APPLE_PRIVATE_KEY", ""),
+				PrivateKeyPath: getEnv("APPLE_PRIVATE_KEY_PATH", ""),
+				RedirectURL:    getEnv("APPLE_REDIRECT_URL", "http://localhost:8080/api/auth/apple/callback"),
 			},
 		},
 	}
+}
+
+// ParseApplePrivateKey parses Apple private key from file path or PEM string
+// Supports: 1) File path (APPLE_PRIVATE_KEY_PATH), 2) Multi-line PEM, 3) Single-line PEM with \n, 4) Base64 DER
+func ParseApplePrivateKey(cfg AppleOAuthConfig) (*ecdsa.PrivateKey, error) {
+	var raw []byte
+
+	// Try to load from file path first
+	if p := strings.TrimSpace(cfg.PrivateKeyPath); p != "" {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return nil, fmt.Errorf("read APPLE_PRIVATE_KEY_PATH: %w", err)
+		}
+		raw = b
+	} else {
+		// Use inline key from APPLE_PRIVATE_KEY
+		s := strings.TrimSpace(cfg.PrivateKey)
+		if s == "" {
+			return nil, fmt.Errorf("APPLE_PRIVATE_KEY is empty")
+		}
+		// Support escaped newlines
+		s = strings.ReplaceAll(s, `\n`, "\n")
+		raw = []byte(s)
+	}
+
+	// Try PEM format first
+	if block, _ := pem.Decode(raw); block != nil {
+		// Apple .p8 uses PKCS8 EC format
+		if k, err := x509.ParsePKCS8PrivateKey(block.Bytes); err == nil {
+			if ec, ok := k.(*ecdsa.PrivateKey); ok {
+				return ec, nil
+			}
+			return nil, fmt.Errorf("unexpected key type (want EC, got %T)", k)
+		}
+		// Try EC format directly
+		if ec, err := x509.ParseECPrivateKey(block.Bytes); err == nil {
+			return ec, nil
+		}
+		return nil, fmt.Errorf("failed to parse EC key from PEM")
+	}
+
+	// Try base64-encoded DER as fallback
+	if der, err := base64.StdEncoding.DecodeString(strings.TrimSpace(string(raw))); err == nil {
+		if k, err := x509.ParsePKCS8PrivateKey(der); err == nil {
+			if ec, ok := k.(*ecdsa.PrivateKey); ok {
+				return ec, nil
+			}
+			return nil, fmt.Errorf("unexpected key type (want EC, got %T)", k)
+		}
+	}
+
+	return nil, fmt.Errorf("failed to parse PEM block containing the key")
 }
 
 func (c *DatabaseConfig) DSN() string {
