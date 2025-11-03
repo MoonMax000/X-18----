@@ -8,7 +8,7 @@ import { DollarSign, Camera, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ImageCropModal from "@/components/common/ImageCropModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { compressBlob } from "@/lib/image-compression";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 interface ProfileHeroProps {
   profile: SocialProfileData;
@@ -29,7 +29,8 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   onFollowToggle,
   profileUserId,
 }) => {
-  const { refreshUser, user } = useAuth();
+  const { user } = useAuth();
+  const { uploadAvatar: uploadAvatarFn, uploadCover: uploadCoverFn, uploadProgress, isUploading, uploadType } = useImageUpload();
   const [localIsFollowing, setLocalIsFollowing] = useState(externalIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
@@ -48,16 +49,12 @@ const ProfileHero: FC<ProfileHeroProps> = ({
     setCoverUrl(profile.cover);
     console.log('[ProfileHero] - State updated');
   }, [profile.avatar, profile.cover]);
+  
   const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
   const [tempCoverUrl, setTempCoverUrl] = useState<string | null>(null);
   const [showAvatarCrop, setShowAvatarCrop] = useState(false);
   const [showCoverCrop, setShowCoverCrop] = useState(false);
   const [isHoveringCover, setIsHoveringCover] = useState(false);
-  
-  // Upload progress states
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadType, setUploadType] = useState<'avatar' | 'cover' | null>(null);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -159,133 +156,23 @@ const ProfileHero: FC<ProfileHeroProps> = ({
     }
   };
 
-  // Upload with progress tracking
-  const uploadWithProgress = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const token = localStorage.getItem('custom_token');
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      // Track upload progress
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response.url);
-          } catch (err) {
-            reject(new Error('Failed to parse response'));
-          }
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('Network error during upload'));
-      });
-
-      xhr.open('POST', `${baseUrl}/api/media/upload`);
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
-      xhr.send(formData);
-    });
-  };
-
-  // Save cropped avatar
+  // Save cropped avatar using hook
   const handleSaveAvatar = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      setIsUploading(true);
-      setUploadType('avatar');
-      setUploadProgress(0);
-      
-      console.log('[ProfileHero] Starting avatar upload...');
-      
-      // Compress before upload
-      console.log('[ProfileHero] Compressing avatar...');
-      const file = await compressBlob(blob, 'avatar.jpg');
-      
-      // Upload to backend with progress
-      const mediaUrl = await uploadWithProgress(file);
-      console.log('[ProfileHero] Upload successful:', mediaUrl);
-      
-      // Update profile with new avatar URL
-      console.log('[ProfileHero] Updating profile with new avatar...');
-      const { customBackendAPI } = await import('@/services/api/custom-backend');
-      await customBackendAPI.updateProfile({
-        avatar_url: mediaUrl,
-      });
-      console.log('[ProfileHero] Profile updated');
-      
-      // Update local state IMMEDIATELY (no reload!)
+      const mediaUrl = await uploadAvatarFn(blob);
       setAvatarUrl(mediaUrl);
-      
-      // Update global auth context
-      console.log('[ProfileHero] Refreshing auth context...');
-      await refreshUser();
-      
-      toast.success('Аватар успешно обновлен');
     } catch (error) {
-      console.error('[ProfileHero] Failed to save avatar:', error);
-      toast.error('Ошибка при сохранении аватара');
-    } finally {
-      setIsUploading(false);
-      setUploadType(null);
-      setUploadProgress(0);
+      // Error already handled in hook
     }
   };
 
-  // Save cropped cover
+  // Save cropped cover using hook
   const handleSaveCover = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      setIsUploading(true);
-      setUploadType('cover');
-      setUploadProgress(0);
-      
-      console.log('[ProfileHero] Starting cover upload...');
-      
-      // Compress before upload
-      console.log('[ProfileHero] Compressing cover...');
-      const file = await compressBlob(blob, 'cover.jpg');
-      
-      // Upload to backend with progress
-      const mediaUrl = await uploadWithProgress(file);
-      console.log('[ProfileHero] Upload successful:', mediaUrl);
-      
-      // Update profile with new header URL
-      console.log('[ProfileHero] Updating profile with new cover...');
-      const { customBackendAPI } = await import('@/services/api/custom-backend');
-      await customBackendAPI.updateProfile({
-        header_url: mediaUrl,
-      });
-      console.log('[ProfileHero] Profile updated');
-      
-      // Update local state IMMEDIATELY (no reload!)
+      const mediaUrl = await uploadCoverFn(blob);
       setCoverUrl(mediaUrl);
-      
-      // Update global auth context
-      console.log('[ProfileHero] Refreshing auth context...');
-      await refreshUser();
-      
-      toast.success('Обложка успешно обновлена');
     } catch (error) {
-      console.error('[ProfileHero] Failed to save cover:', error);
-      toast.error('Ошибка при сохранении обложки');
-    } finally {
-      setIsUploading(false);
-      setUploadType(null);
-      setUploadProgress(0);
+      // Error already handled in hook
     }
   };
 

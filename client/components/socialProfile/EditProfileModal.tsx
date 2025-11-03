@@ -6,7 +6,7 @@ import ImageCropModal from "@/components/common/ImageCropModal";
 import { customBackendAPI } from "@/services/api/custom-backend";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { compressBlob } from "@/lib/image-compression";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
   currentProfile,
 }) => {
   const { refreshUser } = useAuth();
+  const { uploadAvatar: uploadAvatarFn, uploadCover: uploadCoverFn, uploadProgress, isUploading, uploadType } = useImageUpload();
   
   // Form fields
   const [displayName, setDisplayName] = useState(currentProfile.display_name || '');
@@ -42,10 +43,6 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
   const [showAvatarCrop, setShowAvatarCrop] = useState(false);
   const [showCoverCrop, setShowCoverCrop] = useState(false);
   
-  // Upload states
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadType, setUploadType] = useState<'avatar' | 'cover' | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -106,92 +103,23 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
     noClick: true,
   });
 
-  // Upload with progress tracking
-  const uploadWithProgress = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const token = localStorage.getItem('custom_token');
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response.url);
-          } catch (err) {
-            reject(new Error('Failed to parse response'));
-          }
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('Network error during upload'));
-      });
-
-      xhr.open('POST', `${baseUrl}/api/media/upload`);
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
-      xhr.send(formData);
-    });
-  };
-
-  // Save cropped avatar
+  // Save cropped avatar using hook
   const handleSaveAvatar = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      setIsUploading(true);
-      setUploadType('avatar');
-      setUploadProgress(0);
-      
-      // Compress before upload
-      const file = await compressBlob(blob, 'avatar.jpg');
-      const mediaUrl = await uploadWithProgress(file);
-      
+      const mediaUrl = await uploadAvatarFn(blob);
       setAvatarUrl(mediaUrl);
-      toast.success('Аватар загружен');
     } catch (error) {
-      console.error('Failed to upload avatar:', error);
-      toast.error('Ошибка загрузки аватара');
-    } finally {
-      setIsUploading(false);
-      setUploadType(null);
-      setUploadProgress(0);
+      // Error already handled in hook
     }
   };
 
-  // Save cropped cover
+  // Save cropped cover using hook
   const handleSaveCover = async (croppedImageUrl: string, blob: Blob) => {
     try {
-      setIsUploading(true);
-      setUploadType('cover');
-      setUploadProgress(0);
-      
-      // Compress before upload
-      const file = await compressBlob(blob, 'cover.jpg');
-      const mediaUrl = await uploadWithProgress(file);
-      
+      const mediaUrl = await uploadCoverFn(blob);
       setCoverUrl(mediaUrl);
-      toast.success('Обложка загружена');
     } catch (error) {
-      console.error('Failed to upload cover:', error);
-      toast.error('Ошибка загрузки обложки');
-    } finally {
-      setIsUploading(false);
-      setUploadType(null);
-      setUploadProgress(0);
+      // Error already handled in hook
     }
   };
 
