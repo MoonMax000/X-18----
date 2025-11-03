@@ -393,8 +393,11 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
       setIsLoading(true);
       setAuthError('');
       
+      // Get API URL from environment
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      
       // Get OAuth URL from backend
-      const response = await fetch('http://localhost:8080/api/auth/google');
+      const response = await fetch(`${apiUrl}/api/auth/google`);
       const data = await response.json();
       
       if (data.error) {
@@ -419,8 +422,11 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
       setIsLoading(true);
       setAuthError('');
       
+      // Get API URL from environment
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      
       // Get OAuth URL from backend
-      const response = await fetch('http://localhost:8080/api/auth/apple');
+      const response = await fetch(`${apiUrl}/api/auth/apple`);
       const data = await response.json();
       
       if (data.error) {
