@@ -1,4 +1,4 @@
-import { type FC, useState, useRef, useCallback } from "react";
+import { type FC, useState, useRef, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import type { SocialProfileData } from "@/data/socialProfile";
 import { profileButtonStyles } from "./profileButtonStyles";
@@ -38,6 +38,12 @@ const ProfileHero: FC<ProfileHeroProps> = ({
   // Avatar and cover upload states
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar);
   const [coverUrl, setCoverUrl] = useState(profile.cover);
+  
+  // Update local state when props change
+  useEffect(() => {
+    setAvatarUrl(profile.avatar);
+    setCoverUrl(profile.cover);
+  }, [profile.avatar, profile.cover]);
   const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
   const [tempCoverUrl, setTempCoverUrl] = useState<string | null>(null);
   const [showAvatarCrop, setShowAvatarCrop] = useState(false);
