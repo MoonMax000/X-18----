@@ -228,9 +228,9 @@ func (s *SecurityService) VerifyCode(userID uuid.UUID, code string, codeType mod
 }
 
 // GetUserTOTPStatus returns whether the user has TOTP enabled
-func (s *SecurityService) GetUserTOTPStatus(userID uint) (bool, error) {
+func (s *SecurityService) GetUserTOTPStatus(userID uuid.UUID) (bool, error) {
 	var user models.User
-	if err := s.db.Select("totp_enabled").First(&user, userID).Error; err != nil {
+	if err := s.db.Select("totp_enabled").First(&user, "id = ?", userID).Error; err != nil {
 		return false, err
 	}
 	return user.TOTPEnabled, nil

@@ -82,8 +82,8 @@ func TOTPRequired(securityService interface {
 // TOTPOptional middleware checks TOTP only if the user has it enabled
 // Returns user's TOTP status in locals for the handler to use
 func TOTPOptional(securityService interface {
-	GetUserTOTPStatus(userID uint) (bool, error)
-	VerifyTOTPCode(userID uint, code string) (bool, error)
+	GetUserTOTPStatus(userID uuid.UUID) (bool, error)
+	VerifyTOTPCode(userID uuid.UUID, code string) (bool, error)
 }) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get user ID from context
@@ -95,7 +95,7 @@ func TOTPOptional(securityService interface {
 			})
 		}
 
-		uid, ok := userID.(uint)
+		uid, ok := userID.(uuid.UUID)
 		if !ok {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Invalid user ID type",

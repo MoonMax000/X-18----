@@ -215,7 +215,10 @@ func main() {
 
 	// Account security
 	auth.Post("/backup-contact", middleware.JWTMiddleware(cfg), authHandler.UpdateBackupContact)
-	auth.Post("/delete-account", middleware.JWTMiddleware(cfg), authHandler.RequestAccountDeletion)
+	auth.Post("/delete-account",
+		middleware.JWTMiddleware(cfg),
+		middleware.TOTPOptional(securityService),
+		authHandler.RequestAccountDeletion)
 
 	// TOTP 2FA routes (protected)
 	totp := apiGroup.Group("/totp", middleware.JWTMiddleware(cfg))
@@ -228,7 +231,9 @@ func main() {
 
 	// Account management routes (protected)
 	account := apiGroup.Group("/account", middleware.JWTMiddleware(cfg))
-	account.Post("/deactivate", accountHandler.DeactivateAccount)
+	account.Post("/deactivate",
+		middleware.TOTPOptional(securityService),
+		accountHandler.DeactivateAccount)
 	account.Post("/restore", accountHandler.RestoreAccount)
 	account.Get("/recovery-info", accountHandler.GetRecoveryInfo)
 
