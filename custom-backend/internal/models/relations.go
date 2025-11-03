@@ -172,6 +172,14 @@ type Session struct {
 	ExpiresAt        time.Time `gorm:"not null" json:"expires_at"`
 	CreatedAt        time.Time `json:"created_at"`
 
+	// Refresh token rotation fields (NEW)
+	JTI           *uuid.UUID `gorm:"type:uuid;index:idx_sessions_jti" json:"-"`               // JWT ID for this refresh token
+	PrevJTI       *uuid.UUID `gorm:"type:uuid" json:"-"`                                      // Previous token in rotation chain
+	ReplacedByJTI *uuid.UUID `gorm:"type:uuid" json:"-"`                                      // Token that replaced this one
+	IsActive      bool       `gorm:"default:true;index:idx_sessions_active" json:"is_active"` // Whether session is active
+	IsRevoked     bool       `gorm:"default:false" json:"is_revoked"`                         // Token revoked (logout/reuse)
+	RevokedAt     *time.Time `json:"revoked_at,omitempty"`                                    // When token was revoked
+
 	// Device tracking fields
 	DeviceType   string     `gorm:"size:20" json:"device_type,omitempty"` // mobile, tablet, desktop
 	Browser      string     `gorm:"size:50" json:"browser,omitempty"`     // Chrome, Firefox, Safari, etc.

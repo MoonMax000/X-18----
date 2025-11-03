@@ -393,18 +393,22 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
       setIsLoading(true);
       setAuthError('');
       
-      // TODO: Implement Google OAuth flow
-      // 1. Open Google OAuth popup
-      // 2. Get authorization code
-      // 3. Send to backend /api/auth/google
-      // 4. Receive JWT tokens
-      // 5. Store tokens and reload
+      // Get OAuth URL from backend
+      const response = await fetch('http://localhost:8080/api/auth/google');
+      const data = await response.json();
       
-      alert('Google OAuth integration coming soon!\n\nPlease use Email/Phone login for now.');
+      if (data.error) {
+        setAuthError(data.error);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Redirect to Google OAuth
+      console.log('Redirecting to Google OAuth:', data.url);
+      window.location.href = data.url;
     } catch (error) {
       console.error('Google OAuth error:', error);
       setAuthError('Google login failed. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -415,14 +419,22 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
       setIsLoading(true);
       setAuthError('');
       
-      // TODO: Implement Apple Sign In flow
-      // Similar to Google OAuth
+      // Get OAuth URL from backend
+      const response = await fetch('http://localhost:8080/api/auth/apple');
+      const data = await response.json();
       
-      alert('Apple Sign In integration coming soon!\n\nPlease use Email/Phone login for now.');
+      if (data.error) {
+        setAuthError(data.error);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Redirect to Apple OAuth
+      console.log('Redirecting to Apple OAuth:', data.url);
+      window.location.href = data.url;
     } catch (error) {
       console.error('Apple OAuth error:', error);
       setAuthError('Apple login failed. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

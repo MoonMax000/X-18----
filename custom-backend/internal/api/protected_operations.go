@@ -1,13 +1,15 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"custom-backend/configs"
 	"custom-backend/internal/cache"
 	"custom-backend/internal/database"
 	"custom-backend/internal/models"
 	"custom-backend/internal/services"
 	"custom-backend/pkg/utils"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 // ProtectedOperationsHandler handles operations that require TOTP verification
@@ -93,13 +95,28 @@ func (h *ProtectedOperationsHandler) ChangePassword(c *fiber.Ctx) error {
 		})
 	}
 
-	// Revoke all sessions except current one for security
+	// SECURITY: Revoke all sessions except current one
+	// This forces logout on all other devices for security
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
-	sessionService.RevokeAllSessions(user.ID)
-	// Note: Current session will remain valid due to JWT
+
+	// Get current session ID from JWT context
+	currentSessionID := c.Locals("sessionID")
+	if currentSessionID != nil {
+		// Parse session ID string to UUID
+		if sessionUUID, parseErr := uuid.Parse(currentSessionID.(string)); parseErr == nil {
+			// Revoke all OTHER sessions
+			sessionService.RevokeAllSessionsExceptCurrent(user.ID, sessionUUID)
+		} else {
+			// Fallback: revoke all if can't parse
+			sessionService.RevokeAllSessions(user.ID)
+		}
+	} else {
+		// No session ID in context - revoke all sessions
+		sessionService.RevokeAllSessions(user.ID)
+	}
 
 	return c.JSON(fiber.Map{
-		"message": "Password changed successfully. Please login again on other devices.",
+		"message": "Password changed successfully. All other devices have been logged out.",
 	})
 }
 

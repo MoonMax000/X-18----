@@ -25,6 +25,10 @@ type User struct {
 	AvatarURL   string `gorm:"size:500" json:"avatar_url"`
 	HeaderURL   string `gorm:"size:500" json:"header_url"`
 
+	// OAuth fields
+	OAuthProvider   string `gorm:"size:50" json:"oauth_provider,omitempty"`     // google, apple, twitter
+	OAuthProviderID string `gorm:"size:255" json:"oauth_provider_id,omitempty"` // provider's user ID
+
 	// Extended fields from Django
 	BackupEmail        string     `gorm:"size:255" json:"backup_email,omitempty"`
 	BackupPhone        string     `gorm:"size:20" json:"backup_phone,omitempty"`

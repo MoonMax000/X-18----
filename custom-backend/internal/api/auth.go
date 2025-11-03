@@ -44,8 +44,8 @@ type RegisterRequest struct {
 
 // LoginRequest represents login request body
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	EmailOrUsername string `json:"email" validate:"required"` // Can be email or username
+	Password        string `json:"password" validate:"required"`
 }
 
 // AuthResponse represents authentication response
@@ -194,7 +194,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	securityService := services.NewSecurityService(h.db.DB, h.cache)
 
 	// Check for lockouts first
-	isLocked, lockoutType, blockedUntil := securityService.CheckLockouts(req.Email, ipAddress)
+	isLocked, lockoutType, blockedUntil := securityService.CheckLockouts(req.EmailOrUsername, ipAddress)
 	if isLocked {
 		var message string
 		if lockoutType == "ip_blocked" {
@@ -204,7 +204,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		}
 
 		// Record failed attempt
-		securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, lockoutType)
+		securityService.RecordLoginAttempt(req.EmailOrUsername, ipAddress, userAgent, false, lockoutType)
 
 		return c.Status(403).JSON(fiber.Map{
 			"error":        message,
@@ -212,15 +212,26 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	// Find user by email
+	// Find user by email OR username (UX improvement)
 	var user models.User
-	if err := h.db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// Record failed attempt for unknown user
-			securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, "user_not_found")
+	query := h.db.DB.Where("email = ?", req.EmailOrUsername)
+	// If input doesn't look like email, also try username
+	if !utils.ValidateEmail(req.EmailOrUsername) {
+		query = h.db.DB.Where("email = ? OR username = ?", req.EmailOrUsername, req.EmailOrUsername)
+	}
 
+	if err := query.First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// SECURITY: Perform dummy password check to prevent timing attacks
+			// This makes the response time consistent whether user exists or not
+			_ = utils.CheckPassword(req.Password, "$2a$10$dummyhashfortimingequalityxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+
+			// Record failed attempt for unknown user
+			securityService.RecordLoginAttempt(req.EmailOrUsername, ipAddress, userAgent, false, "user_not_found")
+
+			// UNIFIED ERROR MESSAGE - don't reveal if email/username exists
 			return c.Status(401).JSON(fiber.Map{
-				"error": "Invalid email or password",
+				"error": "Invalid credentials",
 			})
 		}
 		return c.Status(500).JSON(fiber.Map{
@@ -239,10 +250,11 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// Verify password
 	if !utils.CheckPassword(req.Password, user.Password) {
 		// Record failed attempt
-		securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, false, "wrong_password")
+		securityService.RecordLoginAttempt(user.Email, ipAddress, userAgent, false, "wrong_password")
 
+		// UNIFIED ERROR MESSAGE - same as user_not_found
 		return c.Status(401).JSON(fiber.Map{
-			"error": "Invalid email or password",
+			"error": "Invalid credentials",
 		})
 	}
 
@@ -295,7 +307,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 
-	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, expiresAt)
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokens.RefreshJTI, expiresAt)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create session",
@@ -303,7 +315,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// Record successful login
-	securityService.RecordLoginAttempt(req.Email, ipAddress, userAgent, true, "")
+	securityService.RecordLoginAttempt(user.Email, ipAddress, userAgent, true, "")
 
 	// Update last active
 	now := time.Now()
@@ -430,7 +442,7 @@ func (h *AuthHandler) Login2FA(c *fiber.Ctx) error {
 	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 
-	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, expiresAt)
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokens.RefreshJTI, expiresAt)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create session",
@@ -478,13 +490,13 @@ func (h *AuthHandler) Login2FA(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
-// RefreshToken handles token refresh
+// RefreshToken handles token refresh with rotation and reuse detection
 // POST /api/auth/refresh
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	// Сначала пробуем получить из cookie
 	refreshToken := c.Cookies("refresh_token")
 
-	// Если нет в cookie, пробуем из body (для обратной совместимости)
+	// Если нет в cookie, пробуем из body (для обратной совместимости / мобильных)
 	if refreshToken == "" {
 		type RefreshRequest struct {
 			RefreshToken string `json:"refresh_token"`
@@ -502,28 +514,51 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		})
 	}
 
-	// Validate refresh token
-	userID, err := auth.ValidateRefreshToken(refreshToken, h.config.JWT.RefreshSecret)
+	// Validate refresh token and extract claims (user ID + JTI)
+	claims, err := auth.ValidateRefreshToken(refreshToken, h.config.JWT.RefreshSecret)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Invalid refresh token",
 		})
 	}
 
+	// Initialize session service
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+
+	// Validate session by JTI (checks if active, not revoked, not expired)
+	_, err = sessionService.ValidateSession(claims.JTI)
+	if err != nil {
+		// CRITICAL: Session invalid or expired
+		// Could be reuse attempt - check if token was already replaced
+		var oldSession models.Session
+		if findErr := h.db.DB.Where("jti = ?", claims.JTI).First(&oldSession).Error; findErr == nil {
+			if oldSession.ReplacedByJTI != nil {
+				// REUSE DETECTED! Token was already used and replaced
+				log.Printf("⚠️ SECURITY: Refresh token reuse detected for user %s, JTI %s", claims.UserID, claims.JTI)
+				// Revoke entire session family
+				sessionService.RevokeSessionFamily(oldSession.UserID, claims.JTI)
+			}
+		}
+
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid or revoked refresh token",
+		})
+	}
+
 	// Get user
 	var user models.User
-	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+	if err := h.db.DB.First(&user, "id = ?", claims.UserID).Error; err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": "User not found",
 		})
 	}
 
-	// Generate new tokens
+	// Generate new token pair with new JTI
 	tokens, err := auth.GenerateTokenPair(
 		user.ID,
 		user.Username,
 		user.Email,
-		user.Role, // Добавляем роль
+		user.Role,
 		h.config.JWT.AccessSecret,
 		h.config.JWT.RefreshSecret,
 		h.config.JWT.AccessExpiry,
@@ -535,14 +570,21 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		})
 	}
 
-	// Update session
-	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
-	h.db.DB.Model(&models.Session{}).
-		Where("user_id = ?", userID).
-		Updates(map[string]interface{}{
-			"refresh_token_hash": refreshTokenHash,
-			"expires_at":         time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour),
+	// Rotate refresh token (mark old as replaced, create new session)
+	newTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
+	newExpiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
+
+	if err := sessionService.RotateRefreshToken(claims.JTI, tokens.RefreshJTI, newTokenHash, newExpiresAt); err != nil {
+		log.Printf("Failed to rotate refresh token: %v", err)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to refresh session",
 		})
+	}
+
+	// Update last active
+	now := time.Now()
+	user.LastActiveAt = &now
+	h.db.DB.Save(&user)
 
 	// Обновляем refresh token в cookie
 	c.Cookie(&fiber.Cookie{
@@ -629,7 +671,7 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 
-	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, expiresAt)
+	session, err := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokens.RefreshJTI, expiresAt)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create session",

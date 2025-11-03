@@ -44,9 +44,10 @@ func GenerateAccessToken(userID uuid.UUID, username, email, role, secret string,
 	return token.SignedString([]byte(secret))
 }
 
-// GenerateRefreshToken creates a new JWT refresh token
-func GenerateRefreshToken(userID uuid.UUID, secret string, expiryDays int) (string, error) {
+// GenerateRefreshToken creates a new JWT refresh token with JTI for rotation tracking
+func GenerateRefreshToken(userID uuid.UUID, secret string, expiryDays int) (string, uuid.UUID, error) {
 	expiresAt := time.Now().Add(time.Duration(expiryDays) * 24 * time.Hour)
+	jti := uuid.New() // Generate unique JWT ID for rotation tracking
 
 	claims := &jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -54,28 +55,39 @@ func GenerateRefreshToken(userID uuid.UUID, secret string, expiryDays int) (stri
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		Issuer:    "x18-backend",
 		Subject:   userID.String(),
+		ID:        jti.String(), // Add JTI to claims
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+	signedToken, err := token.SignedString([]byte(secret))
+	return signedToken, jti, err
+}
+
+// TokenPairWithJTI includes the JTI for refresh token tracking
+type TokenPairWithJTI struct {
+	*TokenPair
+	RefreshJTI uuid.UUID `json:"-"` // Not exposed to client
 }
 
 // GenerateTokenPair creates both access and refresh tokens
-func GenerateTokenPair(userID uuid.UUID, username, email, role, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (*TokenPair, error) {
+func GenerateTokenPair(userID uuid.UUID, username, email, role, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (*TokenPairWithJTI, error) {
 	accessToken, err := GenerateAccessToken(userID, username, email, role, accessSecret, accessExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}
 
-	refreshToken, err := GenerateRefreshToken(userID, refreshSecret, refreshExpiry)
+	refreshToken, jti, err := GenerateRefreshToken(userID, refreshSecret, refreshExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
 	}
 
-	return &TokenPair{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		ExpiresIn:    int64(accessExpiry * 60), // convert minutes to seconds
+	return &TokenPairWithJTI{
+		TokenPair: &TokenPair{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			ExpiresIn:    int64(accessExpiry * 60), // convert minutes to seconds
+		},
+		RefreshJTI: jti,
 	}, nil
 }
 
@@ -99,8 +111,14 @@ func ValidateAccessToken(tokenString, secret string) (*JWTClaims, error) {
 	return nil, fmt.Errorf("invalid token claims")
 }
 
-// ValidateRefreshToken validates refresh token
-func ValidateRefreshToken(tokenString, secret string) (uuid.UUID, error) {
+// RefreshTokenClaims holds validated refresh token data
+type RefreshTokenClaims struct {
+	UserID uuid.UUID
+	JTI    uuid.UUID
+}
+
+// ValidateRefreshToken validates refresh token and returns user ID and JTI
+func ValidateRefreshToken(tokenString, secret string) (*RefreshTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -109,16 +127,25 @@ func ValidateRefreshToken(tokenString, secret string) (uuid.UUID, error) {
 	})
 
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("invalid refresh token: %w", err)
+		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
 
 	if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok && token.Valid {
 		userID, err := uuid.Parse(claims.Subject)
 		if err != nil {
-			return uuid.Nil, fmt.Errorf("invalid user ID in token: %w", err)
+			return nil, fmt.Errorf("invalid user ID in token: %w", err)
 		}
-		return userID, nil
+
+		jti, err := uuid.Parse(claims.ID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid JTI in token: %w", err)
+		}
+
+		return &RefreshTokenClaims{
+			UserID: userID,
+			JTI:    jti,
+		}, nil
 	}
 
-	return uuid.Nil, fmt.Errorf("invalid refresh token claims")
+	return nil, fmt.Errorf("invalid refresh token claims")
 }

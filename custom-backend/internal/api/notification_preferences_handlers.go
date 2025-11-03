@@ -2,6 +2,7 @@ package api
 
 import (
 	"custom-backend/internal/database"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -40,8 +41,13 @@ type NotificationPreferences struct {
 // GetNotificationPreferences возвращает настройки уведомлений текущего пользователя
 // GET /api/notification-preferences
 func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx) error {
+	log.Println("[NotifPrefs] GetNotificationPreferences called")
+
 	userIDVal := c.Locals("userID")
+	log.Printf("[NotifPrefs] userIDVal from context: %v (type: %T)", userIDVal, userIDVal)
+
 	if userIDVal == nil {
+		log.Println("[NotifPrefs] ERROR: userID is nil")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
@@ -49,15 +55,19 @@ func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx
 
 	userID, ok := userIDVal.(uuid.UUID)
 	if !ok {
+		log.Printf("[NotifPrefs] ERROR: Failed to convert userID to uuid.UUID, got type: %T", userIDVal)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid user ID",
 		})
 	}
 
+	log.Printf("[NotifPrefs] User ID: %s", userID.String())
+
 	var prefs NotificationPreferences
 	var emailNotifications bool
 
 	// Получаем email_notifications_enabled из users через Raw SQL
+	log.Println("[NotifPrefs] Fetching email_notifications_enabled from users table...")
 	err := h.db.DB.Raw(`
 		SELECT COALESCE(email_notifications_enabled, true) 
 		FROM users 
@@ -65,15 +75,19 @@ func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx
 	`, userID).Scan(&emailNotifications).Error
 
 	if err != nil {
+		log.Printf("[NotifPrefs] ERROR fetching from users: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to get notification preferences",
 		})
 	}
 
+	log.Printf("[NotifPrefs] email_notifications_enabled: %v", emailNotifications)
+
 	// Получаем остальные настройки из user_notification_preferences
+	log.Println("[NotifPrefs] Fetching from user_notification_preferences table...")
 	err = h.db.DB.Raw(`
 		SELECT 
-			id, user_id, new_followers, mentions, replies, reposts, likes,
+			user_id, new_followers, mentions, replies, reposts, likes,
 			new_posts_from_following, post_recommendations, account_updates,
 			security_alerts, product_updates, payment_received, 
 			subscription_renewal, payout_completed
@@ -81,7 +95,10 @@ func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx
 		WHERE user_id = ?
 	`, userID).Scan(&prefs).Error
 
-	if err != nil || prefs.ID == 0 {
+	log.Printf("[NotifPrefs] Query result - err: %v", err)
+
+	if err != nil {
+		log.Println("[NotifPrefs] Preferences not found, creating defaults...")
 		// Создаем настройки по умолчанию, если их еще нет
 		err = h.db.DB.Exec(`
 			INSERT INTO user_notification_preferences (user_id)
@@ -90,15 +107,17 @@ func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx
 		`, userID).Error
 
 		if err != nil {
+			log.Printf("[NotifPrefs] ERROR creating preferences: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Failed to create notification preferences",
 			})
 		}
 
+		log.Println("[NotifPrefs] Preferences created, fetching again...")
 		// Повторно получаем созданные настройки
 		err = h.db.DB.Raw(`
 			SELECT 
-				id, user_id, new_followers, mentions, replies, reposts, likes,
+				user_id, new_followers, mentions, replies, reposts, likes,
 				new_posts_from_following, post_recommendations, account_updates,
 				security_alerts, product_updates, payment_received, 
 				subscription_renewal, payout_completed
@@ -107,15 +126,18 @@ func (h *NotificationPreferencesHandler) GetNotificationPreferences(c *fiber.Ctx
 		`, userID).Scan(&prefs).Error
 
 		if err != nil {
+			log.Printf("[NotifPrefs] ERROR fetching after create: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Failed to get notification preferences",
 			})
 		}
+		log.Println("[NotifPrefs] Successfully fetched after create")
 	}
 
 	prefs.EmailNotificationsEnabled = emailNotifications
 	prefs.UserID = userID
 
+	log.Printf("[NotifPrefs] SUCCESS - Returning preferences for user %s", userID.String())
 	return c.JSON(prefs)
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/joho/godotenv"
 
 	"custom-backend/configs"
 	"custom-backend/internal/api"
@@ -23,9 +24,29 @@ import (
 func main() {
 	log.Println("🚀 Starting X-18 Backend Server...")
 
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Printf("⚠️  Warning: .env file not found or could not be loaded: %v", err)
+	} else {
+		log.Println("✅ .env file loaded successfully")
+	}
+
 	// Load configuration
 	cfg := configs.LoadConfig()
 	log.Printf("✅ Configuration loaded (ENV: %s)", cfg.Server.Env)
+
+	// Debug OAuth config
+	if cfg.OAuth.Google.ClientID != "" {
+		log.Printf("✅ Google OAuth configured (Client ID: %s...)", cfg.OAuth.Google.ClientID[:20])
+	} else {
+		log.Println("⚠️  Google OAuth NOT configured")
+	}
+
+	if cfg.OAuth.Apple.ClientID != "" {
+		log.Printf("✅ Apple OAuth configured (Client ID: %s)", cfg.OAuth.Apple.ClientID)
+	} else {
+		log.Println("⚠️  Apple OAuth NOT configured")
+	}
 
 	// Connect to PostgreSQL
 	db, err := database.Connect(&cfg.Database)
@@ -147,6 +168,7 @@ func main() {
 
 	// Initialize handlers
 	authHandler := api.NewAuthHandler(db, redisCache, cfg, emailClient)
+	oauthHandler := api.NewOAuthHandler(db, redisCache, cfg)
 	usersHandler := api.NewUsersHandler(db, redisCache)
 	postsHandler := api.NewPostsHandler(db)
 	timelineHandler := api.NewTimelineHandler(db)
@@ -191,6 +213,18 @@ func main() {
 	auth.Post("/refresh", middleware.AuthRateLimiter(), authHandler.RefreshToken)
 	auth.Post("/password/reset", middleware.AuthRateLimiter(), authHandler.RequestPasswordReset)
 	auth.Post("/password/reset/confirm", middleware.AuthRateLimiter(), authHandler.ResetPassword)
+
+	// OAuth routes (public)
+	auth.Get("/google", oauthHandler.GoogleLogin)
+	auth.Get("/google/callback", oauthHandler.GoogleCallback)
+	auth.Get("/apple", oauthHandler.AppleLogin)
+	auth.Post("/apple/callback", oauthHandler.AppleCallback)
+
+	// OAuth account management routes (public for linking confirmation, protected for others)
+	auth.Post("/oauth/link/confirm", oauthHandler.ConfirmOAuthLinking)
+	auth.Post("/oauth/set-password", middleware.JWTMiddleware(cfg), oauthHandler.SetPasswordForOAuthUser)
+	auth.Post("/oauth/unlink", middleware.JWTMiddleware(cfg), oauthHandler.UnlinkOAuthProvider)
+	auth.Get("/oauth/status", middleware.JWTMiddleware(cfg), oauthHandler.GetOAuthStatus)
 
 	// Protected auth routes
 	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)

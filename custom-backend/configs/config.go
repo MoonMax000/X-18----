@@ -11,6 +11,7 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	JWT      JWTConfig
+	OAuth    OAuthConfig
 }
 
 type ServerConfig struct {
@@ -43,6 +44,25 @@ type JWTConfig struct {
 	RefreshExpiry int // days
 }
 
+type OAuthConfig struct {
+	Google GoogleOAuthConfig
+	Apple  AppleOAuthConfig
+}
+
+type GoogleOAuthConfig struct {
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
+}
+
+type AppleOAuthConfig struct {
+	ClientID    string
+	TeamID      string
+	KeyID       string
+	PrivateKey  string
+	RedirectURL string
+}
+
 func LoadConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -70,6 +90,20 @@ func LoadConfig() *Config {
 			RefreshSecret: getEnv("JWT_REFRESH_SECRET", "change-this-refresh-secret"),
 			AccessExpiry:  getEnvInt("JWT_ACCESS_EXPIRY", 15),  // 15 minutes
 			RefreshExpiry: getEnvInt("JWT_REFRESH_EXPIRY", 30), // 30 days
+		},
+		OAuth: OAuthConfig{
+			Google: GoogleOAuthConfig{
+				ClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+				ClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+				RedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:8080/api/auth/google/callback"),
+			},
+			Apple: AppleOAuthConfig{
+				ClientID:    getEnv("APPLE_CLIENT_ID", ""),
+				TeamID:      getEnv("APPLE_TEAM_ID", ""),
+				KeyID:       getEnv("APPLE_KEY_ID", ""),
+				PrivateKey:  getEnv("APPLE_PRIVATE_KEY", ""),
+				RedirectURL: getEnv("APPLE_REDIRECT_URL", "http://localhost:8080/api/auth/apple/callback"),
+			},
 		},
 	}
 }

@@ -358,8 +358,8 @@ func NewSessionService(db *gorm.DB, cache *cache.Cache) *SessionService {
 	}
 }
 
-// CreateSession creates a new session with enhanced tracking
-func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshTokenHash string, expiresAt time.Time) (*models.Session, error) {
+// CreateSession creates a new session with enhanced tracking and JTI for rotation
+func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshTokenHash string, jti uuid.UUID, expiresAt time.Time) (*models.Session, error) {
 	// Parse user agent info
 	userAgent := c.Get("User-Agent")
 	security := NewSecurityService(ss.db, ss.cache)
@@ -375,6 +375,7 @@ func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshT
 	session := models.Session{
 		UserID:           userID,
 		RefreshTokenHash: refreshTokenHash,
+		JTI:              &jti,
 		ExpiresAt:        expiresAt,
 		DeviceType:       deviceType,
 		Browser:          browser,
@@ -382,6 +383,7 @@ func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshT
 		IPAddress:        ipAddress,
 		UserAgent:        userAgent,
 		LastActiveAt:     &now,
+		IsActive:         true,
 	}
 
 	if err := ss.db.Create(&session).Error; err != nil {
@@ -405,7 +407,112 @@ func (ss *SessionService) RevokeSession(sessionID uint) error {
 
 // RevokeAllSessions revokes all sessions for a user
 func (ss *SessionService) RevokeAllSessions(userID uuid.UUID) error {
-	return ss.db.Where("user_id = ?", userID).Delete(&models.Session{}).Error
+	now := time.Now()
+	return ss.db.Model(&models.Session{}).
+		Where("user_id = ?", userID).
+		Updates(map[string]interface{}{
+			"is_active":  false,
+			"is_revoked": true,
+			"revoked_at": now,
+		}).Error
+}
+
+// RevokeAllSessionsExceptCurrent revokes all sessions except the current one
+func (ss *SessionService) RevokeAllSessionsExceptCurrent(userID uuid.UUID, currentSessionID uuid.UUID) error {
+	now := time.Now()
+	return ss.db.Model(&models.Session{}).
+		Where("user_id = ? AND id != ?", userID, currentSessionID).
+		Updates(map[string]interface{}{
+			"is_active":  false,
+			"is_revoked": true,
+			"revoked_at": now,
+		}).Error
+}
+
+// RotateRefreshToken handles refresh token rotation with reuse detection
+func (ss *SessionService) RotateRefreshToken(oldJTI uuid.UUID, newJTI uuid.UUID, newTokenHash string, newExpiresAt time.Time) error {
+	// Find the session by old JTI
+	var session models.Session
+	if err := ss.db.Where("jti = ?", oldJTI).First(&session).Error; err != nil {
+		return fmt.Errorf("session not found: %w", err)
+	}
+
+	// Check if already replaced (REUSE DETECTION!)
+	if session.ReplacedByJTI != nil {
+		// Token reuse detected - revoke entire session family
+		return ss.RevokeSessionFamily(session.UserID, oldJTI)
+	}
+
+	// Check if revoked
+	if session.IsRevoked || !session.IsActive {
+		return fmt.Errorf("session is revoked or inactive")
+	}
+
+	// Mark old session as replaced
+	now := time.Now()
+	oldJTICopy := oldJTI
+	if err := ss.db.Model(&session).Updates(map[string]interface{}{
+		"replaced_by_jti": newJTI,
+		"is_active":       false,
+	}).Error; err != nil {
+		return fmt.Errorf("failed to mark old session: %w", err)
+	}
+
+	// Create new session record
+	newSession := models.Session{
+		UserID:           session.UserID,
+		RefreshTokenHash: newTokenHash,
+		JTI:              &newJTI,
+		PrevJTI:          &oldJTICopy,
+		ExpiresAt:        newExpiresAt,
+		DeviceType:       session.DeviceType,
+		Browser:          session.Browser,
+		OS:               session.OS,
+		IPAddress:        session.IPAddress,
+		UserAgent:        session.UserAgent,
+		LastActiveAt:     &now,
+		IsActive:         true,
+	}
+
+	if err := ss.db.Create(&newSession).Error; err != nil {
+		return fmt.Errorf("failed to create new session: %w", err)
+	}
+
+	return nil
+}
+
+// RevokeSessionFamily revokes all sessions in a rotation chain (for reuse detection)
+func (ss *SessionService) RevokeSessionFamily(userID uuid.UUID, suspiciousJTI uuid.UUID) error {
+	now := time.Now()
+
+	// Revoke all sessions for this user as a security measure
+	// In production, you might want to be more selective and trace the family chain
+	err := ss.db.Model(&models.Session{}).
+		Where("user_id = ? AND is_active = true", userID).
+		Updates(map[string]interface{}{
+			"is_active":  false,
+			"is_revoked": true,
+			"revoked_at": now,
+		}).Error
+
+	if err != nil {
+		return fmt.Errorf("failed to revoke session family: %w", err)
+	}
+
+	// Log the security event
+	// TODO: Send email notification about suspicious activity
+	return nil
+}
+
+// ValidateSession checks if a session with given JTI is valid
+func (ss *SessionService) ValidateSession(jti uuid.UUID) (*models.Session, error) {
+	var session models.Session
+	if err := ss.db.Where("jti = ? AND is_active = true AND is_revoked = false AND expires_at > ?",
+		jti, time.Now()).First(&session).Error; err != nil {
+		return nil, fmt.Errorf("invalid or expired session: %w", err)
+	}
+
+	return &session, nil
 }
 
 // CleanupExpiredSessions removes expired sessions from database
