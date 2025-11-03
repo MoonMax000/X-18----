@@ -7,10 +7,6 @@ import { Eye, Heart, MessageCircle, Loader2 } from "lucide-react";
 import { useProfileStats } from "@/hooks/useProfileStats";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
-import ProfileHero from "@/components/socialProfile/ProfileHero";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store/store";
 
 const sectionCardClass = cn(
   CARD_VARIANTS.widget.default,
@@ -154,41 +150,8 @@ const formatNumber = (num: number): string => {
 };
 
 const SocialOverview: FC = () => {
-  const { user } = useAuth();
-  const currentUser = useSelector((state: RootState) => state.profile.currentUser);
   const { stats, activity: realActivity, topPosts: realTopPosts, followerGrowth: growthData, isLoading, refetchFollowerGrowth } = useProfileStats();
   const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
-
-  // Create profile data for ProfileHero
-  console.log('[SocialOverview] Creating profileData:');
-  console.log('[SocialOverview] - user from AuthContext:', user);
-  console.log('[SocialOverview] - user.avatar_url:', user?.avatar_url);
-  console.log('[SocialOverview] - user.header_url:', user?.header_url);
-  console.log('[SocialOverview] - currentUser from Redux:', currentUser);
-  console.log('[SocialOverview] - currentUser.avatar:', currentUser?.avatar);
-  console.log('[SocialOverview] - currentUser.cover:', currentUser?.cover);
-  
-  const profileData = {
-    id: user?.id || '',
-    name: user?.display_name || currentUser?.name || 'User',
-    username: user?.username || currentUser?.username || 'user',
-    bio: user?.bio || currentUser?.bio || '',
-    avatar: user?.avatar_url || currentUser?.avatar || '',
-    cover: user?.header_url || currentUser?.cover || '',
-    location: currentUser?.location || '',
-    website: currentUser?.website ? { label: currentUser.website, url: currentUser.website } : undefined,
-    joined: user ? new Date(user.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }) : 'Недавно',
-    stats: {
-      tweets: user?.posts_count || stats?.posts_this_month || 0,
-      following: user?.following_count || 0,
-      followers: user?.followers_count || stats?.total_followers || 0,
-      likes: stats?.total_likes || 0,
-    },
-  };
-  
-  console.log('[SocialOverview] Final profileData:', profileData);
-  console.log('[SocialOverview] Final profileData.avatar:', profileData.avatar);
-  console.log('[SocialOverview] Final profileData.cover:', profileData.cover);
 
   // Refetch follower growth when time range changes
   useEffect(() => {
@@ -268,12 +231,6 @@ const SocialOverview: FC = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-8 md:gap-10">
-      {/* Profile Hero with Avatar/Cover Upload */}
-      <ProfileHero 
-        profile={profileData}
-        tweetsCount={stats?.posts_this_month || 0}
-        isOwnProfile={true}
-      />
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
         <StatCard 
