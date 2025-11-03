@@ -75,6 +75,15 @@ if [ ! -f "go.mod" ]; then
     exit 1
 fi
 
+# Загружаем переменные из .env файла
+if [ -f ".env" ]; then
+    echo "📝 Loading environment variables from .env..."
+    export $(grep -v '^#' .env | xargs)
+    echo -e "${GREEN}✅ Environment variables loaded${NC}"
+else
+    echo -e "${YELLOW}⚠️  No .env file found, using defaults${NC}"
+fi
+
 # Устанавливаем зависимости
 echo "📦 Installing Go dependencies..."
 go mod download
@@ -83,7 +92,7 @@ go mod download
 echo "🔨 Building backend..."
 go build -o bin/server cmd/server/main.go
 
-# Запускаем скомпилированный бинарник
+# Запускаем скомпилированный бинарник с экспортированными переменными
 nohup ./bin/server > ../custom-backend.log 2>&1 &
 BACKEND_PID=$!
 echo $BACKEND_PID > ../.custom-backend.pid
