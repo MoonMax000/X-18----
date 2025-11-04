@@ -57,6 +57,9 @@ func (d *Database) AutoMigrate() error {
 		&models.Purchase{},
 		&models.News{},
 		&models.VerificationCode{},
+		&models.ReferralCode{},
+		&models.ReferralInvitation{},
+		&models.ReferralReward{},
 	)
 
 	if err != nil {
