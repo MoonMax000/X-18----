@@ -76,8 +76,8 @@ func (d *Database) AutoMigrate() error {
 	d.DB.Exec("ALTER TABLE users ALTER COLUMN password DROP NOT NULL")
 
 	// Set admin role for specific email (for testing/development)
-	adminEmail := "admin@gmail.com"
-	result := d.DB.Exec("UPDATE users SET role = 'admin' WHERE email = ? AND (role IS NULL OR role = '')", adminEmail)
+	adminEmail := "kyvaldov@gmail.com"
+	result := d.DB.Exec("UPDATE users SET role = 'admin' WHERE email = ?", adminEmail)
 	if result.RowsAffected > 0 {
 		log.Printf("✅ Admin role set for %s", adminEmail)
 	}
