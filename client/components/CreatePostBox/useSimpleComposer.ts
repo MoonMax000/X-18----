@@ -149,15 +149,32 @@ export const useSimpleComposer = (
         const lowerType = file.type.toLowerCase();
         const isVideo = lowerType.startsWith("video/");
         const isGif = !isVideo && lowerType.includes("gif");
+        
+        // Определяем документы
+        const documentTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "text/plain"
+        ];
+        const isDocument = documentTypes.includes(lowerType);
 
         const mediaItem: MediaItem = {
           id: `${Date.now()}-${Math.random()}`,
           url: URL.createObjectURL(file),
-          type: isVideo ? "video" : isGif ? "gif" : "image",
+          type: isDocument ? "document" : isVideo ? "video" : isGif ? "gif" : "image",
           file,
-          transform: createDefaultTransform(),
+          transform: isDocument ? undefined : createDefaultTransform(),
           alt: undefined,
           sensitiveTags: [],
+          // Дополнительная информация для документов
+          fileName: isDocument ? file.name : undefined,
+          fileSize: isDocument ? file.size : undefined,
+          fileExtension: isDocument ? file.name.split('.').pop()?.toLowerCase() : undefined,
         };
 
         registerObjectUrl(mediaItem);

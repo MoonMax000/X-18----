@@ -1,6 +1,7 @@
 import { FC, useState, useEffect } from "react";
 import { MediaItem } from "./types";
 import { revokeCroppedImg } from "../../lib/crop-utils";
+import { DocumentPreview } from "./DocumentPreview";
 
 interface MediaGridProps {
   media: MediaItem[];
@@ -30,6 +31,10 @@ export const MediaGrid: FC<MediaGridProps> = ({
     };
   }, [media]);
 
+  // Разделяем медиа на документы и другие типы
+  const documents = media.filter(item => item.type === 'document');
+  const nonDocuments = media.filter(item => item.type !== 'document');
+
   const gridClass = media.length === 1 ? "grid-cols-1" : "grid-cols-2";
   const heightClass = media.length === 1 ? "max-h-[500px]" : "max-h-[280px]";
   const isInteractive = !readOnly;
@@ -44,36 +49,62 @@ export const MediaGrid: FC<MediaGridProps> = ({
   };
 
   return (
-    <div className={`mt-3 grid gap-3 ${gridClass}`}>
-      {media.map((item, index) => (
-        <div
-          key={item.id}
-          draggable={isInteractive}
-          onDragStart={isInteractive ? () => setDraggedIndex(index) : undefined}
-          onDragEnd={isInteractive ? () => setDraggedIndex(null) : undefined}
-          onDragOver={
-            isInteractive ? (event) => event.preventDefault() : undefined
-          }
-          onDrop={
-            isInteractive
-              ? () => {
-                  if (draggedIndex !== null && draggedIndex !== index) {
-                    onReorder(draggedIndex, index);
-                  }
-                  setDraggedIndex(null);
+    <div className="mt-3 space-y-3">
+      {/* Отображаем документы отдельно в сетке */}
+      {documents.length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {documents.map((doc, index) => {
+            const actualIndex = media.indexOf(doc);
+            return (
+              <DocumentPreview
+                key={doc.id}
+                document={doc}
+                onRemove={onRemove}
+                onReorder={onReorder}
+                isDragging={draggedIndex !== null}
+                draggedIndex={draggedIndex}
+                index={actualIndex}
+                readOnly={readOnly}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Отображаем изображения и видео в сетке */}
+      {nonDocuments.length > 0 && (
+        <div className={`grid gap-3 ${gridClass}`}>
+          {nonDocuments.map((item, index) => {
+            const actualIndex = media.indexOf(item);
+            return (
+              <div
+                key={item.id}
+                draggable={isInteractive}
+                onDragStart={isInteractive ? () => setDraggedIndex(actualIndex) : undefined}
+                onDragEnd={isInteractive ? () => setDraggedIndex(null) : undefined}
+                onDragOver={
+                  isInteractive ? (event) => event.preventDefault() : undefined
                 }
-              : undefined
-          }
-          className={`group relative overflow-hidden rounded-2xl border backdrop-blur-[50px] transition-all ${heightClass} ${
-            isInteractive ? "cursor-move" : "cursor-default"
-          } ${
-            isInteractive && draggedIndex === index
-              ? "opacity-50 scale-95 border-[#A06AFF]"
-              : isInteractive && draggedIndex !== null
-                ? "border-[#A06AFF]/50 bg-black"
-                : "border-widget-border bg-black"
-          }`}
-        >
+                onDrop={
+                  isInteractive
+                    ? () => {
+                        if (draggedIndex !== null && draggedIndex !== actualIndex) {
+                          onReorder(draggedIndex, actualIndex);
+                        }
+                        setDraggedIndex(null);
+                      }
+                    : undefined
+                }
+                className={`group relative overflow-hidden rounded-2xl border backdrop-blur-[50px] transition-all ${heightClass} ${
+                  isInteractive ? "cursor-move" : "cursor-default"
+                } ${
+                  isInteractive && draggedIndex === actualIndex
+                    ? "opacity-50 scale-95 border-[#A06AFF]"
+                    : isInteractive && draggedIndex !== null
+                      ? "border-[#A06AFF]/50 bg-black"
+                      : "border-widget-border bg-black"
+                }`}
+              >
           {item.type === "video" ? (
             <video
               src={item.url}
@@ -171,8 +202,11 @@ export const MediaGrid: FC<MediaGridProps> = ({
               </span>
             )}
           </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
     </div>
   );
 };

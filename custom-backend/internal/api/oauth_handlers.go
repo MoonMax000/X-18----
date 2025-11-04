@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -407,7 +408,6 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		user      models.User
 		tokenPair *auth.TokenPairWithJTI
 		session   *models.Session
-		isNewUser bool
 	)
 
 	// Try to find user by OAuth provider
@@ -439,7 +439,6 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 				})
 			} else {
 				log.Printf("Creating new user with OAuth...")
-				isNewUser = true
 
 				// Validate email
 				if email == "" {
@@ -533,7 +532,12 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	// Create session
 	log.Printf("Creating user session...")
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
-	refreshTokenHash, hashErr := utils.HashPassword(tokenPair.TokenPair.RefreshToken)
+
+	// Use SHA-256 hash of refresh token before bcrypt to avoid 72-byte limit
+	tokenHash := sha256.Sum256([]byte(tokenPair.TokenPair.RefreshToken))
+	tokenHashStr := base64.StdEncoding.EncodeToString(tokenHash[:])
+
+	refreshTokenHash, hashErr := utils.HashPassword(tokenHashStr)
 	if hashErr != nil {
 		log.Printf("ERROR: Failed to hash refresh token: %v", hashErr)
 		return c.Status(500).JSON(fiber.Map{
@@ -571,21 +575,21 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 
 	log.Printf("OAuth login successful for user: %s", user.ID)
 
-	// Add flag to indicate if this is a new user registration
-	response := fiber.Map{
-		"user":         user.ToMe(),
-		"access_token": tokenPair.TokenPair.AccessToken,
-		"token_type":   "Bearer",
-		"expires_in":   tokenPair.TokenPair.ExpiresIn,
-		"session_id":   session.ID,
+	// Determine frontend URL based on environment
+	var frontendURL string
+	if h.config.Server.Env == "production" {
+		frontendURL = "https://social.tyriantrade.com"
+	} else {
+		frontendURL = "http://localhost:5173"
 	}
 
-	if isNewUser {
-		response["is_new_user"] = true
-		response["message"] = "Account created successfully"
-	}
+	// Redirect to frontend with success
+	// The access token will be passed in URL, refresh token is already in httponly cookie
+	redirectURL := fmt.Sprintf("%s/auth/callback?success=true&token=%s", frontendURL, tokenPair.TokenPair.AccessToken)
 
-	return c.JSON(response)
+	log.Printf("Redirecting to frontend: %s", redirectURL)
+
+	return c.Redirect(redirectURL)
 }
 
 // generateUsernameFromEmail creates a username from email

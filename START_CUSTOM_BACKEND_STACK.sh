@@ -78,8 +78,11 @@ fi
 # Загружаем переменные из .env файла
 if [ -f ".env" ]; then
     echo "📝 Loading environment variables from .env..."
-    export $(grep -v '^#' .env | xargs)
+    set -a  # Automatically export all variables
+    source .env
+    set +a  # Stop auto-export
     echo -e "${GREEN}✅ Environment variables loaded${NC}"
+    echo "🔍 Debug: ENCRYPTION_KEY = ${ENCRYPTION_KEY:0:10}... (showing first 10 chars)"
 else
     echo -e "${YELLOW}⚠️  No .env file found, using defaults${NC}"
 fi

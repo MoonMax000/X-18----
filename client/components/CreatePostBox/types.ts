@@ -103,13 +103,17 @@ export type CropTransform = {
 export type MediaItem = {
   id: string;
   url: string;
-  type: "image" | "video" | "gif";
+  type: "image" | "video" | "gif" | "document";
   alt?: string;
   transform?: CropTransform;
   sensitiveTags?: string[];
   file?: File;
   // URL обрезанного превью (blob URL)
   croppedPreviewUrl?: string;
+  // Дополнительные поля для документов
+  fileName?: string;
+  fileSize?: number;
+  fileExtension?: string;
 };
 
 export const CHAR_LIMIT = 280;

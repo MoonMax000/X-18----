@@ -20,9 +20,10 @@ import (
 type MediaType string
 
 const (
-	MediaTypeImage MediaType = "image"
-	MediaTypeVideo MediaType = "video"
-	MediaTypeGIF   MediaType = "gif"
+	MediaTypeImage    MediaType = "image"
+	MediaTypeVideo    MediaType = "video"
+	MediaTypeGIF      MediaType = "gif"
+	MediaTypeDocument MediaType = "document"
 )
 
 // AllowedMIMETypes содержит разрешённые MIME типы
@@ -34,6 +35,15 @@ var AllowedMIMETypes = map[string]MediaType{
 	"image/webp": MediaTypeImage,
 	"video/mp4":  MediaTypeVideo,
 	"video/webm": MediaTypeVideo,
+	// Document types
+	"application/pdf":    MediaTypeDocument,
+	"application/msword": MediaTypeDocument,
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": MediaTypeDocument,
+	"application/vnd.ms-excel": MediaTypeDocument,
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         MediaTypeDocument,
+	"application/vnd.ms-powerpoint":                                             MediaTypeDocument,
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation": MediaTypeDocument,
+	"text/plain": MediaTypeDocument,
 }
 
 // DetectMIMEType определяет MIME тип файла по содержимому (magic bytes)

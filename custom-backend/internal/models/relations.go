@@ -129,7 +129,7 @@ type Media struct {
 	UserID uuid.UUID  `gorm:"type:uuid;not null;index:idx_user_media" json:"user_id"`
 	PostID *uuid.UUID `gorm:"type:uuid;index:idx_post_media" json:"post_id,omitempty"`
 
-	Type         string `gorm:"size:20;not null" json:"type"` // image, video, gif
+	Type         string `gorm:"size:20;not null" json:"type"` // image, video, gif, document
 	URL          string `gorm:"size:500;not null" json:"url"`
 	ThumbnailURL string `gorm:"size:500" json:"thumbnail_url,omitempty"`
 	AltText      string `gorm:"type:text" json:"alt_text,omitempty"`
@@ -137,6 +137,10 @@ type Media struct {
 	Width     int   `json:"width,omitempty"`
 	Height    int   `json:"height,omitempty"`
 	SizeBytes int64 `json:"size_bytes,omitempty"`
+
+	// Document-specific fields
+	FileName      string `gorm:"size:255" json:"file_name,omitempty"`
+	FileExtension string `gorm:"size:10" json:"file_extension,omitempty"`
 
 	// Crop/Transform data (stores crop coordinates from MediaEditor)
 	Transform   string `gorm:"type:text" json:"transform,omitempty"`   // JSON string with crop data

@@ -43,12 +43,15 @@ export interface ComposerData {
 export interface MediaItem {
   id: string;
   url: string;
-  type: 'image' | 'video' | 'gif';
+  type: 'image' | 'video' | 'gif' | 'document';
   thumbnail_url?: string;
   alt_text?: string;
   width?: number;
   height?: number;
   size_bytes?: number;
+  // Document-specific fields
+  file_name?: string;
+  file_extension?: string;
 }
 
 export interface CodeBlock {

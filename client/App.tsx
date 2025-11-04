@@ -16,6 +16,7 @@ import { BrandedLoader } from "./components/common/BrandedLoader";
 
 // Lazy load all pages for better performance and code splitting
 const Index = lazy(() => import("./pages/Index"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -65,6 +66,9 @@ const App = () => (
             <Routes>
               {/* Public test page without ClientLayout */}
               <Route path="/crop-test" element={<CropTestPage />} />
+              
+              {/* OAuth callback handler - must be public */}
+              <Route path="/auth/callback" element={<OAuthCallback />} />
               
               {/* Admin panel with its own layout */}
               <Route path="/admin" element={<AdminLayout />}>

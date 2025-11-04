@@ -8,6 +8,7 @@ import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import GatedContent from "./GatedContent";
 import PostMenu from "./PostMenu";
 import VideoPlayer from "./VideoPlayer";
+import { DocumentPreview } from "@/components/CreatePostBox/DocumentPreview";
 import type { Post } from "../../types";
 import { customBackendAPI } from "@/services/api/custom-backend";
 import { useAuth } from "@/contexts/AuthContext";
@@ -425,28 +426,73 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
         ((post.media && post.media.length > 0) || post.mediaUrl) && (
           <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
             {post.media && post.media.length > 0 ? (
-              /* Multiple media from backend */
-              <div className="grid gap-2 grid-cols-1">
-                {post.media.slice(0, 4).map((mediaItem, index) => (
-                  <div key={mediaItem.id || index} className="overflow-hidden rounded-2xl border border-[#181B22]">
-                    {mediaItem.type === 'image' || mediaItem.type === 'gif' ? (
-                      <img
-                        src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
-                        alt={mediaItem.alt_text || ''}
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          console.error('Image load error:', mediaItem.url);
-                          e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23181B22" width="400" height="300"/%3E%3Ctext fill="%236D6D6D" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
-                        }}
-                      />
-                    ) : mediaItem.type === 'video' ? (
-                      <VideoPlayer
-                        src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
-                      />
-                    ) : null}
-                  </div>
-                ))}
-              </div>
+              (() => {
+                // Разделяем медиа на документы и другие типы
+                const documents = post.media.filter(item => item.type === 'document');
+                const nonDocuments = post.media.filter(item => item.type !== 'document');
+                
+                return (
+                  <>
+                    {/* Отображаем документы */}
+                    {documents.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        {documents.map((doc, index) => (
+                          <DocumentPreview
+                            key={doc.id || `doc-${index}`}
+                            document={{
+                              id: doc.id,
+                              url: doc.url.startsWith('http') ? doc.url : `http://localhost:8080${doc.url}`,
+                              type: 'document' as const,
+                              fileName: doc.file_name || 'Document',
+                              fileSize: doc.size_bytes || 0,
+                              fileExtension: doc.file_extension || 'txt',
+                            }}
+                            readOnly={true}
+                            onDownload={(e?: React.MouseEvent) => {
+                              if (e) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                              }
+                              const link = document.createElement('a');
+                              link.href = doc.url.startsWith('http') ? doc.url : `http://localhost:8080${doc.url}`;
+                              link.download = doc.file_name || 'download';
+                              link.target = '_blank';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Отображаем изображения и видео */}
+                    {nonDocuments.length > 0 && (
+                      <div className="grid gap-2 grid-cols-1">
+                        {nonDocuments.slice(0, 4).map((mediaItem, index) => (
+                          <div key={mediaItem.id || index} className="overflow-hidden rounded-2xl border border-[#181B22]">
+                            {mediaItem.type === 'image' || mediaItem.type === 'gif' ? (
+                              <img
+                                src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
+                                alt={mediaItem.alt_text || ''}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  console.error('Image load error:', mediaItem.url);
+                                  e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23181B22" width="400" height="300"/%3E%3Ctext fill="%236D6D6D" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
+                                }}
+                              />
+                            ) : mediaItem.type === 'video' ? (
+                              <VideoPlayer
+                                src={mediaItem.url.startsWith('http') ? mediaItem.url : `http://localhost:8080${mediaItem.url}`}
+                              />
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
+              })()
             ) : post.mediaUrl ? (
               /* Legacy single media URL */
               <div className="overflow-hidden rounded-2xl border border-[#181B22]">

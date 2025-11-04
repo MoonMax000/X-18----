@@ -696,7 +696,7 @@ export interface MediaAttachment {
   user_id: string;
   url: string;
   thumbnail_url?: string;
-  type: 'image' | 'video' | 'audio';
+  type: 'image' | 'video' | 'audio' | 'gif' | 'document';
   width?: number;
   height?: number;
   size: number;

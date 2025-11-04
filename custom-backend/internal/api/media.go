@@ -72,6 +72,15 @@ func NewMediaHandler(db *database.Database) *MediaHandler {
 			"image/webp": true,
 			"video/mp4":  true,
 			"video/webm": true,
+			// Document types
+			"application/pdf":    true,
+			"application/msword": true,
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
+			"application/vnd.ms-excel": true,
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         true,
+			"application/vnd.ms-powerpoint":                                             true,
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
+			"text/plain": true,
 		},
 		useS3: useS3,
 	}
@@ -118,7 +127,7 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 	mediaType, ok := utils.ValidateMIMEType(mimeType)
 	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "File type not allowed. Allowed: jpg, png, gif, webp, mp4, webm",
+			"error": "File type not allowed. Allowed: jpg, png, gif, webp, mp4, webm, pdf, doc, docx, xls, xlsx, ppt, pptx, txt",
 		})
 	}
 
@@ -140,6 +149,22 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 			ext = ".mp4"
 		case "video/webm":
 			ext = ".webm"
+		case "application/pdf":
+			ext = ".pdf"
+		case "application/msword":
+			ext = ".doc"
+		case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+			ext = ".docx"
+		case "application/vnd.ms-excel":
+			ext = ".xls"
+		case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+			ext = ".xlsx"
+		case "application/vnd.ms-powerpoint":
+			ext = ".ppt"
+		case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+			ext = ".pptx"
+		case "text/plain":
+			ext = ".txt"
 		default:
 			ext = ".jpg" // Default fallback
 		}
@@ -190,6 +215,10 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 			defer os.Remove(thumbnailPath) // Удалим после загрузки
 			thumbnailKey = "media/thumbnails/" + thumbnailFilename
 		}
+	} else if mediaType == utils.MediaTypeDocument {
+		// Для документов не нужна обработка
+		processedPath = tempPath
+		// Можно добавить генерацию превью для документов в будущем
 	} else {
 		// Для видео используем temp файл напрямую
 		processedPath = tempPath
@@ -285,6 +314,12 @@ func (h *MediaHandler) UploadMedia(c *fiber.Ctx) error {
 		ProcessedAt:  time.Now(),
 		OriginalHash: imageHash,
 		CreatedAt:    time.Now(),
+	}
+
+	// Для документов сохраняем имя файла и расширение
+	if mediaType == utils.MediaTypeDocument {
+		media.FileName = file.Filename
+		media.FileExtension = strings.TrimPrefix(ext, ".")
 	}
 
 	if err := h.db.DB.Create(&media).Error; err != nil {
@@ -546,6 +581,29 @@ func (h *MediaHandler) StreamMedia(c *fiber.Ctx) error {
 		contentType = "video/mp4"
 	case "gif":
 		contentType = "image/gif"
+	case "document":
+		// Определяем Content-Type для документов по расширению
+		ext := filepath.Ext(filename)
+		switch ext {
+		case ".pdf":
+			contentType = "application/pdf"
+		case ".doc":
+			contentType = "application/msword"
+		case ".docx":
+			contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+		case ".xls":
+			contentType = "application/vnd.ms-excel"
+		case ".xlsx":
+			contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+		case ".ppt":
+			contentType = "application/vnd.ms-powerpoint"
+		case ".pptx":
+			contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+		case ".txt":
+			contentType = "text/plain"
+		default:
+			contentType = "application/octet-stream"
+		}
 	}
 
 	// Устанавливаем заголовки для безопасности
