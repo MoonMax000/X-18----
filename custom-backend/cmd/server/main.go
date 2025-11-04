@@ -184,6 +184,7 @@ func main() {
 	widgetsHandler := api.NewWidgetsHandler(db)
 	postMenuHandler := api.NewPostMenuHandler(db)
 	adminHandler := api.NewAdminHandler(db)
+	adminCleanupHandler := api.NewAdminCleanupHandler(db)
 	wsHandler := api.NewWebSocketHandler(db, redisCache, cfg)
 	totpHandler := api.NewTOTPHandler(db.DB, redisCache)
 	accountHandler := api.NewAccountHandler(db.DB, redisCache)
@@ -406,6 +407,9 @@ func main() {
 	// Admin - Statistics
 	admin.Get("/stats", adminHandler.GetAdminStats)
 	admin.Get("/users/by-country", adminHandler.GetUsersByCountry)
+
+	// Admin - Cleanup (TEMPORARY - for testing)
+	admin.Delete("/cleanup/all", adminCleanupHandler.CleanupAllData)
 
 	// Stripe webhooks (public endpoint - no auth, Stripe verifies with signature)
 	webhooks := apiGroup.Group("/webhooks")
