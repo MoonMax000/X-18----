@@ -15,11 +15,11 @@ import (
 	"custom-backend/internal/cache"
 	"custom-backend/internal/database"
 	"custom-backend/internal/models"
+	"custom-backend/internal/oauth"
 	"custom-backend/internal/services"
 	"custom-backend/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -27,11 +27,11 @@ import (
 )
 
 type OAuthHandler struct {
-	db          *database.Database
-	cache       *cache.Cache
-	config      *configs.Config
-	googleOAuth *oauth2.Config
-	appleOAuth  *oauth2.Config
+	db           *database.Database
+	cache        *cache.Cache
+	config       *configs.Config
+	googleOAuth  *oauth2.Config
+	appleService *oauth.AppleService
 }
 
 func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.Config) *OAuthHandler {
@@ -41,53 +41,33 @@ func NewOAuthHandler(db *database.Database, cache *cache.Cache, config *configs.
 		config: config,
 	}
 
-	// Initialize Google OAuth
+	// Initialize Google OAuth with OIDC scopes
 	if config.OAuth.Google.ClientID != "" {
 		handler.googleOAuth = &oauth2.Config{
 			ClientID:     config.OAuth.Google.ClientID,
 			ClientSecret: config.OAuth.Google.ClientSecret,
 			RedirectURL:  config.OAuth.Google.RedirectURL,
 			Scopes: []string{
-				"https://www.googleapis.com/auth/userinfo.email",
-				"https://www.googleapis.com/auth/userinfo.profile",
+				"openid",
+				"email",
+				"profile",
 			},
 			Endpoint: google.Endpoint,
 		}
-		log.Printf("✅ Google OAuth configured: ClientID=%s", config.OAuth.Google.ClientID[:6]+"...")
+		log.Printf("✅ Google OAuth configured (OIDC): ClientID=%s", config.OAuth.Google.ClientID[:6]+"...")
 	} else {
 		log.Printf("⚠️ Google OAuth not configured - missing CLIENT_ID")
 	}
 
-	// Initialize Apple OAuth
+	// Initialize Apple OAuth Service
 	if config.OAuth.Apple.ClientID != "" && config.OAuth.Apple.TeamID != "" && config.OAuth.Apple.KeyID != "" {
-		// Parse Apple private key
-		privateKey, err := configs.ParseApplePrivateKey(config.OAuth.Apple)
+		appleService, err := oauth.NewAppleService(config.OAuth.Apple)
 		if err != nil {
-			log.Printf("❌ Failed to parse Apple Private Key: %v", err)
+			log.Printf("❌ Failed to initialize Apple OAuth Service: %v", err)
 		} else {
-			// Generate Apple Client Secret (JWT)
-			clientSecret, err := utils.GenerateAppleClientSecret(
-				config.OAuth.Apple.TeamID,
-				config.OAuth.Apple.KeyID,
-				config.OAuth.Apple.ClientID,
-				privateKey,
-			)
-			if err != nil {
-				log.Printf("❌ Failed to generate Apple Client Secret: %v", err)
-			} else {
-				log.Printf("✅ Apple OAuth configured: ClientID=%s, TeamID=%s",
-					config.OAuth.Apple.ClientID, config.OAuth.Apple.TeamID)
-				handler.appleOAuth = &oauth2.Config{
-					ClientID:     config.OAuth.Apple.ClientID,
-					ClientSecret: clientSecret,
-					RedirectURL:  config.OAuth.Apple.RedirectURL,
-					Scopes:       []string{"name", "email"},
-					Endpoint: oauth2.Endpoint{
-						AuthURL:  "https://appleid.apple.com/auth/authorize",
-						TokenURL: "https://appleid.apple.com/auth/token",
-					},
-				}
-			}
+			handler.appleService = appleService
+			log.Printf("✅ Apple OAuth configured: ClientID=%s, TeamID=%s",
+				config.OAuth.Apple.ClientID, config.OAuth.Apple.TeamID)
 		}
 	} else {
 		log.Printf("⚠️ Apple OAuth not configured - missing credentials")
@@ -106,24 +86,6 @@ type GoogleUser struct {
 	FamilyName    string `json:"family_name"`
 	Picture       string `json:"picture"`
 	HD            string `json:"hd,omitempty"` // Hosted domain for G Suite accounts
-}
-
-// AppleUser represents Apple user info from ID token
-type AppleUser struct {
-	Sub            string `json:"sub"` // User ID
-	Email          string `json:"email"`
-	EmailVerified  string `json:"email_verified"` // "true" or "false" as string
-	IsPrivateEmail string `json:"is_private_email"`
-	RealUserStatus int    `json:"real_user_status"` // 0: unsupported, 1: unknown, 2: likely real
-}
-
-// AppleIDTokenClaims represents the full Apple ID token structure
-type AppleIDTokenClaims struct {
-	jwt.RegisteredClaims
-	Email          string `json:"email"`
-	EmailVerified  string `json:"email_verified"`
-	AuthTime       int64  `json:"auth_time"`
-	NonceSupported bool   `json:"nonce_supported"`
 }
 
 // generateState creates a random state token for OAuth
@@ -286,7 +248,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 // AppleLogin initiates Apple OAuth flow
 // GET /api/auth/apple
 func (h *OAuthHandler) AppleLogin(c *fiber.Ctx) error {
-	if h.appleOAuth == nil {
+	if h.appleService == nil {
 		log.Printf("ERROR: Apple OAuth not configured in handler")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Apple OAuth not configured",
@@ -299,11 +261,8 @@ func (h *OAuthHandler) AppleLogin(c *fiber.Ctx) error {
 	// Store state in cache with 10 minute expiration
 	h.cache.Set(fmt.Sprintf("oauth_state:%s", state), "apple", 10*time.Minute)
 
-	// Generate OAuth URL with response_mode=form_post for Apple
-	url := h.appleOAuth.AuthCodeURL(state,
-		oauth2.SetAuthURLParam("response_mode", "form_post"),
-		oauth2.SetAuthURLParam("response_type", "code id_token"),
-	)
+	// Generate OAuth URL using AppleService (handles response_mode=form_post automatically)
+	url := h.appleService.AuthorizationURL(state, "")
 
 	log.Printf("Generated Apple OAuth URL for redirect: %s", h.config.OAuth.Apple.RedirectURL)
 
@@ -327,7 +286,7 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	log.Printf("Request Method: %s", c.Method())
 	log.Printf("Content-Type: %s", c.Get("Content-Type"))
 
-	if h.appleOAuth == nil {
+	if h.appleService == nil {
 		log.Printf("ERROR: Apple OAuth not configured")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Apple OAuth not configured",
@@ -337,14 +296,12 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	// Get code and state from form data (Apple uses form_post)
 	code := c.FormValue("code")
 	state := c.FormValue("state")
-	idToken := c.FormValue("id_token")
-	user := c.FormValue("user") // Only sent on first authorization
+	userDataJSON := c.FormValue("user") // Only sent on first authorization
 
-	log.Printf("Code present: %v, State present: %v, ID Token present: %v",
-		code != "", state != "", idToken != "")
+	log.Printf("Code present: %v, State present: %v", code != "", state != "")
 
-	if user != "" {
-		log.Printf("Apple user data (first login only): %s", user)
+	if userDataJSON != "" {
+		log.Printf("Apple user data (first login only): %s", userDataJSON)
 	}
 
 	// Check for error
@@ -378,12 +335,12 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	h.cache.Delete(fmt.Sprintf("oauth_state:%s", state))
 	log.Printf("State deleted from cache")
 
-	// Exchange code for tokens
+	// Exchange code for tokens using AppleService
 	log.Printf("Exchanging code for token...")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	token, err := h.appleOAuth.Exchange(ctx, code)
+	tokenResp, err := h.appleService.ExchangeCode(ctx, code)
 	if err != nil {
 		log.Printf("ERROR: Failed to exchange Apple token: %v", err)
 		return c.Status(500).JSON(fiber.Map{
@@ -392,54 +349,28 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	}
 	log.Printf("Token exchange successful")
 
-	// Extract user info from id_token
-	var appleUser AppleUser
-
-	// Get id_token from exchange response or form data
-	receivedIDToken, ok := token.Extra("id_token").(string)
-	if !ok || receivedIDToken == "" {
-		receivedIDToken = idToken
-	}
-
-	if receivedIDToken != "" {
-		log.Printf("Parsing Apple ID token...")
-
-		// Parse JWT without verification (Apple doesn't provide easy way to get public keys)
-		// In production, you should verify the signature using Apple's public keys
-		parser := jwt.NewParser(jwt.WithoutClaimsValidation())
-		var claims AppleIDTokenClaims
-
-		_, _, err := parser.ParseUnverified(receivedIDToken, &claims)
-		if err != nil {
-			log.Printf("ERROR: Failed to parse Apple ID token: %v", err)
-			return c.Status(500).JSON(fiber.Map{
-				"error": "Failed to parse Apple ID token",
-			})
-		}
-
-		appleUser.Sub = claims.Subject
-		appleUser.Email = claims.Email
-		appleUser.EmailVerified = claims.EmailVerified
-
-		log.Printf("Parsed Apple user: Sub=%s, Email=%s, EmailVerified=%s",
-			appleUser.Sub, appleUser.Email, appleUser.EmailVerified)
-	} else {
-		log.Printf("WARNING: No ID token received from Apple")
+	// Parse claims from ID token using AppleService
+	log.Printf("Parsing Apple ID token...")
+	sub, email, emailVerified, err := h.appleService.ParseClaims(tokenResp.IDToken)
+	if err != nil {
+		log.Printf("ERROR: Failed to parse Apple ID token: %v", err)
 		return c.Status(500).JSON(fiber.Map{
-			"error": "No ID token received from Apple",
+			"error": "Failed to parse Apple ID token",
 		})
 	}
 
+	log.Printf("Parsed Apple user: Sub=%s, Email=%s, EmailVerified=%v", sub, email, emailVerified)
+
 	// Handle first-time authorization user data
 	var displayName string
-	if user != "" {
+	if userDataJSON != "" {
 		var userData struct {
 			Name struct {
 				FirstName string `json:"firstName"`
 				LastName  string `json:"lastName"`
 			} `json:"name"`
 		}
-		if err := json.Unmarshal([]byte(user), &userData); err == nil {
+		if err := json.Unmarshal([]byte(userDataJSON), &userData); err == nil {
 			displayName = fmt.Sprintf("%s %s", userData.Name.FirstName, userData.Name.LastName)
 			log.Printf("Parsed first-time user name: %s", displayName)
 		}
@@ -447,7 +378,7 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 
 	// Process OAuth login/registration
 	log.Printf("Processing OAuth user...")
-	return h.processOAuthUser(c, "apple", appleUser.Sub, appleUser.Email, displayName, "", appleUser.EmailVerified == "true")
+	return h.processOAuthUser(c, "apple", sub, email, displayName, "", emailVerified)
 }
 
 // processOAuthUser handles user creation or login for OAuth providers

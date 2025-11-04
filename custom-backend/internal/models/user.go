@@ -22,8 +22,8 @@ type User struct {
 	Website     string `gorm:"size:255" json:"website"`
 	Role        string `gorm:"size:100" json:"role"`
 	Sectors     string `gorm:"type:text" json:"sectors"` // JSON array stored as text
-	AvatarURL   string `gorm:"size:500" json:"avatar_url"`
-	HeaderURL   string `gorm:"size:500" json:"header_url"`
+	AvatarURL   string `gorm:"size:2000" json:"avatar_url"`
+	HeaderURL   string `gorm:"size:2000" json:"header_url"`
 
 	// OAuth fields
 	OAuthProvider   string `gorm:"size:50" json:"oauth_provider,omitempty"`     // google, apple, twitter
