@@ -430,13 +430,25 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 				cacheData := fmt.Sprintf("%s|%s|%s|%s|%s|%t|%s", provider, providerID, email, name, avatarURL, emailVerified, existingUser.ID.String())
 				h.cache.Set(cacheKey, cacheData, 10*time.Minute)
 
-				return c.Status(409).JSON(fiber.Map{
-					"requires_account_linking": true,
-					"email":                    email,
-					"provider":                 provider,
-					"linking_token":            linkingToken,
-					"message":                  "An account with this email already exists. Please confirm to link your OAuth account.",
-				})
+				// Determine frontend URL based on environment
+				var frontendURL string
+				if h.config.Server.Env == "production" {
+					frontendURL = "https://social.tyriantrade.com"
+				} else {
+					frontendURL = "http://localhost:5173"
+				}
+
+				// Redirect to frontend with account linking parameters
+				redirectURL := fmt.Sprintf("%s/auth/callback?requires_account_linking=true&email=%s&provider=%s&linking_token=%s&message=%s",
+					frontendURL,
+					email,
+					provider,
+					linkingToken,
+					"An account with this email already exists. Please confirm to link your OAuth account.",
+				)
+
+				log.Printf("Redirecting to frontend for account linking: %s", redirectURL)
+				return c.Redirect(redirectURL)
 			} else {
 				log.Printf("Creating new user with OAuth...")
 

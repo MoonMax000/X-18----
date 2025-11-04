@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import AccountLinkingModal from '../components/auth/AccountLinkingModal';
 
 /**
  * OAuth Callback Handler
@@ -9,17 +10,47 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 const OAuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  // State for account linking modal
+  const [showLinkingModal, setShowLinkingModal] = useState(false);
+  const [linkingData, setLinkingData] = useState<{
+    email: string;
+    provider: string;
+    linkingToken: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
       const success = searchParams.get('success');
       const token = searchParams.get('token');
       const error = searchParams.get('error');
+      
+      // Check for account linking parameters
+      const requiresLinking = searchParams.get('requires_account_linking');
+      const email = searchParams.get('email');
+      const provider = searchParams.get('provider');
+      const linkingToken = searchParams.get('linking_token');
+      const message = searchParams.get('message');
 
       console.log('=== OAuth Callback Handler ===');
       console.log('Success:', success);
       console.log('Token present:', !!token);
       console.log('Error:', error);
+      console.log('Requires linking:', requiresLinking);
+
+      // Handle account linking case
+      if (requiresLinking === 'true' && email && provider && linkingToken) {
+        console.log('🔗 Account linking required for:', email);
+        setLinkingData({
+          email,
+          provider,
+          linkingToken,
+          message: message || 'An account with this email already exists.',
+        });
+        setShowLinkingModal(true);
+        return;
+      }
 
       // Handle error case
       if (error) {
@@ -73,13 +104,76 @@ const OAuthCallback = () => {
     handleCallback();
   }, [searchParams, navigate]);
 
+  const handleLinkAccount = async (password: string) => {
+    if (!linkingData) {
+      throw new Error('Linking data not available');
+    }
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    
+    try {
+      const response = await fetch(`${apiUrl}/api/auth/oauth/link/confirm`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          linking_token: linkingData.linkingToken,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to link accounts');
+      }
+
+      const data = await response.json();
+      console.log('✅ Accounts linked successfully');
+
+      // Save tokens and user data
+      localStorage.setItem('custom_token', data.access_token);
+      localStorage.setItem('custom_user', JSON.stringify(data.user));
+
+      // Close modal and redirect
+      setShowLinkingModal(false);
+      window.location.href = '/';
+    } catch (err) {
+      console.error('❌ Failed to link accounts:', err);
+      throw err;
+    }
+  };
+
+  const handleCloseLinkingModal = () => {
+    setShowLinkingModal(false);
+    setLinkingData(null);
+    navigate('/login', { replace: true });
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <p className="text-lg text-white">Completing authentication...</p>
+    <>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-lg text-white">
+            {showLinkingModal ? 'Checking account...' : 'Completing authentication...'}
+          </p>
+        </div>
       </div>
-    </div>
+
+      {linkingData && (
+        <AccountLinkingModal
+          isOpen={showLinkingModal}
+          onClose={handleCloseLinkingModal}
+          email={linkingData.email}
+          provider={linkingData.provider}
+          linkingToken={linkingData.linkingToken}
+          message={linkingData.message}
+          onLinkAccount={handleLinkAccount}
+        />
+      )}
+    </>
   );
 };
 
