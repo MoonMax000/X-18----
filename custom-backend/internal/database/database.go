@@ -42,6 +42,7 @@ func Connect(config *configs.DatabaseConfig) (*Database, error) {
 func (d *Database) AutoMigrate() error {
 	log.Println("🔄 Running database migrations...")
 
+	// Run GORM AutoMigrate for models
 	err := d.DB.AutoMigrate(
 		&models.User{},
 		&models.Post{},
@@ -61,6 +62,15 @@ func (d *Database) AutoMigrate() error {
 	if err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
+
+	// Apply custom SQL migrations that GORM might miss
+	log.Println("🔧 Applying custom SQL migrations...")
+
+	// Migration 017: OAuth fields (GORM sometimes doesn't add new columns to existing tables)
+	d.DB.Exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR(50)")
+	d.DB.Exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider_id VARCHAR(255)")
+	d.DB.Exec("CREATE INDEX IF NOT EXISTS idx_users_oauth_provider ON users(oauth_provider, oauth_provider_id)")
+	d.DB.Exec("ALTER TABLE users ALTER COLUMN password DROP NOT NULL")
 
 	log.Println("✅ Migrations completed successfully")
 	return nil
