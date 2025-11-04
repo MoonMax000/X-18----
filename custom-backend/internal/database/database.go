@@ -72,6 +72,13 @@ func (d *Database) AutoMigrate() error {
 	d.DB.Exec("CREATE INDEX IF NOT EXISTS idx_users_oauth_provider ON users(oauth_provider, oauth_provider_id)")
 	d.DB.Exec("ALTER TABLE users ALTER COLUMN password DROP NOT NULL")
 
+	// Set admin role for specific email (for testing/development)
+	adminEmail := "admin@gmail.com"
+	result := d.DB.Exec("UPDATE users SET role = 'admin' WHERE email = ? AND (role IS NULL OR role = '')", adminEmail)
+	if result.RowsAffected > 0 {
+		log.Printf("✅ Admin role set for %s", adminEmail)
+	}
+
 	log.Println("✅ Migrations completed successfully")
 	return nil
 }
