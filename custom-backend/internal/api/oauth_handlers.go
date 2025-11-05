@@ -96,6 +96,13 @@ func generateState() string {
 	return base64.URLEncoding.EncodeToString(b)
 }
 
+// generateNonce creates a random nonce for Apple OAuth
+func generateNonce() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
+}
+
 // getFrontendURL returns the appropriate frontend URL based on environment
 func (h *OAuthHandler) getFrontendURL() string {
 	if h.config.Server.Env == "production" {
@@ -253,13 +260,21 @@ func (h *OAuthHandler) AppleLogin(c *fiber.Ctx) error {
 	// Generate state token
 	state := generateState()
 
-	// Store state in cache with 10 minute expiration
+	// Generate nonce for replay attack protection
+	nonce := generateNonce()
+
+	// Compute SHA-256 hash of nonce (Apple requirement)
+	nonceHash := sha256.Sum256([]byte(nonce))
+	nonceHashStr := base64.URLEncoding.EncodeToString(nonceHash[:])
+
+	// Store state and original nonce in cache with 10 minute expiration
 	h.cache.Set(fmt.Sprintf("oauth_state:%s", state), "apple", 10*time.Minute)
+	h.cache.Set(fmt.Sprintf("oauth_nonce:%s", state), nonce, 10*time.Minute)
 
-	// Generate OAuth URL using AppleService (handles response_mode=form_post automatically)
-	url := h.appleService.AuthorizationURL(state, "")
+	// Generate OAuth URL with hashed nonce
+	url := h.appleService.AuthorizationURL(state, nonceHashStr)
 
-	log.Printf("Generated Apple OAuth URL for redirect: %s", h.config.OAuth.Apple.RedirectURL)
+	log.Printf("🍎 Generated Apple OAuth URL with nonce protection")
 
 	return c.JSON(fiber.Map{
 		"url": url,
@@ -340,13 +355,34 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 
 	// Parse claims from ID token using AppleService
 	log.Printf("Parsing Apple ID token...")
-	sub, email, emailVerified, err := h.appleService.ParseClaims(tokenResp.IDToken)
+	sub, email, nonce, emailVerified, err := h.appleService.ParseClaims(tokenResp.IDToken)
 	if err != nil {
 		log.Printf("ERROR: Failed to parse Apple ID token: %v", err)
 		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to parse Apple ID token"))
 	}
 
 	log.Printf("Parsed Apple user: Sub=%s, Email=%s, EmailVerified=%v", sub, email, emailVerified)
+
+	// Verify nonce to prevent replay attacks
+	savedNonce, found := h.cache.Get(fmt.Sprintf("oauth_nonce:%s", state))
+	if !found {
+		log.Printf("ERROR: Nonce not found in cache for state: %s", state)
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Invalid or expired nonce"))
+	}
+
+	// Compute expected nonce hash
+	nonceHash := sha256.Sum256([]byte(savedNonce))
+	expectedNonce := base64.URLEncoding.EncodeToString(nonceHash[:])
+
+	// Compare nonces
+	if nonce != expectedNonce {
+		log.Printf("ERROR: Nonce mismatch - expected: %s, received: %s", expectedNonce, nonce)
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Nonce verification failed"))
+	}
+
+	// Delete used nonce
+	h.cache.Delete(fmt.Sprintf("oauth_nonce:%s", state))
+	log.Printf("✅ Nonce verified successfully")
 
 	// Handle first-time authorization user data
 	var displayName string
@@ -385,9 +421,8 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	// Validate required fields
 	if providerID == "" {
 		log.Printf("ERROR: Empty provider ID")
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Invalid OAuth response: missing user ID",
-		})
+		frontendURL := h.getFrontendURL()
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Invalid OAuth response: missing user ID"))
 	}
 
 	var (
@@ -419,9 +454,8 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 
 				if err := h.db.DB.Save(&existingUser).Error; err != nil {
 					log.Printf("ERROR: Failed to link OAuth to existing user: %v", err)
-					return c.Status(500).JSON(fiber.Map{
-						"error": "Failed to link OAuth account",
-					})
+					frontendURL := h.getFrontendURL()
+					return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to link OAuth account"))
 				}
 
 				log.Printf("✅ OAuth account auto-linked to existing user: %s", existingUser.ID)
@@ -432,9 +466,8 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 				// Validate email
 				if email == "" {
 					log.Printf("ERROR: No email provided by OAuth provider")
-					return c.Status(400).JSON(fiber.Map{
-						"error": "Email not provided by OAuth provider. Please grant email permissions.",
-					})
+					frontendURL := h.getFrontendURL()
+					return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Email not provided by OAuth provider. Please grant email permissions."))
 				}
 
 				// Create new user
@@ -455,9 +488,8 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 
 				if err := h.db.DB.Create(&user).Error; err != nil {
 					log.Printf("ERROR: Failed to create user: %v", err)
-					return c.Status(500).JSON(fiber.Map{
-						"error": "Failed to create user",
-					})
+					frontendURL := h.getFrontendURL()
+					return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to create user"))
 				}
 				log.Printf("Created new user: ID=%s, Username=%s", user.ID, user.Username)
 
@@ -475,15 +507,13 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 			}
 		} else {
 			log.Printf("ERROR: No email provided by OAuth provider")
-			return c.Status(400).JSON(fiber.Map{
-				"error": "Email not provided by OAuth provider",
-			})
+			frontendURL := h.getFrontendURL()
+			return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Email not provided by OAuth provider"))
 		}
 	} else if err != nil {
 		log.Printf("ERROR: Database error: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Database error",
-		})
+		frontendURL := h.getFrontendURL()
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Database error"))
 	} else {
 		log.Printf("Found existing user: ID=%s, Username=%s", user.ID, user.Username)
 	}
@@ -491,11 +521,8 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	// Check if 2FA is enabled
 	if user.Is2FAEnabled {
 		log.Printf("User has 2FA enabled, requiring verification")
-		return c.Status(200).JSON(fiber.Map{
-			"requires_2fa":        true,
-			"verification_method": user.VerificationMethod,
-			"email":               user.Email,
-		})
+		frontendURL := h.getFrontendURL()
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?requires_2fa=true&email=%s", frontendURL, user.Email))
 	}
 
 	// Generate tokens
@@ -512,9 +539,8 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	)
 	if err != nil {
 		log.Printf("ERROR: Failed to generate tokens: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to generate tokens",
-		})
+		frontendURL := h.getFrontendURL()
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to generate tokens"))
 	}
 	log.Printf("Tokens generated successfully")
 
@@ -529,18 +555,16 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 	refreshTokenHash, hashErr := utils.HashPassword(tokenHashStr)
 	if hashErr != nil {
 		log.Printf("ERROR: Failed to hash refresh token: %v", hashErr)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to process tokens",
-		})
+		frontendURL := h.getFrontendURL()
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to process tokens"))
 	}
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 
 	session, err = sessionService.CreateSession(user.ID, c, refreshTokenHash, tokenPair.RefreshJTI, expiresAt)
 	if err != nil {
 		log.Printf("ERROR: Failed to create session: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to create session",
-		})
+		frontendURL := h.getFrontendURL()
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to create session"))
 	}
 	log.Printf("Session created: ID=%s", session.ID)
 
