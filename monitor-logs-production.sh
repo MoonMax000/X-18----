@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # Параметры AWS
 REGION="us-east-1"
-LOG_GROUP="/ecs/tyriantrade-backend"
+LOG_GROUP="/ecs/tyriantrade/backend"
 CLUSTER="tyriantrade-cluster"
 SERVICE="tyriantrade-backend-service"
 
@@ -61,8 +61,14 @@ fi
 TASK_ID=$(basename "$TASK_ARN")
 echo -e "${GREEN}✅ Задача найдена: ${TASK_ID}${NC}"
 
-# Вычисление времени начала
-START_TIME=$(date -u -d "$MINUTES_AGO minutes ago" +%s)000
+# Вычисление времени начала (для macOS)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    START_TIME=$(date -u -v-${MINUTES_AGO}M +%s)000
+else
+    # Linux
+    START_TIME=$(date -u -d "$MINUTES_AGO minutes ago" +%s)000
+fi
 
 # Функция для отображения логов
 show_logs() {
@@ -101,15 +107,15 @@ show_logs() {
 # Отображение логов в зависимости от режима
 case "$MODE" in
     --oauth)
-        show_logs "OAuth OR oauth OR Apple OR apple OR Google OR google OR callback OR /auth/" "📱 OAUTH ЛОГИ" 50
+        show_logs "OAuth OR oauth OR Apple OR apple OR Google OR google OR callback" "📱 OAUTH ЛОГИ" 50
         ;;
     --errors)
-        show_logs "ERROR OR error OR ❌ OR Failed OR failed OR panic OR 500 OR 401 OR 403" "🚨 ОШИБКИ" 30
+        show_logs "ERROR OR error OR Failed OR failed OR panic OR 500 OR 401 OR 403" "🚨 ОШИБКИ" 30
         ;;
     --all|*)
         show_logs "OAuth OR oauth OR Apple OR apple OR Google OR google OR callback" "📱 OAUTH ЛОГИ" 30
-        show_logs "ERROR OR error OR ❌ OR Failed OR failed OR panic OR 500" "🚨 ОШИБКИ" 20
-        show_logs "✅ OR SUCCESS OR success OR completed" "✨ УСПЕШНЫЕ ОПЕРАЦИИ" 20
+        show_logs "ERROR OR error OR Failed OR failed OR panic OR 500" "🚨 ОШИБКИ" 20
+        show_logs "SUCCESS OR success OR completed" "✨ УСПЕШНЫЕ ОПЕРАЦИИ" 20
         ;;
 esac
 

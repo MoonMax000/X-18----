@@ -419,36 +419,27 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		if email != "" {
 			existingUser := models.User{}
 			if err := h.db.DB.Where("email = ?", email).First(&existingUser).Error; err == nil {
-				log.Printf("Email already exists for user: %s", existingUser.ID)
+				log.Printf("Email already exists for user: %s - auto-linking OAuth account", existingUser.ID)
 
-				// SECURITY: Email exists but account is not linked
-				// Store linking request in cache for user confirmation
-				linkingToken := generateState()
-
-				// Store for 10 minutes
-				cacheKey := fmt.Sprintf("oauth_link_request:%s", linkingToken)
-				cacheData := fmt.Sprintf("%s|%s|%s|%s|%s|%t|%s", provider, providerID, email, name, avatarURL, emailVerified, existingUser.ID.String())
-				h.cache.Set(cacheKey, cacheData, 10*time.Minute)
-
-				// Determine frontend URL based on environment
-				var frontendURL string
-				if h.config.Server.Env == "production" {
-					frontendURL = "https://social.tyriantrade.com"
-				} else {
-					frontendURL = "http://localhost:5173"
+				// AUTO-LINK: Update existing user with OAuth info
+				existingUser.OAuthProvider = provider
+				existingUser.OAuthProviderID = providerID
+				if existingUser.AvatarURL == "" && avatarURL != "" {
+					existingUser.AvatarURL = avatarURL
+				}
+				if existingUser.DisplayName == "" && name != "" {
+					existingUser.DisplayName = name
 				}
 
-				// Redirect to frontend with account linking parameters
-				redirectURL := fmt.Sprintf("%s/auth/callback?requires_account_linking=true&email=%s&provider=%s&linking_token=%s&message=%s",
-					frontendURL,
-					email,
-					provider,
-					linkingToken,
-					"An account with this email already exists. Please confirm to link your OAuth account.",
-				)
+				if err := h.db.DB.Save(&existingUser).Error; err != nil {
+					log.Printf("ERROR: Failed to link OAuth to existing user: %v", err)
+					return c.Status(500).JSON(fiber.Map{
+						"error": "Failed to link OAuth account",
+					})
+				}
 
-				log.Printf("Redirecting to frontend for account linking: %s", redirectURL)
-				return c.Redirect(redirectURL)
+				log.Printf("✅ OAuth account auto-linked to existing user: %s", existingUser.ID)
+				user = existingUser
 			} else {
 				log.Printf("Creating new user with OAuth...")
 
@@ -579,8 +570,9 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		Name:     "refresh_token",
 		Value:    tokenPair.TokenPair.RefreshToken,
 		HTTPOnly: true,
-		Secure:   h.config.Server.Env == "production",
-		SameSite: "Lax",
+		Secure:   true,
+		SameSite: "None",
+		Domain:   ".tyriantrade.com",
 		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
 		Path:     "/",
 	})
@@ -601,8 +593,9 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		Name:     "access_token",
 		Value:    tokenPair.TokenPair.AccessToken,
 		HTTPOnly: true,
-		Secure:   h.config.Server.Env == "production",
-		SameSite: "Lax",
+		Secure:   true,
+		SameSite: "None",
+		Domain:   ".tyriantrade.com",
 		MaxAge:   h.config.JWT.AccessExpiry * 60, // convert minutes to seconds
 		Path:     "/",
 	})
@@ -659,136 +652,6 @@ func ensureUniqueUsername(db *gorm.DB, username string) string {
 		username = fmt.Sprintf("%s%d", originalUsername, counter)
 		counter++
 	}
-}
-
-// ConfirmOAuthLinking confirms linking OAuth provider to existing account
-// POST /api/auth/oauth/link/confirm
-func (h *OAuthHandler) ConfirmOAuthLinking(c *fiber.Ctx) error {
-	type ConfirmLinkingRequest struct {
-		LinkingToken string `json:"linking_token" validate:"required"`
-		Password     string `json:"password" validate:"required"`
-	}
-
-	var req ConfirmLinkingRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
-	}
-
-	// Retrieve linking data from cache
-	cacheKey := fmt.Sprintf("oauth_link_request:%s", req.LinkingToken)
-	cacheData, found := h.cache.Get(cacheKey)
-	if !found || cacheData == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid or expired linking token",
-		})
-	}
-
-	// Parse cache data: provider|provider_id|email|name|avatar_url|email_verified|user_id
-	var provider, providerID, email, name, avatarURL, userIDStr string
-	var emailVerified bool
-	_, parseErr := fmt.Sscanf(cacheData, "%s|%s|%s|%s|%s|%t|%s", &provider, &providerID, &email, &name, &avatarURL, &emailVerified, &userIDStr)
-	if parseErr != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to parse linking data",
-		})
-	}
-
-	// Parse user ID
-	userID, parseIDErr := uuid.Parse(userIDStr)
-	if parseIDErr != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Invalid user ID",
-		})
-	}
-
-	// Get user
-	var user models.User
-	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{
-			"error": "User not found",
-		})
-	}
-
-	// Verify password (OAuth users might not have password, check first)
-	if user.Password != "" {
-		if !utils.CheckPassword(req.Password, user.Password) {
-			return c.Status(401).JSON(fiber.Map{
-				"error": "Invalid password",
-			})
-		}
-	} else {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Please set a password for your account first",
-		})
-	}
-
-	// Link OAuth provider to account
-	h.db.DB.Model(&user).Updates(map[string]interface{}{
-		"oauth_provider":    provider,
-		"oauth_provider_id": providerID,
-	})
-
-	// Delete used linking token
-	h.cache.Delete(cacheKey)
-
-	// Generate tokens for immediate login
-	tokenPair, tokenErr := auth.GenerateTokenPair(
-		user.ID,
-		user.Username,
-		user.Email,
-		user.Role,
-		h.config.JWT.AccessSecret,
-		h.config.JWT.RefreshSecret,
-		h.config.JWT.AccessExpiry,
-		h.config.JWT.RefreshExpiry,
-	)
-	if tokenErr != nil {
-		log.Printf("Failed to generate tokens for OAuth linking: %v", tokenErr)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to generate tokens",
-		})
-	}
-
-	// Create session
-	sessionService := services.NewSessionService(h.db.DB, h.cache)
-	refreshTokenHash, hashErr := utils.HashPassword(tokenPair.TokenPair.RefreshToken)
-	if hashErr != nil {
-		log.Printf("Failed to hash refresh token: %v", hashErr)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to process tokens",
-		})
-	}
-	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
-
-	session, sessionErr := sessionService.CreateSession(user.ID, c, refreshTokenHash, tokenPair.RefreshJTI, expiresAt)
-	if sessionErr != nil {
-		log.Printf("Failed to create session for OAuth linking: %v", sessionErr)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to create session",
-		})
-	}
-
-	// Set refresh token cookie
-	c.Cookie(&fiber.Cookie{
-		Name:     "refresh_token",
-		Value:    tokenPair.TokenPair.RefreshToken,
-		HTTPOnly: true,
-		Secure:   h.config.Server.Env == "production",
-		SameSite: "Lax",
-		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
-		Path:     "/",
-	})
-
-	return c.JSON(fiber.Map{
-		"message":      "OAuth provider linked successfully",
-		"user":         user.ToMe(),
-		"access_token": tokenPair.TokenPair.AccessToken,
-		"token_type":   "Bearer",
-		"expires_in":   tokenPair.TokenPair.ExpiresIn,
-		"session_id":   session.ID,
-	})
 }
 
 // SetPasswordForOAuthUser allows OAuth users to set a password
