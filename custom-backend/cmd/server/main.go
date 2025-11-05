@@ -185,6 +185,7 @@ func main() {
 	postMenuHandler := api.NewPostMenuHandler(db)
 	adminHandler := api.NewAdminHandler(db)
 	adminCleanupHandler := api.NewAdminCleanupHandler(db)
+	adminSetupHandler := api.NewAdminSetupHandler(db)
 	wsHandler := api.NewWebSocketHandler(db, redisCache, cfg)
 	totpHandler := api.NewTOTPHandler(db.DB, redisCache)
 	accountHandler := api.NewAccountHandler(db.DB, redisCache)
@@ -227,7 +228,6 @@ func main() {
 	auth.Post("/apple/callback", oauthHandler.AppleCallback)
 
 	// OAuth account management routes (public for linking confirmation, protected for others)
-	auth.Post("/oauth/link/confirm", oauthHandler.ConfirmOAuthLinking)
 	auth.Post("/oauth/set-password", middleware.JWTMiddleware(cfg), oauthHandler.SetPasswordForOAuthUser)
 	auth.Post("/oauth/unlink", middleware.JWTMiddleware(cfg), oauthHandler.UnlinkOAuthProvider)
 	auth.Get("/oauth/status", middleware.JWTMiddleware(cfg), oauthHandler.GetOAuthStatus)
@@ -410,6 +410,10 @@ func main() {
 
 	// Admin - Cleanup (TEMPORARY - for testing)
 	admin.Delete("/cleanup/all", adminCleanupHandler.CleanupAllData)
+
+	// Setup routes (TEMPORARY - for initial admin creation)
+	setup := apiGroup.Group("/setup")
+	setup.Post("/admin", adminSetupHandler.CreateAdminUser)
 
 	// Stripe webhooks (public endpoint - no auth, Stripe verifies with signature)
 	webhooks := apiGroup.Group("/webhooks")
