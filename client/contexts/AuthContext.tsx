@@ -40,35 +40,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const initAuth = async () => {
       try {
         const storedUser = customAuth.getCurrentUser();
-        const token = customAuth.getAccessToken();
-
-        if (storedUser && token) {
-          // Verify token is still valid by fetching current user
+        
+        // OAUTH FIX: After OAuth login, tokens are in httpOnly cookies
+        // We need to verify authentication by checking cookies, not localStorage token
+        if (storedUser) {
+          console.log('🔍 Checking authentication with cookies...');
+          
+          // Try to fetch current user with cookies (credentials: 'include')
           try {
-            const freshUser = await customAuth.getCurrentUserFromAPI(token);
-            setUser(freshUser);
-            console.log('✅ Auth initialized successfully');
-          } catch (error) {
-            console.warn('⚠️ Stored token is invalid, attempting refresh...');
-            // Token might be expired, try refresh
-            try {
-              const refreshed = await customAuth.refreshToken();
-              setUser(refreshed.user);
-              console.log('✅ Token refreshed during init');
-            } catch (refreshError) {
-              // Refresh failed, clear auth but DO NOT reload
-              console.error('❌ Refresh failed, clearing auth state');
-              await customAuth.logout();
-              setUser(null);
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+            const response = await fetch(`${apiUrl}/api/users/me`, {
+              credentials: 'include', // Send httpOnly cookies
+            });
+
+            if (response.ok) {
+              const freshUser = await response.json();
+              setUser(freshUser);
               
-              // Let the UI react to the null user state
-              // Components will show login prompt as needed
+              // Update stored user data if it changed
+              localStorage.setItem('custom_user', JSON.stringify(freshUser));
+              console.log('✅ Auth initialized successfully (via cookies)');
+            } else if (response.status === 401) {
+              // Unauthorized - try to refresh token
+              console.warn('⚠️ Session expired, attempting refresh...');
+              try {
+                const refreshed = await customAuth.refreshToken();
+                setUser(refreshed.user);
+                console.log('✅ Token refreshed during init');
+              } catch (refreshError) {
+                console.error('❌ Refresh failed, clearing auth state');
+                await customAuth.logout();
+                setUser(null);
+              }
+            } else {
+              throw new Error('Failed to verify authentication');
             }
+          } catch (error) {
+            console.error('❌ Auth verification failed:', error);
+            // Clear corrupted auth state
+            await customAuth.logout();
+            setUser(null);
           }
+        } else {
+          console.log('ℹ️ No stored user, user is not authenticated');
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
-        // Clear any corrupted auth state
         await customAuth.logout();
         setUser(null);
       } finally {
