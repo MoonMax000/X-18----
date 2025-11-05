@@ -2,7 +2,10 @@ package oauth
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"log"
@@ -10,10 +13,12 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"custom-backend/configs"
 
 	"github.com/Timothylock/go-signin-with-apple/apple"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AppleService struct {
@@ -41,21 +46,55 @@ func NewAppleService(cfg configs.AppleOAuthConfig) (*AppleService, error) {
 		pkPEM = s
 	}
 
-	// Generate client_secret using battle-tested library
-	// Apple client_secret is an ES256 JWT with team_id, key_id, client_id
-	// Valid for up to 6 months
-	cs, err := apple.GenerateClientSecret(
-		pkPEM,
-		cfg.TeamID,
-		cfg.ClientID,
-		cfg.KeyID,
-	)
+	// Generate client_secret manually with proper JWT structure
+	cs, err := generateAppleClientSecret(pkPEM, cfg.TeamID, cfg.ClientID, cfg.KeyID)
 	if err != nil {
 		return nil, fmt.Errorf("generate apple client_secret: %w", err)
 	}
 
-	log.Printf("✅ Apple client_secret generated (valid for 6 months)")
+	log.Printf("✅ Apple client_secret generated (length: %d, valid for 6 months)", len(cs))
 	return &AppleService{cfg: cfg, secret: cs}, nil
+}
+
+// generateAppleClientSecret creates a properly formatted ES256 JWT for Apple OAuth
+func generateAppleClientSecret(privateKeyPEM, teamID, clientID, keyID string) (string, error) {
+	// Parse the PEM-encoded ECDSA private key
+	block, _ := pem.Decode([]byte(privateKeyPEM))
+	if block == nil {
+		return "", errors.New("failed to decode PEM block containing private key")
+	}
+
+	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("parse private key: %w", err)
+	}
+
+	ecdsaKey, ok := privateKey.(*ecdsa.PrivateKey)
+	if !ok {
+		return "", errors.New("private key is not ECDSA")
+	}
+
+	// Create JWT claims according to Apple's requirements
+	now := time.Now()
+	claims := jwt.RegisteredClaims{
+		Issuer:    teamID,                                            // Team ID
+		IssuedAt:  jwt.NewNumericDate(now),                           // Current time
+		ExpiresAt: jwt.NewNumericDate(now.Add(180 * 24 * time.Hour)), // 6 months
+		Audience:  jwt.ClaimStrings{"https://appleid.apple.com"},     // Apple's audience
+		Subject:   clientID,                                          // Service ID (Client ID)
+	}
+
+	// Create token with ES256 signing method
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token.Header["kid"] = keyID // Key ID in header
+
+	// Sign and get the complete encoded token
+	signedToken, err := token.SignedString(ecdsaKey)
+	if err != nil {
+		return "", fmt.Errorf("sign token: %w", err)
+	}
+
+	return signedToken, nil
 }
 
 // AuthorizationURL generates the URL for redirecting to Apple's authorization page
@@ -226,17 +265,12 @@ func (s *AppleService) RefreshClientSecret() error {
 		pkPEM = s
 	}
 
-	cs, err := apple.GenerateClientSecret(
-		pkPEM,
-		s.cfg.TeamID,
-		s.cfg.ClientID,
-		s.cfg.KeyID,
-	)
+	cs, err := generateAppleClientSecret(pkPEM, s.cfg.TeamID, s.cfg.ClientID, s.cfg.KeyID)
 	if err != nil {
 		return fmt.Errorf("generate client_secret: %w", err)
 	}
 
 	s.secret = cs
-	log.Printf("✅ Apple client_secret refreshed")
+	log.Printf("✅ Apple client_secret refreshed (length: %d)", len(cs))
 	return nil
 }
