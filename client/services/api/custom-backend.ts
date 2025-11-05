@@ -33,6 +33,7 @@ class CustomBackendAPI {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'include', // OAUTH FIX: Send httpOnly cookies with every request
     });
 
     // Handle 401 - try to refresh token once
@@ -43,15 +44,13 @@ class CustomBackendAPI {
         if (refreshToken) {
           console.log('🔄 Attempting to refresh token...');
           
-          // Send refresh_token in request body (not in header!)
+          // OAUTH FIX: refresh_token is now in httpOnly cookie, not in localStorage
           const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              refresh_token: refreshToken,
-            }),
+            credentials: 'include', // Send httpOnly cookies (refresh_token)
           });
 
           if (refreshResponse.ok) {
@@ -338,6 +337,7 @@ class CustomBackendAPI {
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
+      credentials: 'include', // OAUTH FIX: Send httpOnly cookies
       body: formData,
     });
 
