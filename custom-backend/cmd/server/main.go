@@ -414,6 +414,7 @@ func main() {
 	// Setup routes (TEMPORARY - for initial admin creation)
 	setup := apiGroup.Group("/setup")
 	setup.Post("/admin", adminSetupHandler.CreateAdminUser)
+	setup.Post("/db-agent", adminSetupHandler.CreateDBAgent)
 
 	// Stripe webhooks (public endpoint - no auth, Stripe verifies with signature)
 	webhooks := apiGroup.Group("/webhooks")
