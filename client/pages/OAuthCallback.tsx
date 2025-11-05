@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import AccountLinkingModal from '../components/auth/AccountLinkingModal';
 
 /**
  * OAuth Callback Handler
@@ -10,53 +9,25 @@ import AccountLinkingModal from '../components/auth/AccountLinkingModal';
 const OAuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
-  // State for account linking modal
-  const [showLinkingModal, setShowLinkingModal] = useState(false);
-  const [linkingData, setLinkingData] = useState<{
-    email: string;
-    provider: string;
-    linkingToken: string;
-    message: string;
-  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleCallback = async () => {
       const success = searchParams.get('success');
       const token = searchParams.get('token');
-      const error = searchParams.get('error');
-      
-      // Check for account linking parameters
-      const requiresLinking = searchParams.get('requires_account_linking');
-      const email = searchParams.get('email');
-      const provider = searchParams.get('provider');
-      const linkingToken = searchParams.get('linking_token');
-      const message = searchParams.get('message');
+      const errorParam = searchParams.get('error');
 
       console.log('=== OAuth Callback Handler ===');
       console.log('Success:', success);
       console.log('Token present:', !!token);
-      console.log('Error:', error);
-      console.log('Requires linking:', requiresLinking);
-
-      // Handle account linking case
-      if (requiresLinking === 'true' && email && provider && linkingToken) {
-        console.log('🔗 Account linking required for:', email);
-        setLinkingData({
-          email,
-          provider,
-          linkingToken,
-          message: message || 'An account with this email already exists.',
-        });
-        setShowLinkingModal(true);
-        return;
-      }
+      console.log('Error:', errorParam);
 
       // Handle error case
-      if (error) {
-        console.error('❌ OAuth error:', error);
-        alert(`OAuth authentication failed: ${error}`);
-        navigate('/login', { replace: true });
+      if (errorParam) {
+        console.error('❌ OAuth error:', errorParam);
+        setError(errorParam);
+        setIsLoading(false);
         return;
       }
 
@@ -89,88 +60,70 @@ const OAuthCallback = () => {
           window.location.href = '/';
         } catch (err) {
           console.error('❌ Error processing OAuth callback:', err);
-          alert('Authentication successful, but failed to load user data. Please try logging in again.');
-          navigate('/login', { replace: true });
+          setError('Authentication successful, but failed to load user data. Please try logging in again.');
+          setIsLoading(false);
         }
       } else {
         console.error('❌ Invalid callback parameters');
-        navigate('/login', { replace: true });
+        setError('Invalid authentication response. Please try again.');
+        setIsLoading(false);
       }
     };
 
     handleCallback();
   }, [searchParams, navigate]);
 
-  const handleLinkAccount = async (password: string) => {
-    if (!linkingData) {
-      throw new Error('Linking data not available');
-    }
-
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-    
-    try {
-      const response = await fetch(`${apiUrl}/api/auth/oauth/link/confirm`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          linking_token: linkingData.linkingToken,
-          password: password,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to link accounts');
-      }
-
-      const data = await response.json();
-      console.log('✅ Accounts linked successfully');
-
-      // Save tokens and user data
-      localStorage.setItem('custom_token', data.access_token);
-      localStorage.setItem('custom_user', JSON.stringify(data.user));
-
-      // Close modal and redirect
-      setShowLinkingModal(false);
-      window.location.href = '/';
-    } catch (err) {
-      console.error('❌ Failed to link accounts:', err);
-      throw err;
-    }
-  };
-
-  const handleCloseLinkingModal = () => {
-    setShowLinkingModal(false);
-    setLinkingData(null);
-    navigate('/login', { replace: true });
-  };
-
-  return (
-    <>
+  // Error state
+  if (error) {
+    return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-lg text-white">
-            {showLinkingModal ? 'Checking account...' : 'Completing authentication...'}
-          </p>
+        <div className="max-w-md w-full mx-4">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-red-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  Authentication Failed
+                </h3>
+                <p className="text-sm text-gray-300 mb-4">{error}</p>
+                <button
+                  onClick={() => navigate('/login', { replace: true })}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {linkingData && (
-        <AccountLinkingModal
-          isOpen={showLinkingModal}
-          onClose={handleCloseLinkingModal}
-          email={linkingData.email}
-          provider={linkingData.provider}
-          linkingToken={linkingData.linkingToken}
-          message={linkingData.message}
-          onLinkAccount={handleLinkAccount}
-        />
-      )}
-    </>
+  // Loading state
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="text-lg text-white">
+          {isLoading ? 'Completing authentication...' : 'Redirecting...'}
+        </p>
+      </div>
+    </div>
   );
 };
 

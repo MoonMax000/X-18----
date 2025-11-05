@@ -96,6 +96,14 @@ func generateState() string {
 	return base64.URLEncoding.EncodeToString(b)
 }
 
+// getFrontendURL returns the appropriate frontend URL based on environment
+func (h *OAuthHandler) getFrontendURL() string {
+	if h.config.Server.Env == "production" {
+		return "https://social.tyriantrade.com"
+	}
+	return "http://localhost:5173"
+}
+
 // GoogleLogin initiates Google OAuth flow
 // GET /api/auth/google
 func (h *OAuthHandler) GoogleLogin(c *fiber.Ctx) error {
@@ -126,7 +134,9 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("🔥 PANIC in GoogleCallback: %v", r)
-			err = c.Status(500).JSON(fiber.Map{"error": "internal server error"})
+			// REDIRECT to frontend with error instead of returning JSON
+			frontendURL := h.getFrontendURL()
+			c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Internal server error"))
 		}
 	}()
 
@@ -134,11 +144,11 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	log.Printf("Request URL: %s", c.OriginalURL())
 	log.Printf("Query params: %v", c.Queries())
 
+	frontendURL := h.getFrontendURL()
+
 	if h.googleOAuth == nil {
 		log.Printf("ERROR: Google OAuth not configured")
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Google OAuth not configured",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Google OAuth not configured"))
 	}
 
 	// Get code and state from query params
@@ -150,18 +160,14 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	if errorParam != "" {
 		errorDesc := c.Query("error_description", "Unknown error")
 		log.Printf("ERROR: OAuth provider returned error: %s - %s", errorParam, errorDesc)
-		return c.Status(400).JSON(fiber.Map{
-			"error": fmt.Sprintf("OAuth error: %s", errorDesc),
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, fmt.Sprintf("Google OAuth error: %s", errorDesc)))
 	}
 
 	log.Printf("Code present: %v, State present: %v", code != "", state != "")
 
 	if code == "" || state == "" {
 		log.Printf("ERROR: Missing code or state - code: %v, state: %v", code != "", state != "")
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Missing code or state parameter",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Missing code or state parameter"))
 	}
 
 	// Verify state
@@ -170,9 +176,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 
 	if !found || cachedProvider != "google" {
 		log.Printf("ERROR: Invalid state - expected 'google', got '%s'", cachedProvider)
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid state parameter",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Invalid state parameter"))
 	}
 
 	// Delete used state
@@ -187,16 +191,14 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	token, err := h.googleOAuth.Exchange(ctx, code)
 	if err != nil {
 		log.Printf("ERROR: Failed to exchange token: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to exchange authorization code",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to exchange authorization code"))
 	}
 	log.Printf("Token exchange successful, AccessToken present: %v", token.AccessToken != "")
 
 	// Check if token is nil
 	if token == nil || token.AccessToken == "" {
 		log.Printf("ERROR: Received invalid token after exchange")
-		return c.Status(500).JSON(fiber.Map{"error": "empty token from provider"})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Empty token from provider"))
 	}
 
 	// Get user info
@@ -208,9 +210,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	resp, err := client.Get("https://openidconnect.googleapis.com/v1/userinfo")
 	if err != nil {
 		log.Printf("ERROR: Failed to get user info: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to get user information",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to get user information"))
 	}
 	defer resp.Body.Close()
 	log.Printf("User info response status: %d", resp.StatusCode)
@@ -218,26 +218,20 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) (err error) {
 	if resp.StatusCode != 200 {
 		body, _ := io.ReadAll(resp.Body)
 		log.Printf("ERROR: Non-200 status from Google: %d, body: %s", resp.StatusCode, string(body))
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to get user information from Google",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to get user information from Google"))
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("ERROR: Failed to read user info body: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to read user information",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to read user information"))
 	}
 	log.Printf("User info body: %s", string(body))
 
 	var googleUser GoogleUser
 	if err := json.Unmarshal(body, &googleUser); err != nil {
 		log.Printf("ERROR: Failed to parse user info JSON: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to parse user information",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to parse user information"))
 	}
 	log.Printf("Parsed user: ID=%s, Email=%s, Name=%s", googleUser.ID, googleUser.Email, googleUser.Name)
 
@@ -279,7 +273,9 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("🔥 PANIC in AppleCallback: %v", r)
-			err = c.Status(500).JSON(fiber.Map{"error": "internal server error"})
+			// REDIRECT to frontend with error instead of returning JSON
+			frontendURL := h.getFrontendURL()
+			c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Internal server error"))
 		}
 	}()
 
@@ -287,11 +283,11 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	log.Printf("Request Method: %s", c.Method())
 	log.Printf("Content-Type: %s", c.Get("Content-Type"))
 
+	frontendURL := h.getFrontendURL()
+
 	if h.appleService == nil {
 		log.Printf("ERROR: Apple OAuth not configured")
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Apple OAuth not configured",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Apple OAuth not configured"))
 	}
 
 	// Get code and state from form data (Apple uses form_post)
@@ -309,16 +305,12 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	if errorParam := c.FormValue("error"); errorParam != "" {
 		errorDesc := c.FormValue("error_description", "Unknown error")
 		log.Printf("ERROR: Apple returned error: %s - %s", errorParam, errorDesc)
-		return c.Status(400).JSON(fiber.Map{
-			"error": fmt.Sprintf("Apple OAuth error: %s", errorDesc),
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, fmt.Sprintf("Apple OAuth error: %s", errorDesc)))
 	}
 
 	if code == "" || state == "" {
 		log.Printf("ERROR: Missing required parameters - code: %v, state: %v", code != "", state != "")
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Missing code or state parameter",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Missing code or state parameter"))
 	}
 
 	// Verify state
@@ -327,9 +319,7 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 
 	if !found || cachedProvider != "apple" {
 		log.Printf("ERROR: Invalid state - expected 'apple', got '%s'", cachedProvider)
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid state parameter",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Invalid state parameter"))
 	}
 
 	// Delete used state
@@ -344,9 +334,7 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	tokenResp, err := h.appleService.ExchangeCode(ctx, code)
 	if err != nil {
 		log.Printf("ERROR: Failed to exchange Apple token: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to exchange authorization code",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to exchange authorization code"))
 	}
 	log.Printf("Token exchange successful")
 
@@ -355,9 +343,7 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 	sub, email, emailVerified, err := h.appleService.ParseClaims(tokenResp.IDToken)
 	if err != nil {
 		log.Printf("ERROR: Failed to parse Apple ID token: %v", err)
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to parse Apple ID token",
-		})
+		return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to parse Apple ID token"))
 	}
 
 	log.Printf("Parsed Apple user: Sub=%s, Email=%s, EmailVerified=%v", sub, email, emailVerified)
