@@ -61,20 +61,17 @@ const OAuthCallback = () => {
       }
 
       // Handle success case
-      if (success === 'true' && token) {
+      if (success === 'true') {
         try {
-          console.log('✅ OAuth successful, saving token...');
+          console.log('✅ OAuth successful! Tokens are in httpOnly cookies');
           
-          // Save access token to localStorage
-          localStorage.setItem('custom_token', token);
+          // SECURITY FIX: Tokens are now in httpOnly cookies (access_token, refresh_token)
+          // No need to save to localStorage - cookies are automatically sent with requests
           
-          // Fetch user data with the token
+          // Fetch user data - cookies will be sent automatically
           const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
           const response = await fetch(`${apiUrl}/api/users/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-            credentials: 'include', // Include refresh token cookie
+            credentials: 'include', // Include httpOnly cookies (access_token, refresh_token)
           });
 
           if (!response.ok) {
@@ -84,7 +81,7 @@ const OAuthCallback = () => {
           const userData = await response.json();
           console.log('✅ User data fetched:', userData.username);
           
-          // Save user data to localStorage
+          // Save user data to localStorage (NOT tokens, only user info for UI)
           localStorage.setItem('custom_user', JSON.stringify(userData));
           
           // Redirect to home page

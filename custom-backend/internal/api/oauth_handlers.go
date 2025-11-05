@@ -595,11 +595,22 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		frontendURL = "http://localhost:5173"
 	}
 
-	// Redirect to frontend with success
-	// The access token will be passed in URL, refresh token is already in httponly cookie
-	redirectURL := fmt.Sprintf("%s/auth/callback?success=true&token=%s", frontendURL, tokenPair.TokenPair.AccessToken)
+	// SECURITY FIX: Set access token as httpOnly cookie instead of URL parameter
+	// This prevents XSS attacks and token exposure in browser history/logs
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    tokenPair.TokenPair.AccessToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   h.config.JWT.AccessExpiry * 60, // convert minutes to seconds
+		Path:     "/",
+	})
 
-	log.Printf("Redirecting to frontend: %s", redirectURL)
+	// Redirect to frontend with success (NO token in URL for security)
+	redirectURL := fmt.Sprintf("%s/auth/callback?success=true", frontendURL)
+
+	log.Printf("✅ OAuth cookies set, redirecting to frontend: %s", redirectURL)
 
 	return c.Redirect(redirectURL)
 }

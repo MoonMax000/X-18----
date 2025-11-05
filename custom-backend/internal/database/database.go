@@ -45,6 +45,7 @@ func (d *Database) AutoMigrate() error {
 	// Run GORM AutoMigrate for models
 	err := d.DB.AutoMigrate(
 		&models.User{},
+		&models.UserOAuthIdentity{},
 		&models.Post{},
 		&models.Follow{},
 		&models.Like{},
