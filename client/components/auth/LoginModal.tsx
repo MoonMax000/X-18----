@@ -3,6 +3,7 @@ import LoginForm from './forms/LoginForm';
 import TwoFactorForm from './forms/TwoFactorForm';
 import SignUpForm from './forms/SignUpForm';
 import ForgotPasswordForm from './forms/ForgotPasswordForm';
+import EmailVerificationForm from './forms/EmailVerificationForm';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -17,7 +18,8 @@ type ScreenType =
   | 'forgot-sent'
   | 'create-password'
   | 'password-reset'
-  | 'signup';
+  | 'signup'
+  | 'email-verification';
 
 const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'login' }) => {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialScreen);
@@ -25,6 +27,7 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
   const [tempAuthData, setTempAuthData] = useState<{ email: string; requires_2fa: boolean } | null>(
     null
   );
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
 
   // Reset to initial state when modal closes
   useEffect(() => {
@@ -118,11 +121,31 @@ const LoginModal: FC<LoginModalProps> = ({ isOpen, onClose, initialScreen = 'log
         return (
           <SignUpForm
             onSwitchToLogin={() => setCurrentScreen('login')}
-            onSuccess={() => {
-              onClose();
-              window.location.reload();
+            onSuccess={(email) => {
+              setPendingVerificationEmail(email);
+              setCurrentScreen('email-verification');
             }}
           />
+        );
+
+      case 'email-verification':
+        return (
+          <div className="flex flex-col gap-4 flex-1">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-2xl font-bold text-white text-center">Verify Your Email</h2>
+              <p className="text-[#B0B0B0] text-[15px] text-center">
+                We've sent a 6-digit code to {pendingVerificationEmail}
+              </p>
+            </div>
+            <EmailVerificationForm 
+              email={pendingVerificationEmail}
+              onSuccess={() => {
+                onClose();
+                window.location.reload();
+              }}
+              onBack={() => setCurrentScreen('signup')}
+            />
+          </div>
         );
 
       case 'forgot-email':

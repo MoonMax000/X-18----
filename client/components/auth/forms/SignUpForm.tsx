@@ -11,7 +11,7 @@ import {
 
 interface SignUpFormProps {
   onSwitchToLogin: () => void;
-  onSuccess: () => void;
+  onSuccess: (email: string) => void;
 }
 
 const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
@@ -121,13 +121,15 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
           ? email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '')
           : `user_${phone.replace(/\D/g, '').slice(-8)}`;
 
+      const userEmail = authMethod === 'email' ? email : `${phone}@phone.temp`;
+      
       await customAuth.register({
         username,
-        email: authMethod === 'email' ? email : `${phone}@phone.temp`,
+        email: userEmail,
         password,
       });
 
-      onSuccess();
+      onSuccess(userEmail);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
 
