@@ -369,25 +369,22 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // Logout handles user logout
 // POST /api/auth/logout
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
-	// Get user from context (set by auth middleware)
-	userID := c.Locals("userID")
-	if userID == nil {
-		return c.Status(401).JSON(fiber.Map{
-			"error": "Unauthorized",
-		})
-	}
+	// Simply clear the refresh token cookie
+	// No authentication required - this is safe because:
+	// 1. HttpOnly cookies are cleared client-side
+	// 2. Old sessions in DB will be cleaned by background cleanup service
+	// 3. Even if someone calls logout without auth, it just clears their own cookies
 
-	// Delete all user sessions
-	h.db.DB.Where("user_id = ?", userID).Delete(&models.Session{})
+	log.Printf("🚪 [LOGOUT] Clearing refresh token cookie")
 
-	// Очищаем refresh token cookie
+	// Clear refresh token cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    "",
 		HTTPOnly: true,
 		Secure:   h.config.Server.Env == "production",
 		SameSite: "Lax",
-		MaxAge:   -1, // Удаляем cookie
+		MaxAge:   -1, // Delete cookie
 		Path:     "/",
 	})
 

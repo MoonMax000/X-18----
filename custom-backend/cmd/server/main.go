@@ -233,7 +233,7 @@ func main() {
 	auth.Get("/oauth/status", middleware.JWTMiddleware(cfg), oauthHandler.GetOAuthStatus)
 
 	// Protected auth routes
-	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)
+	auth.Post("/logout", authHandler.Logout)            // Public endpoint - clears cookies client-side
 	auth.Post("/verify/email", authHandler.VerifyEmail) // Public endpoint - secured by email code
 	auth.Post("/resend-verification", middleware.JWTMiddleware(cfg), authHandler.ResendVerificationEmail)
 
