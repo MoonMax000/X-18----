@@ -15,15 +15,10 @@ class CustomBackendAPI {
     options?: RequestInit,
     retryCount = 0
   ): Promise<T> {
-    const token = localStorage.getItem('custom_token');
-    
+    // PURE COOKIE-BASED AUTH: No Authorization header, cookies only
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
 
     // Merge with provided headers
     if (options?.headers) {
@@ -33,49 +28,37 @@ class CustomBackendAPI {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers,
-      credentials: 'include', // OAUTH FIX: Send httpOnly cookies with every request
+      credentials: 'include', // Send httpOnly cookies (access_token, refresh_token)
     });
 
     // Handle 401 - try to refresh token once
     if (response.status === 401 && retryCount === 0) {
       try {
-        // Try to refresh the token
-        const refreshToken = localStorage.getItem('custom_refresh_token');
-        if (refreshToken) {
-          console.log('🔄 Attempting to refresh token...');
-          
-          // OAUTH FIX: refresh_token is now in httpOnly cookie, not in localStorage
-          const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include', // Send httpOnly cookies (refresh_token)
-          });
+        console.log('🔄 Attempting to refresh token via cookies...');
+        
+        // refresh_token is in httpOnly cookie
+        const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Send httpOnly cookies (refresh_token)
+        });
 
-          if (refreshResponse.ok) {
-            const { access_token, refresh_token } = await refreshResponse.json();
-            localStorage.setItem('custom_token', access_token);
-            if (refresh_token) {
-              localStorage.setItem('custom_refresh_token', refresh_token);
-            }
-            
-            console.log('✅ Token refreshed successfully');
-            
-            // Retry the original request with new token
-            return this.request<T>(endpoint, options, retryCount + 1);
-          } else {
-            console.error('❌ Token refresh failed:', refreshResponse.status);
-          }
+        if (refreshResponse.ok) {
+          console.log('✅ Token refreshed successfully');
+          
+          // Retry the original request - new access_token is now in cookie
+          return this.request<T>(endpoint, options, retryCount + 1);
+        } else {
+          console.error('❌ Token refresh failed:', refreshResponse.status);
         }
       } catch (refreshError) {
         console.error('❌ Token refresh error:', refreshError);
       }
       
-      // If refresh failed, clear tokens but DO NOT reload page
-      console.warn('⚠️ Clearing invalid tokens...');
-      localStorage.removeItem('custom_token');
-      localStorage.removeItem('custom_refresh_token');
+      // If refresh failed, clear user data (tokens are in httpOnly cookies, can't access them)
+      console.warn('⚠️ Session expired, clearing user data...');
       localStorage.removeItem('custom_user');
       
       // Let the error propagate to be handled by the UI components
@@ -331,13 +314,10 @@ class CustomBackendAPI {
     const formData = new FormData();
     formData.append('file', file);
 
-    const token = localStorage.getItem('custom_token');
+    // PURE COOKIE-BASED AUTH: No Authorization header
     const response = await fetch(`${this.baseUrl}/media/upload`, {
       method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      credentials: 'include', // OAUTH FIX: Send httpOnly cookies
+      credentials: 'include', // Send httpOnly cookies (access_token)
       body: formData,
     });
 

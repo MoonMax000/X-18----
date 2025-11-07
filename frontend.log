@@ -10,3 +10,28 @@
 
 warn - The class `duration-[600ms]` is ambiguous and matches multiple utilities.
 warn - If this is content and not a class, replace it with `duration-&lsqb;600ms&rsqb;` to silence this warning.
+2:50:17 PM [vite] (client) hmr update /client/pages/OAuthCallback.tsx, /client/global.css
+12:11:36 AM [vite] (client) hmr update /client/pages/OAuthCallback.tsx, /client/global.css
+7:28:32 AM [vite] .env.local changed, restarting server...
+7:28:32 AM [vite] server restarted.
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.30.210:5173/
+  ➜  Network: http://10.2.0.2:5173/
+1:58:31 PM [vite] (client) page reload oauth-test.html
+1:59:13 PM [vite] (client) page reload oauth-test.html
+2:10:26 PM [vite] (client) hmr update /client/contexts/AuthContext.tsx, /client/global.css
+2:22:39 PM [vite] (client) hmr update /client/global.css, /client/components/ui/Header/Header.tsx, /client/components/CreatePostBox/CreatePostModal/CreatePostModal.tsx, /client/pages/FeedTest.tsx, /client/features/feed/components/composers/QuickComposer.tsx, /client/components/SocialFeedWidgets/NewsWidget.tsx, /client/components/SocialFeedWidgets/MyEarningsWidget.tsx, /client/components/SocialFeedWidgets/TopAuthorsWidget.tsx, /client/components/SocialFeedWidgets/TrendingNewsWidget.tsx, /client/components/SocialFeedWidgets/MyActivityWidget.tsx, /client/components/SocialFeedWidgets/TrendingTickersWidget.tsx, /client/features/feed/components/posts/FeedPost.tsx, /client/components/PostCard/UserHoverCard.tsx
+2:42:52 PM [vite] (client) hmr update /client/pages/OAuthCallback.tsx, /client/global.css
+2:51:47 PM [vite] (client) hmr update /client/pages/OAuthCallback.tsx, /client/global.css
+9:27:41 AM [vite] (client) hmr update /client/global.css, /client/components/ui/Header/Header.tsx, /client/components/CreatePostBox/CreatePostModal/CreatePostModal.tsx, /client/pages/FeedTest.tsx, /client/features/feed/components/composers/QuickComposer.tsx, /client/components/SocialFeedWidgets/NewsWidget.tsx, /client/components/SocialFeedWidgets/MyEarningsWidget.tsx, /client/components/SocialFeedWidgets/TopAuthorsWidget.tsx, /client/components/SocialFeedWidgets/TrendingNewsWidget.tsx, /client/components/SocialFeedWidgets/MyActivityWidget.tsx, /client/components/SocialFeedWidgets/TrendingTickersWidget.tsx, /client/features/feed/components/posts/FeedPost.tsx, /client/components/PostCard/UserHoverCard.tsx
+9:28:25 AM [vite] (client) hmr update /client/global.css, /client/contexts/AuthContext.tsx, /client/components/ui/Header/Header.tsx, /client/components/auth/LoginModal.tsx
+9:28:57 AM [vite] (client) hmr update /client/contexts/AuthContext.tsx, /client/global.css
+9:29:26 AM [vite] (client) hmr update /client/pages/OAuthCallback.tsx, /client/global.css
+12:44:42 AM [vite] (client) page reload oauth-test.html
+8:09:26 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
+8:09:44 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
+8:11:47 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
+8:12:24 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
+8:13:07 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
+8:33:28 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx

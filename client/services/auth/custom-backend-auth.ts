@@ -127,7 +127,7 @@ class CustomBackendAuthService {
   /**
    * Login with email and password
    * @param params - Login parameters (email, password)
-   * @returns Auth response with access token
+   * @returns Auth response with user data (tokens are in httpOnly cookies)
    */
   async login({ email, password }: LoginParams): Promise<AuthResponse> {
     console.log('=== Custom Backend Login ===');
@@ -136,7 +136,7 @@ class CustomBackendAuthService {
     const response = await fetch(`${this.baseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // Включаем cookies
+      credentials: 'include', // Cookies will be set automatically
       body: JSON.stringify({
         email,
         password,
@@ -150,11 +150,9 @@ class CustomBackendAuthService {
     }
 
     const data = await response.json();
-    console.log('✅ Login successful');
+    console.log('✅ Login successful - tokens in httpOnly cookies');
 
-    // Store only access token and user
-    localStorage.setItem('custom_token', data.access_token);
-    // Не сохраняем refresh_token - он в HttpOnly cookie
+    // Store ONLY user data for UI (NOT tokens)
     localStorage.setItem('custom_user', JSON.stringify(data.user));
 
     return data;
@@ -200,43 +198,47 @@ class CustomBackendAuthService {
 
   /**
    * Get current access token from localStorage
-   * @returns Access token or null if not logged in
+   * @returns Always null (tokens are in httpOnly cookies now)
+   * @deprecated Tokens are now in httpOnly cookies, not localStorage
    */
   getAccessToken(): string | null {
-    return localStorage.getItem('custom_token');
+    return null;
   }
 
   /**
    * Get refresh token from localStorage
-   * @returns Refresh token or null if not logged in
-   * @deprecated Refresh token теперь в HttpOnly cookie
+   * @returns Always null (tokens are in httpOnly cookies now)
+   * @deprecated Tokens are now in httpOnly cookies, not localStorage
    */
   getRefreshToken(): string | null {
-    // Больше не используем localStorage для refresh token
     return null;
   }
 
   /**
    * Check if user is currently logged in
-   * @returns true if user has valid token
+   * @returns true if user data exists in localStorage
    */
   isAuthenticated(): boolean {
-    return !!this.getAccessToken();
+    return !!this.getCurrentUser();
   }
 
   /**
-   * Refresh access token
-   * @returns New auth response
+   * Refresh access token using httpOnly cookie
+   * @returns New auth response with updated user data
    */
   async refreshToken(): Promise<AuthResponse> {
     // Предотвращаем множественные одновременные запросы обновления
     if (this.isRefreshing) {
       return new Promise((resolve) => {
-        this.refreshSubscribers.push((token: string) => {
+        this.refreshSubscribers.push((_token: string) => {
+          // Tokens are in cookies, we just need user data
+          const user = this.getCurrentUser();
           resolve({
-            access_token: token,
+            user: user!,
+            access_token: '', // Not used
+            refresh_token: '', // Not used
             token_type: 'Bearer',
-            expires_in: 900, // 15 минут
+            expires_in: 900,
           } as AuthResponse);
         });
       });
@@ -248,27 +250,26 @@ class CustomBackendAuthService {
       const response = await fetch(`${this.baseUrl}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Cookie будет отправлена автоматически
+        credentials: 'include', // Send httpOnly cookies (refresh_token)
       });
 
       if (!response.ok) {
         const error = await response.json();
         console.error('❌ Token refresh failed:', error);
-        this.logout(); // Clear invalid tokens
+        this.logout(); // Clear user data
         throw new Error('Token refresh failed');
       }
 
       const data = await response.json();
-      console.log('✅ Token refreshed successfully');
+      console.log('✅ Token refreshed successfully - new access_token in cookie');
 
-      // Update only access token
-      localStorage.setItem('custom_token', data.access_token);
+      // Update user data if provided
       if (data.user) {
         localStorage.setItem('custom_user', JSON.stringify(data.user));
       }
 
       // Уведомляем всех ожидающих
-      this.refreshSubscribers.forEach((callback) => callback(data.access_token));
+      this.refreshSubscribers.forEach((callback) => callback('refreshed'));
       this.refreshSubscribers = [];
 
       return data;
@@ -300,30 +301,25 @@ class CustomBackendAuthService {
 
   /**
    * Logout the current user
-   * Clears token and user data from localStorage
+   * Clears user data from localStorage and httpOnly cookies via backend
    */
   async logout(): Promise<void> {
-    const token = this.getAccessToken();
-    
-    // Call backend logout endpoint if token exists
-    if (token) {
-      try {
-        await fetch(`${this.baseUrl}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: 'include', // Очистка cookie
-        });
-      } catch (error) {
-        console.warn('Logout API call failed:', error);
-      }
+    // Call backend logout endpoint to clear httpOnly cookies
+    try {
+      await fetch(`${this.baseUrl}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Send cookies to be cleared
+      });
+    } catch (error) {
+      console.warn('Logout API call failed:', error);
     }
 
-    // Clear local storage (refresh_token уже не храним)
-    localStorage.removeItem('custom_token');
+    // Clear local storage (only user data, no tokens)
     localStorage.removeItem('custom_user');
-    console.log('✅ User logged out');
+    console.log('✅ User logged out - cookies cleared');
   }
 }
 

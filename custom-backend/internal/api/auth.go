@@ -155,14 +155,20 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	}
 
 	// Send verification email
+	log.Printf("📧 [EMAIL] Attempting to send verification email to: %s", user.Email)
+	log.Printf("📧 [EMAIL] Verification code: %s (expires in 15min)", verificationCode.Code)
+	log.Printf("📧 [EMAIL] User ID: %s", user.ID)
+
 	if h.emailClient != nil {
 		if err := h.emailClient.SendVerificationEmail(user.Email, verificationCode.Code); err != nil {
-			log.Printf("Failed to send verification email: %v", err)
+			log.Printf("❌ [EMAIL] Failed to send verification email to %s: %v", user.Email, err)
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to send verification email",
 			})
 		}
+		log.Printf("✅ [EMAIL] Verification email sent successfully to: %s", user.Email)
 	} else {
+		log.Printf("❌ [EMAIL] Email service not configured - cannot send verification")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Email service not configured",
 		})
@@ -260,6 +266,8 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	// Check if 2FA is enabled
 	if user.Is2FAEnabled {
+		log.Printf("🔐 [2FA] User %s requires 2FA (method: %s)", user.Email, user.VerificationMethod)
+
 		// Generate and send 2FA code
 		code, err := securityService.GenerateVerificationCode(
 			user.ID,
@@ -267,15 +275,20 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 			models.VerificationMethod(user.VerificationMethod),
 		)
 		if err != nil {
+			log.Printf("❌ [2FA] Failed to generate code for %s: %v", user.Email, err)
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to generate 2FA code",
 			})
 		}
+		log.Printf("📧 [2FA] Generated code %s for user %s (expires in 5min)", code.Code, user.Email)
 
 		// Send 2FA code via email if method is email
 		if user.VerificationMethod == "email" && h.emailClient != nil {
+			log.Printf("📧 [2FA] Sending 2FA email to: %s", user.Email)
 			if err := h.emailClient.Send2FAEmail(user.Email, code.Code); err != nil {
-				log.Printf("Failed to send 2FA email: %v", err)
+				log.Printf("❌ [2FA] Failed to send email to %s: %v", user.Email, err)
+			} else {
+				log.Printf("✅ [2FA] Email sent successfully to: %s", user.Email)
 			}
 		}
 
@@ -638,15 +651,21 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 	}
 
 	// Verify code
+	log.Printf("📧 [EMAIL_VERIFY] Verifying code for user: %s", user.Email)
+	log.Printf("📧 [EMAIL_VERIFY] Code provided: %s", req.Code)
+
 	securityService := services.NewSecurityService(h.db.DB, h.cache)
 	valid, err := securityService.VerifyCode(user.ID, req.Code, models.VerificationTypeEmail)
 	if err != nil || !valid {
+		log.Printf("❌ [EMAIL_VERIFY] Invalid/expired code for %s: %v", user.Email, err)
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid or expired verification code",
 		})
 	}
+	log.Printf("✅ [EMAIL_VERIFY] Code verified successfully for: %s", user.Email)
 
 	// Update user's email verification status
+	log.Printf("📧 [EMAIL_VERIFY] Marking email as verified for user: %s", user.Email)
 	h.db.DB.Model(&user).Update("is_email_verified", true)
 
 	// Generate tokens after successful verification
@@ -742,9 +761,15 @@ func (h *AuthHandler) RequestPasswordReset(c *fiber.Ctx) error {
 	}
 
 	// Send password reset email
+	log.Printf("🔑 [PASSWORD_RESET] Attempting to send reset email to: %s", user.Email)
+	log.Printf("🔑 [PASSWORD_RESET] Reset code: %s (expires in 60min)", code.Code)
+	log.Printf("🔑 [PASSWORD_RESET] User ID: %s", user.ID)
+
 	if h.emailClient != nil {
 		if err := h.emailClient.SendPasswordResetEmail(user.Email, code.Code); err != nil {
-			log.Printf("Failed to send password reset email: %v", err)
+			log.Printf("❌ [PASSWORD_RESET] Failed to send email to %s: %v", user.Email, err)
+		} else {
+			log.Printf("✅ [PASSWORD_RESET] Email sent successfully to: %s", user.Email)
 		}
 	}
 
@@ -785,13 +810,18 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	}
 
 	// Verify reset code
+	log.Printf("🔑 [PASSWORD_RESET] Verifying reset code for user: %s", user.Email)
+	log.Printf("🔑 [PASSWORD_RESET] Code provided: %s", req.Code)
+
 	securityService := services.NewSecurityService(h.db.DB, h.cache)
 	valid, err := securityService.VerifyCode(user.ID, req.Code, models.VerificationTypePasswordReset)
 	if err != nil || !valid {
+		log.Printf("❌ [PASSWORD_RESET] Invalid/expired code for %s: %v", user.Email, err)
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Invalid or expired reset code",
 		})
 	}
+	log.Printf("✅ [PASSWORD_RESET] Code verified for user: %s", user.Email)
 
 	// Hash new password
 	hashedPassword, err := utils.HashPassword(req.NewPassword)
@@ -802,11 +832,14 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	}
 
 	// Update password
+	log.Printf("🔑 [PASSWORD_RESET] Updating password for user: %s", user.Email)
 	h.db.DB.Model(&user).Update("password", hashedPassword)
 
 	// Revoke all existing sessions for security
+	log.Printf("🔑 [PASSWORD_RESET] Revoking all sessions for user: %s", user.Email)
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
 	sessionService.RevokeAllSessions(user.ID)
+	log.Printf("✅ [PASSWORD_RESET] Password reset completed for: %s", user.Email)
 
 	return c.JSON(fiber.Map{
 		"message": "Password reset successfully",
@@ -1262,6 +1295,8 @@ func (h *AuthHandler) ResendVerificationEmail(c *fiber.Ctx) error {
 	}
 
 	// Generate new verification code
+	log.Printf("🔄 [RESEND] Generating new %s code for user: %s", req.Type, user.Email)
+
 	securityService := services.NewSecurityService(h.db.DB, h.cache)
 	code, err := securityService.GenerateVerificationCode(
 		user.ID,
@@ -1269,20 +1304,25 @@ func (h *AuthHandler) ResendVerificationEmail(c *fiber.Ctx) error {
 		models.VerificationMethodEmail,
 	)
 	if err != nil {
+		log.Printf("❌ [RESEND] Failed to generate code for %s: %v", user.Email, err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to generate verification code",
 		})
 	}
+	log.Printf("🔄 [RESEND] Generated new code %s for user %s", code.Code, user.Email)
 
 	// Send email if client is configured
 	if h.emailClient != nil {
+		log.Printf("📧 [RESEND] Sending %s email to: %s", req.Type, user.Email)
 		if err := emailMethod(user.Email, code.Code); err != nil {
-			log.Printf("Failed to resend verification email: %v", err)
+			log.Printf("❌ [RESEND] Failed to send %s email to %s: %v", req.Type, user.Email, err)
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to send verification email",
 			})
 		}
+		log.Printf("✅ [RESEND] %s email sent successfully to: %s", req.Type, user.Email)
 	} else {
+		log.Printf("❌ [RESEND] Email service not configured")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Email service not configured",
 		})

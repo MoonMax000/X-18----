@@ -312,8 +312,16 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 
 	log.Printf("Code present: %v, State present: %v", code != "", state != "")
 
+	// Detailed logging for Apple user data
 	if userDataJSON != "" {
-		log.Printf("Apple user data (first login only): %s", userDataJSON)
+		log.Printf("🍎 ========================================")
+		log.Printf("🍎 APPLE USER DATA RECEIVED (FIRST-TIME REGISTRATION ONLY)")
+		log.Printf("🍎 Raw JSON: %s", userDataJSON)
+		log.Printf("🍎 ========================================")
+	} else {
+		log.Printf("⚠️  APPLE USER DATA NOT RECEIVED")
+		log.Printf("⚠️  This is expected for repeat logins")
+		log.Printf("⚠️  Apple only sends firstName/lastName on first authorization")
 	}
 
 	// Check for error
@@ -395,9 +403,23 @@ func (h *OAuthHandler) AppleCallback(c *fiber.Ctx) (err error) {
 		}
 		if err := json.Unmarshal([]byte(userDataJSON), &userData); err == nil {
 			displayName = fmt.Sprintf("%s %s", userData.Name.FirstName, userData.Name.LastName)
-			log.Printf("Parsed first-time user name: %s", displayName)
+			log.Printf("🍎 ✅ Successfully parsed Apple user name")
+			log.Printf("🍎    FirstName: '%s'", userData.Name.FirstName)
+			log.Printf("🍎    LastName: '%s'", userData.Name.LastName)
+			log.Printf("🍎    DisplayName: '%s'", displayName)
+		} else {
+			log.Printf("🍎 ❌ Failed to parse Apple user JSON: %v", err)
 		}
+	} else {
+		log.Printf("🍎 ℹ️  No displayName for repeat login (expected)")
 	}
+
+	log.Printf("🍎 Calling processOAuthUser with:")
+	log.Printf("🍎    Provider: 'apple'")
+	log.Printf("🍎    Sub: '%s'", sub)
+	log.Printf("🍎    Email: '%s'", email)
+	log.Printf("🍎    DisplayName: '%s'", displayName)
+	log.Printf("🍎    EmailVerified: %v", emailVerified)
 
 	// Process OAuth login/registration
 	log.Printf("Processing OAuth user...")
@@ -486,12 +508,18 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 					Password:        "", // No password for OAuth users initially
 				}
 
+				log.Printf("📝 Creating new user with data:")
+				log.Printf("   Username: '%s'", username)
+				log.Printf("   Email: '%s'", email)
+				log.Printf("   DisplayName: '%s'", name)
+				log.Printf("   OAuthProvider: '%s'", provider)
+
 				if err := h.db.DB.Create(&user).Error; err != nil {
 					log.Printf("ERROR: Failed to create user: %v", err)
 					frontendURL := h.getFrontendURL()
 					return c.Redirect(fmt.Sprintf("%s/auth/callback?error=%s", frontendURL, "Failed to create user"))
 				}
-				log.Printf("Created new user: ID=%s, Username=%s", user.ID, user.Username)
+				log.Printf("✅ Created new user: ID=%s, Username=%s, DisplayName='%s'", user.ID, user.Username, user.DisplayName)
 
 				// Generate referral code
 				referralCode := models.ReferralCode{

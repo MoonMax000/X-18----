@@ -17,16 +17,27 @@ const OAuthCallback = () => {
       const success = searchParams.get('success');
       const token = searchParams.get('token');
       const errorParam = searchParams.get('error');
+      const requires2FA = searchParams.get('requires_2fa');
+      const email = searchParams.get('email');
 
       console.log('=== OAuth Callback Handler ===');
       console.log('Success:', success);
       console.log('Token present:', !!token);
       console.log('Error:', errorParam);
+      console.log('Requires 2FA:', requires2FA);
+
+      // Handle 2FA requirement
+      if (requires2FA === 'true') {
+        console.log('⚠️ 2FA verification required');
+        setError(`Two-factor authentication is enabled for ${email || 'this account'}. Please log in with your email and password to verify.`);
+        setIsLoading(false);
+        return;
+      }
 
       // Handle error case
       if (errorParam) {
         console.error('❌ OAuth error:', errorParam);
-        setError(errorParam);
+        setError(decodeURIComponent(errorParam));
         setIsLoading(false);
         return;
       }
@@ -36,13 +47,12 @@ const OAuthCallback = () => {
         try {
           console.log('✅ OAuth successful! Tokens are in httpOnly cookies');
           
-          // SECURITY FIX: Tokens are now in httpOnly cookies (access_token, refresh_token)
-          // No need to save to localStorage - cookies are automatically sent with requests
+          // PURE COOKIE-BASED AUTH: Tokens are in httpOnly cookies (access_token, refresh_token)
+          // We only fetch and save user data for UI
           
-          // Fetch user data - cookies will be sent automatically
           const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
           const response = await fetch(`${apiUrl}/api/users/me`, {
-            credentials: 'include', // Include httpOnly cookies (access_token, refresh_token)
+            credentials: 'include', // Send httpOnly cookies (access_token)
           });
 
           if (!response.ok) {
@@ -52,7 +62,7 @@ const OAuthCallback = () => {
           const userData = await response.json();
           console.log('✅ User data fetched:', userData.username);
           
-          // Save user data to localStorage (NOT tokens, only user info for UI)
+          // Save ONLY user data to localStorage (for UI display)
           localStorage.setItem('custom_user', JSON.stringify(userData));
           
           // Redirect to home page

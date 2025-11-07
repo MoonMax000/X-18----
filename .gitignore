@@ -71,3 +71,4 @@ gotosocial/
 gotosocial-backup-*.tar.gz
 .gotosocial.pid
 gotosocial*.log
+aws-infrastructure/iam-db-auth/.terraform/

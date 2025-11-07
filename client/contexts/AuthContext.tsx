@@ -41,16 +41,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const storedUser = customAuth.getCurrentUser();
         
-        // OAUTH FIX: After OAuth login, tokens are in httpOnly cookies
-        // We need to verify authentication by checking cookies, not localStorage token
+        // PURE COOKIE-BASED AUTH: Verify authentication via API call with cookies
         if (storedUser) {
-          console.log('🔍 Checking authentication with cookies...');
+          console.log('🔍 Verifying authentication with httpOnly cookies...');
           
           // Try to fetch current user with cookies (credentials: 'include')
           try {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
             const response = await fetch(`${apiUrl}/api/users/me`, {
-              credentials: 'include', // Send httpOnly cookies
+              credentials: 'include', // Send httpOnly cookies (access_token)
             });
 
             if (response.ok) {
@@ -59,10 +58,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               
               // Update stored user data if it changed
               localStorage.setItem('custom_user', JSON.stringify(freshUser));
-              console.log('✅ Auth initialized successfully (via cookies)');
+              console.log('✅ Auth verified successfully via cookies');
             } else if (response.status === 401) {
               // Unauthorized - try to refresh token
-              console.warn('⚠️ Session expired, attempting refresh...');
+              console.warn('⚠️ Access token expired, attempting refresh...');
               try {
                 const refreshed = await customAuth.refreshToken();
                 setUser(refreshed.user);
@@ -112,14 +111,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const refreshUser = async () => {
-    const token = customAuth.getAccessToken();
-    if (token) {
-      try {
-        const freshUser = await customAuth.getCurrentUserFromAPI(token);
+    // PURE COOKIE-BASED AUTH: Fetch user with cookies, no token needed
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api/users/me`, {
+        credentials: 'include', // Send httpOnly cookies
+      });
+
+      if (response.ok) {
+        const freshUser = await response.json();
         setUser(freshUser);
-      } catch (error) {
-        console.error('Failed to refresh user:', error);
+        localStorage.setItem('custom_user', JSON.stringify(freshUser));
+        console.log('✅ User data refreshed');
+      } else {
+        console.error('Failed to refresh user:', response.status);
       }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
     }
   };
 

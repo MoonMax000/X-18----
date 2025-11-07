@@ -1,0 +1,222 @@
+# 🔐 SSM Bastion для подключения к RDS через IAM Auth
+# ====================================================
+
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Данные существующих ресурсов
+data "aws_vpc" "main" {
+  id = "vpc-00ce71b940a79b54a"
+}
+
+data "aws_subnet" "private" {
+  id = "subnet-0929ee7b91593a2ea"
+}
+
+data "aws_security_group" "rds" {
+  id = "sg-0c2b94f40cedb4d61"
+}
+
+# IAM роль для EC2 с SSM доступом
+resource "aws_iam_role" "bastion" {
+  name = "tyriantrade-bastion-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Name = "tyriantrade-bastion-role"
+  }
+}
+
+# Присоединяем управляемую политику для SSM
+resource "aws_iam_role_policy_attachment" "bastion_ssm" {
+  role       = aws_iam_role.bastion.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Политика для RDS IAM аутентификации
+resource "aws_iam_policy" "rds_connect" {
+  name        = "RDSIAMAuthPolicy-bastion"
+  description = "Allows bastion to generate RDS IAM tokens"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "rds-db:connect"
+        Resource = "arn:aws:rds-db:us-east-1:506675684508:dbuser:db-4JXFCQG3SJ3ENB3M3S3BA2SLUA/db_agent"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "bastion_rds" {
+  role       = aws_iam_role.bastion.name
+  policy_arn = aws_iam_policy.rds_connect.arn
+}
+
+# Instance Profile для EC2
+resource "aws_iam_instance_profile" "bastion" {
+  name = "tyriantrade-bastion-profile"
+  role = aws_iam_role.bastion.name
+}
+
+# Security Group для bastion
+resource "aws_security_group" "bastion" {
+  name        = "tyriantrade-bastion-sg"
+  description = "Security group for SSM bastion"
+  vpc_id      = data.aws_vpc.main.id
+
+  # Разрешаем исходящий трафик на RDS
+  egress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    security_groups = [data.aws_security_group.rds.id]
+    description = "PostgreSQL to RDS"
+  }
+
+  # Разрешаем HTTPS для SSM
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS for SSM"
+  }
+
+  tags = {
+    Name = "tyriantrade-bastion-sg"
+  }
+}
+
+# Добавляем правило в RDS SG для bastion
+resource "aws_security_group_rule" "rds_from_bastion" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = data.aws_security_group.rds.id
+  source_security_group_id = aws_security_group.bastion.id
+  description              = "PostgreSQL from bastion"
+}
+
+# Получаем последний Amazon Linux 2023 AMI
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# User data для установки PostgreSQL client
+locals {
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+    
+    # Обновить систему
+    dnf update -y
+    
+    # Установить PostgreSQL 16 client
+    dnf install -y postgresql16
+    
+    # Скачать RDS CA bundle (curl предустановлен в AL2023)
+    cd /home/ec2-user
+    curl -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+    chown ec2-user:ec2-user global-bundle.pem
+    
+    # Создать helper скрипт для подключения
+    cat > /home/ec2-user/connect-rds.sh <<'SCRIPT'
+    #!/bin/bash
+    # Генерируем IAM токен
+    TOKEN=$(aws rds generate-db-auth-token \
+      --hostname tyriantrade-db.c01iqwikc9ht.us-east-1.rds.amazonaws.com \
+      --port 5432 \
+      --username db_agent \
+      --region us-east-1)
+    
+    # Подключаемся к RDS
+    PGPASSWORD="$TOKEN" psql \
+      "host=tyriantrade-db.c01iqwikc9ht.us-east-1.rds.amazonaws.com \
+       port=5432 \
+       dbname=tyriantrade \
+       user=db_agent \
+       sslmode=verify-full \
+       sslrootcert=/home/ec2-user/global-bundle.pem"
+    SCRIPT
+    
+    chmod +x /home/ec2-user/connect-rds.sh
+    chown ec2-user:ec2-user /home/ec2-user/connect-rds.sh
+    
+    echo "✅ Bastion setup complete!"
+  EOF
+}
+
+# EC2 Instance для bastion
+resource "aws_instance" "bastion" {
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = "t3.micro"
+  subnet_id              = data.aws_subnet.private.id
+  vpc_security_group_ids = [aws_security_group.bastion.id]
+  iam_instance_profile   = aws_iam_instance_profile.bastion.name
+  
+  user_data = local.user_data
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
+  tags = {
+    Name = "tyriantrade-bastion"
+  }
+}
+
+# Outputs
+output "bastion_instance_id" {
+  description = "ID bastion instance для SSM подключения"
+  value       = aws_instance.bastion.id
+}
+
+output "connect_command" {
+  description = "Команда для подключения через SSM"
+  value       = "aws ssm start-session --target ${aws_instance.bastion.id} --region us-east-1"
+}
+
+output "port_forward_command" {
+  description = "Команда для port forwarding на локальную машину"
+  value       = "aws ssm start-session --target ${aws_instance.bastion.id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{\"host\":[\"tyriantrade-db.c01iqwikc9ht.us-east-1.rds.amazonaws.com\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"5433\"]}' --region us-east-1"
+}
