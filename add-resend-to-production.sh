@@ -8,9 +8,9 @@ set -e
 echo "📧 Adding Resend Email Configuration to AWS ECS..."
 
 # Configuration
-CLUSTER_NAME="x18-backend-cluster"
-SERVICE_NAME="x18-backend-service"
-TASK_FAMILY="x18-backend-task"
+CLUSTER_NAME="tyriantrade-cluster"
+SERVICE_NAME="tyriantrade-backend-service"
+TASK_FAMILY="tyriantrade-backend"
 
 # Resend Configuration
 RESEND_API_KEY="re_YEUF4847_PF1mdVzH7jbpRkxeuYT56kbH"

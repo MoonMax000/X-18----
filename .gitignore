@@ -72,3 +72,5 @@ gotosocial-backup-*.tar.gz
 .gotosocial.pid
 gotosocial*.log
 aws-infrastructure/iam-db-auth/.terraform/
+task-def-*.json
+current-task-def.json

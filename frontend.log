@@ -35,3 +35,4 @@ warn - If this is content and not a class, replace it with `duration-&lsqb;600ms
 8:12:24 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
 8:13:07 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
 8:33:28 AM [vite] (client) hmr update /client/global.css, /client/components/auth/LoginModal.tsx
+1:21:53 PM [vite] (client) hmr update /client/contexts/AuthContext.tsx, /client/global.css
