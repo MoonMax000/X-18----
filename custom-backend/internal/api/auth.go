@@ -722,6 +722,17 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 	user.LastActiveAt = &now
 	h.db.DB.Save(&user)
 
+	// Set access token cookie (for cookie-based auth)
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    tokens.AccessToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   h.config.JWT.AccessExpiry * 60, // Convert minutes to seconds
+		Path:     "/",
+	})
+
 	// Set refresh token cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
@@ -733,7 +744,9 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 		Path:     "/",
 	})
 
-	// Return tokens
+	log.Printf("✅ [EMAIL_VERIFY] Cookies set successfully for user: %s", user.Email)
+
+	// Return tokens (also in JSON for backward compatibility)
 	return c.JSON(fiber.Map{
 		"user":         user.ToMe(),
 		"access_token": tokens.AccessToken,
