@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { VerificationModal } from './VerificationModal';
-import { customAuth } from '@/services/auth/custom-backend-auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -38,6 +38,7 @@ const passwordRequirements: PasswordRequirement[] = [
 ];
 
 export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
+  const { register: registerUser } = useAuth();
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -122,11 +123,12 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
     setConfirmPasswordError(confirmErr);
 
     if (emailErr || phoneErr || passErr || confirmErr) {
-      console.log('Validation errors:', { emailErr, phoneErr, passErr, confirmErr });
+      console.log('❌ Validation errors:', { emailErr, phoneErr, passErr, confirmErr });
       return;
     }
 
     setIsLoading(true);
+    console.log('🔄 [SIGNUP] Starting registration process...');
 
     try {
       // Generate username from email or phone
@@ -134,29 +136,26 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
         ? email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '')
         : `user_${phone.replace(/\D/g, '').slice(-8)}`;
 
-      console.log('🔄 Registering user with custom backend...');
-      
-      // Register using Custom Backend API
-      const result = await customAuth.register({
+      console.log('🔄 [SIGNUP] Calling registerUser with:', {
         username,
         email: authMethod === 'email' ? email : `${phone}@phone.temp`,
-        password,
-        display_name: username,
       });
+      
+      // Register using useAuth hook (будет вызван register из AuthContext)
+      await registerUser(
+        username,
+        authMethod === 'email' ? email : `${phone}@phone.temp`,
+        password,
+        username
+      );
 
-      // Проверяем требуется ли email verification
-      if (result.requires_email_verification) {
-        console.log('✅ Registration successful! Email verification required.');
-        setShowVerification(true); // Показываем окно ввода кода
-      } else {
-        // Старая логика (если вернулись токены) - не должно произойти
-        console.log('✅ Registration successful! User authenticated (legacy flow).');
-        // Токены уже сохранены в customAuth.register()
-        // Можно перенаправить на dashboard или показать success
-        window.location.href = '/dashboard';
-      }
+      // После успешной регистрации показываем verification modal
+      console.log('✅ [SIGNUP] Registration completed successfully!');
+      console.log('🔄 [SIGNUP] Setting showVerification to true...');
+      setShowVerification(true);
+      console.log('✅ [SIGNUP] showVerification state updated!');
     } catch (error) {
-      console.error('❌ Registration error:', error);
+      console.error('❌ [SIGNUP] Registration error:', error);
       
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
       
@@ -167,6 +166,7 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
       }
     } finally {
       setIsLoading(false);
+      console.log('🏁 [SIGNUP] Registration process finished, isLoading:', false);
     }
   };
 
@@ -202,16 +202,22 @@ export const SignUpModal: FC<SignUpModalProps> = ({ isOpen, onClose }) => {
 
   // Show verification modal if signup was successful
   if (showVerification) {
+    console.log('🎯 [SIGNUP] Rendering VerificationModal, showVerification:', showVerification);
     return (
       <VerificationModal
         isOpen={showVerification}
         onClose={onClose}
-        onBack={() => setShowVerification(false)}
+        onBack={() => {
+          console.log('⬅️ [SIGNUP] Back button clicked in verification modal');
+          setShowVerification(false);
+        }}
         method={authMethod}
         contact={authMethod === 'email' ? email : phone}
       />
     );
   }
+
+  console.log('📝 [SIGNUP] Rendering SignUp form, showVerification:', showVerification);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">

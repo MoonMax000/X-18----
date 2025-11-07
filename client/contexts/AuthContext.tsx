@@ -25,6 +25,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string, display_name?: string) => Promise<void>;
+  verifyEmail: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -101,8 +102,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const register = async (username: string, email: string, password: string, display_name?: string) => {
+    console.log('🔄 [AUTH_CONTEXT] register() called with:', { username, email, display_name });
+    
     const response = await customAuth.register({ username, email, password, display_name });
+    
+    console.log('✅ [AUTH_CONTEXT] Registration API response:', {
+      requires_email_verification: response.requires_email_verification,
+      has_user: !!response.user,
+    });
+    
+    // НЕ устанавливаем user если требуется email verification
+    // Пользователь будет установлен только после успешной верификации
+    if (!response.requires_email_verification && response.user) {
+      console.log('✅ [AUTH_CONTEXT] Setting user (no verification required)');
+      setUser(response.user);
+    } else if (response.requires_email_verification) {
+      console.log('📧 [AUTH_CONTEXT] Email verification required, NOT setting user');
+    }
+    
+    console.log('🏁 [AUTH_CONTEXT] register() completed');
+  };
+
+  const verifyEmail = async (email: string, code: string) => {
+    console.log('🔄 [AUTH_CONTEXT] verifyEmail() called with:', { email });
+    
+    const response = await customAuth.verifyEmail(email, code);
+    
+    console.log('✅ [AUTH_CONTEXT] Email verification successful, setting user:', {
+      has_user: !!response.user,
+      username: response.user?.username,
+    });
+    
+    // Устанавливаем пользователя в состояние после успешной верификации
     setUser(response.user);
+    
+    console.log('🏁 [AUTH_CONTEXT] verifyEmail() completed, user authenticated');
   };
 
   const logout = async () => {
@@ -139,6 +173,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading,
         login,
         register,
+        verifyEmail,
         logout,
         refreshUser,
       }}

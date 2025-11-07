@@ -1,6 +1,7 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import { customAuth } from '@/services/auth/custom-backend-auth';
 
 interface VerificationModalProps {
@@ -88,6 +89,7 @@ export const VerificationModal: FC<VerificationModalProps> = ({
   };
 
   const navigate = useNavigate();
+  const { verifyEmail } = useAuth();
 
   const handleVerify = async () => {
     const fullCode = code.join('');
@@ -98,18 +100,18 @@ export const VerificationModal: FC<VerificationModalProps> = ({
     }
 
     try {
-      console.log('🔄 Verifying email with code:', fullCode);
+      console.log('🔄 [VERIFICATION_MODAL] Verifying email with code:', fullCode);
       
-      // Call verifyEmail from customAuth service
-      await customAuth.verifyEmail(contact, fullCode);
+      // Call verifyEmail from AuthContext (sets user state after verification)
+      await verifyEmail(contact, fullCode);
       
-      console.log('✅ Email verified successfully! Redirecting to dashboard...');
+      console.log('✅ [VERIFICATION_MODAL] Email verified successfully! User authenticated. Redirecting to dashboard...');
       
-      // Navigate to dashboard after successful verification
-      navigate('/dashboard');
+      // Close modal and navigate to dashboard
       onClose();
+      navigate('/dashboard');
     } catch (error) {
-      console.error('❌ Verification error:', error);
+      console.error('❌ [VERIFICATION_MODAL] Verification error:', error);
       
       const errorMessage = error instanceof Error ? error.message : '';
       
