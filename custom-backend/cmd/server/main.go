@@ -234,7 +234,7 @@ func main() {
 
 	// Protected auth routes
 	auth.Post("/logout", middleware.JWTMiddleware(cfg), authHandler.Logout)
-	auth.Post("/verify/email", middleware.JWTMiddleware(cfg), authHandler.VerifyEmail)
+	auth.Post("/verify/email", authHandler.VerifyEmail) // Public endpoint - secured by email code
 	auth.Post("/resend-verification", middleware.JWTMiddleware(cfg), authHandler.ResendVerificationEmail)
 
 	// TOTP-protected sensitive operations
