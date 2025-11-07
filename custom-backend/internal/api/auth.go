@@ -369,24 +369,43 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // Logout handles user logout
 // POST /api/auth/logout
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
-	// Simply clear the refresh token cookie
-	// No authentication required - this is safe because:
-	// 1. HttpOnly cookies are cleared client-side
-	// 2. Old sessions in DB will be cleaned by background cleanup service
-	// 3. Even if someone calls logout without auth, it just clears their own cookies
+	// Try to revoke refresh token if present in cookie
+	if refreshCookie := c.Cookies("refresh_token"); refreshCookie != "" {
+		// Validate and extract JTI to revoke session
+		if claims, err := auth.ValidateRefreshToken(refreshCookie, h.config.JWT.RefreshSecret); err == nil {
+			// Revoke this specific session
+			h.db.DB.Where("jti = ?", claims.JTI).Delete(&models.Session{})
+			log.Printf("🚪 [LOGOUT] Revoked session with JTI: %s", claims.JTI)
+		}
+	}
 
-	log.Printf("🚪 [LOGOUT] Clearing refresh token cookie")
-
-	// Clear refresh token cookie
+	// Clear refresh_token cookie (multiple variants for domain/path compatibility)
+	// Variant 1: No domain (default)
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    "",
 		HTTPOnly: true,
 		Secure:   h.config.Server.Env == "production",
 		SameSite: "Lax",
-		MaxAge:   -1, // Delete cookie
+		MaxAge:   -1,
 		Path:     "/",
 	})
+
+	// Variant 2: Explicit domain (for subdomain scenarios)
+	if h.config.Server.Env == "production" {
+		c.Cookie(&fiber.Cookie{
+			Name:     "refresh_token",
+			Value:    "",
+			Domain:   ".tyriantrade.com", // Clear for all subdomains
+			HTTPOnly: true,
+			Secure:   true,
+			SameSite: "Lax",
+			MaxAge:   -1,
+			Path:     "/",
+		})
+	}
+
+	log.Printf("🚪 [LOGOUT] Cookies cleared successfully")
 
 	return c.JSON(fiber.Map{
 		"message": "Logged out successfully",
@@ -665,6 +684,11 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 	log.Printf("📧 [EMAIL_VERIFY] Marking email as verified for user: %s", user.Email)
 	h.db.DB.Model(&user).Update("is_email_verified", true)
 
+	// Revoke all existing sessions for this user (clean slate after verification)
+	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	sessionService.RevokeAllSessions(user.ID)
+	log.Printf("📧 [EMAIL_VERIFY] Revoked all old sessions for user: %s", user.Email)
+
 	// Generate tokens after successful verification
 	tokens, err := auth.GenerateTokenPair(
 		user.ID,
@@ -682,8 +706,7 @@ func (h *AuthHandler) VerifyEmail(c *fiber.Ctx) error {
 		})
 	}
 
-	// Create session
-	sessionService := services.NewSessionService(h.db.DB, h.cache)
+	// Create NEW session (after revoking old ones)
 	refreshTokenHash, _ := utils.HashPassword(tokens.RefreshToken)
 	expiresAt := time.Now().Add(time.Duration(h.config.JWT.RefreshExpiry) * 24 * time.Hour)
 

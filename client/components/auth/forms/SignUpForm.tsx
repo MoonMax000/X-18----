@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { customAuth } from '@/services/auth/custom-backend-auth';
 import {
@@ -15,6 +15,13 @@ interface SignUpFormProps {
 }
 
 const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
+  // Pre-cleanup: silently clear any existing session before signup
+  useEffect(() => {
+    customAuth.logout().catch(() => {
+      // Ignore errors - this is a silent cleanup
+    });
+  }, []);
+
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
