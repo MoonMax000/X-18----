@@ -335,6 +335,17 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	user.LastActiveAt = &now
 	h.db.DB.Save(&user)
 
+	// Устанавливаем access token в HttpOnly cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    tokens.AccessToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   h.config.JWT.AccessExpiry * 60, // Convert minutes to seconds
+		Path:     "/",
+	})
+
 	// Устанавливаем refresh token в HttpOnly cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
@@ -487,6 +498,17 @@ func (h *AuthHandler) Login2FA(c *fiber.Ctx) error {
 	now := time.Now()
 	user.LastActiveAt = &now
 	h.db.DB.Save(&user)
+
+	// Устанавливаем access token в HttpOnly cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    tokens.AccessToken,
+		HTTPOnly: true,
+		Secure:   h.config.Server.Env == "production",
+		SameSite: "Lax",
+		MaxAge:   h.config.JWT.AccessExpiry * 60, // Convert minutes to seconds
+		Path:     "/",
+	})
 
 	// Устанавливаем refresh token в HttpOnly cookie
 	c.Cookie(&fiber.Cookie{
