@@ -13,11 +13,13 @@ type ForgotPasswordScreen = 'forgot-email' | 'forgot-sent' | 'create-password' |
 const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) => {
   const [currentScreen, setCurrentScreen] = useState<ForgotPasswordScreen>('forgot-email');
   const [forgotEmail, setForgotEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [codeError, setCodeError] = useState('');
 
   const { requestPasswordReset, confirmPasswordReset } = useAccountRecovery();
 
@@ -38,9 +40,25 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
     }
   };
 
-  const handleResendCode = () => {
+  const handleResendCode = async () => {
     console.log('Resending code to:', forgotEmail);
-    // In real app, call API to resend code
+    const success = await requestPasswordReset(forgotEmail);
+    if (success) {
+      console.log('Reset code resent to:', forgotEmail);
+      setCodeError('');
+    } else {
+      setCodeError('Failed to resend code. Please try again.');
+    }
+  };
+
+  const handleVerifyCode = () => {
+    if (!resetCode || resetCode.length !== 6) {
+      setCodeError('Please enter a valid 6-digit code');
+      return;
+    }
+    // Move to create password screen
+    setCodeError('');
+    setCurrentScreen('create-password');
   };
 
   const handleResetPassword = async () => {
@@ -49,10 +67,7 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
 
     if (!allRequirementsMet || !passwordsMatch) return;
 
-    // In real app, you'd get the reset code from URL params or previous screen
-    const resetCode = ''; // This should be obtained from the reset link
-
-    const success = await confirmPasswordReset(resetCode, newPassword);
+    const success = await confirmPasswordReset(forgotEmail, resetCode, newPassword);
     if (success) {
       console.log('Password reset successful');
       setCurrentScreen('password-reset');
@@ -131,37 +146,74 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
       case 'forgot-sent':
         return (
           <>
-            <div className="flex flex-col items-start gap-2 w-full">
-              <h2 className="w-full text-center text-white text-2xl font-bold">Forgot Password</h2>
+            <div className="flex flex-col items-start gap-4 w-full mt-12 mb-8">
+              <h2 className="w-full text-center text-white text-2xl font-bold">Enter Verification Code</h2>
               <p className="w-full text-center text-[#B0B0B0] text-[15px]">
-                Enter your email address and we'll send you a link to reset your password.
+                We've sent a 6-digit code to {forgotEmail}. Please enter it below.
               </p>
             </div>
 
-            <div className="flex h-11 px-[10px] py-3 items-center gap-2 w-full rounded-[8px] border border-[#181B22] backdrop-blur-md bg-[rgba(12,16,20,0.5)]">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5"
-                  stroke="#B0B0B0"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
+            <div className="flex flex-col items-start gap-4 w-full">
+              <div className="flex h-11 px-[10px] py-3 items-center gap-2 w-full rounded-[8px] border border-[#181B22] backdrop-blur-md bg-[rgba(12,16,20,0.5)]">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5"
+                    stroke="#B0B0B0"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M1.67989 11.229C1.73436 13.7837 1.76161 15.0609 2.70421 16.0072C3.64681 16.9533 4.95869 16.9863 7.58244 17.0522C9.1995 17.0929 10.8007 17.0929 12.4177 17.0522C15.0415 16.9863 16.3533 16.9533 17.296 16.0072C18.2386 15.0609 18.2658 13.7837 18.3202 11.229C18.3376 10.4076 18.3376 9.5911 18.3202 8.76968C18.2658 6.21507 18.2386 4.93776 17.296 3.99157C16.3533 3.04537 15.0415 3.01242 12.4177 2.94649C10.8007 2.90586 9.19925 2.90586 7.58219 2.94648C4.95845 3.0124 3.64657 3.04536 2.70396 3.99156C1.76135 4.93775 1.73412 6.21506 1.67964 8.76968C1.66212 9.5911 1.66213 10.4076 1.67965 11.229Z"
+                    stroke="#B0B0B0"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-[#B0B0B0] text-[15px]">{forgotEmail}</span>
+              </div>
+
+              <div
+                className={cn(
+                  'flex h-11 px-[10px] py-3 items-center gap-2 w-full rounded-xl border backdrop-blur-md bg-[rgba(12,16,20,0.5)]',
+                  codeError ? 'border-red-500' : 'border-widget-border'
+                )}
+              >
+                <input
+                  type="text"
+                  value={resetCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setResetCode(value);
+                    setCodeError('');
+                  }}
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                  className="flex-1 bg-transparent text-white text-[15px] outline-none placeholder:text-[#B0B0B0] text-center tracking-widest"
                 />
-                <path
-                  d="M1.67989 11.229C1.73436 13.7837 1.76161 15.0609 2.70421 16.0072C3.64681 16.9533 4.95869 16.9863 7.58244 17.0522C9.1995 17.0929 10.8007 17.0929 12.4177 17.0522C15.0415 16.9863 16.3533 16.9533 17.296 16.0072C18.2386 15.0609 18.2658 13.7837 18.3202 11.229C18.3376 10.4076 18.3376 9.5911 18.3202 8.76968C18.2658 6.21507 18.2386 4.93776 17.296 3.99157C16.3533 3.04537 15.0415 3.01242 12.4177 2.94649C10.8007 2.90586 9.19925 2.90586 7.58219 2.94648C4.95845 3.0124 3.64657 3.04536 2.70396 3.99156C1.76135 4.93775 1.73412 6.21506 1.67964 8.76968C1.66212 9.5911 1.66213 10.4076 1.67965 11.229Z"
-                  stroke="#B0B0B0"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-[#B0B0B0] text-[15px]">{forgotEmail || 'example@gmail.com'}</span>
+              </div>
+
+              {codeError && <p className="text-red-500 text-sm">{codeError}</p>}
             </div>
 
             <div className="flex-1" />
 
             <div className="flex flex-col items-center gap-2 w-full">
               <button
+                onClick={handleVerifyCode}
+                disabled={!resetCode || resetCode.length !== 6}
+                className={cn(
+                  'w-full py-[5px] flex items-center justify-center rounded-[8px] backdrop-blur-md',
+                  resetCode && resetCode.length === 6
+                    ? 'bg-gradient-to-l from-[#482090] to-[#A06AFF] text-white hover:shadow-xl hover:shadow-primary/40'
+                    : 'bg-gradient-to-l from-[#482090] to-[#A06AFF] text-[#B0B0B0]'
+                )}
+              >
+                <span className="text-[15px] font-bold">Verify Code</span>
+              </button>
+
+              <button
                 onClick={handleResendCode}
-                className="text-primary text-[15px] hover:text-purple-400 transition-colors"
+                className="text-primary text-[15px] hover:text-purple-400 transition-colors mt-2"
               >
                 Resend Code
               </button>

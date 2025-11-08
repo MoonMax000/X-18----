@@ -183,7 +183,7 @@ export function useAccountRecovery() {
     }
   }, []);
 
-  const confirmPasswordReset = useCallback(async (code: string, newPassword: string) => {
+  const confirmPasswordReset = useCallback(async (email: string, code: string, newPassword: string) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -194,7 +194,7 @@ export function useAccountRecovery() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, new_password: newPassword }),
+        body: JSON.stringify({ email, code, new_password: newPassword }),
       });
 
       if (!response.ok) {
