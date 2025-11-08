@@ -224,17 +224,17 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
       case 'create-password':
         return (
           <>
-            <div className="flex flex-col items-start gap-2 w-full">
+            <div className="flex flex-col items-start gap-4 w-full mt-8 mb-6">
               <h2 className="w-full text-center text-white text-2xl font-bold">Create a New Password</h2>
               <p className="w-full text-center text-[#B0B0B0] text-[15px]">
                 Your identity has been verified. Now set a new strong password to protect your account.
               </p>
             </div>
 
-            <div className="flex flex-col items-start gap-[10px] w-full">
+            <div className="flex flex-col items-start gap-4 w-full">
               <div className="flex h-11 px-[10px] py-3 justify-between items-center w-full rounded-xl border border-[#181B22] backdrop-blur-md bg-[rgba(12,16,20,0.5)]">
-                <div className="flex items-center gap-2">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <div className="flex items-center gap-2 flex-1">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="flex-shrink-0">
                     <path
                       d="M12.9166 12.084C15.678 12.084 17.9166 9.8454 17.9166 7.08398C17.9166 4.32256 15.678 2.08398 12.9166 2.08398C10.1552 2.08398 7.91659 4.32256 7.91659 7.08398C7.91659 7.81766 8.0746 8.5144 8.3585 9.14207L2.08325 15.4173V17.9173H4.58325V16.2507H6.24992V14.584H7.91659L10.8585 11.6421C11.4862 11.926 12.1829 12.084 12.9166 12.084Z"
                       stroke="white"
@@ -250,29 +250,18 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
                       strokeLinejoin="round"
                     />
                   </svg>
-                  {showNewPassword ? (
-                    <input
-                      type="text"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Password"
-                      className="bg-transparent text-white text-[15px] outline-none placeholder:text-[#B0B0B0]"
-                      style={{ width: '180px' }}
-                    />
-                  ) : newPassword ? (
-                    <div className="flex items-center gap-[2px]">
-                      {Array.from({ length: Math.min(newPassword.length, 12) }).map((_, i) => (
-                        <div key={i} className="w-2 h-2 rounded-full bg-white" />
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-[#B0B0B0] text-[15px]">Password</span>
-                  )}
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Password"
+                    className="flex-1 bg-transparent text-white text-[15px] outline-none placeholder:text-[#B0B0B0]"
+                  />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="text-[#B0B0B0] hover:text-white transition-colors"
+                  className="text-[#B0B0B0] hover:text-white transition-colors flex-shrink-0 ml-2"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path
@@ -291,13 +280,13 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
 
               <div className="flex flex-col items-start gap-2 w-full">
                 <p className="text-[#B0B0B0] text-[15px] font-bold">Your password needs to:</p>
-                <div className="flex flex-col items-start gap-1">
+                <div className="flex flex-col items-start gap-1.5">
                   {passwordRequirements.map((req) => {
                     const status = getRequirementStatus(req);
                     return (
-                      <div key={req.id} className="flex justify-center items-center gap-2">
+                      <div key={req.id} className="flex items-center gap-2">
                         {status === 'valid' ? (
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
                             <path
                               d="M3.33325 9.66602C3.33325 9.66602 4.33325 9.66602 5.66659 11.9993C5.66659 11.9993 9.37245 5.88824 12.6666 4.66602"
                               stroke="#2EBD85"
@@ -307,7 +296,7 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
                             />
                           </svg>
                         ) : status === 'invalid' ? (
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
                             <path
                               d="M12 4L8 8M8 8L4 12M8 8L12 12M8 8L4 4"
                               stroke="#EF454A"
@@ -317,7 +306,7 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
                             />
                           </svg>
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
                             <path
                               d="M7.99984 11.3327C9.84079 11.3327 11.3332 9.8403 11.3332 7.99935C11.3332 6.1584 9.84079 4.66602 7.99984 4.66602C6.15889 4.66602 4.6665 6.1584 4.6665 7.99935C4.6665 9.8403 6.15889 11.3327 7.99984 11.3327Z"
                               stroke="#B0B0B0"
@@ -326,7 +315,7 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
                             />
                           </svg>
                         )}
-                        <span className="text-[#B0B0B0] text-center text-[15px]">{req.label}</span>
+                        <span className="text-[#B0B0B0] text-[15px]">{req.label}</span>
                       </div>
                     );
                   })}
@@ -334,8 +323,8 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
               </div>
 
               <div className="flex h-11 px-[10px] py-3 justify-between items-center w-full rounded-xl border border-[#181B22] backdrop-blur-md bg-[rgba(12,16,20,0.5)]">
-                <div className="flex items-center gap-2">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <div className="flex items-center gap-2 flex-1">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="flex-shrink-0">
                     <path
                       d="M12.9166 12.084C15.678 12.084 17.9166 9.8454 17.9166 7.08398C17.9166 4.32256 15.678 2.08398 12.9166 2.08398C10.1552 2.08398 7.91659 4.32256 7.91659 7.08398C7.91659 7.81766 8.0746 8.5144 8.3585 9.14207L2.08325 15.4173V17.9173H4.58325V16.2507H6.24992V14.584H7.91659L10.8585 11.6421C11.4862 11.926 12.1829 12.084 12.9166 12.084Z"
                       stroke={confirmNewPassword ? 'white' : '#B0B0B0'}
@@ -351,29 +340,18 @@ const ForgotPasswordForm: FC<ForgotPasswordFormProps> = ({ onBack, onSuccess }) 
                       strokeLinejoin="round"
                     />
                   </svg>
-                  {showConfirmNewPassword ? (
-                    <input
-                      type="text"
-                      value={confirmNewPassword}
-                      onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      placeholder="Confirm password"
-                      className="bg-transparent text-white text-[15px] outline-none placeholder:text-[#B0B0B0]"
-                      style={{ width: '180px' }}
-                    />
-                  ) : confirmNewPassword ? (
-                    <div className="flex items-center gap-[2px]">
-                      {Array.from({ length: Math.min(confirmNewPassword.length, 12) }).map((_, i) => (
-                        <div key={i} className="w-2 h-2 rounded-full bg-white" />
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-[#B0B0B0] text-[15px]">Confirm password</span>
-                  )}
+                  <input
+                    type={showConfirmNewPassword ? 'text' : 'password'}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Confirm password"
+                    className="flex-1 bg-transparent text-white text-[15px] outline-none placeholder:text-[#B0B0B0]"
+                  />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-                  className="text-[#B0B0B0] hover:text-white transition-colors"
+                  className="text-[#B0B0B0] hover:text-white transition-colors flex-shrink-0 ml-2"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path
