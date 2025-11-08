@@ -1,15 +1,13 @@
-import { FC, useRef, memo, useState, useCallback, useEffect } from "react";
+import { FC, memo, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils";
 import { type RootState } from "@/store/store";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import { TierBadge } from "@/components/common/TierBadge";
 import { getAvatarUrl, getCoverUrl } from "@/lib/avatar-utils";
-import { Camera, Upload, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import ImageCropModal from "@/components/common/ImageCropModal";
 import { useImageUpload } from "@/hooks/useImageUpload";
+import ProfileAvatar from "@/components/common/ProfileAvatar";
+import ProfileCover from "@/components/common/ProfileCover";
 
 interface ProfileData {
   name: string;
@@ -50,18 +48,11 @@ const UserHeader: FC<Props> = ({
   onCoverUpload
 }) => {
   const { uploadAvatar: uploadAvatarFn, uploadCover: uploadCoverFn, uploadProgress, isUploading, uploadType } = useImageUpload();
-  const avatarInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const currentUser = useSelector((state: RootState) => state.profile.currentUser);
   
   // Local UI states
   const [avatarUrl, setAvatarUrl] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
-  const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
-  const [tempCoverUrl, setTempCoverUrl] = useState<string | null>(null);
-  const [showAvatarCrop, setShowAvatarCrop] = useState(false);
-  const [showCoverCrop, setShowCoverCrop] = useState(false);
-  const [isHoveringCover, setIsHoveringCover] = useState(false);
   
   // Debug logs
   console.log('👤 UserHeader - currentUser from Redux:', currentUser);
@@ -105,231 +96,47 @@ const UserHeader: FC<Props> = ({
     setCoverUrl(data.cover || '');
   }, [data.avatar, data.cover]);
   
-  console.log('🔧 UserHeader - isOwn:', isOwn);
-  console.log('📦 UserHeader - profileData prop:', profileData);
-  console.log('✅ UserHeader - final data object:', data);
-  console.log('📸 UserHeader - final avatar URL:', data.avatar);
-  console.log('🖼️ UserHeader - final cover URL:', data.cover);
-
-  // Handle file with validation
-  const handleFile = useCallback((file: File, type: 'avatar' | 'cover') => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Пожалуйста, выберите изображение');
-      return;
-    }
-
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('Файл слишком большой. Максимум: 50MB');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (type === 'avatar') {
-        setTempAvatarUrl(reader.result as string);
-        setShowAvatarCrop(true);
-      } else {
-        setTempCoverUrl(reader.result as string);
-        setShowCoverCrop(true);
-      }
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
-  // Dropzone for avatar
-  const onDropAvatar = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      handleFile(acceptedFiles[0], 'avatar');
-    }
-  }, [handleFile]);
-
-  const avatarDropzone = useDropzone({
-    onDrop: onDropAvatar,
-    accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] },
-    maxFiles: 1,
-    disabled: !isOwn || isUploading,
-    noClick: true,
-  });
-
-  // Dropzone for cover
-  const onDropCover = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      handleFile(acceptedFiles[0], 'cover');
-    }
-  }, [handleFile]);
-
-  const coverDropzone = useDropzone({
-    onDrop: onDropCover,
-    accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] },
-    maxFiles: 1,
-    disabled: !isOwn || isUploading,
-    noClick: true,
-  });
-
-  // Save cropped avatar using hook
-  const handleSaveAvatar = async (croppedImageUrl: string, blob: Blob) => {
-    try {
-      const mediaUrl = await uploadAvatarFn(blob);
-      setAvatarUrl(mediaUrl);
-    } catch (error) {
-      // Error already handled in hook
-    }
+  // Upload handlers for new components
+  const handleUploadAvatar = async (blob: Blob) => {
+    const mediaUrl = await uploadAvatarFn(blob);
+    setAvatarUrl(mediaUrl);
   };
 
-  // Save cropped cover using hook
-  const handleSaveCover = async (croppedImageUrl: string, blob: Blob) => {
-    try {
-      const mediaUrl = await uploadCoverFn(blob);
-      setCoverUrl(mediaUrl);
-    } catch (error) {
-      // Error already handled in hook
-    }
+  const handleUploadCover = async (blob: Blob) => {
+    const mediaUrl = await uploadCoverFn(blob);
+    setCoverUrl(mediaUrl);
   };
 
   const primaryActionButtonClass =
     "group relative flex items-center justify-center overflow-hidden rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-white bg-[rgba(25,25,25,0.65)] shadow-[0_12px_30px_-18px_rgba(160,106,255,0.8)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-primary hover:to-[#482090] hover:shadow-[0_12px_30px_-18px_rgba(160,106,255,0.95)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black";
 
-  const getAvatarBorderClass = (level: number = 1) => {
-    if (level >= 76) return "ring-4 ring-offset-2 ring-offset-[#0B0E13] ring-yellow-400 animate-pulse";
-    if (level >= 51) return "border-4 border-yellow-400";
-    if (level >= 26) return "border-4 border-purple-500";
-    if (level >= 11) return "border-4 border-blue-500";
-    return "border-3 sm:border-4 border-[#0B0E13]";
-  };
-
-  const getAvatarGlowClass = (level: number = 1) => {
-    if (level >= 76) return "shadow-[0_0_30px_rgba(250,204,21,0.6)]";
-    if (level >= 51) return "shadow-[0_0_20px_rgba(250,204,21,0.4)]";
-    if (level >= 26) return "shadow-[0_0_20px_rgba(168,85,247,0.4)]";
-    if (level >= 11) return "shadow-[0_0_20px_rgba(59,130,246,0.4)]";
-    return "";
-  };
-
   return (
     <div className={cn("w-full max-w-[720px]", className)}>
       <div className="flex flex-col gap-4">
-        {/* Cover/Banner image with Dropzone */}
-        <div 
-          {...(isOwn ? coverDropzone.getRootProps() : {})}
-          className="group relative w-full overflow-hidden rounded-3xl border border-widget-border bg-[#16181C]"
-          onMouseEnter={() => isOwn && !isUploading && setIsHoveringCover(true)}
-          onMouseLeave={() => isOwn && setIsHoveringCover(false)}
-        >
-          <img
-            src={coverUrl || data.cover}
-            alt="Profile cover"
-            className="h-[120px] sm:h-[160px] md:h-[180px] w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
-          
-          {/* Upload progress for cover */}
-          {isUploading && uploadType === 'cover' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80">
-              <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
-              <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <span className="text-white text-sm mt-2">{uploadProgress}%</span>
-            </div>
-          )}
-          
-          {isOwn && !isUploading && (
-            <button
-              type="button"
-              onClick={() => coverInputRef.current?.click()}
-              className={cn(
-                "absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200",
-                isHoveringCover || coverDropzone.isDragActive ? 'opacity-100' : 'opacity-0'
-              )}
-            >
-              <div className="flex flex-col items-center gap-2 text-white">
-                {coverDropzone.isDragActive ? (
-                  <>
-                    <Upload className="h-6 w-6" />
-                    <span className="font-semibold">Отпустите чтобы загрузить</span>
-                  </>
-                ) : (
-                  <>
-                    <Camera className="h-5 w-5" />
-                    <span className="font-semibold">Update cover</span>
-                    <span className="text-xs opacity-75">или перетащите файл</span>
-                  </>
-                )}
-              </div>
-            </button>
-          )}
-          
-          <input
-            ref={coverInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file, 'cover');
-            }}
-          />
-        </div>
+        {/* Cover/Banner */}
+        <ProfileCover
+          coverUrl={coverUrl || data.cover}
+          isEditable={isOwn}
+          size="responsive"
+          onUpload={handleUploadCover}
+          uploadProgress={uploadProgress}
+          isUploading={isUploading && uploadType === 'cover'}
+        />
 
         {/* Avatar and action buttons container */}
         <div className="px-3 sm:px-4 md:px-6 pt-3 sm:pt-4">
           <div className="flex items-start justify-between gap-4">
-            {/* Avatar with Dropzone and negative margin to overlap banner */}
-            <div 
-              {...(isOwn ? avatarDropzone.getRootProps() : {})}
-              className="relative -mt-12 sm:-mt-14 md:-mt-16"
-            >
-              <div className={cn(
-                "group relative h-20 w-20 sm:h-28 sm:w-28 md:h-[132px] md:w-[132px] overflow-hidden rounded-full",
-                getAvatarBorderClass(data.level),
-                getAvatarGlowClass(data.level)
-              )}>
-                <img
-                  src={avatarUrl || data.avatar}
-                  alt="Profile"
-                  className="h-full w-full object-cover scale-110"
-                />
-                
-                {/* Upload progress for avatar */}
-                {isUploading && uploadType === 'avatar' && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90">
-                    <Loader2 className="h-6 w-6 animate-spin text-white mb-1" />
-                    <span className="text-white text-xs">{uploadProgress}%</span>
-                  </div>
-                )}
-                
-                {isOwn && !isUploading && (
-                  <button
-                    type="button"
-                    onClick={() => avatarInputRef.current?.click()}
-                    aria-label="Update profile picture"
-                    className={cn(
-                      "absolute inset-0 flex items-center justify-center rounded-full bg-black/60 transition-opacity duration-200",
-                      avatarDropzone.isDragActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    )}
-                  >
-                    {avatarDropzone.isDragActive ? (
-                      <Upload className="h-6 w-6 text-white" />
-                    ) : (
-                      <Camera className="h-6 w-6 text-white" />
-                    )}
-                  </button>
-                )}
-                
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFile(file, 'avatar');
-                  }}
-                />
-              </div>
+            {/* Avatar with negative margin to overlap banner */}
+            <div className="relative -mt-12 sm:-mt-14 md:-mt-16">
+              <ProfileAvatar
+                avatarUrl={avatarUrl || data.avatar}
+                level={data.level}
+                isEditable={isOwn}
+                size="responsive"
+                onUpload={handleUploadAvatar}
+                uploadProgress={uploadProgress}
+                isUploading={isUploading && uploadType === 'avatar'}
+              />
             </div>
 
             {/* Action buttons */}
@@ -461,42 +268,6 @@ const UserHeader: FC<Props> = ({
           </div>
         </div>
       </div>
-      
-      {/* Avatar Crop Modal */}
-      {showAvatarCrop && tempAvatarUrl && (
-        <ImageCropModal
-          isOpen={showAvatarCrop}
-          imageUrl={tempAvatarUrl}
-          cropShape="round"
-          aspect={1}
-          onCropComplete={(croppedUrl, blob) => {
-            handleSaveAvatar(croppedUrl, blob);
-          }}
-          onClose={() => {
-            setShowAvatarCrop(false);
-            setTempAvatarUrl(null);
-            if (avatarInputRef.current) avatarInputRef.current.value = '';
-          }}
-        />
-      )}
-
-      {/* Cover Crop Modal */}
-      {showCoverCrop && tempCoverUrl && (
-        <ImageCropModal
-          isOpen={showCoverCrop}
-          imageUrl={tempCoverUrl}
-          cropShape="rect"
-          aspect={3}
-          onCropComplete={(croppedUrl, blob) => {
-            handleSaveCover(croppedUrl, blob);
-          }}
-          onClose={() => {
-            setShowCoverCrop(false);
-            setTempCoverUrl(null);
-            if (coverInputRef.current) coverInputRef.current.value = '';
-          }}
-        />
-      )}
     </div>
   );
 };
