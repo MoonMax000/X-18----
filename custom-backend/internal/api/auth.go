@@ -864,9 +864,16 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 		})
 	}
 
-	// Update password
+	// Update password - use Updates for proper GORM handling
 	log.Printf("🔑 [PASSWORD_RESET] Updating password for user: %s", user.Email)
-	h.db.DB.Model(&user).Update("password", hashedPassword)
+	if err := h.db.DB.Model(&user).Updates(map[string]interface{}{
+		"password": hashedPassword,
+	}).Error; err != nil {
+		log.Printf("❌ [PASSWORD_RESET] Failed to update password for %s: %v", user.Email, err)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to update password",
+		})
+	}
 
 	// Revoke all existing sessions for security
 	log.Printf("🔑 [PASSWORD_RESET] Revoking all sessions for user: %s", user.Email)
