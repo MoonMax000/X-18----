@@ -54,6 +54,10 @@ type Post struct {
 	Category    string `gorm:"size:50;index" json:"category,omitempty"` // Content category
 	Tags        string `gorm:"type:text" json:"tags,omitempty"`         // Comma-separated tags
 
+	// Access Control (Phase 3)
+	AccessLevel string `gorm:"size:30;default:'free';index" json:"access_level"` // free, pay-per-post, subscribers-only, followers-only, premium
+	ReplyPolicy string `gorm:"size:30;default:'everyone'" json:"reply_policy"`   // everyone, following, verified, mentioned
+
 	// Thread/Reply
 	ReplyToID  *uuid.UUID `gorm:"type:uuid;index:idx_replies" json:"reply_to_id,omitempty"`
 	RootPostID *uuid.UUID `gorm:"type:uuid;index:idx_thread" json:"root_post_id,omitempty"`

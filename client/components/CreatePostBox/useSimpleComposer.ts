@@ -14,6 +14,7 @@ import {
   ComposerSentiment,
   MediaItem,
 } from "./types";
+import { countGraphemes } from "@/utils/composerText";
 
 interface UseSimpleComposerOptions {
   charLimit?: number;
@@ -247,9 +248,10 @@ export const useSimpleComposer = (
     setCodeBlocks((prev) => prev.filter((cb) => cb.id !== codeBlockId));
   }, []);
 
-  // Character count calculations
-  const charRatio = useMemo(() => Math.min(text.length / charLimit, 1), [text.length, charLimit]);
-  const remainingChars = useMemo(() => charLimit - text.length, [charLimit, text.length]);
+  // Character count calculations using grapheme-aware counting
+  const graphemeCount = useMemo(() => countGraphemes(text), [text]);
+  const charRatio = useMemo(() => Math.min(graphemeCount / charLimit, 1), [graphemeCount, charLimit]);
+  const remainingChars = useMemo(() => charLimit - graphemeCount, [charLimit, graphemeCount]);
   const isNearLimit = useMemo(() => remainingChars < 20 && remainingChars >= 0, [remainingChars]);
   const isOverLimit = useMemo(() => remainingChars < 0, [remainingChars]);
   const canPost = useMemo(() => text.trim().length > 0 && !isOverLimit, [text, isOverLimit]);

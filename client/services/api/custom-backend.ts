@@ -657,6 +657,11 @@ export interface CreatePostData {
   metadata?: Record<string, any>; // Changed from Record<string, string> to support complex data like code_blocks
   visibility?: 'public' | 'followers' | 'private';
   reply_to_id?: string;
+  
+  // Access Control (Phase 3)
+  access_level?: 'free' | 'pay-per-post' | 'subscribers-only' | 'followers-only' | 'premium';
+  reply_policy?: 'everyone' | 'following' | 'verified' | 'mentioned';
+  price_cents?: number; // For pay-per-post
 }
 
 export interface ReplyPost extends Post {

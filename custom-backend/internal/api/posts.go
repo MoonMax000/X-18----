@@ -56,6 +56,10 @@ type CreatePostRequest struct {
 	Category    string `json:"category"`     // Content category
 	Tags        string `json:"tags"`         // Comma-separated tags
 
+	// Access Control (Phase 3)
+	AccessLevel string `json:"access_level"` // free, pay-per-post, subscribers-only, followers-only, premium
+	ReplyPolicy string `json:"reply_policy"` // everyone, following, verified, mentioned
+
 	// Media Transforms (Phase 2: Edit functionality)
 	MediaTransforms map[string]CropRectReq `json:"media_transforms"` // mediaID -> crop rect
 }
@@ -99,6 +103,18 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 	// Создаем пост с транзакцией
 	var fullPost models.Post
 	err := h.db.DB.Transaction(func(tx *gorm.DB) error {
+		// Определяем access_level (по умолчанию free)
+		accessLevel := "free"
+		if req.AccessLevel != "" {
+			accessLevel = req.AccessLevel
+		}
+
+		// Определяем reply_policy (по умолчанию everyone)
+		replyPolicy := "everyone"
+		if req.ReplyPolicy != "" {
+			replyPolicy = req.ReplyPolicy
+		}
+
 		// Создаем пост
 		post := models.Post{
 			ID:          uuid.New(),
@@ -112,11 +128,43 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 			PreviewText: req.PreviewText,
 			Category:    req.Category,
 			Tags:        req.Tags,
+			AccessLevel: accessLevel,
+			ReplyPolicy: replyPolicy,
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		}
 
-		// Валидация премиум контента
+		// Валидация access_level
+		validAccessLevels := map[string]bool{
+			"free":             true,
+			"pay-per-post":     true,
+			"subscribers-only": true,
+			"followers-only":   true,
+			"premium":          true,
+		}
+		if !validAccessLevels[post.AccessLevel] {
+			return fmt.Errorf("invalid access_level: %s", post.AccessLevel)
+		}
+
+		// Валидация reply_policy
+		validReplyPolicies := map[string]bool{
+			"everyone":  true,
+			"following": true,
+			"verified":  true,
+			"mentioned": true,
+		}
+		if !validReplyPolicies[post.ReplyPolicy] {
+			return fmt.Errorf("invalid reply_policy: %s", post.ReplyPolicy)
+		}
+
+		// Валидация для pay-per-post
+		if post.AccessLevel == "pay-per-post" {
+			if post.PriceCents <= 0 {
+				return fmt.Errorf("pay-per-post requires a price greater than 0")
+			}
+		}
+
+		// Валидация премиум контента (legacy)
 		if post.IsPremium {
 			if post.PriceCents <= 0 {
 				return fmt.Errorf("premium content requires a price")
