@@ -73,7 +73,7 @@ export interface Post {
     followers?: number;
     following?: number;
   };
-  timestamp: string;
+  created_at: string; // Changed from timestamp to match API
   type: PostType;
   text: string;
   sentiment?: SentimentType;

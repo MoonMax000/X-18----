@@ -1,8 +1,34 @@
 // Time formatting utilities for Twitter-style timestamps
 
 export function formatTimeAgo(timestamp: string | Date): string {
+  // Handle invalid or missing timestamps
+  if (!timestamp) {
+    console.warn('[formatTimeAgo] Empty timestamp received');
+    return 'Unknown';
+  }
+  
+  // Debug: log incoming timestamp
+  console.log('[formatTimeAgo] Input:', { timestamp, type: typeof timestamp });
+  
   const now = new Date();
   const then = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+  
+  // Check if date is valid
+  if (isNaN(then.getTime())) {
+    console.error('[formatTimeAgo] Invalid date:', { 
+      timestamp, 
+      parsed: then, 
+      type: typeof timestamp 
+    });
+    return 'Unknown';
+  }
+  
+  // Debug: log successful parsing
+  console.log('[formatTimeAgo] Parsed successfully:', { 
+    input: timestamp, 
+    parsed: then.toISOString(),
+    now: now.toISOString()
+  });
   
   const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
   

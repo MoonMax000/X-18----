@@ -17,6 +17,7 @@ const ApiSettings = lazy(() => import("@/components/ApiSettings/ApiSettings"));
 const LiveStreamingSettings = lazy(() => import("@/components/LiveStreamingSettings/LiveStreamingSettings"));
 const ProfileOverview = lazy(() => import("@/components/ProfileOverview/ProfileOverview"));
 const ProfileSecuritySettings = lazy(() => import("@/components/socialProfile/ProfileSecuritySettings"));
+const ActiveSessions = lazy(() => import("@/components/socialProfile/ActiveSessions"));
 const SocialOverview = lazy(() => import("@/components/SocialOverview/SocialOverview"));
 const MyPosts = lazy(() => import("@/components/MyPosts/MyPosts"));
 const Subscriptions = lazy(() => import("@/components/Subscriptions/Subscriptions"));
@@ -31,6 +32,7 @@ type Tab =
 type ProfileSubTab =
   | "profile"
   | "security"
+  | "sessions"
   | "notifications"
   | "billing"
   | "referrals"
@@ -231,6 +233,40 @@ const profileSubTabs = [
         />
         <path
           d="M7.5 9.58366C7.5 9.58366 8.67325 9.79358 9.16667 11.2503C9.16667 11.2503 10.4167 8.75033 12.5 7.91699"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "sessions" as ProfileSubTab,
+    label: "Active Sessions",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path
+          d="M6.66602 6.66699V5.00033C6.66602 3.15938 8.15841 1.66699 9.99935 1.66699C11.8403 1.66699 13.3327 3.15938 13.3327 5.00033V6.66699"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M8.33398 10.833C8.33398 9.91253 9.08017 9.16634 10.0007 9.16634C10.9212 9.16634 11.6673 9.91253 11.6673 10.833C11.6673 11.362 11.3916 11.8297 10.9757 12.1067C10.6689 12.3127 10.5155 12.4157 10.4498 12.544C10.384 12.6723 10.3772 12.8258 10.3637 13.133L10.3327 13.7497"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M10.0007 16.6663H10.0091"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9.99935 18.333H5.16602C3.74482 18.333 3.03422 18.333 2.53387 17.9857C2.03352 17.6384 1.83909 17.0071 1.45023 15.7445L0.782558 13.8278C0.0642499 11.6018 0 9.95708 0 7.91634C0 6.47481 0 5.75405 0.464055 5.29C0.92811 4.82594 1.64887 4.82594 3.09039 4.82594H16.9083C18.3498 4.82594 19.0706 4.82594 19.5346 5.29C19.9987 5.75405 19.9987 6.47481 19.9987 7.91634C19.9987 9.95708 19.9344 11.6018 19.2161 13.8278L18.5485 15.7445C18.1596 17.0071 17.9652 17.6384 17.4648 17.9857C16.9645 18.333 16.2539 18.333 14.8327 18.333H9.99935Z"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
@@ -1322,21 +1358,393 @@ const ProfileNew: FC = () => {
       {/* Tab content */}
       <div className="mt-4">
         <Suspense fallback={<TabLoader />}>
-          {activeTab === "social" && activeSocialSubTab === "overview" && <SocialOverview />}
+          {/* Social Network Tab */}
+          {activeTab === "social" && activeSocialSubTab === "overview" && (
+            <div className="flex flex-col gap-6">
+              <SocialOverview />
+              
+              {/* My Social Life Widget */}
+              <div className="flex h-full flex-col gap-4 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 backdrop-blur-[50px]">
+                <div className="flex justify-between items-center pb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-white">
+                    My Social Life
+                  </h3>
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-[#2E2744]">
+                    <span className="text-xs font-bold text-primary">
+                      19 new interactions
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 min-w-0">
+                    <button className="h-7 px-2.5 md:h-8 md:px-3 rounded-[32px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[58.33px] text-white text-xs md:text-sm font-bold">
+                      Posts
+                    </button>
+                    <button className="h-7 px-2.5 md:h-8 md:px-3 rounded-[32px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[58.33px] text-white text-xs md:text-sm font-bold">
+                      Chats
+                    </button>
+                    <button className="h-7 px-2.5 md:h-8 md:px-3 rounded-[32px] bg-gradient-to-r from-primary to-[#482090] backdrop-blur-[58.33px] text-white text-xs md:text-sm font-bold">
+                      Groups
+                    </button>
+                    <button className="h-7 px-2.5 md:h-8 md:px-3 rounded-[32px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[58.33px] text-white text-xs md:text-sm font-bold">
+                      Streams
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="flex flex-col gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <span className="text-xs font-bold uppercase text-webGray">
+                      Total Revenue
+                    </span>
+                    <span className="text-2xl font-bold text-white">$0</span>
+                  </div>
+                  <div className="flex flex-col gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <span className="text-xs font-bold uppercase text-webGray">
+                      Active Subs
+                    </span>
+                    <span className="text-2xl font-bold text-white">0</span>
+                  </div>
+                  <div className="flex flex-col gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <span className="text-xs font-bold uppercase text-webGray">
+                      Today's New Subs
+                    </span>
+                    <span className="text-2xl font-bold text-white">0</span>
+                  </div>
+                  <div className="flex flex-col gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                    <span className="text-xs font-bold uppercase text-webGray">
+                      Average raiting
+                    </span>
+                    <span className="text-2xl font-bold text-white">0.0</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Network Widget */}
+              <div className="flex h-full flex-col justify-center gap-4 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 backdrop-blur-[50px]">
+                <div className="flex justify-between items-center pb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-white">
+                    Social Network
+                  </h3>
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-[#2E2744]">
+                    <span className="text-xs font-bold text-primary">
+                      12 new messages
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 flex-1">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="https://api.builder.io/api/v1/image/assets/TEMP/7746a2e8ebde2c6e52ec623079f09df3e63924fe?width=88"
+                      alt="Sophia Light"
+                      className="w-11 h-11 rounded-full"
+                    />
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="text-sm font-bold text-primary">
+                        Sophia Light
+                      </span>
+                      <span className="text-sm text-webGray">
+                        Check out new ETH Analysis...
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="https://api.builder.io/api/v1/image/assets/TEMP/23996870cb880292839824f9010dd522308f5fac?width=88"
+                      alt="Market Chat"
+                      className="w-11 h-11 rounded-full"
+                    />
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="text-sm font-bold text-primary">
+                        Market Chat
+                      </span>
+                      <span className="text-sm text-webGray">
+                        3 new messages in the group
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="https://api.builder.io/api/v1/image/assets/TEMP/68682742732be9f94522a43dd137511874548bb4?width=88"
+                      alt="Macro Outlook 2025"
+                      className="w-11 h-11 rounded-full"
+                    />
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="text-sm font-bold text-primary">
+                        Macro Outlook 2025
+                      </span>
+                      <span className="text-sm text-webGray">
+                        17 new messages in the group
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full bg-gradient-to-r from-primary to-[#482090] text-white font-bold text-xs md:text-sm backdrop-blur-[50px] transition-opacity hover:opacity-90">
+                  <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+                    <path
+                      d="M7.25 16L13.25 10L7.25 4"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Open Feed
+                </button>
+              </div>
+
+              {/* Following Group Chats Widget */}
+              <div className="flex h-full flex-col gap-4 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 backdrop-blur-[50px]">
+                <div className="flex items-center gap-2 pb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-white">
+                    Following Group Chats
+                  </h3>
+                </div>
+
+                <div className="flex flex-col gap-4 flex-1">
+                  {[
+                    {
+                      image:
+                        "https://api.builder.io/api/v1/image/assets/TEMP/a41932045d11fb04b12ef9336587c545788a4897?width=88",
+                      name: "Crypto Basics - Live Q&A",
+                      subs: "72 subscribers",
+                    },
+                    {
+                      image:
+                        "https://api.builder.io/api/v1/image/assets/TEMP/2fed6ad136bda82afad8c1217f85da48694cef42?width=88",
+                      name: "Macro Outlook 2025",
+                      subs: "2,369 subscribers",
+                    },
+                    {
+                      image:
+                        "https://api.builder.io/api/v1/image/assets/TEMP/5eb00142623d95405333abe65d6e36c1831036f7?width=88",
+                      name: "Ask Jane: Portfolio Diversification",
+                      subs: "86 subscribers",
+                    },
+                    {
+                      image:
+                        "https://api.builder.io/api/v1/image/assets/TEMP/128f58d068f62f85b2902e36565aaef59e190b49?width=88",
+                      name: "Fed Policy & Inflation",
+                      subs: "823 subscribers",
+                    },
+                    {
+                      image:
+                        "https://api.builder.io/api/v1/image/assets/TEMP/193725c84dab4dcd05d7a90347c68161b6a82c94?width=88",
+                      name: "ETH ETF Approval: What's Next?",
+                      subs: "72 subscribers",
+                    },
+                  ].map((chat, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <img
+                        src={chat.image}
+                        alt={chat.name}
+                        className="w-11 h-11 rounded-full"
+                      />
+                      <div className="flex flex-col gap-0.5 flex-1">
+                        <span className="text-sm font-bold text-primary">
+                          {chat.name}
+                        </span>
+                        <span className="text-sm font-normal text-webGray">
+                          {chat.subs}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full bg-gradient-to-r from-primary to-[#482090] text-white font-bold text-xs md:text-sm backdrop-blur-[50px] transition-opacity hover:opacity-90">
+                  <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+                    <path
+                      d="M17.498 7.49935C16.8354 4.17814 13.7587 1.66602 10.0641 1.66602C5.88595 1.66602 2.49805 4.87869 2.49805 8.84102C2.49805 10.7448 3.27987 12.4747 4.55517 13.7583C4.83596 14.041 5.02342 14.4272 4.94776 14.8246C4.8229 15.4744 4.53993 16.0806 4.12559 16.5858C5.21574 16.7868 6.34927 16.6058 7.32139 16.0933C7.66504 15.9122 7.83685 15.8216 7.9581 15.8032C8.04298 15.7903 8.15354 15.8023 8.33138 15.8328"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M9.99805 13.5508C9.99805 15.9722 12.0504 17.9355 14.5814 17.9355C14.879 17.9358 15.1757 17.9083 15.468 17.8535C15.6785 17.8139 15.7837 17.7942 15.8571 17.8054C15.9305 17.8166 16.0347 17.872 16.2429 17.9827C16.8317 18.2958 17.5184 18.4064 18.1788 18.2836C17.9278 17.9749 17.7564 17.6045 17.6807 17.2073C17.6349 16.9645 17.7485 16.7285 17.9185 16.5558C18.6911 15.7713 19.1647 14.7142 19.1647 13.5508C19.1647 11.1293 17.1124 9.16602 14.5814 9.16602C12.0504 9.16602 9.99805 11.1293 9.99805 13.5508Z"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Show All Groups
+                </button>
+              </div>
+            </div>
+          )}
           {activeTab === "social" && activeSocialSubTab === "posts" && <MyPosts />}
           {activeTab === "social" && activeSocialSubTab === "subscriptions" && <Subscriptions />}
           {activeTab === "social" && activeSocialSubTab === "monetization" && <Monetization />}
 
           {activeTab === "profile" && activeProfileSubTab === "profile" && <ProfileOverview />}
           {activeTab === "profile" && activeProfileSubTab === "security" && <ProfileSecuritySettings />}
+          {activeTab === "profile" && activeProfileSubTab === "sessions" && <ActiveSessions />}
           {activeTab === "profile" && activeProfileSubTab === "notifications" && <NotificationsSettings />}
           {activeTab === "profile" && activeProfileSubTab === "billing" && <BillingSettings />}
           {activeTab === "profile" && activeProfileSubTab === "referrals" && <ReferralsSettings />}
           {activeTab === "profile" && activeProfileSubTab === "api" && <ApiSettings />}
           {activeTab === "profile" && activeProfileSubTab === "kyc" && <KycSettings />}
 
-          {activeTab === "streaming" && <LiveStreamingSettings activeTab={activeStreamingSubTab} />}
-        </Suspense>
+          {/* Streaming Tab */}
+          {activeTab === "streaming" && activeStreamingSubTab === "profile" && (
+            <div className="flex flex-col gap-6">
+              <LiveStreamingSettings activeTab={activeStreamingSubTab} />
+              
+              {/* Live Streaming Widget */}
+              <div className="flex h-full flex-col justify-between gap-4 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 backdrop-blur-[50px]">
+                <div className="flex justify-between items-center pb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-white flex-1">
+                    Live Streaming
+                  </h3>
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-[rgba(255,168,0,0.16)]">
+                    <span className="text-xs font-bold text-[#FFA800]">
+                      Soon
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-col gap-2 flex-1">
+                      <span className="text-xs font-bold uppercase text-webGray">
+                        Stream iN
+                      </span>
+                      <span className="text-sm font-bold text-white">
+                        2 Hours
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1">
+                      <span className="text-xs font-bold uppercase text-webGray">
+                        Channel
+                      </span>
+                      <span className="text-sm font-bold text-white">
+                        beautydoe
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold uppercase text-webGray">
+                      topic
+                    </span>
+                    <p className="text-sm font-bold text-white">
+                      Investing in a new Solana solutions for the market
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold uppercase text-webGray">
+                      Start
+                    </span>
+                    <span className="text-sm font-bold text-white">
+                      18:30 MSK
+                    </span>
+                  </div>
+                </div>
+
+                <button className="flex items-center justify-center gap-1.5 h-7 px-2.5 rounded-lg bg-gradient-to-r from-primary to-[#482090] text-white font-bold text-xs md:text-sm backdrop-blur-[50px] transition-opacity hover:opacity-90">
+                  <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+                    <path
+                      d="M3.58398 9.99983V7.03316C3.58398 3.34982 6.19232 1.8415 9.38398 3.68317L11.959 5.1665L14.534 6.64983C17.7257 8.4915 17.7257 11.5082 14.534 13.3498L11.959 14.8332L9.38398 16.3165C6.19232 18.1582 3.58398 16.6498 3.58398 12.9665V9.99983Z"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeMiterlimit="10"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Join Stream
+                </button>
+              </div>
+            </div>
+          )}
+          {activeTab === "streaming" && activeStreamingSubTab !== "profile" && (
+            <LiveStreamingSettings activeTab={activeStreamingSubTab} />
+          )}
+
+          {/* Portfolios Tab */}
+          {activeTab === "portfolios" && activePortfolioSubTab === "my" && (
+            <div className="flex flex-col gap-6">
+              <div className="container-card p-6">
+                <h2 className="text-2xl font-bold text-white">My Portfolios</h2>
+                <p className="mt-2 text-sm text-webGray">
+                  Manage and track your investment portfolios.
+                </p>
+              </div>
+
+              {/* My Revenue Widget */}
+              <div className="relative flex h-full flex-col justify-center gap-4 overflow-hidden rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 backdrop-blur-[50px]">
+                <div className="flex justify-between items-center pb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-white flex-1">
+                    My Revenue
+                  </h3>
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-[#1C3430]">
+                    <span className="text-xs font-bold text-green">
+                      Growing
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col flex-1 justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="text-xs font-bold uppercase text-webGray">
+                        Value
+                      </span>
+                      <span className="text-3xl font-bold text-white">
+                        $72,450.00
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-bold uppercase text-webGray">
+                        Today Change
+                      </span>
+                      <span className="text-sm font-bold text-green">
+                        +2.4%
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-bold uppercase text-webGray">
+                        All time
+                      </span>
+                      <span className="text-sm font-bold text-green">
+                        +15.7%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-lg bg-gradient-to-r from-primary to-[#482090] text-white font-bold text-xs md:text-sm backdrop-blur-[50px] transition-opacity hover:opacity-90">
+                  <svg width="20" height="20" viewBox="0 0 21 20" fill="none">
+                    <path
+                      d="M7.25 16L13.25 10L7.25 4"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  View Portfolio
+                </button>
+
+                {/* Chart SVG */}
+                <svg
+                  className="absolute left-4 bottom-12 w-[calc(100%-32px)] h-44"
+                  viewBox="0 0 369 184"
+                  fill="none"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M13.1267 160.619L9 158.493V184H360V27.916L357.02 36.115L354.956 50.0837L352.664 49.1727L351.517 52.2094L348.766 23.9683L347.849 27.916L346.244 26.094L342.805 29.4343L340.971 44.0104L339.596 40.3664C339.061 43.7067 337.991 50.3267 337.991 50.0837C337.991 49.8408 337.074 45.3263 336.615 43.0994L335.24 50.3874L333.406 42.7957L331.113 40.67L329.967 20.9316L326.528 30.649H325.381L324.464 32.7747L323.777 29.1307L321.713 46.7434L321.025 41.8847L318.733 40.67L317.357 45.8324L316.899 34.9003L315.752 40.67L314.148 32.7747L312.772 37.026L312.084 34.9003L311.396 36.115L310.021 25.4867L308.875 48.2617L307.04 38.5444L305.206 36.115L303.372 51.9057L300.392 61.0158L298.099 59.1938L297.87 66.7854L296.724 60.7121L294.89 68.9111L293.514 87.4348L291.909 88.3458L290.304 89.5605L289.387 101.404L288.241 102.922L285.49 101.404L282.051 94.7229L280.905 103.833L277.924 107.173L276.778 105.959L276.319 108.995L273.339 103.833L272.88 106.262L269.671 104.744L266.92 111.121L266.69 115.676L265.315 114.461L263.71 119.016L262.564 115.676H259.813L259.354 117.194H258.437L256.832 120.838L254.081 117.802L252.705 111.425L251.101 111.728L249.496 119.016L248.349 116.587L247.662 119.927L246.515 117.802L242.618 119.927L240.784 127.823L238.033 125.697L237.116 131.467L235.052 129.037L233.447 134.807L232.301 136.629L230.926 136.933L229.091 132.681L227.945 133.592L227.028 128.126L225.882 129.948L223.131 125.697L222.214 126.912L221.297 125.697L220.15 117.802H217.399L216.024 124.786L215.794 123.268L215.106 127.215H214.189L213.043 131.467L211.438 127.823L210.063 132.074L208.229 125.09L206.395 127.215L206.165 132.074L205.248 128.43L203.873 129.037L203.414 127.215L202.268 138.755L200.892 137.54L199.746 141.488L198.37 130.556L197.224 129.037L196.078 123.268L195.161 125.09L192.639 117.802L191.951 118.713H190.575C190.27 120.433 189.658 123.936 189.658 124.179C189.658 124.422 187.213 118.611 185.99 115.676L183.468 118.713L182.322 122.357L180.717 119.927L179.571 128.43L175.673 134.503L174.986 132.074L173.61 135.111H172.234L171.547 131.467L170.171 133.896C169.101 131.264 166.916 125.818 166.732 125.09C166.549 124.361 164.516 128.43 163.523 130.556L161.001 126.001L159.854 129.037L158.02 119.927L155.957 121.446L154.811 126.608L153.435 116.891L149.767 117.802L148
 
         {false && (
           <div className="flex flex-col gap-6">
@@ -2462,195 +2870,6 @@ const ProfileNew: FC = () => {
                 <button className="w-full md:w-auto inline-flex h-8 items-center justify-center gap-2 px-3 rounded-full bg-gradient-to-r from-primary to-[#482090] shadow-[0_4px_8px_0_rgba(0,0,0,0.24)] backdrop-blur-[50px] text-white text-center text-xs md:text-sm font-bold transition-opacity hover:opacity-90">
                   Setup
                 </button>
-              </div>
-            </div>
-
-            {/* User Sessions */}
-            <div className="flex flex-col gap-6 p-4 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
-              <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-2 pb-2">
-                <div className="flex flex-col gap-2 flex-1">
-                  <h3 className="text-2xl font-bold text-white">
-                    User Sessions
-                  </h3>
-                  <p className="text-sm font-normal text-white">
-                    Here you can see all active sessions on your account. Each
-                    session shows the device and login time. If you don't
-                    recognize a session, you can end it to protect your account.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {/* Table Header */}
-                <div className="hidden md:flex justify-between items-center">
-                  <div className="flex items-center flex-1">
-                    <span className="text-xs font-bold uppercase text-webGray">
-                      Device
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-xs font-bold uppercase text-webGray">
-                      IP Address
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-xs font-bold uppercase text-webGray">
-                      create at
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-xs font-bold uppercase text-webGray">
-                      Expired at
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-xs font-bold uppercase text-webGray">
-                      Status
-                    </span>
-                  </div>
-                  <div className="flex w-[120px] justify-center items-center">
-                    <span className="text-xs font-bold uppercase text-webGray">
-                      Actions
-                    </span>
-                  </div>
-                </div>
-
-                {/* Session 1 */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0">
-                  <div className="flex flex-col justify-center gap-0.5 flex-1">
-                    <span className="text-sm font-bold text-white">
-                      Device 1
-                    </span>
-                    <span className="text-xs font-bold text-primary">
-                      Current session
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-1">
-                    <svg width="24" height="16" viewBox="0 0 25 16" fill="none">
-                      <path d="M24.4004 0H0.400391V8H24.4004V0Z" fill="white" />
-                      <path
-                        d="M24.4004 8H0.400391V16H24.4004V8Z"
-                        fill="#D52B1E"
-                      />
-                      <path
-                        d="M24.4004 5.33301H0.400391V10.6663H24.4004V5.33301Z"
-                        fill="#0039A6"
-                      />
-                    </svg>
-                    <span className="text-sm font-bold text-white">
-                      95.24.157.83
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-sm font-bold text-white">
-                      12.09.25 at 00:00
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-sm font-bold text-white">
-                      12.10.25 at 00:00
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <div className="flex px-1 py-0.5 justify-center items-center gap-1 rounded bg-[#1C3430]">
-                      <span className="text-xs font-bold text-green">
-                        Active
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex w-full md:w-[120px] justify-center items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path
-                        d="M16.25 4.58301L15.7336 12.9373C15.6016 15.0717 15.5357 16.1389 15.0007 16.9063C14.7361 17.2856 14.3956 17.6058 14.0006 17.8463C13.2017 18.333 12.1325 18.333 9.99392 18.333C7.8526 18.333 6.78192 18.333 5.98254 17.8454C5.58733 17.6044 5.24667 17.2837 4.98223 16.9037C4.4474 16.1352 4.38287 15.0664 4.25384 12.929L3.75 4.58301"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M2.5 4.58366H17.5M13.3797 4.58366L12.8109 3.4101C12.433 2.63054 12.244 2.24076 11.9181 1.99767C11.8458 1.94374 11.7693 1.89578 11.6892 1.85424C11.3283 1.66699 10.8951 1.66699 10.0287 1.66699C9.14067 1.66699 8.69667 1.66699 8.32973 1.86209C8.24842 1.90533 8.17082 1.95524 8.09774 2.0113C7.76803 2.26424 7.58386 2.66828 7.21551 3.47638L6.71077 4.58366"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M7.91602 13.75V8.75"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M12.084 13.75V8.75"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Session 2 */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0 pt-4 border-t border-[#181B22]">
-                  <div className="flex items-center flex-1">
-                    <span className="text-sm font-bold text-white">
-                      Device 2
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-1">
-                    <img
-                      src="https://api.builder.io/api/v1/image/assets/TEMP/79e7d0bc62197c5704b3bd11a3627a6abd59f728?width=48"
-                      alt="Kazakhstan flag"
-                      className="w-6 h-4"
-                    />
-                    <span className="text-sm font-bold text-white">
-                      2.75.143.219
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-sm font-bold text-white">
-                      11.09.25 at 12:00
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <span className="text-sm font-bold text-white">
-                      11.10.25 at 12:00
-                    </span>
-                  </div>
-                  <div className="flex items-center flex-1">
-                    <div className="flex px-1 py-0.5 justify-center items-center gap-1 rounded bg-[#1C3430]">
-                      <span className="text-xs font-bold text-green">
-                        Active
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex w-full md:w-[120px] justify-center items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path
-                        d="M16.25 4.58301L15.7336 12.9373C15.6016 15.0717 15.5357 16.1389 15.0007 16.9063C14.7361 17.2856 14.3956 17.6058 14.0006 17.8463C13.2017 18.333 12.1325 18.333 9.99392 18.333C7.8526 18.333 6.78192 18.333 5.98254 17.8454C5.58733 17.6044 5.24667 17.2837 4.98223 16.9037C4.4474 16.1352 4.38287 15.0664 4.25384 12.929L3.75 4.58301"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M2.5 4.58366H17.5M13.3797 4.58366L12.8109 3.4101C12.433 2.63054 12.244 2.24076 11.9181 1.99767C11.8458 1.94374 11.7693 1.89578 11.6892 1.85424C11.3283 1.66699 10.8951 1.66699 10.0287 1.66699C9.14067 1.66699 8.69667 1.66699 8.32973 1.86209C8.24842 1.90533 8.17082 1.95524 8.09774 2.0113C7.76803 2.26424 7.58386 2.66828 7.21551 3.47638L6.71077 4.58366"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M7.91602 13.75V8.75"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M12.084 13.75V8.75"
-                        stroke="#EF454A"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                </div>
               </div>
             </div>
 

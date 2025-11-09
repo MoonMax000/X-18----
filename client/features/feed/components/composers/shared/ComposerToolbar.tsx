@@ -169,8 +169,9 @@ export function ComposerToolbar({
         <button 
           type="button" 
           onClick={() => onSentimentChange(sentiment === "bullish" ? null : "bullish")} 
+          disabled={disabled}
           className={cn(
-            "flex h-6 items-center gap-1 rounded-full px-2 transition-all hover:opacity-80 active:scale-95", 
+            "flex h-6 items-center gap-1 rounded-full px-2 transition-all hover:opacity-80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed", 
             sentiment === "bullish" 
               ? "bg-gradient-to-l from-[#2EBD85] to-[#1A6A4A]" 
               : "bg-transparent"
@@ -180,7 +181,7 @@ export function ComposerToolbar({
             <path d="M13.3333 8.66665V5.33331H10" stroke={sentiment === "bullish" ? "white" : "#2EBD85"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M13.3337 5.33331L10.0003 8.66665C9.41193 9.25505 9.11779 9.54918 8.75673 9.58171C8.69699 9.58711 8.63699 9.58711 8.57726 9.58171C8.21619 9.54918 7.92206 9.25505 7.33366 8.66665C6.74526 8.07825 6.45109 7.78411 6.09004 7.75158C6.03035 7.74618 5.9703 7.74618 5.91061 7.75158C5.54956 7.78411 5.25537 8.07825 4.66699 8.66665L2.66699 10.6666" stroke={sentiment === "bullish" ? "white" : "#2EBD85"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className={cn("text-xs font-bold", sentiment === "bullish" ? "text-white" : "text-white")}>Bullish</span>
+          <span className={cn("text-xs font-bold", sentiment === "bullish" ? "text-white" : "text-[#2EBD85]")}>Bullish</span>
         </button>
 
         <div className="h-5 w-px bg-[#1B1F27]" />
@@ -188,14 +189,15 @@ export function ComposerToolbar({
         <button 
           type="button" 
           onClick={() => onSentimentChange(sentiment === "bearish" ? null : "bearish")} 
+          disabled={disabled}
           className={cn(
-            "flex h-6 items-center gap-1 rounded-full px-2 transition-all hover:opacity-80 active:scale-95", 
+            "flex h-6 items-center gap-1 rounded-full px-2 transition-all hover:opacity-80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed", 
             sentiment === "bearish" 
               ? "bg-gradient-to-l from-[#FF2626] to-[#7F1414]" 
               : "bg-transparent"
           )}
         >
-          <span className={cn("text-xs font-bold", sentiment === "bearish" ? "text-white" : "text-white")}>Bearish</span>
+          <span className={cn("text-xs font-bold", sentiment === "bearish" ? "text-white" : "text-[#EF454A]")}>Bearish</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M13.3333 7.33331V10.6666H10" stroke={sentiment === "bearish" ? "white" : "#EF454A"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M13.3337 10.6666L10.0003 7.33331C9.41193 6.74491 9.11779 6.45075 8.75673 6.41823C8.69699 6.41285 8.63699 6.41285 8.57726 6.41823C8.21619 6.45075 7.92206 6.74491 7.33366 7.33331C6.74526 7.92171 6.45109 8.21585 6.09004 8.24838C6.03035 8.25378 5.9703 8.25378 5.91061 8.24838C5.54956 8.21585 5.25537 7.92171 4.66699 7.33331L2.66699 5.33331" stroke={sentiment === "bearish" ? "white" : "#EF454A"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -208,19 +210,21 @@ export function ComposerToolbar({
         type="button" 
         onClick={onAccessTypeClick}
         className={cn(
-          "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all border", 
-          isPaid 
-            ? `bg-gradient-to-l ${currentConfig.bg}` 
-            : `bg-transparent ${currentConfig.border}`
+          "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all border",
+          accessType === "free"
+            ? "bg-gradient-to-l from-[#A06AFF] to-[#7F57FF] border-[#A06AFF]/50 hover:opacity-80"
+            : isPaid
+            ? `bg-gradient-to-l ${currentConfig.bg} ${currentConfig.border} hover:opacity-80`
+            : `bg-transparent ${currentConfig.border} hover:bg-[#A06AFF]/10 hover:border-[#A06AFF]`
         )}
         title="Set post access type"
       >
-        <CurrentIcon className="h-3.5 w-3.5" style={{ color: isPaid ? "white" : currentConfig.color }} />
-        <span className={cn("text-xs font-bold", isPaid ? "text-white" : "")} style={{ color: !isPaid ? currentConfig.color : undefined }}>
+        <CurrentIcon className="h-3.5 w-3.5" style={{ color: accessType === "free" ? "white" : isPaid ? "white" : currentConfig.color }} />
+        <span className="text-xs" style={{ color: accessType === "free" ? "white" : isPaid ? "white" : currentConfig.color }}>
           {currentConfig.label}
         </span>
         {accessType === "pay-per-post" && (
-          <span className={cn("text-xs font-bold ml-0.5", isPaid ? "text-white" : "")} style={{ color: !isPaid ? currentConfig.color : undefined }}>
+          <span className="text-xs ml-0.5" style={{ color: isPaid ? "white" : currentConfig.color }}>
             ${postPrice.toFixed(2)}
           </span>
         )}

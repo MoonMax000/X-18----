@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronDown, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, TrendingUp, MessageCircle } from "lucide-react";
@@ -16,8 +16,8 @@ const categoryConfig = {
 };
 
 export interface ComposerMetadataProps {
-  market: string;
-  category: string;
+  market: string | undefined;
+  category: string | undefined;
   symbol: string;
   timeframe: string;
   risk: string;
@@ -42,33 +42,41 @@ export function ComposerMetadata({
   onRiskChange,
   visible = true,
 }: ComposerMetadataProps) {
+  const [openMarket, setOpenMarket] = useState(false);
+  const [openCategory, setOpenCategory] = useState(false);
+  const [openTimeframe, setOpenTimeframe] = useState(false);
+  const [openRisk, setOpenRisk] = useState(false);
+
   if (!visible) return null;
 
   return (
-    <div className="border-t border-[#1B1F27] pt-3">
+    <div className="pt-3">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {/* Market Selector */}
         <div>
           <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
             Market <span className="text-[#EF454A]">*</span>
           </label>
-          <Popover>
+          <Popover open={openMarket} onOpenChange={setOpenMarket}>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] transition-colors hover:border-[#A06AFF]/50 hover:bg-[#1C1430]"
               >
-                <span className="truncate">{market}</span>
+                <span className="truncate">{market || 'None'}</span>
                 <ChevronDown className="h-3 w-3 shrink-0 text-[#6B7280]" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="start" className="z-[2100] w-40 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
               <div className="grid gap-0.5 text-xs">
-                {['Crypto', 'Stocks', 'Forex', 'Commodities', 'Indices'].map((m) => (
+                {['', 'Crypto', 'Stocks', 'Forex', 'Commodities', 'Indices'].map((m) => (
                   <button
-                    key={m}
+                    key={m || 'none'}
                     type="button"
-                    onClick={() => onMarketChange(m)}
+                    onClick={() => {
+                      onMarketChange(m);
+                      setOpenMarket(false);
+                    }}
                     className={cn(
                       "rounded-lg px-2.5 py-1.5 text-left transition-colors",
                       market === m
@@ -76,7 +84,7 @@ export function ComposerMetadata({
                         : "text-[#D5D8E1] hover:bg-white/5"
                     )}
                   >
-                    {m}
+                    {m || 'None'}
                   </button>
                 ))}
               </div>
@@ -89,7 +97,7 @@ export function ComposerMetadata({
           <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
             Category <span className="text-[#EF454A]">*</span>
           </label>
-          <Popover>
+          <Popover open={openCategory} onOpenChange={setOpenCategory}>
             <PopoverTrigger asChild>
               <button
                 type="button"
@@ -97,8 +105,9 @@ export function ComposerMetadata({
               >
                 <span className="flex items-center gap-1.5 truncate">
                   {(() => {
+                    if (!category) return <span className="truncate">None</span>;
                     const config = categoryConfig[category as keyof typeof categoryConfig];
-                    if (!config) return null;
+                    if (!config) return <span className="truncate">None</span>;
                     const Icon = config.icon;
                     return (
                       <>
@@ -113,6 +122,21 @@ export function ComposerMetadata({
             </PopoverTrigger>
             <PopoverContent align="start" className="z-[2100] w-48 rounded-xl border border-[#1B1F27]/70 bg-[#0F131A]/95 p-1.5 text-white shadow-xl backdrop-blur-xl">
               <div className="grid gap-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCategoryChange('');
+                    setOpenCategory(false);
+                  }}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1.5 text-left transition-colors",
+                    category === ''
+                      ? "bg-[#A06AFF]/20 text-[#A06AFF] font-semibold"
+                      : "text-[#D5D8E1] hover:bg-white/5"
+                  )}
+                >
+                  None
+                </button>
                 {Object.keys(categoryConfig).map((cat) => {
                   const config = categoryConfig[cat as keyof typeof categoryConfig];
                   if (!config) return null;
@@ -121,7 +145,10 @@ export function ComposerMetadata({
                     <button
                       key={cat}
                       type="button"
-                      onClick={() => onCategoryChange(cat)}
+                      onClick={() => {
+                        onCategoryChange(cat);
+                        setOpenCategory(false);
+                      }}
                       className={cn(
                         "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors",
                         category === cat
@@ -156,7 +183,7 @@ export function ComposerMetadata({
             value={symbol}
             onChange={(e) => onSymbolChange(e.target.value.toUpperCase())}
             placeholder="BTC, ETH..."
-            className="flex h-8 w-full rounded-xl border border-[#1B1F27] bg-[#000000] px-2.5 text-xs font-semibold text-[#A06AFF] placeholder:text-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none"
+            className="flex h-8 w-full rounded-xl border border-[#1B1F27] !bg-black px-2.5 text-xs font-semibold text-[#A06AFF] placeholder:text-[#6B7280] transition-colors hover:border-[#A06AFF]/50 focus:border-[#A06AFF] focus:outline-none focus:!bg-black hover:!bg-black"
             maxLength={10}
           />
         </div>
@@ -166,7 +193,7 @@ export function ComposerMetadata({
           <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
             Timeframe
           </label>
-          <Popover>
+          <Popover open={openTimeframe} onOpenChange={setOpenTimeframe}>
             <PopoverTrigger asChild>
               <button
                 type="button"
@@ -182,7 +209,10 @@ export function ComposerMetadata({
                   <button
                     key={tf || 'none'}
                     type="button"
-                    onClick={() => onTimeframeChange(tf)}
+                    onClick={() => {
+                      onTimeframeChange(tf);
+                      setOpenTimeframe(false);
+                    }}
                     className={cn(
                       "rounded-lg px-2.5 py-1.5 text-left transition-colors",
                       timeframe === tf
@@ -203,7 +233,7 @@ export function ComposerMetadata({
           <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">
             Risk
           </label>
-          <Popover>
+          <Popover open={openRisk} onOpenChange={setOpenRisk}>
             <PopoverTrigger asChild>
               <button
                 type="button"
@@ -219,7 +249,10 @@ export function ComposerMetadata({
                   <button
                     key={r || 'none'}
                     type="button"
-                    onClick={() => onRiskChange(r)}
+                    onClick={() => {
+                      onRiskChange(r);
+                      setOpenRisk(false);
+                    }}
                     className={cn(
                       "rounded-lg px-2.5 py-1.5 text-left transition-colors",
                       risk === r

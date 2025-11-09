@@ -51,7 +51,7 @@ function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
       following: post.user?.following_count ?? 0,
       bio: post.user?.bio || '',
     },
-    timestamp: formatTimeAgo(post.created_at),
+    created_at: post.created_at,  // Pass raw timestamp, formatting happens in FeedPost
     // Use flat properties instead of nested engagement object
     likes: post.likes_count || 0,
     comments: post.replies_count || 0,

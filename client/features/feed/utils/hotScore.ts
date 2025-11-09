@@ -71,6 +71,12 @@ function calculateTimePenalty(timestamp: string): number {
  * Supports: "2h ago", "5m ago", "1d ago", ISO strings, unix timestamps
  */
 function parseTimestamp(timestamp: string): number {
+  // Defensive check for null/undefined/empty timestamp
+  if (!timestamp || typeof timestamp !== 'string') {
+    console.warn('[hotScore] Invalid timestamp received:', timestamp);
+    return Date.now(); // Fallback to current time
+  }
+  
   // Handle relative time (e.g., "2h ago", "5m ago")
   const relativeMatch = timestamp.match(/^(\d+)([mhd])\s*ago$/i);
   if (relativeMatch) {
@@ -100,6 +106,12 @@ function parseTimestamp(timestamp: string): number {
  * Higher score = hotter/more popular
  */
 export function calculateHotScore(post: PostMetrics): number {
+  // Defensive check for post data
+  if (!post) {
+    console.warn('[hotScore] Invalid post received');
+    return 0;
+  }
+  
   const engagement = calculateEngagement(post);
   const timePenalty = calculateTimePenalty(post.timestamp);
   

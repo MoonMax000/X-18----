@@ -371,6 +371,13 @@ textarea {
   backdrop-filter: blur(100px);
 }
 
+/* Override for EditProfileModal inputs - pure black background */
+input[class*="bg-[#000000]"],
+textarea[class*="bg-[#000000]"] {
+  background-color: #000000 !important;
+  backdrop-filter: none !important;
+}
+
 input:-moz-autofill,
 input:-moz-autofill:hover,
 input:-moz-autofill:focus,

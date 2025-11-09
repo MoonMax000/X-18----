@@ -17,6 +17,9 @@ import type { MediaItem } from "@/components/CreatePostBox/types";
 import { ComposerMetadata, ComposerToolbar, ComposerFooter, AccessTypeModal } from "./shared";
 import { useToast } from "@/hooks/use-toast";
 import { ValidationMessages } from "@/components/composer/ValidationMessage";
+import { useAuth } from "@/contexts/AuthContext";
+import { customBackendAPI } from "@/services/api/custom-backend";
+import { buildPostPayload } from "@/utils/postPayloadBuilder";
 
 type Props = { 
   onExpand: (data: Partial<ComposerData>) => void;
@@ -24,9 +27,8 @@ type Props = {
 };
 
 export default function QuickComposer({ onExpand, onPostCreated }: Props) {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [isReplyMenuOpen, setIsReplyMenuOpen] = useState(false);
-  const [replyMenuPosition, setReplyMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCodeBlockOpen, setIsCodeBlockOpen] = useState(false);
   const [isBoldActive, setIsBoldActive] = useState(false);
@@ -35,7 +37,6 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   const [emojiPickerPosition, setEmojiPickerPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPosting, setIsPosting] = useState(false);
 
-  const replyButtonRef = useRef<HTMLButtonElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -88,27 +89,13 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
     accessType,
     price: postPrice,
     meta: {
+      market: postMarket,
       category: postCategory,
       symbol: postSymbol,
       timeframe: postTimeframe,
       risk: postRisk,
     },
   });
-
-  const replyOptions = [
-    { id: "everyone" as const, label: "Everyone", description: "Anyone can reply." },
-    { id: "following" as const, label: "Accounts you follow", description: "Only people you follow can reply." },
-    { id: "verified" as const, label: "Verified accounts", description: "Only verified users can reply." },
-    { id: "mentioned" as const, label: "Only accounts you mention", description: "Only people you mention can reply." }
-  ];
-
-  const replySummary = replyOptions.find(opt => opt.id === replySetting)?.label || "Everyone";
-
-  const handleReplyButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setReplyMenuPosition({ top: rect.top - 10, left: rect.left });
-    setIsReplyMenuOpen(prev => !prev);
-  };
 
   const handleEmojiToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (!isEmojiPickerOpen) {
@@ -246,24 +233,43 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
     setIsPosting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 1. Загружаем медиа файлы если есть
+      const mediaIds: string[] = [];
+      for (const mediaItem of media) {
+        if (mediaItem.file) {
+          const uploadedMedia = await customBackendAPI.uploadMedia(mediaItem.file);
+          mediaIds.push(uploadedMedia.id);
+        } else if (mediaItem.id) {
+          // Уже загружено
+          mediaIds.push(mediaItem.id);
+        }
+      }
 
-      // TODO: Replace with actual API call to custom-backend
-      console.log('Post data:', {
+      // 2. Строим payload
+      const payload = buildPostPayload({
         text,
-        media,
-        codeBlocks,
-        sentiment,
+        mediaIds,
+        codeBlocks: codeBlocks.map(cb => ({
+          code: cb.code,
+          language: cb.language,
+        })),
         replySetting,
+        sentiment: sentiment || undefined,
         accessType,
         postPrice,
-        postMarket,
-        postCategory,
-        postSymbol,
-        postTimeframe,
-        postRisk,
+        metadata: {
+          market: postMarket,
+          category: postCategory,
+          symbol: postSymbol,
+          timeframe: postTimeframe,
+          risk: postRisk,
+        },
       });
+
+      // 3. Создаем пост
+      const createdPost = await customBackendAPI.createPost(payload);
+      
+      console.log('Post created successfully:', createdPost);
 
       toast({
         title: "Post created!",
@@ -277,7 +283,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
       console.error('Failed to create post:', error);
       toast({
         title: "Post failed",
-        description: "Failed to publish post. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to publish post. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -288,8 +294,8 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   return (
     <div className="flex gap-3">
       <Avatar className="h-12 w-12">
-        <AvatarImage src="https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87" />
-        <AvatarFallback>U</AvatarFallback>
+        <AvatarImage src={user?.avatar_url || "https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87"} />
+        <AvatarFallback>{user?.display_name?.[0] || user?.username?.[0] || 'U'}</AvatarFallback>
       </Avatar>
 
       <div className="flex-1 mb-[-1px]">
@@ -317,7 +323,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
         {codeBlocks.length > 0 && (
           <div className="mt-3 space-y-2">
             {codeBlocks.map((cb) => (
-              <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all">
+              <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full max-w-full min-w-0">
                 <div className="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] border-b border-[#6B46C1]/20">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
@@ -340,33 +346,8 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
-          <div>
-            {text.length > 0 && (
-              <button
-                ref={replyButtonRef}
-                type="button"
-                onClick={handleReplyButtonClick}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-1 text-xs font-semibold text-[#1D9BF0] transition-colors hover:bg-white/10"
-                disabled={isPosting}
-              >
-                <span className="-ml-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-[#1D9BF0]">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 2v1.5M12 20.5V22M4.5 12H2M22 12h-2.5M7.05 4.05l1.06 1.06M15.89 17.95l1.06 1.06M5.56 18.44l1.06-1.06M17.38 6.62l1.06-1.06" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 13.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M8.75 17.5 8 14l-1-3-2.2-1.27" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="m17 14-.5-3-1-3 2.5-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="text-xs">{replySummary}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
         {/* Validation Messages */}
-        {validation.violations && validation.violations.length > 0 && (
+        {validation.violations.length > 0 && (
           <div className="mt-3">
             <ValidationMessages violations={validation.violations} />
           </div>
@@ -418,27 +399,6 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           />
         </div>
 
-        {isReplyMenuOpen && replyMenuPosition && createPortal(
-          <div className="fixed z-[2300] w-[90vw] sm:w-72 rounded-2xl border border-[#181B22] bg-black shadow-2xl backdrop-blur-[100px] p-3" style={{ top: `${replyMenuPosition.top - 200}px`, left: `${replyMenuPosition.left}px` }}>
-            <h3 className="mb-2 text-xs font-semibold text-white">Who can reply?</h3>
-            <div className="space-y-1.5">
-              {replyOptions.map(opt => (
-                <button key={opt.id} onClick={() => { setReplySetting(opt.id); setIsReplyMenuOpen(false); }} className="flex w-full items-start gap-2.5 rounded-lg bg-white/5 p-2 text-left transition-colors hover:bg-white/10 text-xs">
-                  <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill={replySetting === opt.id ? "#1D9BF0" : "none"} stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    {replySetting === opt.id && <circle cx="12" cy="12" r="4" fill="#1D9BF0" />}
-                  </svg>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-white">{opt.label}</div>
-                    <div className="text-[11px] text-[#808283]">{opt.description}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>,
-          document.body
-        )}
-
         {isEmojiPickerOpen && emojiPickerPosition && createPortal(
           <div ref={emojiPickerRef} className="fixed z-[2300] h-[45vh] sm:h-64 w-[65vw] sm:w-80 max-w-[320px] rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-3 sm:p-4 shadow-2xl backdrop-blur-[100px]" style={{ top: `${emojiPickerPosition.top}px`, left: `${emojiPickerPosition.left}px` }} onClick={e => e.stopPropagation()}>
             <EmojiPicker onSelect={handleEmojiSelect} />
@@ -455,9 +415,10 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           currentAccessType={accessType}
           currentPrice={postPrice}
           currentReplyPolicy={replySetting}
-          onSave={(newAccessType, newPrice) => {
+          onSave={(newAccessType, newPrice, newReplyPolicy) => {
             setAccessType(newAccessType);
             setPostPrice(newPrice);
+            setReplySetting(newReplyPolicy);
           }}
         />
 

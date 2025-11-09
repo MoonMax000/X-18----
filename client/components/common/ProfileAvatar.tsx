@@ -111,8 +111,9 @@ const ProfileAvatar: FC<ProfileAvatarProps> = ({
         )}>
           <img 
             src={finalAvatarUrl} 
-            alt="Avatar" 
-            className="w-full h-full object-cover scale-110" 
+            alt="Avatar"
+            draggable={false}
+            className="absolute inset-0 block !w-full !h-full object-cover object-center" 
           />
 
           {/* Upload progress */}

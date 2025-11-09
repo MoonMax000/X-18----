@@ -3,6 +3,7 @@ import { type FC, useMemo } from "react";
 import VideoPost from "./VideoPost";
 import CommentCard from "./CommentCard";
 import VerifiedBadge from "./VerifiedBadge";
+import { formatTimeAgo } from "@/lib/time-utils";
 
 import type { SocialPost } from "@/data/socialPosts";
 import { getCommentsByPostId } from "@/data/socialComments";
@@ -113,7 +114,7 @@ const PostDetailView: FC<PostDetailViewProps> = ({ post }) => {
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">{post.title}</h1>
         {post.body ? (
-          <p className="whitespace-pre-line text-[15px] leading-relaxed text-[#E7E9EA]">
+          <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere text-[15px] leading-relaxed text-[#E7E9EA] max-w-full">
             {post.body}
           </p>
         ) : null}
@@ -137,7 +138,7 @@ const PostDetailView: FC<PostDetailViewProps> = ({ post }) => {
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B98A5]">
-        <div>{post.timestamp}</div>
+        <div>{formatTimeAgo(post.timestamp)}</div>
         {typeof post.views === "number" ? <div>{post.views} Views</div> : null}
       </div>
 

@@ -29,30 +29,30 @@ export const ValidationMessage: FC<ValidationMessageProps> = ({
 
   const styles = {
     error: {
-      container: "bg-red-500/10 border-red-500/20 text-red-400",
-      icon: "text-red-400",
+      container: "bg-red-500/5 text-red-300/90",
+      icon: "text-red-500",
     },
     warning: {
-      container: "bg-yellow-500/10 border-yellow-500/20 text-yellow-400",
-      icon: "text-yellow-400",
+      container: "border-l-2 border-l-yellow-400/60 bg-yellow-500/5 text-yellow-300/90",
+      icon: "text-yellow-400/80",
     },
     info: {
-      container: "bg-blue-500/10 border-blue-500/20 text-blue-400",
-      icon: "text-blue-400",
+      container: "border-l-2 border-l-blue-400/60 bg-blue-500/5 text-blue-300/90",
+      icon: "text-blue-400/80",
     },
   }[severity];
 
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in-50 slide-in-from-top-2 duration-200",
+        "flex items-start gap-2 rounded-md pl-2.5 pr-3 py-2 text-xs animate-in fade-in-50 slide-in-from-top-1 duration-150",
         styles.container,
         className
       )}
       role="alert"
     >
-      <Icon className={cn("h-4 w-4 mt-0.5 flex-shrink-0", styles.icon)} />
-      <span className="flex-1">{message}</span>
+      <Icon className={cn("h-3.5 w-3.5 mt-0.5 flex-shrink-0", styles.icon)} />
+      <span className="flex-1 leading-snug">{message}</span>
     </div>
   );
 };

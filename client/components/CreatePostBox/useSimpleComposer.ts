@@ -21,7 +21,7 @@ interface UseSimpleComposerOptions {
 }
 
 const DEFAULT_REPLY_POLICY: ReplyPolicy = "everyone";
-const DEFAULT_SENTIMENT: ComposerSentiment = "bullish";
+const DEFAULT_SENTIMENT: ComposerSentiment = null;
 
 const cloneMedia = (media: MediaItem[]): MediaItem[] =>
   media.map((item) => ({ ...item }));
@@ -46,8 +46,9 @@ export const useSimpleComposer = (
   const [postPrice, setPostPrice] = useState<number>(5.0);
 
   // Post metadata for filtering and categorization
-  const [postMarket, setPostMarket] = useState<string>('Crypto');
-  const [postCategory, setPostCategory] = useState<string>('General');
+  // Market и Category undefined до первого выбора (требуется явный выбор)
+  const [postMarket, setPostMarket] = useState<string | undefined>(undefined);
+  const [postCategory, setPostCategory] = useState<string | undefined>(undefined);
   const [postSymbol, setPostSymbol] = useState<string>('');
   const [postTimeframe, setPostTimeframe] = useState<string>('');
   const [postRisk, setPostRisk] = useState<string>('');
@@ -115,8 +116,8 @@ export const useSimpleComposer = (
       setPostPrice(initialPostPrice ?? 5.0);
       
       // Initialize metadata
-      setPostMarket(initialMetadata?.market ?? 'Crypto');
-      setPostCategory(initialMetadata?.category ?? 'General');
+      setPostMarket(initialMetadata?.market ?? undefined);
+      setPostCategory(initialMetadata?.category ?? undefined);
       setPostSymbol(initialMetadata?.symbol ?? '');
       setPostTimeframe(initialMetadata?.timeframe ?? '');
       setPostRisk(initialMetadata?.risk ?? '');

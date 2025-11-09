@@ -130,38 +130,51 @@ export const Header: FC<HeaderProps> = ({
 
         {/* Center: Search + Assistant (desktop) */}
         <div className="flex items-center gap-4 justify-self-center">
-        <div className="group flex items-center gap-3 h-12 px-5 rounded-full border border-[#A06AFF]/30 bg-gradient-to-r from-black/50 to-[#A06AFF]/5 backdrop-blur-xl w-full md:max-w-[280px] lg:max-w-[340px] xl:max-w-[400px] hover:border-[#A06AFF]/60 hover:shadow-[0_0_20px_rgba(160,106,255,0.15)] transition-all duration-300">
-          <svg
-            className="w-5 h-5 flex-shrink-0 text-[#A06AFF]/70 group-hover:text-[#A06AFF] transition-colors duration-300"
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M17.5 17.5L14.1667 14.1667"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <input
-            className="bg-transparent text-white text-[14px] sm:text-[15px] font-medium placeholder:text-[#A06AFF]/50 placeholder:font-normal outline-none w-full group-hover:placeholder:text-[#A06AFF]/70 transition-colors duration-300"
-            placeholder="Поиск авторов и тем..."
+        <div className="relative rounded-[20px] p-[1.5px] w-full md:max-w-[214px] lg:max-w-[240px] xl:max-w-[260px] group">
+          {/* Серый градиент (по умолчанию) */}
+          <div 
+            className="absolute inset-0 rounded-[20px] transition-opacity duration-300 group-focus-within:opacity-0"
+            style={{
+              background: 'linear-gradient(to right, rgba(80, 80, 80, 0.5) 0%, rgba(50, 50, 50, 1) 25%, rgba(50, 50, 50, 1) 50%, rgba(50, 50, 50, 1) 75%, rgba(80, 80, 80, 0.5) 100%)'
+            }}
           />
-          <kbd className="hidden sm:flex items-center gap-1 h-6 px-2 text-[11px] font-medium text-[#A06AFF]/50 border border-[#A06AFF]/20 rounded-md bg-[#A06AFF]/5">
-            <span>⌘</span>
-            <span>K</span>
-          </kbd>
+          {/* Фиолетовый градиент (при фокусе) */}
+          <div 
+            className="absolute inset-0 rounded-[20px] opacity-0 transition-opacity duration-300 group-focus-within:opacity-100"
+            style={{
+              background: 'linear-gradient(to right, rgba(160, 106, 255, 0.8) 0%, rgba(72, 32, 144, 1) 25%, rgba(72, 32, 144, 1) 50%, rgba(72, 32, 144, 1) 75%, rgba(160, 106, 255, 0.8) 100%)'
+            }}
+          />
+          <div className="relative flex items-center gap-[7px] h-[37px] px-[13px] py-2 rounded-[20px] bg-black backdrop-blur-[42px] w-full transition-shadow duration-300 focus-within:shadow-md focus-within:shadow-[#A06AFF]/15">
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              width="21"
+              height="21"
+              viewBox="0 0 21 21"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9.61328 17.5547C13.9992 17.5547 17.5547 13.9992 17.5547 9.61328C17.5547 5.22736 13.9992 1.67188 9.61328 1.67188C5.22736 1.67188 1.67188 5.22736 1.67188 9.61328C1.67188 13.9992 5.22736 17.5547 9.61328 17.5547Z"
+                stroke="#B0B0B0"
+                strokeWidth="1.67187"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M18.3906 18.3906L16.7188 16.7188"
+                stroke="#B0B0B0"
+                strokeWidth="1.67187"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <input
+              className="bg-transparent text-[#B0B0B0] text-[13px] font-bold placeholder:text-[#B0B0B0] outline-none w-full"
+              placeholder="Search"
+              style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+            />
+          </div>
         </div>
         {false && (
         <a

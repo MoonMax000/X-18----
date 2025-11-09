@@ -5,6 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TrendingUp, TrendingDown, DollarSign, Sparkles, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, MessageCircle } from "lucide-react";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
+import { formatTimeAgo } from "@/lib/time-utils";
 import GatedContent from "./GatedContent";
 import PostMenu from "./PostMenu";
 import VideoPlayer from "./VideoPlayer";
@@ -174,14 +175,14 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
               <svg className="hidden md:inline w-1 h-1 fill-[#7C7C7C]" viewBox="0 0 4 4">
                 <circle cx="2" cy="2" r="1.5" />
               </svg>
-              <span className="hidden md:inline text-xs font-normal text-[#7C7C7C]">{post.timestamp}</span>
+              <span className="hidden md:inline text-xs font-normal text-[#7C7C7C]">{formatTimeAgo(post.created_at)}</span>
             </div>
             <div className="flex md:hidden items-center gap-1 sm:gap-1.5 text-[13px] sm:text-sm font-normal text-[#7C7C7C] mt-0.5">
               <span onClick={handleProfileClick} className="cursor-pointer hover:underline">{post.author.handle}</span>
               <svg className="w-1 h-1 fill-[#7C7C7C]" viewBox="0 0 4 4">
                 <circle cx="2" cy="2" r="1.5" />
               </svg>
-              <span>{post.timestamp}</span>
+              <span>{formatTimeAgo(post.created_at)}</span>
             </div>
 
             {/* Category Badges */}
@@ -328,7 +329,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       {/* Content Section */}
       <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px] min-w-0 overflow-x-hidden">
         <div>
-          <p className="whitespace-pre-line text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white">
+          <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white max-w-full">
             {displayText}
           </p>
           {shouldTruncate && (
@@ -367,8 +368,8 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
                 <div className="flex items-center justify-between border-b border-[#6B46C1]/20 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] px-4 py-2">
                   <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
                 </div>
-                <pre className="p-4 text-sm leading-relaxed font-mono bg-[#05030A] w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] overflow-x-hidden" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
-                  <code className="block text-[#D4B5FD] whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}>{cb.code}</code>
+                <pre className="p-4 text-sm leading-relaxed font-mono bg-[#05030A] overflow-x-auto">
+                  <code className="text-[#D4B5FD]">{cb.code}</code>
                 </pre>
               </div>
               ))}

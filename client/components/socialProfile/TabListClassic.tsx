@@ -16,9 +16,8 @@ const coreTabs = [
 ] as const;
 
 const likesTab = { id: "likes", label: "Likes" } as const;
-const securityTab = { id: "security", label: "Security" } as const;
 
-const allTabs = [...coreTabs, likesTab, securityTab] as const;
+const allTabs = [...coreTabs, likesTab] as const;
 
 const postSubFilters = [
   { id: "all", label: "All" },
@@ -67,12 +66,8 @@ export default function TabListClassic({
     if (showLikesTab) {
       tabs.push(likesTab);
     }
-    // Add Security tab only for own profile
-    if (isOwnProfile) {
-      tabs.push(securityTab);
-    }
     return tabs;
-  }, [showLikesTab, isOwnProfile]);
+  }, [showLikesTab]);
 
   const tabsGridClass = cn(
     "grid w-full gap-1.5 rounded-[20px] border border-widget-border bg-[#000000] p-1.5",
