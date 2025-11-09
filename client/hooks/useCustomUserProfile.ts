@@ -86,6 +86,30 @@ export function useCustomUserProfile(options: UseCustomUserProfileOptions): UseC
     fetchProfile();
   }, [fetchProfile]);
 
+  // Refetch profile when AuthContext updates (when user uploads new avatar/cover)
+  useEffect(() => {
+    console.log('🔍 [useCustomUserProfile] AuthContext update detected');
+    console.log('   👤 currentUser exists:', !!currentUser);
+    console.log('   📦 profile exists:', !!profile);
+    console.log('   📸 currentUser?.avatar_url:', currentUser?.avatar_url);
+    console.log('   🖼️ currentUser?.header_url:', currentUser?.header_url);
+    
+    if (!profile || !currentUser) {
+      console.log('   ⚠️ No profile or currentUser yet');
+      return;
+    }
+    
+    // Check if this is user's own profile
+    const isOwnProfile = profile.id === currentUser.id || profile.username === currentUser.username;
+    console.log('   ✅ isOwnProfile:', isOwnProfile);
+    
+    if (isOwnProfile) {
+      console.log('   🔄 [useCustomUserProfile] RE-FETCHING profile from API');
+      // Refetch from API to get latest avatar/header from database
+      fetchProfile();
+    }
+  }, [currentUser?.avatar_url, currentUser?.header_url]);
+
   // Check if current user is following this profile
   const isFollowing = useMemo(() => {
     console.log('[useCustomUserProfile] Computing isFollowing:', {

@@ -1065,9 +1065,11 @@ const ProfileNew: FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Sync AuthContext user data to Redux on mount
+  // Sync AuthContext user data to Redux on mount AND when avatar/cover change
   useEffect(() => {
     console.log('🔍 ProfileNew useEffect - user from AuthContext:', user);
+    console.log('🔍 ProfileNew useEffect - Triggered by avatar_url:', user?.avatar_url);
+    console.log('🔍 ProfileNew useEffect - Triggered by header_url:', user?.header_url);
     
     if (user) {
       console.log('📸 Avatar URL from AuthContext:', user.avatar_url);
@@ -1102,7 +1104,7 @@ const ProfileNew: FC = () => {
       console.log('🖼️ Cover after processing:', profileData.cover);
       dispatch(setProfile(profileData));
     }
-  }, [user, dispatch]);
+  }, [user, user?.avatar_url, user?.header_url, dispatch]);
 
   // Get active tab from URL or default
   const activeTab = (searchParams.get('tab') as Tab) || 'social';

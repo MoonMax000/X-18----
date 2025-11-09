@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"time"
 
 	"custom-backend/internal/cache"
@@ -79,19 +80,31 @@ func (h *UsersHandler) GetUser(c *fiber.Ctx) error {
 func (h *UsersHandler) GetUserByUsername(c *fiber.Ctx) error {
 	username := c.Params("username")
 
+	log.Printf("[GetUserByUsername] Looking up user: %s", username)
+
 	var user models.User
 	if err := h.db.DB.Where("username = ?", username).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
+			log.Printf("[GetUserByUsername] User not found: %s", username)
 			return c.Status(404).JSON(fiber.Map{
 				"error": "User not found",
 			})
 		}
+		log.Printf("[GetUserByUsername] Database error for user %s: %v", username, err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Database error",
 		})
 	}
 
-	return c.JSON(user.ToPublic())
+	log.Printf("[GetUserByUsername] Found user %s (ID: %s)", username, user.ID)
+	log.Printf("[GetUserByUsername] avatar_url from DB: %s", user.AvatarURL)
+	log.Printf("[GetUserByUsername] header_url from DB: %s", user.HeaderURL)
+
+	publicUser := user.ToPublic()
+	log.Printf("[GetUserByUsername] After ToPublic() - avatar_url: %s", publicUser.AvatarURL)
+	log.Printf("[GetUserByUsername] After ToPublic() - header_url: %s", publicUser.HeaderURL)
+
+	return c.JSON(publicUser)
 }
 
 // UpdateProfile updates current user's profile
@@ -202,9 +215,11 @@ func (h *UsersHandler) UpdateProfile(c *fiber.Ctx) error {
 		updates["sectors"] = *req.Sectors
 	}
 	if req.AvatarURL != nil {
+		log.Printf("[UpdateProfile] Updating avatar_url for user %s: %s", userID, *req.AvatarURL)
 		updates["avatar_url"] = *req.AvatarURL
 	}
 	if req.HeaderURL != nil {
+		log.Printf("[UpdateProfile] Updating header_url for user %s: %s", userID, *req.HeaderURL)
 		updates["header_url"] = *req.HeaderURL
 	}
 	if req.SubscriptionPrice != nil {
@@ -218,15 +233,23 @@ func (h *UsersHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 
 	if len(updates) > 0 {
+		log.Printf("[UpdateProfile] Applying updates for user %s: %+v", userID, updates)
 		if err := h.db.DB.Model(&user).Updates(updates).Error; err != nil {
+			log.Printf("[UpdateProfile] ERROR updating profile for user %s: %v", userID, err)
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to update profile",
 			})
 		}
+		log.Printf("[UpdateProfile] Profile updated successfully for user %s", userID)
 	}
 
-	// Reload user
-	h.db.DB.First(&user, "id = ?", userID)
+	// Reload user from database
+	if err := h.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		log.Printf("[UpdateProfile] ERROR reloading user %s: %v", userID, err)
+	} else {
+		log.Printf("[UpdateProfile] After reload - user %s: avatar_url=%s, header_url=%s",
+			userID, user.AvatarURL, user.HeaderURL)
+	}
 
 	return c.JSON(user.ToMe())
 }

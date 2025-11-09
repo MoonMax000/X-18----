@@ -11,17 +11,20 @@ WORKDIR /app
 # Copy go mod files
 COPY go.mod go.sum ./
 
-# Download dependencies
-RUN go mod download
+# Download dependencies with caching
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application with caching
 # CGO_ENABLED=0 for static binary
 # -ldflags for smaller binary size
 # GOARCH=amd64 for AWS Fargate compatibility
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo \
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo \
     -ldflags="-w -s" \
     -o /app/server \
     ./cmd/server

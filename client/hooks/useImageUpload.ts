@@ -62,6 +62,7 @@ export const useImageUpload = (): UseImageUploadReturn => {
       });
 
       xhr.open('POST', `${baseUrl}/api/media/upload`);
+      xhr.withCredentials = true; // Send cookies for cross-domain auth
       if (token) {
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }

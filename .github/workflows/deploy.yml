@@ -20,6 +20,7 @@ jobs:
   deploy-backend:
     name: Deploy Backend to ECS
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     
     steps:
     - name: Checkout code
@@ -44,6 +45,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
+        GOPROXY: https://proxy.golang.org,direct
       run: |
         cd custom-backend
         
@@ -82,7 +84,8 @@ jobs:
         task-definition: ${{ steps.task-def.outputs.task-definition }}
         service: ${{ env.ECS_SERVICE }}
         cluster: ${{ env.ECS_CLUSTER }}
-        wait-for-service-stability: true
+        wait-for-service-stability: false
+        wait-for-minutes: 10
 
   deploy-frontend:
     name: Deploy Frontend to S3/CloudFront
