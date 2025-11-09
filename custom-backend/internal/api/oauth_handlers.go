@@ -603,27 +603,35 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		log.Printf("WARNING: Failed to update last active: %v", err)
 	}
 
+	// Determine frontend URL and cookie settings based on environment
+	var frontendURL string
+	var cookieDomain string
+	var cookieSecure bool
+	var cookieSameSite string
+
+	if h.config.Server.Env == "production" {
+		frontendURL = "https://social.tyriantrade.com"
+		cookieDomain = ".tyriantrade.com"
+		cookieSecure = true
+		cookieSameSite = "None"
+	} else {
+		frontendURL = "http://localhost:5173"
+		cookieDomain = "" // Empty for localhost
+		cookieSecure = false
+		cookieSameSite = "Lax"
+	}
+
 	// Set refresh token cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    tokenPair.TokenPair.RefreshToken,
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "None",
-		Domain:   ".tyriantrade.com",
+		Secure:   cookieSecure,
+		SameSite: cookieSameSite,
+		Domain:   cookieDomain,
 		MaxAge:   86400 * h.config.JWT.RefreshExpiry,
 		Path:     "/",
 	})
-
-	log.Printf("OAuth login successful for user: %s", user.ID)
-
-	// Determine frontend URL based on environment
-	var frontendURL string
-	if h.config.Server.Env == "production" {
-		frontendURL = "https://social.tyriantrade.com"
-	} else {
-		frontendURL = "http://localhost:5173"
-	}
 
 	// SECURITY FIX: Set access token as httpOnly cookie instead of URL parameter
 	// This prevents XSS attacks and token exposure in browser history/logs
@@ -631,12 +639,14 @@ func (h *OAuthHandler) processOAuthUser(c *fiber.Ctx, provider, providerID, emai
 		Name:     "access_token",
 		Value:    tokenPair.TokenPair.AccessToken,
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "None",
-		Domain:   ".tyriantrade.com",
+		Secure:   cookieSecure,
+		SameSite: cookieSameSite,
+		Domain:   cookieDomain,
 		MaxAge:   h.config.JWT.AccessExpiry * 60, // convert minutes to seconds
 		Path:     "/",
 	})
+
+	log.Printf("OAuth login successful for user: %s", user.ID)
 
 	// Redirect to frontend with success (NO token in URL for security)
 	redirectURL := fmt.Sprintf("%s/auth/callback?success=true", frontendURL)
