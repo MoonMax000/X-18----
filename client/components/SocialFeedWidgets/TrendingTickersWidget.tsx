@@ -15,7 +15,7 @@ const TrendingTickersWidget: FC<TrendingTickersWidgetProps> = ({
 
   if (error) {
     return (
-      <section className="rounded-[24px] border border-widget-border bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+      <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
         <p className="text-sm text-red-400">Ошибка загрузки тикеров</p>
       </section>
     );
@@ -23,7 +23,7 @@ const TrendingTickersWidget: FC<TrendingTickersWidgetProps> = ({
 
   if (isLoading) {
     return (
-      <section className="rounded-[24px] border border-widget-border bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+      <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
         <header className="flex items-center justify-between gap-3">
           <div className="h-6 w-40 animate-pulse rounded bg-gray-700" />
         </header>
@@ -41,7 +41,7 @@ const TrendingTickersWidget: FC<TrendingTickersWidgetProps> = ({
 
   if (tickers.length === 0) {
     return (
-      <section className="rounded-[24px] border border-widget-border bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+      <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
         <header className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-[#A06AFF]" />
           <h3 className="text-lg font-semibold text-white">Трендовые тикеры</h3>
@@ -52,7 +52,7 @@ const TrendingTickersWidget: FC<TrendingTickersWidgetProps> = ({
   }
 
   return (
-    <section className="rounded-[24px] border border-widget-border bg-background p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+    <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
       <header className="flex items-center gap-2">
         <TrendingUp className="h-5 w-5 text-[#A06AFF]" />
         <h3 className="text-lg font-semibold text-white">Трендовые тикеры</h3>

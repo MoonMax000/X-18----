@@ -292,36 +292,38 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   };
 
   return (
-    <div className="flex gap-3">
-      <Avatar className="h-12 w-12">
+    <div className="flex gap-3 w-full max-w-full min-w-0">
+      <Avatar className="h-12 w-12 flex-shrink-0">
         <AvatarImage src={user?.avatar_url || "https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87"} />
         <AvatarFallback>{user?.display_name?.[0] || user?.username?.[0] || 'U'}</AvatarFallback>
       </Avatar>
 
-      <div className="flex-1 mb-[-1px]">
+      <div className="flex-1 mb-[-1px] min-w-0 max-w-full overflow-hidden">
         <AutoGrowTextarea
           textareaRef={textareaRef}
           placeholder="Share your trading ideas, signals, or analysis... ($TICKER, #tags, @mentions)"
           value={text}
           onChange={e => updateText(e.target.value)}
-          className="!min-h-[24px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0 !px-3 !py-2"
+          className="!min-h-[24px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0 !px-3 !py-2 w-full max-w-full"
           disabled={isPosting}
           minRows={1}
           maxRows={10}
         />
 
         {media.length > 0 && (
-          <MediaGrid
-            media={media}
-            onEdit={m => setEditingMedia(m)}
-            onRemove={mediaId => removeMedia(mediaId)}
-            onReorder={(from, to) => reorderMedia(from, to)}
-            readOnly={isPosting}
-          />
+          <div className="mt-3 w-full max-w-full min-w-0">
+            <MediaGrid
+              media={media}
+              onEdit={m => setEditingMedia(m)}
+              onRemove={mediaId => removeMedia(mediaId)}
+              onReorder={(from, to) => reorderMedia(from, to)}
+              readOnly={isPosting}
+            />
+          </div>
         )}
 
         {codeBlocks.length > 0 && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-2 w-full max-w-full min-w-0">
             {codeBlocks.map((cb) => (
               <div key={cb.id} className="relative group rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full max-w-full min-w-0">
                 <div className="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] border-b border-[#6B46C1]/20">
@@ -338,8 +340,8 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <pre className="px-4 py-3 text-xs text-[#D4B5FD] overflow-x-auto max-h-40 font-mono bg-[#05030A]">
-                  <code>{cb.code}</code>
+                <pre className="px-4 py-3 text-xs text-[#D4B5FD] overflow-x-auto max-h-40 font-mono bg-[#05030A] max-w-full">
+                  <code className="break-all whitespace-pre-wrap">{cb.code}</code>
                 </pre>
               </div>
             ))}
