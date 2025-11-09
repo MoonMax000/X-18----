@@ -571,6 +571,12 @@ class CustomBackendAPI {
     const response = await this.request<{ countries: CountryStats[]; total: number }>('/admin/users/by-country');
     return response.countries || [];
   }
+
+  async deleteAllUsersExceptAdmin(): Promise<{ message: string; deleted_count: number; admins_kept: number; admin_usernames: string[] }> {
+    return this.request<{ message: string; deleted_count: number; admins_kept: number; admin_usernames: string[] }>('/admin/users/cleanup?confirm=yes', {
+      method: 'DELETE',
+    });
+  }
 }
 
 // ============================================================================

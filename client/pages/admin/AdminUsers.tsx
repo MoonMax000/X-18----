@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAdminUsers } from '@/hooks/useAdmin';
-import { Search, Shield, User, Crown } from 'lucide-react';
+import { Search, Shield, User, Crown, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function AdminUsers() {
-  const { users, isLoading, error, fetchUsers, updateUserRole } = useAdminUsers();
+  const { users, isLoading, error, fetchUsers, updateUserRole, deleteAllExceptAdmin } = useAdminUsers();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredUsers, setFilteredUsers] = useState(users);
 
@@ -30,6 +32,50 @@ export function AdminUsers() {
   const handleRoleChange = async (userId: string, newRole: string) => {
     if (confirm(`Изменить роль пользователя на "${newRole}"?`)) {
       await updateUserRole(userId, newRole);
+    }
+  };
+
+  const handleDeleteAllExceptAdmin = async () => {
+    const nonAdminCount = users.filter(u => u.role !== 'admin').length;
+    const adminCount = users.filter(u => u.role === 'admin').length;
+    
+    if (nonAdminCount === 0) {
+      toast({
+        title: 'Нет пользователей для удаления',
+        description: 'Все пользователи являются администраторами',
+      });
+      return;
+    }
+
+    const confirmed = confirm(
+      `⚠️ ВНИМАНИЕ! Вы собираетесь удалить ${nonAdminCount} пользователей!\n\n` +
+      `Будут сохранены только ${adminCount} администратор(ов).\n\n` +
+      `Это действие НЕОБРАТИМО!\n\n` +
+      `Вы уверены?`
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm(
+      `Последнее подтверждение!\n\n` +
+      `Удалить ${nonAdminCount} пользователей?`
+    );
+
+    if (!doubleConfirm) return;
+
+    const result = await deleteAllExceptAdmin();
+    
+    if (result.success && result.data) {
+      toast({
+        title: 'Пользователи удалены',
+        description: `Удалено: ${result.data.deleted_count} пользователей. Сохранено: ${result.data.admins_kept} админов.`,
+      });
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить пользователей',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -77,6 +123,35 @@ export function AdminUsers() {
       {error && (
         <div className="bg-red/20 border border-red rounded-lg p-4">
           <p className="text-red">Ошибка: {error}</p>
+        </div>
+      )}
+
+      {/* Danger Zone - Delete All Users */}
+      {users.length > 0 && (
+        <div className="bg-red/10 border border-red/30 rounded-lg p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red" />
+                Опасная зона
+              </h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Удаление всех пользователей кроме администраторов. Это действие необратимо!
+              </p>
+              <div className="text-sm text-gray-400 mb-4">
+                <div>Будет удалено: <span className="text-white font-bold">{users.filter(u => u.role !== 'admin').length}</span> пользователей</div>
+                <div>Будет сохранено: <span className="text-white font-bold">{users.filter(u => u.role === 'admin').length}</span> администраторов</div>
+              </div>
+            </div>
+            <button
+              onClick={handleDeleteAllExceptAdmin}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-red hover:bg-red/80 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-4 h-4" />
+              Удалить всех кроме админов
+            </button>
+          </div>
         </div>
       )}
 

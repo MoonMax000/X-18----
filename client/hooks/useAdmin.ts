@@ -105,7 +105,9 @@ export function useAdminUsers() {
       setIsLoading(true);
       setError(null);
       const data = await customBackendAPI.getAdminUsers(params);
-      setUsers(Array.isArray(data) ? data : []);
+      // Backend возвращает объект {users: [...], total, limit, offset}
+      const usersArray = Array.isArray(data) ? data : (data as any)?.users || [];
+      setUsers(usersArray);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить пользователей');
       setUsers([]);
@@ -129,7 +131,22 @@ export function useAdminUsers() {
     }
   };
 
-  return { users, isLoading, error, fetchUsers, updateUserRole };
+  const deleteAllExceptAdmin = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await customBackendAPI.deleteAllUsersExceptAdmin();
+      await fetchUsers();
+      return { success: true, data: result };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось удалить пользователей');
+      return { success: false, error: err };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { users, isLoading, error, fetchUsers, updateUserRole, deleteAllExceptAdmin };
 }
 
 // Жалобы

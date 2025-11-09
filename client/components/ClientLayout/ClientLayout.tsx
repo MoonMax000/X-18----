@@ -1,5 +1,5 @@
 import { FC, ReactNode, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import { AppBackground } from "../ui/AppBackground/AppBackground";
 import { Header } from "../ui/Header/Header";
 import ContentWrapper from "../ui/ContentWrapper/ContentWrapper";
@@ -26,12 +26,10 @@ const PagesBg: Record<LayoutVariant, string[]> = {
 };
 
 interface Props {
-  children: ReactNode;
   contentWrapperClassname?: string;
 }
 
 export const ClientLayout: FC<Props> = ({
-  children,
   contentWrapperClassname,
 }) => {
   const location = useLocation();
@@ -60,7 +58,7 @@ export const ClientLayout: FC<Props> = ({
         />
         <main className="flex-1 min-w-0">
           <ContentWrapper className={contentWrapperClassname}>
-            {children}
+            <Outlet />
           </ContentWrapper>
         </main>
         <RightMenu

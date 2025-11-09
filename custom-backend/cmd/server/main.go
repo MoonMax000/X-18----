@@ -399,6 +399,7 @@ func main() {
 	admin.Get("/users", adminHandler.GetAllUsers)
 	admin.Get("/users/:id", adminHandler.GetUserDetails)
 	admin.Patch("/users/:id/role", adminHandler.UpdateUserRole)
+	admin.Delete("/users/cleanup", adminHandler.DeleteAllUsersExceptAdmin)
 
 	// Admin - Reports management
 	admin.Get("/reports", adminHandler.GetReports)

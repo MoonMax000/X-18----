@@ -1,26 +1,42 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ProfilePageLayout from "@/components/socialProfile/ProfilePageLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCustomUserProfile } from "@/hooks/useCustomUserProfile";
 import { useEffect } from "react";
 
-export default function ProfilePage() {
+/**
+ * Universal Profile Page Component
+ * Handles both own profile and other users' profiles
+ * Route: /@:username
+ */
+export default function UnifiedProfilePage() {
+  const { username: rawUsername } = useParams<{ username: string }>();
   const { user: currentUser, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // Strip @ from username parameter if present (URL is /@username, param is "@username")
+  const username = rawUsername?.replace(/^@/, '') || '';
+  
+  console.log('[UNIFIED_PROFILE] Component mounted with params:', { rawUsername, username });
+  console.log('[UNIFIED_PROFILE] Current user:', currentUser?.username);
+  console.log('[UNIFIED_PROFILE] Auth state:', { isAuthenticated, authLoading });
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate('/');
-    }
-  }, [authLoading, isAuthenticated, navigate]);
+  // Determine if this is the current user's profile
+  const isOwnProfile = currentUser?.username === username;
 
-  // Use the same hook as OtherProfilePage for consistency
+  // Use the same hook for both own and other profiles
   const { profile, posts, isFollowing, isLoading: profileLoading, error } = useCustomUserProfile({
-    username: currentUser?.username || '',
+    username: username || '',
     fetchPosts: true,
     fetchFollowers: true,
   });
+
+  // Redirect to home if viewing own profile but not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && isOwnProfile) {
+      navigate('/');
+    }
+  }, [authLoading, isAuthenticated, isOwnProfile, navigate]);
 
   const isLoading = authLoading || profileLoading;
 
@@ -35,7 +51,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (error || !profile || !currentUser) {
+  if (error || !profile) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center max-w-md">
@@ -45,8 +61,10 @@ export default function ProfilePage() {
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold">Failed to load profile</h3>
-            <p className="text-sm text-muted-foreground mt-2">{error || 'Please sign in to view your profile'}</p>
+            <h3 className="text-lg font-semibold">Profile not found</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              {error || 'The profile you are looking for does not exist'}
+            </p>
           </div>
           <button
             onClick={() => navigate('/')}
@@ -59,10 +77,9 @@ export default function ProfilePage() {
     );
   }
 
-  // This is always own profile page
   return (
     <ProfilePageLayout 
-      isOwnProfile={true} 
+      isOwnProfile={isOwnProfile} 
       profile={profile} 
       posts={posts} 
       initialFollowingState={isFollowing} 

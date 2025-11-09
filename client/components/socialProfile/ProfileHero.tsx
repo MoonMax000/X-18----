@@ -89,7 +89,7 @@ const ProfileHero: FC<ProfileHeroProps> = ({
       <ProfileCover
         coverUrl={coverUrl}
         isEditable={isOwnProfile}
-        size="large"
+        size="responsive"
         onUpload={handleUploadCover}
         uploadProgress={uploadProgress}
         isUploading={isUploading && uploadType === 'cover'}

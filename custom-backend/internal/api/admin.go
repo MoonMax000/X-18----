@@ -622,3 +622,155 @@ func (h *AdminHandler) GetUsersByCountry(c *fiber.Ctx) error {
 		"total":     len(results),
 	})
 }
+
+// DeleteAllUsersExceptAdmin удаляет всех пользователей кроме админов
+// DELETE /api/admin/users/cleanup
+func (h *AdminHandler) DeleteAllUsersExceptAdmin(c *fiber.Ctx) error {
+	adminID := c.Locals("userID").(uuid.UUID)
+	fmt.Printf("[Admin] DeleteAllUsersExceptAdmin called by admin %s\n", adminID)
+
+	// Подтверждение от пользователя (опционально, можно проверять через query параметр)
+	confirm := c.Query("confirm", "")
+	if confirm != "yes" {
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Missing confirmation\n")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Please add ?confirm=yes to proceed with deletion",
+		})
+	}
+
+	// Начинаем транзакцию
+	tx := h.db.DB.Begin()
+	if tx.Error != nil {
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to start transaction: %v\n", tx.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to start transaction",
+		})
+	}
+
+	// Получаем всех пользователей которых НЕ будем удалять (админы)
+	var adminUsers []models.User
+	if err := tx.Where("role = ?", "admin").Find(&adminUsers).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to fetch admins: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch admin users",
+		})
+	}
+
+	adminIDs := make([]uuid.UUID, len(adminUsers))
+	for i, admin := range adminUsers {
+		adminIDs[i] = admin.ID
+	}
+
+	fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Found %d admin users to preserve\n", len(adminIDs))
+
+	// Подсчитываем пользователей для удаления
+	var deleteCount int64
+	if err := tx.Model(&models.User{}).Where("role != ?", "admin").Count(&deleteCount).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to count users: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to count users for deletion",
+		})
+	}
+
+	fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: About to delete %d users\n", deleteCount)
+
+	// Удаляем связанные данные для не-админов
+
+	// 1. Удаляем посты
+	if err := tx.Exec("DELETE FROM posts WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete posts: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete posts",
+		})
+	}
+
+	// 2. Удаляем подписки
+	if err := tx.Exec("DELETE FROM follows WHERE follower_id NOT IN (SELECT id FROM users WHERE role = 'admin') OR following_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete follows: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete follows",
+		})
+	}
+
+	// 3. Удаляем сессии
+	if err := tx.Exec("DELETE FROM sessions WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete sessions: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete sessions",
+		})
+	}
+
+	// 4. Удаляем уведомления
+	if err := tx.Exec("DELETE FROM notifications WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete notifications: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete notifications",
+		})
+	}
+
+	// 5. Удаляем медиа
+	if err := tx.Exec("DELETE FROM media WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete media: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete media",
+		})
+	}
+
+	// 6. Удаляем реферальные коды
+	if err := tx.Exec("DELETE FROM referral_codes WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete referral codes: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete referral codes",
+		})
+	}
+
+	// 7. Удаляем OAuth связи
+	if err := tx.Exec("DELETE FROM user_oauth_identities WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete OAuth identities: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete OAuth identities",
+		})
+	}
+
+	// Наконец, удаляем самих пользователей (кроме админов)
+	result := tx.Where("role != ?", "admin").Delete(&models.User{})
+	if result.Error != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to delete users: %v\n", result.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete users",
+		})
+	}
+
+	// Коммитим транзакцию
+	if err := tx.Commit().Error; err != nil {
+		fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Failed to commit transaction: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to commit transaction",
+		})
+	}
+
+	fmt.Printf("[Admin] DeleteAllUsersExceptAdmin: Successfully deleted %d users (preserved %d admins)\n", result.RowsAffected, len(adminIDs))
+
+	return c.JSON(fiber.Map{
+		"message":       "Successfully deleted all non-admin users",
+		"deleted_count": result.RowsAffected,
+		"admins_kept":   len(adminIDs),
+		"admin_usernames": func() []string {
+			usernames := make([]string, len(adminUsers))
+			for i, admin := range adminUsers {
+				usernames[i] = admin.Username
+			}
+			return usernames
+		}(),
+	})
+}

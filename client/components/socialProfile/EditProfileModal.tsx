@@ -125,7 +125,7 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
               </button>
             </div>
 
-            {/* Cover Image - using compact size for modal */}
+            {/* Cover Image - matching ProfileHero layout */}
             <div className="mb-4">
               <label className="block text-sm font-semibold text-white mb-2">
                 Обложка профиля
@@ -133,7 +133,7 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
               <ProfileCover
                 coverUrl={coverUrl}
                 isEditable={true}
-                size="small"
+                size="responsive"
                 onUpload={handleUploadCover}
                 uploadProgress={uploadProgress}
                 isUploading={isUploading && uploadType === 'cover'}
@@ -141,8 +141,8 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
               />
             </div>
 
-            {/* Avatar - using compact size for modal */}
-            <div className="mb-6 -mt-12 ml-6">
+            {/* Avatar - matching ProfileHero layout with responsive sizing */}
+            <div className="mb-6 -mt-12 sm:-mt-14 md:-mt-16 ml-6">
               <label className="block text-sm font-semibold text-white mb-2">
                 Аватарка
               </label>
@@ -150,7 +150,7 @@ const EditProfileModal: FC<EditProfileModalProps> = ({
                 avatarUrl={avatarUrl}
                 level={userLevel}
                 isEditable={true}
-                size="small"
+                size="responsive"
                 onUpload={handleUploadAvatar}
                 uploadProgress={uploadProgress}
                 isUploading={isUploading && uploadType === 'avatar'}

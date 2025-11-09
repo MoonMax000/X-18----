@@ -107,8 +107,6 @@ const ProfileAvatar: FC<ProfileAvatarProps> = ({
 
         <div className={cn(
           "relative w-full h-full rounded-full overflow-hidden bg-[#121720] group",
-          getAvatarBorderClass(level),
-          getAvatarGlowClass(level),
           isEditable && "cursor-pointer"
         )}>
           <img 

@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -21,7 +21,6 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Profile = lazy(() => import("./pages/Profile"));
-const ProfileNew = lazy(() => import("./pages/ProfileNew"));
 const Billing = lazy(() => import("./pages/Billing"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SocialExplore = lazy(() => import("./pages/SocialExplore"));
@@ -30,8 +29,7 @@ const SocialNotifications = lazy(() => import("./pages/SocialNotifications"));
 const SocialPostDetail = lazy(() => import("./pages/SocialPostDetail"));
 const SocialPostPreview = lazy(() => import("./pages/SocialPostPreview"));
 const SocialTweetComposer = lazy(() => import("./pages/SocialTweetComposer"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const OtherProfilePage = lazy(() => import("./pages/OtherProfilePage"));
+const UnifiedProfilePage = lazy(() => import("./pages/UnifiedProfilePage"));
 const Updates = lazy(() => import("./pages/Updates"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const FeedTest = lazy(() => import("./pages/FeedTest"));
@@ -40,6 +38,11 @@ const HomePostDetail = lazy(() => import("./pages/HomePostDetail"));
 const CropTestPage = lazy(() => import("./pages/CropTestPage"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
 const NewsDetailPage = lazy(() => import("./pages/NewsDetailPage"));
+
+// Import redirect components
+import { ProfileRedirect } from "./components/common/ProfileRedirect";
+import { ProfileHandleRedirect } from "./components/common/ProfileHandleRedirect";
+import { RouteDebugger } from "./components/common/RouteDebugger";
 
 // Admin pages
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
@@ -53,7 +56,10 @@ const queryClient = new QueryClient({
 });
 
 
-const App = () => (
+const App = () => {
+  console.log('[APP] App component rendering');
+  
+  return (
   <QueryClientProvider client={queryClient}>
     <Provider store={store}>
       <ThemeProvider>
@@ -62,6 +68,7 @@ const App = () => (
           <Toaster />
           <Sonner />
         <BrowserRouter>
+          <RouteDebugger />
           <Suspense fallback={<BrandedLoader />}>
             <Routes>
               {/* Public test page without ClientLayout */}
@@ -79,68 +86,53 @@ const App = () => (
                 <Route path="reports" element={<AdminReports />} />
               </Route>
               
-              {/* Standard pages with ClientLayout */}
-              <Route
-                path="*"
-                element={
-                  <ClientLayout>
-                    <Routes>
-                    <Route path="/" element={<FeedTest />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/home" element={<FeedTest />} />
-                    <Route path="/home/post/:postId" element={<HomePostDetail />} />
-                    <Route path="/profile-page" element={<ProfilePage />} />
-                    <Route
-                      path="/other-profile"
-                      element={<OtherProfilePage />}
-                    />
-                    <Route path="/social/explore" element={<SocialExplore />} />
-                    <Route
-                      path="/social/notifications"
-                      element={<SocialNotifications />}
-                    />
-                    <Route
-                      path="/social/messages"
-                      element={<SocialMessages />}
-                    />
-                    <Route
-                      path="/social/compose-classic"
-                      element={<SocialTweetComposer />}
-                    />
-                    <Route
-                      path="/social/post/preview"
-                      element={<SocialPostPreview />}
-                    />
-                    <Route
-                      path="/social/post/:postId"
-                      element={<SocialPostDetail />}
-                    />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/profile" element={<ProfileNew />} />
-                    <Route path="/profile/:handle" element={<OtherProfilePage />} />
-                    <Route path="/profile-old" element={<Profile />} />
-                    <Route path="/billing" element={<Billing />} />
-                    <Route path="/updates" element={<Updates />} />
-                    <Route path="/referrals" element={<Referrals />} />
-                    <Route path="/feedtest" element={<FeedTest />} />
-                    <Route path="/news" element={<NewsPage />} />
-                    <Route path="/news/:id" element={<NewsDetailPage />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/settings/language" element={<Settings />} />
-                    <Route
-                      path="/social/profile/:handle"
-                      element={<OtherProfilePage />}
-                    />
-                    <Route
-                      path="/profile-connections/:handle"
-                      element={<ProfileConnections />}
-                    />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ClientLayout>
-              }
-            />
+              {/* ClientLayout as layout route - all pages below use ClientLayout with Outlet */}
+              <Route element={<ClientLayout />}>
+                {/* Home / Feed */}
+                <Route index element={<FeedTest />} />
+                <Route path="home" element={<FeedTest />} />
+                <Route path="home/post/:postId" element={<HomePostDetail />} />
+                <Route path="feedtest" element={<FeedTest />} />
+                
+                {/* Dashboard & Settings - static routes above dynamic */}
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="settings/language" element={<Settings />} />
+                
+                {/* Social routes */}
+                <Route path="social/explore" element={<SocialExplore />} />
+                <Route path="social/notifications" element={<SocialNotifications />} />
+                <Route path="social/messages" element={<SocialMessages />} />
+                <Route path="social/compose-classic" element={<SocialTweetComposer />} />
+                <Route path="social/post/preview" element={<SocialPostPreview />} />
+                <Route path="social/post/:postId" element={<SocialPostDetail />} />
+                
+                {/* Other static routes */}
+                <Route path="pricing" element={<Pricing />} />
+                <Route path="billing" element={<Billing />} />
+                <Route path="updates" element={<Updates />} />
+                <Route path="referrals" element={<Referrals />} />
+                <Route path="news" element={<NewsPage />} />
+                <Route path="news/:id" element={<NewsDetailPage />} />
+                <Route path="profile-connections/:handle" element={<ProfileConnections />} />
+                
+                {/* Redirects for old profile routes */}
+                <Route path="profile-page" element={<ProfileRedirect />} />
+                <Route path="profile" element={<Navigate to="/settings" replace />} />
+                <Route path="profile/:handle" element={<ProfileHandleRedirect />} />
+                <Route path="social/profile/:handle" element={<ProfileHandleRedirect />} />
+                
+                {/* Legacy/deprecated routes */}
+                <Route path="profile-old" element={<Profile />} />
+                
+                {/* Profile route with dynamic username parameter
+                    NOTE: :username will match /@danil as username="@danil"
+                    The @ is stripped in UnifiedProfilePage component */}
+                <Route path=":username" element={<UnifiedProfilePage />} />
+                
+                {/* 404 catch-all - must be last */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Routes>
           </Suspense>
         </BrowserRouter>
@@ -149,6 +141,7 @@ const App = () => (
       </ThemeProvider>
     </Provider>
   </QueryClientProvider>
-);
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);
