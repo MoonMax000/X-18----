@@ -99,7 +99,7 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
     if (el.children && el.children.length > 0) {
       const isGroupOpen = openGroup === el.title;
       return (
-        <div key={el.title}>
+        <div key={el.title} className="relative group/tooltip">
           <button
             onClick={() => toggleGroup(el.title)}
             className={cn(
@@ -128,6 +128,12 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
             </div>
             {(!isCollapsed || isMobile) && <ChevronDown className={cn('h-4 w-4 transition-transform flex-shrink-0', isGroupOpen && 'rotate-180')} />}
           </button>
+          {/* Tooltip for collapsed state */}
+          {isCollapsed && !isMobile && (
+            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E1E1E] text-white text-sm font-medium rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-[#2A2A2A]">
+              {el.title}
+            </div>
+          )}
           {isGroupOpen && (!isCollapsed || isMobile) && (
             <div id={`${el.title}-submenu`} className='ml-6 flex flex-col gap-1'>
               {el.children.map((child) => (
@@ -165,23 +171,23 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
 
     if (el.route) {
       return (
-        <NavLink 
-          key={el.title} 
-          to={el.route} 
-          className={cn('px-3 py-[14px]', { 
-            'ml-[5px]': isCollapsed && !isMobile,
-            'py-3': isMobile 
-          })}
-          onClick={handleNavClick}
-        >
-          {({ isActive }) => (
-            <div
-              className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
-                'text-white border-l-[2px] border-purple': isActive,
-                'text-[#B0B0B0]': !isActive,
-              })}
-            >
-              <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
+        <div key={el.title} className="relative group/tooltip">
+          <NavLink 
+            to={el.route} 
+            className={cn('px-3 py-[14px]', { 
+              'ml-[5px]': isCollapsed && !isMobile,
+              'py-3': isMobile 
+            })}
+            onClick={handleNavClick}
+          >
+            {({ isActive }) => (
+              <div
+                className={cn('group flex items-center gap-2 pl-2 transition hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
+                  'text-white border-l-[2px] border-purple': isActive,
+                  'text-[#B0B0B0]': !isActive,
+                })}
+              >
+                <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
               <span
                 className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
                   'opacity-0 w-0': isCollapsed && !isMobile,
@@ -190,31 +196,45 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               >
                 {el.title}
               </span>
+              </div>
+            )}
+          </NavLink>
+          {/* Tooltip for collapsed state */}
+          {isCollapsed && !isMobile && (
+            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E1E1E] text-white text-sm font-medium rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-[#2A2A2A]">
+              {el.title}
             </div>
           )}
-        </NavLink>
+        </div>
       );
     }
 
     return (
-      <div 
-        key={el.title} 
-        className={cn('px-3 py-[14px]', { 
-          'ml-[5px]': isCollapsed && !isMobile,
-          'py-3': isMobile 
-        })}
-      >
-        <div className='group flex items-center gap-2 pl-2 text-[#B0B0B0] hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden'>
-          <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
-          <span
-            className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-              'opacity-0 w-0': isCollapsed && !isMobile,
-              'opacity-100 w-auto': !isCollapsed || isMobile,
-            })}
-          >
-            {el.title}
-          </span>
+      <div key={el.title} className="relative group/tooltip">
+        <div 
+          className={cn('px-3 py-[14px]', { 
+            'ml-[5px]': isCollapsed && !isMobile,
+            'py-3': isMobile 
+          })}
+        >
+          <div className='group flex items-center gap-2 pl-2 text-[#B0B0B0] hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden'>
+            <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
+            <span
+              className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
+                'opacity-0 w-0': isCollapsed && !isMobile,
+                'opacity-100 w-auto': !isCollapsed || isMobile,
+              })}
+            >
+              {el.title}
+            </span>
+          </div>
         </div>
+        {/* Tooltip for collapsed state */}
+        {isCollapsed && !isMobile && (
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E1E1E] text-white text-sm font-medium rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-[#2A2A2A]">
+            {el.title}
+          </div>
+        )}
       </div>
     );
   };
