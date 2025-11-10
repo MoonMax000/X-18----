@@ -146,7 +146,22 @@ export function useAdminUsers() {
     }
   };
 
-  return { users, isLoading, error, fetchUsers, updateUserRole, deleteAllExceptAdmin };
+  const deleteUser = async (userId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await customBackendAPI.deleteUser(userId);
+      await fetchUsers();
+      return { success: true, data: result };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось удалить пользователя');
+      return { success: false, error: err };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { users, isLoading, error, fetchUsers, updateUserRole, deleteAllExceptAdmin, deleteUser };
 }
 
 // Жалобы

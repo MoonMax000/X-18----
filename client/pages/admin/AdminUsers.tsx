@@ -4,10 +4,13 @@ import { Search, Shield, User, Crown, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function AdminUsers() {
-  const { users, isLoading, error, fetchUsers, updateUserRole, deleteAllExceptAdmin } = useAdminUsers();
+  const { users, isLoading, error, fetchUsers, updateUserRole, deleteAllExceptAdmin, deleteUser } = useAdminUsers();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredUsers, setFilteredUsers] = useState(users);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -33,6 +36,39 @@ export function AdminUsers() {
     if (confirm(`Изменить роль пользователя на "${newRole}"?`)) {
       await updateUserRole(userId, newRole);
     }
+  };
+
+  const handleDeleteUser = (user: any) => {
+    setUserToDelete(user);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+    const result = await deleteUser(userToDelete.id);
+    setIsDeleting(false);
+    
+    if (result.success) {
+      toast({
+        title: 'Пользователь удалён',
+        description: `Пользователь ${result.data?.username} успешно удалён`,
+      });
+      setDeleteModalOpen(false);
+      setUserToDelete(null);
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить пользователя',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setUserToDelete(null);
   };
 
   const handleDeleteAllExceptAdmin = async () => {
@@ -186,6 +222,9 @@ export function AdminUsers() {
                   Статистика
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Роль
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Действия
                 </th>
               </tr>
@@ -234,6 +273,15 @@ export function AdminUsers() {
                       <option value="admin">Админ</option>
                     </select>
                   </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleDeleteUser(user)}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red hover:text-white bg-red/10 hover:bg-red rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Удалить
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -248,6 +296,63 @@ export function AdminUsers() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-moonlessNight border border-widget-border rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">
+              Подтверждение удаления
+            </h3>
+            <p className="text-gray-300 mb-2">
+              Вы уверены, что хотите удалить пользователя?
+            </p>
+            <div className="bg-onyxGrey rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-3">
+                <img
+                  src={userToDelete.avatar_url || '/default-avatar.png'}
+                  alt={userToDelete.display_name}
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold text-white">{userToDelete.display_name}</p>
+                  <p className="text-sm text-gray-400">@{userToDelete.username}</p>
+                  <p className="text-xs text-gray-500">{userToDelete.email}</p>
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-gray-400 mb-6">
+              Это действие необратимо. Будут удалены все посты, подписки и данные пользователя.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-widget-border hover:bg-widget-border/80 text-white rounded-lg transition-colors disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-red to-red/80 hover:from-red/90 hover:to-red/70 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Удаление...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Удалить
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -774,3 +774,165 @@ func (h *AdminHandler) DeleteAllUsersExceptAdmin(c *fiber.Ctx) error {
 		}(),
 	})
 }
+
+// DeleteUser удаляет конкретного пользователя
+// DELETE /api/admin/users/:id
+func (h *AdminHandler) DeleteUser(c *fiber.Ctx) error {
+	adminID := c.Locals("userID").(uuid.UUID)
+	userID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		fmt.Printf("[Admin] DeleteUser: Invalid user ID: %s\n", c.Params("id"))
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID",
+		})
+	}
+
+	fmt.Printf("[Admin] DeleteUser called by admin %s for user ID: %s\n", adminID, userID)
+
+	// Проверяем что пользователь не пытается удалить самого себя
+	if userID == adminID {
+		fmt.Printf("[Admin] DeleteUser: Admin attempting to delete themselves\n")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Cannot delete yourself",
+		})
+	}
+
+	// Получаем пользователя
+	var user models.User
+	if err := h.db.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		fmt.Printf("[Admin] DeleteUser: User not found: %v\n", err)
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	// Проверяем роль пользователя (опционально можно запретить удаление других админов)
+	if user.Role == "admin" {
+		// Подсчитываем количество админов
+		var adminCount int64
+		h.db.DB.Model(&models.User{}).Where("role = ?", "admin").Count(&adminCount)
+
+		if adminCount <= 1 {
+			fmt.Printf("[Admin] DeleteUser: Cannot delete the last admin\n")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Cannot delete the last admin user",
+			})
+		}
+	}
+
+	// Начинаем транзакцию
+	tx := h.db.DB.Begin()
+	if tx.Error != nil {
+		fmt.Printf("[Admin] DeleteUser: Failed to start transaction: %v\n", tx.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to start transaction",
+		})
+	}
+
+	// Удаляем связанные данные
+
+	// 1. Удаляем посты пользователя
+	if err := tx.Where("user_id = ?", userID).Delete(&models.Post{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete posts: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete user posts",
+		})
+	}
+
+	// 2. Удаляем подписки
+	if err := tx.Where("follower_id = ? OR following_id = ?", userID, userID).Delete(&models.Follow{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete follows: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete follows",
+		})
+	}
+
+	// 3. Удаляем сессии
+	if err := tx.Where("user_id = ?", userID).Delete(&models.Session{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete sessions: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete sessions",
+		})
+	}
+
+	// 4. Удаляем уведомления
+	if err := tx.Where("user_id = ? OR from_user_id = ?", userID, userID).Delete(&models.Notification{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete notifications: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete notifications",
+		})
+	}
+
+	// 5. Удаляем медиа
+	if err := tx.Where("user_id = ?", userID).Delete(&models.Media{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete media: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete media",
+		})
+	}
+
+	// 6. Удаляем реферальные коды
+	if err := tx.Where("user_id = ?", userID).Delete(&models.ReferralCode{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete referral codes: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete referral codes",
+		})
+	}
+
+	// 7. Удаляем OAuth связи
+	if err := tx.Exec("DELETE FROM user_oauth_identities WHERE user_id = ?", userID).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete OAuth identities: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete OAuth identities",
+		})
+	}
+
+	// 8. Удаляем лайки
+	if err := tx.Exec("DELETE FROM likes WHERE user_id = ?", userID).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete likes: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete likes",
+		})
+	}
+
+	// 9. Удаляем закладки
+	if err := tx.Exec("DELETE FROM bookmarks WHERE user_id = ?", userID).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete bookmarks: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete bookmarks",
+		})
+	}
+
+	// Наконец, удаляем самого пользователя
+	if err := tx.Where("id = ?", userID).Delete(&models.User{}).Error; err != nil {
+		tx.Rollback()
+		fmt.Printf("[Admin] DeleteUser: Failed to delete user: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete user",
+		})
+	}
+
+	// Коммитим транзакцию
+	if err := tx.Commit().Error; err != nil {
+		fmt.Printf("[Admin] DeleteUser: Failed to commit transaction: %v\n", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to commit transaction",
+		})
+	}
+
+	fmt.Printf("[Admin] DeleteUser: Successfully deleted user %s (%s)\n", user.Username, userID)
+
+	return c.JSON(fiber.Map{
+		"message":  "User deleted successfully",
+		"username": user.Username,
+	})
+}

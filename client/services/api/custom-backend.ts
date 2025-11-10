@@ -577,6 +577,12 @@ class CustomBackendAPI {
       method: 'DELETE',
     });
   }
+
+  async deleteUser(userId: string): Promise<{ message: string; username: string }> {
+    return this.request<{ message: string; username: string }>(`/admin/users/${userId}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 // ============================================================================
