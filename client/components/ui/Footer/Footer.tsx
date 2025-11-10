@@ -1,5 +1,6 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import { Facebook, Instagram, Linkedin, Youtube, ArrowRight, Globe, ChevronDown } from 'lucide-react';
+import { customBackendAPI } from '../../../services/api/custom-backend';
 
 interface Language {
   code: string;
@@ -26,14 +27,41 @@ const Footer: FC = () => {
   const [email, setEmail] = useState('');
   const [currentLanguage, setCurrentLanguage] = useState('ru');
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedLanguage = LANGUAGES.find((lang) => lang.code === currentLanguage) || LANGUAGES[0];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Newsletter subscription:', email);
-    // TODO: Implement newsletter subscription
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      await customBackendAPI.subscribeToNewsletter(email);
+      setSubmitMessage({ type: 'success', text: 'Спасибо за подписку!' });
+      setEmail('');
+      
+      // Hide message after 5 seconds
+      setTimeout(() => {
+        setSubmitMessage(null);
+      }, 5000);
+    } catch (error: any) {
+      setSubmitMessage({ 
+        type: 'error', 
+        text: error.message || 'Ошибка подписки. Попробуйте позже.' 
+      });
+      
+      // Hide error message after 5 seconds
+      setTimeout(() => {
+        setSubmitMessage(null);
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -70,8 +98,8 @@ const Footer: FC = () => {
             <p className="leading-7 text-[#E5E5E5]">
               Announcements can be found in our blog. Press contact:
               <br />
-              <a 
-                href="mailto:media@tyriantrade.com" 
+              <a
+                href="mailto:media@tyriantrade.com"
                 className="text-[#E5E5E5] underline transition-opacity duration-200 hover:opacity-80"
               >
                 media@tyriantrade.com
@@ -138,7 +166,8 @@ const Footer: FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder=" "
-                  className="peer w-full max-h-[52px] rounded-full border border-[#525252] bg-transparent px-[30px] py-[13px] font-medium text-white transition-all duration-300 placeholder-transparent focus:border-[#A06AFF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/50 focus:shadow-lg focus:shadow-[#A06AFF]/30"
+                  disabled={isSubmitting}
+                  className="peer w-full max-h-[52px] rounded-full border border-[#525252] bg-transparent px-[30px] py-[13px] font-medium text-white transition-all duration-300 placeholder-transparent focus:border-[#A06AFF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A06AFF]/50 focus:shadow-lg focus:shadow-[#A06AFF]/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label
                   htmlFor="footer-email-input"
@@ -149,25 +178,38 @@ const Footer: FC = () => {
               </div>
               <button
                 type="submit"
-                disabled={!email}
+                disabled={!email || isSubmitting}
                 className="group relative z-20 overflow-hidden flex items-center justify-center gap-2 max-h-[52px] min-w-fit rounded-full border px-6 py-3 text-center leading-7 transition-all duration-300 disabled:cursor-not-allowed"
                 style={{
-                  background: email
+                  background: email && !isSubmitting
                     ? 'linear-gradient(90deg, rgba(230, 230, 230, 0.2) 0%, rgba(230, 230, 230, 0.05) 50%, transparent 100%)'
                     : 'linear-gradient(90deg, #2E2E2E 0%, #151515 52.88%, #0C0C0C 100%)',
-                  borderColor: email ? '#A06AFF' : '#525252',
-                  boxShadow: email ? '0 10px 25px -5px rgba(160, 106, 255, 0.3)' : 'none',
+                  borderColor: email && !isSubmitting ? '#A06AFF' : '#525252',
+                  boxShadow: email && !isSubmitting ? '0 10px 25px -5px rgba(160, 106, 255, 0.3)' : 'none',
                 }}
               >
-                {/* Animated shine effect - only show when email is entered */}
-                {email && (
+                {/* Animated shine effect - only show when email is entered and not submitting */}
+                {email && !isSubmitting && (
                   <span className="absolute inset-0 w-full animate-shine bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 )}
 
-                <span className="relative z-10 font-medium text-white">Subscribe to newsletter</span>
-                <ArrowRight className="relative z-10 h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="relative z-10 font-medium text-white">
+                  {isSubmitting ? 'Подписка...' : 'Subscribe to newsletter'}
+                </span>
+                {!isSubmitting && <ArrowRight className="relative z-10 h-5 w-5 text-white transition-transform duration-300 group-hover:translate-x-1" />}
               </button>
             </form>
+
+            {/* Success/Error Message */}
+            {submitMessage && (
+              <div className={`mb-5 p-3 rounded-lg text-sm ${
+                submitMessage.type === 'success'
+                  ? 'bg-green-900/20 text-green-400 border border-green-800'
+                  : 'bg-red-900/20 text-red-400 border border-red-800'
+              }`}>
+                {submitMessage.text}
+              </div>
+            )}
 
             <div className="text-[13px] leading-[19.5px] text-[#A3A3A3]">
               <p className="mb-5 text-[11px] font-medium leading-4">
@@ -353,7 +395,7 @@ const Footer: FC = () => {
                 </li>
                 <li>
                   <a href="/blog" className="text-[13px] text-[#949494] hover:text-white transition-colors duration-200">
-                    Блог ��ообщества
+                    Блог сообщества
                   </a>
                 </li>
               </ul>
