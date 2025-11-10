@@ -70,10 +70,8 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
   }, [location.pathname]);
 
   const toggleGroup = (title: string) => {
-    // В компактном режиме не разворачиваем группы
-    if (!isCollapsed) {
-      setOpenGroup(openGroup === title ? null : title);
-    }
+    // Переключаем группу: если открыта - закрываем, если закрыта - открываем (и закрываем другую)
+    setOpenGroup(openGroup === title ? null : title);
   };
 
   // Закрываем мобильное меню при навигации
