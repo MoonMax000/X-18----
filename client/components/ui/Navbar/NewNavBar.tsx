@@ -135,7 +135,7 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
             </div>
           )}
           {isGroupOpen && (
-            <div id={`${el.title}-submenu`} className='ml-6 flex flex-col gap-1'>
+            <div id={`${el.title}-submenu`} className='flex flex-col gap-1'>
               {el.children.map((child) => (
                 <NavLink 
                   key={child.title} 
@@ -145,12 +145,14 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                 >
                   {({ isActive }) => (
                     <div
-                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
-                        'text-white border-l-[2px] border-purple': isActive,
+                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white overflow-hidden', {
+                        'text-white': isActive,
                         'text-[#B0B0B0]': !isActive,
                       })}
                     >
-                      <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{child.icon}</div>
+                      <div className={cn('flex h-5 w-5 flex-shrink-0 items-center justify-center rounded transition-colors', {
+                        'bg-purple/20 text-purple': isActive,
+                      })}>{child.icon}</div>
                       <span
                         className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
                           'opacity-0 w-0': isCollapsed && !isMobile,
