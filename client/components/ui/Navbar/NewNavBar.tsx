@@ -139,28 +139,36 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                 <NavLink 
                   key={child.title} 
                   to={child.route ?? '#'} 
-                  className={cn('px-3')}
+                  className={cn('px-3 relative group/submenu-tooltip')}
                   onClick={handleNavClick}
                 >
                   {({ isActive }) => (
-                    <div
-                      className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white overflow-hidden', {
-                        'text-white': isActive,
-                        'text-[#B0B0B0]': !isActive,
-                      })}
-                    >
-                      <div className={cn('flex h-5 w-5 flex-shrink-0 items-center justify-center rounded transition-colors', {
-                        'bg-purple/20 text-purple': isActive,
-                      })}>{child.icon}</div>
-                      <span
-                        className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
-                          'opacity-0 w-0': isCollapsed && !isMobile,
-                          'opacity-100 w-auto': !isCollapsed || isMobile,
+                    <>
+                      <div
+                        className={cn('group flex items-center gap-2 pl-2 py-2 hover:custom-bg-blur hover:text-white overflow-hidden', {
+                          'text-white': isActive,
+                          'text-[#B0B0B0]': !isActive,
                         })}
                       >
-                        {child.title}
-                      </span>
-                    </div>
+                        <div className={cn('flex h-5 w-5 flex-shrink-0 items-center justify-center rounded transition-colors', {
+                          'bg-purple/20 text-purple': isActive,
+                        })}>{child.icon}</div>
+                        <span
+                          className={cn('text-[15px] font-semibold whitespace-nowrap transition-all duration-300', {
+                            'opacity-0 w-0': isCollapsed && !isMobile,
+                            'opacity-100 w-auto': !isCollapsed || isMobile,
+                          })}
+                        >
+                          {child.title}
+                        </span>
+                      </div>
+                      {/* Tooltip for collapsed state */}
+                      {isCollapsed && !isMobile && (
+                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E1E1E] text-white text-sm font-medium rounded-lg opacity-0 invisible group-hover/submenu-tooltip:opacity-100 group-hover/submenu-tooltip:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-[#2A2A2A]">
+                          {child.title}
+                        </div>
+                      )}
+                    </>
                   )}
                 </NavLink>
               ))}
