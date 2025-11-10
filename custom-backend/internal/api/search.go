@@ -1,12 +1,15 @@
 package api
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"custom-backend/internal/database"
 	"custom-backend/internal/models"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type SearchHandler struct {
@@ -19,305 +22,260 @@ func NewSearchHandler(db *database.Database) *SearchHandler {
 	}
 }
 
-// SearchResponse объединенный результат поиска
-type SearchResponse struct {
-	Users []models.PublicUser `json:"users"`
-	Posts []models.Post       `json:"posts"`
-	Total SearchTotal         `json:"total"`
+// SearchPostsRequest represents the search query parameters
+type SearchPostsRequest struct {
+	Query       string `query:"q"`            // Text search query
+	Author      string `query:"author"`       // Author username
+	Category    string `query:"category"`     // Post category
+	Tags        string `query:"tags"`         // Comma-separated tags
+	DateFrom    string `query:"date_from"`    // ISO 8601 date
+	DateTo      string `query:"date_to"`      // ISO 8601 date
+	AccessLevel string `query:"access_level"` // free, pay-per-post, subscribers-only, etc.
+	MinLikes    int    `query:"min_likes"`    // Minimum likes count
+	MinViews    int    `query:"min_views"`    // Minimum views count
+	HasMedia    string `query:"has_media"`    // true/false/any
+	MediaType   string `query:"media_type"`   // image, video, document, any
+	SortBy      string `query:"sort_by"`      // relevance, date, likes, views
+	SortOrder   string `query:"sort_order"`   // asc, desc
+	Page        int    `query:"page"`         // Page number (default: 1)
+	Limit       int    `query:"limit"`        // Results per page (default: 20, max: 100)
 }
 
-type SearchTotal struct {
-	Users int64 `json:"users"`
-	Posts int64 `json:"posts"`
+// SearchPostsResponse represents the search results
+type SearchPostsResponse struct {
+	Posts      []models.PostResponse `json:"posts"`
+	Total      int64                 `json:"total"`
+	Page       int                   `json:"page"`
+	Limit      int                   `json:"limit"`
+	TotalPages int                   `json:"total_pages"`
 }
 
-// Search выполняет поиск по пользователям и постам
-// GET /api/search?q=query&type=all&limit=20
-func (h *SearchHandler) Search(c *fiber.Ctx) error {
-	// Параметры поиска
-	query := c.Query("q")
-	searchType := c.Query("type", "all") // all, users, posts
-	limit := c.QueryInt("limit", 20)
-	offset := c.QueryInt("offset", 0)
-
-	if limit > 100 {
-		limit = 100
-	}
-
-	if query == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Search query is required",
-		})
-	}
-
-	// Очищаем запрос
-	query = strings.TrimSpace(query)
-	searchPattern := "%" + strings.ToLower(query) + "%"
-
-	var response SearchResponse
-	var total SearchTotal
-
-	// Поиск пользователей
-	if searchType == "all" || searchType == "users" {
-		var users []models.User
-		userQuery := h.db.DB.Model(&models.User{}).
-			Where("LOWER(username) LIKE ? OR LOWER(display_name) LIKE ? OR LOWER(bio) LIKE ?",
-				searchPattern, searchPattern, searchPattern)
-
-		userQuery.Count(&total.Users)
-
-		if err := userQuery.
-			Order("followers_count DESC").
-			Limit(limit).
-			Offset(offset).
-			Find(&users).Error; err == nil {
-
-			response.Users = make([]models.PublicUser, len(users))
-			for i, user := range users {
-				response.Users[i] = user.ToPublic()
-			}
-		}
-	}
-
-	// Поиск постов
-	if searchType == "all" || searchType == "posts" {
-		var posts []models.Post
-		postQuery := h.db.DB.Model(&models.Post{}).
-			Preload("User").
-			Preload("Media").
-			Where("LOWER(content) LIKE ?", searchPattern)
-
-		postQuery.Count(&total.Posts)
-
-		if err := postQuery.
-			Order("created_at DESC").
-			Limit(limit).
-			Offset(offset).
-			Find(&posts).Error; err == nil {
-
-			response.Posts = posts
-		}
-	}
-
-	response.Total = total
-
-	return c.JSON(response)
-}
-
-// SearchUsers поиск только по пользователям
-// GET /api/search/users?q=query&limit=20
-func (h *SearchHandler) SearchUsers(c *fiber.Ctx) error {
-	query := c.Query("q")
-	limit := c.QueryInt("limit", 20)
-	offset := c.QueryInt("offset", 0)
-
-	if limit > 100 {
-		limit = 100
-	}
-
-	if query == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Search query is required",
-		})
-	}
-
-	query = strings.TrimSpace(query)
-	searchPattern := "%" + strings.ToLower(query) + "%"
-
-	var users []models.User
-	var total int64
-
-	userQuery := h.db.DB.Model(&models.User{}).
-		Where("LOWER(username) LIKE ? OR LOWER(display_name) LIKE ? OR LOWER(bio) LIKE ?",
-			searchPattern, searchPattern, searchPattern)
-
-	userQuery.Count(&total)
-
-	if err := userQuery.
-		Order("followers_count DESC").
-		Limit(limit).
-		Offset(offset).
-		Find(&users).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to search users",
-		})
-	}
-
-	// Конвертируем в PublicUser
-	publicUsers := make([]models.PublicUser, len(users))
-	for i, user := range users {
-		publicUsers[i] = user.ToPublic()
-	}
-
-	return c.JSON(fiber.Map{
-		"users":  publicUsers,
-		"total":  total,
-		"limit":  limit,
-		"offset": offset,
-	})
-}
-
-// SearchPosts поиск только по постам
-// GET /api/search/posts?q=query&limit=20
+// SearchPosts handles POST search with filters
 func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
-	query := c.Query("q")
-	limit := c.QueryInt("limit", 20)
-	offset := c.QueryInt("offset", 0)
-
-	if limit > 100 {
-		limit = 100
-	}
-
-	if query == "" {
+	var req SearchPostsRequest
+	if err := c.QueryParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Search query is required",
+			"error": "Invalid query parameters",
 		})
 	}
 
-	query = strings.TrimSpace(query)
-	searchPattern := "%" + strings.ToLower(query) + "%"
+	// Set defaults
+	if req.Page < 1 {
+		req.Page = 1
+	}
+	if req.Limit < 1 {
+		req.Limit = 20
+	}
+	if req.Limit > 100 {
+		req.Limit = 100
+	}
+	if req.SortBy == "" {
+		req.SortBy = "date"
+	}
+	if req.SortOrder == "" {
+		req.SortOrder = "desc"
+	}
 
-	var posts []models.Post
-	var total int64
+	// Get current user if authenticated
+	var currentUserID *uuid.UUID
+	userID := c.Locals("userID")
+	if userID != nil {
+		if uid, ok := userID.(uuid.UUID); ok {
+			currentUserID = &uid
+		}
+	}
 
-	postQuery := h.db.DB.Model(&models.Post{}).
+	// Build query
+	query := h.db.DB.Model(&models.Post{}).
 		Preload("User").
-		Preload("Media").
-		Where("LOWER(content) LIKE ?", searchPattern)
+		Preload("Media")
 
-	postQuery.Count(&total)
-
-	if err := postQuery.
-		Order("created_at DESC").
-		Limit(limit).
-		Offset(offset).
-		Find(&posts).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to search posts",
-		})
+	// Only show public posts or posts from followed users if not authenticated
+	// If authenticated, show public posts + posts from followed users
+	if currentUserID == nil {
+		query = query.Where("visibility = ?", "public")
+	} else {
+		// Show public posts or posts from users the current user follows
+		query = query.Where(
+			h.db.DB.Where("visibility = ?", "public").
+				Or(h.db.DB.Where("user_id IN (?)",
+					h.db.DB.Model(&models.Follow{}).
+						Select("following_id").
+						Where("follower_id = ?", currentUserID),
+				)),
+		)
 	}
 
-	return c.JSON(fiber.Map{
-		"posts":  posts,
-		"total":  total,
-		"limit":  limit,
-		"offset": offset,
-	})
-}
-
-// SearchHashtags поиск постов по хештегу
-// GET /api/search/hashtag/:tag?limit=20
-func (h *SearchHandler) SearchHashtags(c *fiber.Ctx) error {
-	tag := c.Params("tag")
-	limit := c.QueryInt("limit", 20)
-	offset := c.QueryInt("offset", 0)
-
-	if limit > 100 {
-		limit = 100
+	// Text search (full-text search on content)
+	if req.Query != "" {
+		searchTerm := "%" + strings.ToLower(req.Query) + "%"
+		query = query.Where("LOWER(content) LIKE ? OR LOWER(content_html) LIKE ?", searchTerm, searchTerm)
 	}
 
-	if tag == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Hashtag is required",
-		})
+	// Author filter
+	if req.Author != "" {
+		query = query.Joins("JOIN users ON users.id = posts.user_id").
+			Where("users.username = ?", req.Author)
 	}
 
-	// Убираем # если есть
-	tag = strings.TrimPrefix(tag, "#")
-	tag = strings.ToLower(tag)
-
-	var posts []models.Post
-	var total int64
-
-	// Ищем по хештегу в контенте и metadata
-	postQuery := h.db.DB.Model(&models.Post{}).
-		Preload("User").
-		Preload("Media").
-		Where("LOWER(content) LIKE ?", "%#"+tag+"%")
-
-	postQuery.Count(&total)
-
-	if err := postQuery.
-		Order("created_at DESC").
-		Limit(limit).
-		Offset(offset).
-		Find(&posts).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to search hashtag",
-		})
+	// Category filter
+	if req.Category != "" {
+		query = query.Where("category = ?", req.Category)
 	}
 
-	return c.JSON(fiber.Map{
-		"hashtag": "#" + tag,
-		"posts":   posts,
-		"total":   total,
-		"limit":   limit,
-		"offset":  offset,
-	})
-}
-
-// GetTrendingHashtags возвращает популярные хештеги
-// GET /api/search/trending-hashtags?limit=10
-func (h *SearchHandler) GetTrendingHashtags(c *fiber.Ctx) error {
-	limit := c.QueryInt("limit", 10)
-	if limit > 50 {
-		limit = 50
-	}
-
-	// Простая реализация: находим посты с хештегами за последние 7 дней
-	// В production лучше использовать отдельную таблицу hashtags с счетчиками
-	type HashtagCount struct {
-		Tag   string `json:"tag"`
-		Count int64  `json:"count"`
-	}
-
-	var results []HashtagCount
-
-	// Получаем посты за последние 7 дней с хештегами
-	var posts []models.Post
-	if err := h.db.DB.
-		Where("created_at > NOW() - INTERVAL '7 days'").
-		Where("content LIKE '%#%'").
-		Select("content").
-		Find(&posts).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch trending hashtags",
-		})
-	}
-
-	// Подсчитываем хештеги
-	hashtagMap := make(map[string]int64)
-	for _, post := range posts {
-		// Простой парсинг хештегов
-		words := strings.Fields(post.Content)
-		for _, word := range words {
-			if strings.HasPrefix(word, "#") && len(word) > 1 {
-				tag := strings.ToLower(strings.TrimPrefix(word, "#"))
-				// Убираем пунктуацию в конце
-				tag = strings.TrimRight(tag, ".,!?;:")
-				if len(tag) > 0 {
-					hashtagMap[tag]++
-				}
+	// Tags filter (search in comma-separated tags string)
+	if req.Tags != "" {
+		tagsList := strings.Split(req.Tags, ",")
+		for _, tag := range tagsList {
+			tag = strings.TrimSpace(tag)
+			if tag != "" {
+				query = query.Where("tags LIKE ?", "%"+tag+"%")
 			}
 		}
 	}
 
-	// Конвертируем в slice и сортируем
-	for tag, count := range hashtagMap {
-		results = append(results, HashtagCount{
-			Tag:   "#" + tag,
-			Count: count,
+	// Date range filters
+	if req.DateFrom != "" {
+		dateFrom, err := time.Parse(time.RFC3339, req.DateFrom)
+		if err == nil {
+			query = query.Where("posts.created_at >= ?", dateFrom)
+		}
+	}
+	if req.DateTo != "" {
+		dateTo, err := time.Parse(time.RFC3339, req.DateTo)
+		if err == nil {
+			query = query.Where("posts.created_at <= ?", dateTo)
+		}
+	}
+
+	// Access level filter
+	if req.AccessLevel != "" {
+		query = query.Where("access_level = ?", req.AccessLevel)
+	}
+
+	// Minimum likes filter
+	if req.MinLikes > 0 {
+		query = query.Where("likes_count >= ?", req.MinLikes)
+	}
+
+	// Minimum views filter
+	if req.MinViews > 0 {
+		query = query.Where("views_count >= ?", req.MinViews)
+	}
+
+	// Media filter
+	if req.HasMedia == "true" {
+		query = query.Where("EXISTS (SELECT 1 FROM media WHERE media.post_id = posts.id)")
+	} else if req.HasMedia == "false" {
+		query = query.Where("NOT EXISTS (SELECT 1 FROM media WHERE media.post_id = posts.id)")
+	}
+
+	// Media type filter
+	if req.MediaType != "" && req.MediaType != "any" {
+		query = query.Where("EXISTS (SELECT 1 FROM media WHERE media.post_id = posts.id AND media.media_type = ?)", req.MediaType)
+	}
+
+	// Count total results
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to count posts",
 		})
 	}
 
-	// Простая сортировка по count (в production использовать sort)
-	// Берем топ N
-	if len(results) > limit {
-		results = results[:limit]
+	// Apply sorting
+	switch req.SortBy {
+	case "likes":
+		query = query.Order(fmt.Sprintf("likes_count %s", req.SortOrder))
+	case "views":
+		query = query.Order(fmt.Sprintf("views_count %s", req.SortOrder))
+	case "relevance":
+		// For relevance, prioritize posts with more engagement
+		if req.SortOrder == "desc" {
+			query = query.Order("(likes_count + retweets_count + replies_count) DESC")
+		} else {
+			query = query.Order("(likes_count + retweets_count + replies_count) ASC")
+		}
+	case "date":
+		fallthrough
+	default:
+		query = query.Order(fmt.Sprintf("posts.created_at %s", req.SortOrder))
 	}
 
-	return c.JSON(fiber.Map{
-		"hashtags": results,
-		"period":   "7 days",
+	// Apply pagination
+	offset := (req.Page - 1) * req.Limit
+	query = query.Offset(offset).Limit(req.Limit)
+
+	// Execute query
+	var posts []models.Post
+	if err := query.Find(&posts).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch posts",
+		})
+	}
+
+	// Convert to response format and check user interactions
+	postResponses := make([]models.PostResponse, 0, len(posts))
+	for _, post := range posts {
+		postResp := models.PostResponse{
+			ID:             post.ID,
+			UserID:         post.UserID,
+			Content:        post.Content,
+			ContentWarning: post.ContentWarning,
+			Visibility:     post.Visibility,
+			IsPaid:         post.IsPaid,
+			Price:          post.Price,
+			ReplyToID:      post.ReplyToID,
+			RootPostID:     post.RootPostID,
+			LikesCount:     post.LikesCount,
+			RetweetsCount:  post.RetweetsCount,
+			RepliesCount:   post.RepliesCount,
+			ViewsCount:     post.ViewsCount,
+			Metadata:       post.Metadata,
+			CreatedAt:      post.CreatedAt,
+			UpdatedAt:      post.UpdatedAt,
+			User:           post.User.ToPublic(),
+			Media:          post.Media,
+			IsLiked:        false,
+			IsRetweeted:    false,
+			IsBookmarked:   false,
+		}
+
+		// Check if current user has interacted with this post
+		if currentUserID != nil {
+			var likeCount int64
+			h.db.DB.Model(&models.Like{}).
+				Where("user_id = ? AND post_id = ?", currentUserID, post.ID).
+				Count(&likeCount)
+			postResp.IsLiked = likeCount > 0
+
+			var retweetCount int64
+			h.db.DB.Model(&models.Retweet{}).
+				Where("user_id = ? AND post_id = ?", currentUserID, post.ID).
+				Count(&retweetCount)
+			postResp.IsRetweeted = retweetCount > 0
+
+			var bookmarkCount int64
+			h.db.DB.Model(&models.Bookmark{}).
+				Where("user_id = ? AND post_id = ?", currentUserID, post.ID).
+				Count(&bookmarkCount)
+			postResp.IsBookmarked = bookmarkCount > 0
+		}
+
+		postResponses = append(postResponses, postResp)
+	}
+
+	// Calculate total pages
+	totalPages := int(total) / req.Limit
+	if int(total)%req.Limit > 0 {
+		totalPages++
+	}
+
+	return c.JSON(SearchPostsResponse{
+		Posts:      postResponses,
+		Total:      total,
+		Page:       req.Page,
+		Limit:      req.Limit,
+		TotalPages: totalPages,
 	})
 }

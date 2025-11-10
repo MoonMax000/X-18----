@@ -360,13 +360,8 @@ func main() {
 	media.Delete("/:id", middleware.JWTMiddleware(cfg), mediaHandler.DeleteMedia)
 	media.Get("/user/:id", mediaHandler.GetUserMedia)
 
-	// Search routes
-	search := apiGroup.Group("/search")
-	search.Get("/", searchHandler.Search)
-	search.Get("/users", searchHandler.SearchUsers)
-	search.Get("/posts", searchHandler.SearchPosts)
-	search.Get("/hashtag/:tag", searchHandler.SearchHashtags)
-	search.Get("/trending-hashtags", searchHandler.GetTrendingHashtags)
+	// Search routes (optional auth - works for both authenticated and anonymous users)
+	posts.Get("/search", searchHandler.SearchPosts)
 
 	// Widgets routes (public)
 	widgets := apiGroup.Group("/widgets")

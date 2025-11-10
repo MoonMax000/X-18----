@@ -6,6 +6,7 @@ import { AvatarDropdown } from "../AvatarDropdown/AvatarDropdown";
 import { NotificationBell } from "./NotificationBell";
 import { useCustomNotifications } from "@/hooks/useCustomNotifications";
 import { useAuth } from "@/contexts/AuthContext";
+import { SearchMegaMenu } from "@/components/SearchMegaMenu/SearchMegaMenu";
 
 // Lazy load modal to reduce initial bundle size
 const LoginModal = lazy(() => import("@/components/auth/LoginModal"));
@@ -25,6 +26,7 @@ export const Header: FC<HeaderProps> = ({
 }) => {
   const { user } = useAuth();
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   // Fetch unread notifications count only if user is authenticated
   const { unreadCount } = useCustomNotifications({
@@ -170,9 +172,11 @@ export const Header: FC<HeaderProps> = ({
               />
             </svg>
             <input
-              className="bg-transparent text-[#B0B0B0] text-[13px] font-bold placeholder:text-[#B0B0B0] outline-none w-full"
+              className="bg-transparent text-[#B0B0B0] text-[13px] font-bold placeholder:text-[#B0B0B0] outline-none w-full cursor-pointer"
               placeholder="Search"
               style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}
+              onFocus={() => setIsSearchOpen(true)}
+              readOnly
             />
           </div>
         </div>
@@ -231,6 +235,12 @@ export const Header: FC<HeaderProps> = ({
           />
         </Suspense>
       )}
+
+      {/* Search Mega Menu */}
+      <SearchMegaMenu
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </header>
   );
 };
