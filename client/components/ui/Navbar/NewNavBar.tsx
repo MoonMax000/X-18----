@@ -312,19 +312,14 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                         'w-[40px]': isCollapsed,
                       })}
                     />
-                    {filteredNavElements.slice(1).map((el, index) => (
-                      <div key={el.title}>
-                        {renderElement(el, false)}
-                        {index === 0 && (
-                          <div
-                            className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
-                              'w-[190px]': !isCollapsed,
-                              'w-[40px]': isCollapsed,
-                            })}
-                          />
-                        )}
-                      </div>
-                    ))}
+                    {filteredNavElements.slice(1, 2).map((el) => renderElement(el, false))}
+                    <div
+                      className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
+                        'w-[190px]': !isCollapsed,
+                        'w-[40px]': isCollapsed,
+                      })}
+                    />
+                    {filteredNavElements.slice(2).map((el) => renderElement(el, false))}
                   </>
                 )}
               </div>
