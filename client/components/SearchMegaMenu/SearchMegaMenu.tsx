@@ -59,10 +59,10 @@ export const SearchMegaMenu: FC<SearchMegaMenuProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-20">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
       <div
         ref={menuRef}
-        className="bg-[#1A1D24] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
+        className="bg-[#1A1D24]/80 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col transition-transform duration-300"
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-700">
@@ -185,6 +185,83 @@ export const SearchMegaMenu: FC<SearchMegaMenuProps> = ({
                   <option value="premium">Премиум</option>
                   <option value="subscribers-only">Только подписчики</option>
                 </select>
+              </div>
+
+              {/* Has Media */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Наличие медиа</label>
+                <select
+                  value={filters.hasMedia || 'any'}
+                  onChange={(e) => updateFilters({ hasMedia: e.target.value as 'true' | 'false' | 'any' })}
+                  className="w-full px-3 py-2 bg-[#1A1D24] text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="any">Любое</option>
+                  <option value="true">Только с медиа</option>
+                  <option value="false">Только без медиа</option>
+                </select>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Теги</label>
+                <input
+                  type="text"
+                  value={filters.tags || ''}
+                  onChange={(e) => updateFilters({ tags: e.target.value })}
+                  placeholder="tag1, tag2, ..."
+                  className="w-full px-3 py-2 bg-[#1A1D24] text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              {/* Date Range */}
+              <div className="col-span-2">
+                <label className="block text-sm text-gray-400 mb-2">Диапазон дат</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="date"
+                      value={filters.dateFrom || ''}
+                      onChange={(e) => updateFilters({ dateFrom: e.target.value })}
+                      placeholder="От"
+                      className="w-full px-3 py-2 bg-[#1A1D24] text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="date"
+                      value={filters.dateTo || ''}
+                      onChange={(e) => updateFilters({ dateTo: e.target.value })}
+                      placeholder="До"
+                      className="w-full px-3 py-2 bg-[#1A1D24] text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Min Likes */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Мин. лайков</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={filters.minLikes ?? ''}
+                  onChange={(e) => updateFilters({ minLikes: e.target.valueAsNumber || undefined })}
+                  placeholder="0"
+                  className="w-full px-3 py-2 bg-[#1A1D24] text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              {/* Min Views */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Мин. просмотров</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={filters.minViews ?? ''}
+                  onChange={(e) => updateFilters({ minViews: e.target.valueAsNumber || undefined })}
+                  placeholder="0"
+                  className="w-full px-3 py-2 bg-[#1A1D24] text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+                />
               </div>
             </div>
 

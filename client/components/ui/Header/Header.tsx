@@ -71,6 +71,36 @@ export const Header: FC<HeaderProps> = ({
               </svg>
             </button>
           )}
+          {/* Кнопка поиска на мобильном */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="ml-2 p-2 rounded-full hover:bg-[#181B20] transition-colors"
+            aria-label="Поиск"
+          >
+            <svg
+              className="w-5 h-5"
+              width="21"
+              height="21"
+              viewBox="0 0 21 21"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9.61328 17.5547C13.9992 17.5547 17.5547 13.9992 17.5547 9.61328C17.5547 5.22736 13.9992 1.67188 9.61328 1.67188C5.22736 1.67188 1.67188 5.22736 1.67188 9.61328C1.67188 13.9992 5.22736 17.5547 9.61328 17.5547Z"
+                stroke="#B0B0B0"
+                strokeWidth="1.67187"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M18.3906 18.3906L16.7188 16.7188"
+                stroke="#B0B0B0"
+                strokeWidth="1.67187"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
         <AnimatedLogo />
         <div className="flex-1 flex items-center justify-end gap-2">
@@ -147,7 +177,7 @@ export const Header: FC<HeaderProps> = ({
               background: 'linear-gradient(to right, rgba(160, 106, 255, 0.8) 0%, rgba(72, 32, 144, 1) 25%, rgba(72, 32, 144, 1) 50%, rgba(72, 32, 144, 1) 75%, rgba(160, 106, 255, 0.8) 100%)'
             }}
           />
-          <div className="relative flex items-center gap-[7px] h-[37px] px-[13px] py-2 rounded-[20px] bg-black backdrop-blur-[42px] w-full transition-shadow duration-300 focus-within:shadow-md focus-within:shadow-[#A06AFF]/15">
+          <div className="relative flex items-center gap-[7px] h-[37px] px-[13px] py-2 rounded-[20px] bg-[#101318] backdrop-blur-[42px] w-full transition-shadow duration-300 focus-within:shadow-md focus-within:shadow-[#A06AFF]/15">
             <svg
               className="w-5 h-5 flex-shrink-0"
               width="21"
