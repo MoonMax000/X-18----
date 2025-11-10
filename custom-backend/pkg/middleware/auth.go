@@ -51,6 +51,7 @@ func JWTMiddleware(config *configs.Config) fiber.Handler {
 		c.Locals("userID", claims.UserID)
 		c.Locals("username", claims.Username)
 		c.Locals("email", claims.Email)
+		c.Locals("sessionID", claims.ID) // Add session ID from JWT ID (JTI)
 
 		return c.Next()
 	}
@@ -85,6 +86,7 @@ func OptionalJWTMiddleware(config *configs.Config) fiber.Handler {
 		c.Locals("userID", claims.UserID)
 		c.Locals("username", claims.Username)
 		c.Locals("email", claims.Email)
+		c.Locals("sessionID", claims.ID) // Add session ID from JWT ID (JTI)
 
 		return c.Next()
 	}

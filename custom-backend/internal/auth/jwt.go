@@ -22,8 +22,8 @@ type TokenPair struct {
 	ExpiresIn    int64  `json:"expires_in"` // seconds
 }
 
-// GenerateAccessToken creates a new JWT access token
-func GenerateAccessToken(userID uuid.UUID, username, email, role, secret string, expiryMinutes int) (string, error) {
+// GenerateAccessToken creates a new JWT access token with session ID (JTI)
+func GenerateAccessToken(userID uuid.UUID, username, email, role, secret string, expiryMinutes int, sessionJTI uuid.UUID) (string, error) {
 	expiresAt := time.Now().Add(time.Duration(expiryMinutes) * time.Minute)
 
 	claims := &JWTClaims{
@@ -37,6 +37,7 @@ func GenerateAccessToken(userID uuid.UUID, username, email, role, secret string,
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "x18-backend",
 			Subject:   userID.String(),
+			ID:        sessionJTI.String(), // Add session JTI to access token
 		},
 	}
 
@@ -69,14 +70,19 @@ type TokenPairWithJTI struct {
 	RefreshJTI uuid.UUID `json:"-"` // Not exposed to client
 }
 
-// GenerateTokenPair creates both access and refresh tokens
+// GenerateTokenPair creates both access and refresh tokens with same JTI
 func GenerateTokenPair(userID uuid.UUID, username, email, role, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (*TokenPairWithJTI, error) {
-	accessToken, err := GenerateAccessToken(userID, username, email, role, accessSecret, accessExpiry)
+	// Generate JTI first
+	jti := uuid.New()
+
+	// Create access token with JTI
+	accessToken, err := GenerateAccessToken(userID, username, email, role, accessSecret, accessExpiry, jti)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}
 
-	refreshToken, jti, err := GenerateRefreshToken(userID, refreshSecret, refreshExpiry)
+	// Create refresh token with same JTI (but using existing function that generates its own JTI)
+	refreshToken, refreshJTI, err := GenerateRefreshToken(userID, refreshSecret, refreshExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
 	}
@@ -87,7 +93,7 @@ func GenerateTokenPair(userID uuid.UUID, username, email, role, accessSecret, re
 			RefreshToken: refreshToken,
 			ExpiresIn:    int64(accessExpiry * 60), // convert minutes to seconds
 		},
-		RefreshJTI: jti,
+		RefreshJTI: refreshJTI,
 	}, nil
 }
 
