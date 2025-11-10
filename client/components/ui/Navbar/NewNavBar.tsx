@@ -113,7 +113,6 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               className={cn('group flex items-center gap-2 pl-2 hover:text-white hover:border-l-[2px] hover:border-purple overflow-hidden', {
                 'text-white border-l-[2px] border-purple': isGroupOpen,
                 'text-[#B0B0B0]': !isGroupOpen,
-                'ml-[5px]': isCollapsed && !isMobile,
               })}
             >
               <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center'>{el.icon}</div>
@@ -177,7 +176,6 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
           <NavLink 
             to={el.route} 
             className={cn('px-3 py-[14px]', { 
-              'ml-[5px]': isCollapsed && !isMobile,
               'py-3': isMobile 
             })}
             onClick={handleNavClick}
@@ -215,7 +213,6 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
       <div key={el.title} className="relative group/tooltip">
         <div 
           className={cn('px-3 py-[14px]', { 
-            'ml-[5px]': isCollapsed && !isMobile,
             'py-3': isMobile 
           })}
         >
@@ -315,7 +312,19 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
                         'w-[40px]': isCollapsed,
                       })}
                     />
-                    {filteredNavElements.slice(1).map((el) => renderElement(el, false))}
+                    {filteredNavElements.slice(1).map((el, index) => (
+                      <div key={el.title}>
+                        {renderElement(el, false)}
+                        {index === 0 && (
+                          <div
+                            className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
+                              'w-[190px]': !isCollapsed,
+                              'w-[40px]': isCollapsed,
+                            })}
+                          />
+                        )}
+                      </div>
+                    ))}
                   </>
                 )}
               </div>
