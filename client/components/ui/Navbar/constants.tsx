@@ -3,13 +3,12 @@ import {
   Home as HomeIcon,
   UsersRound as SocialIcon,
   BadgeCheck as MarketIcon,
-  CreditCard as BoxIcon,
   Compass as ExploreIcon,
   NotificationBell as NotificationIcon,
   QuillPen as ComposeIcon,
+  LayoutDashboard,
 } from "./icons";
-import DashboardNavIcon from "./DashboardNavIcon";
-import { Newspaper, User, Telescope } from "lucide-react";
+import { Newspaper, User, Telescope, Package, ShoppingCart } from "lucide-react";
 
 export interface NavElementProps {
   icon: ReactNode;
@@ -19,7 +18,7 @@ export interface NavElementProps {
 }
 
 export const navElements: NavElementProps[] = [
-  { icon: <DashboardNavIcon />, title: "Dashboard", route: "/profile" },
+  { icon: <LayoutDashboard className="h-5 w-5" />, title: "Dashboard", route: "/profile" },
   {
     icon: <SocialIcon className="h-5 w-5" />,
     title: "Social Network",
@@ -52,11 +51,11 @@ export const navElements: NavElementProps[] = [
     title: "Marketplace",
     children: [
       {
-        icon: <BoxIcon className="h-5 w-5" />,
+        icon: <Package className="h-5 w-5" />,
         title: "My Products",
         route: "#",
       },
-      { icon: <BoxIcon className="h-5 w-5" />, title: "Cart", route: "#" },
+      { icon: <ShoppingCart className="h-5 w-5" />, title: "Cart", route: "#" },
     ],
   },
 ];
