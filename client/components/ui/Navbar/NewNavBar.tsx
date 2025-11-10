@@ -7,6 +7,7 @@ import { ChevronDown, DoubleArrow, QuillPen } from './icons';
 import CreatePostModal from '@/components/CreatePostBox/CreatePostModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { ShieldCheck } from 'lucide-react';
+import { AnimatedLogo } from '../AnimatedLogo/AnimatedLogo';
 
 interface Props {
   variant?: LayoutVariant;
@@ -260,7 +261,17 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               </div>
 
               <div className='flex flex-col gap-1'>
-                {filteredNavElements.slice(0, 1).map((el) => renderElement(el, false))}
+                {/* Show logo when not authenticated, Dashboard when authenticated */}
+                {!isAuthenticated ? (
+                  <div className={cn('flex items-center justify-center py-4', {
+                    'px-3': !isCollapsed,
+                    'px-2': isCollapsed
+                  })}>
+                    <AnimatedLogo />
+                  </div>
+                ) : (
+                  filteredNavElements.slice(0, 1).map((el) => renderElement(el, false))
+                )}
                 <div
                   className={cn('my-[14px] sidebar-divider-gradient mx-auto h-[2px] transition-all duration-300', {
                     'w-[190px]': !isCollapsed,
