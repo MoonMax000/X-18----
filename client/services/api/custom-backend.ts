@@ -583,6 +583,48 @@ class CustomBackendAPI {
       method: 'DELETE',
     });
   }
+
+  // ============================================================================
+  // NEWSLETTER API
+  // ============================================================================
+
+  async subscribeToNewsletter(email: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/newsletter/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async unsubscribeFromNewsletter(email: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/newsletter/unsubscribe', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async getNewsletterSubscriptions(params?: { page?: number; limit?: number; is_active?: string }): Promise<NewsletterSubscriptionsResponse> {
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', params.page.toString());
+    if (params?.limit) query.append('limit', params.limit.toString());
+    if (params?.is_active) query.append('is_active', params.is_active);
+    
+    const queryString = query.toString();
+    return this.request<NewsletterSubscriptionsResponse>(`/admin/subscriptions${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getNewsletterStats(): Promise<NewsletterStats> {
+    return this.request<NewsletterStats>('/admin/subscriptions/stats');
+  }
+
+  async deleteNewsletterSubscription(subscriptionId: string): Promise<{ message: string; email: string }> {
+    return this.request<{ message: string; email: string }>(`/admin/subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async exportNewsletterSubscriptions(): Promise<{ emails: string[]; total: number }> {
+    return this.request<{ emails: string[]; total: number }>('/admin/subscriptions/export');
+  }
 }
 
 // ============================================================================
@@ -827,6 +869,34 @@ export interface ReviewReportData {
 export interface CountryStats {
   country: string;
   user_count: number;
+}
+
+export interface NewsletterSubscription {
+  id: string;
+  email: string;
+  subscribed_at: string;
+  unsubscribed_at?: string;
+  is_active: boolean;
+  source: string;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsletterSubscriptionsResponse {
+  subscriptions: NewsletterSubscription[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+export interface NewsletterStats {
+  total_active: number;
+  total_inactive: number;
+  total_all: number;
+  recent_subscriptions: number;
 }
 
 // Export singleton instance

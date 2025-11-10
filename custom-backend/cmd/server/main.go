@@ -192,6 +192,7 @@ func main() {
 	protectedOpsHandler := api.NewProtectedOperationsHandler(db, redisCache, cfg)
 	referralHandler := api.NewReferralHandler(db)
 	profileStatsHandler := api.NewProfileStatsHandler(db)
+	newsletterHandler := api.NewNewsletterHandler(db.DB)
 
 	// Stripe webhook handler
 	stripeWebhookSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
@@ -347,6 +348,11 @@ func main() {
 	referrals.Get("/code", referralHandler.GetReferralCode)
 	referrals.Get("/invitations", referralHandler.GetReferralInvitations)
 
+	// Newsletter routes (public)
+	newsletter := apiGroup.Group("/newsletter")
+	newsletter.Post("/subscribe", newsletterHandler.Subscribe)
+	newsletter.Post("/unsubscribe", newsletterHandler.Unsubscribe)
+
 	// Media routes
 	media := apiGroup.Group("/media")
 	media.Post("/upload", middleware.JWTMiddleware(cfg), mediaHandler.UploadMedia)
@@ -409,6 +415,12 @@ func main() {
 	// Admin - Statistics
 	admin.Get("/stats", adminHandler.GetAdminStats)
 	admin.Get("/users/by-country", adminHandler.GetUsersByCountry)
+
+	// Admin - Newsletter management
+	admin.Get("/subscriptions", newsletterHandler.GetAllSubscriptions)
+	admin.Get("/subscriptions/stats", newsletterHandler.GetSubscriptionStats)
+	admin.Delete("/subscriptions/:id", newsletterHandler.DeleteSubscription)
+	admin.Get("/subscriptions/export", newsletterHandler.ExportSubscriptions)
 
 	// Admin - Cleanup (TEMPORARY - for testing)
 	admin.Delete("/cleanup/all", adminCleanupHandler.CleanupAllData)
