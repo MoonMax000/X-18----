@@ -134,7 +134,7 @@ const NewNavBar: FC<Props> = ({ variant = 'primal', isOpen = false, onClose }) =
               {el.title}
             </div>
           )}
-          {isGroupOpen && (!isCollapsed || isMobile) && (
+          {isGroupOpen && (
             <div id={`${el.title}-submenu`} className='ml-6 flex flex-col gap-1'>
               {el.children.map((child) => (
                 <NavLink 
