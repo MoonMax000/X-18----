@@ -81,8 +81,44 @@ const MyPosts: FC = () => {
   const [dateSort, setDateSort] = useState<DateSort>("newest");
   const [categoryFilter, setCategoryFilter] = useState<"all" | LabCategory>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Delete confirmation modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<Post | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatNumber = (num: number) => (num >= 1000 ? `${(num / 1000).toFixed(1)}K` : num);
+
+  // Handle delete post
+  const handleDeleteClick = (post: Post) => {
+    setPostToDelete(post);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { customBackendAPI } = await import('@/services/api/custom-backend');
+      await customBackendAPI.deletePost(postToDelete.id);
+      
+      // Refresh posts after deletion
+      window.location.reload(); // Simple solution, можно улучшить через refetch
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Не удалось удалить пост. Попробуйте еще раз.');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+      setPostToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setPostToDelete(null);
+  };
 
   // Convert API posts to UI format
   const allPosts = useMemo(() => {
@@ -432,7 +468,11 @@ const MyPosts: FC = () => {
                     <button className="rounded-lg p-2 text-[#6C7280] transition-colors hover:bg-white/5 hover:text-white" title="Analytics">
                       <BarChart3 className="h-4 w-4" />
                     </button>
-                    <button className="rounded-lg p-2 text-[#6C7280] transition-colors hover:bg-red-500/10 hover:text-red-400" title="Delete">
+                    <button 
+                      onClick={() => handleDeleteClick(post)}
+                      className="rounded-lg p-2 text-[#6C7280] transition-colors hover:bg-red-500/10 hover:text-red-400" 
+                      title="Delete"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -471,7 +511,11 @@ const MyPosts: FC = () => {
                       <button className="rounded-lg p-1.5 text-[#6C7280] transition-colors hover:bg-white/5 hover:text-white" title="Analytics">
                         <BarChart3 className="h-3.5 w-3.5" />
                       </button>
-                      <button className="rounded-lg p-1.5 text-[#6C7280] transition-colors hover:bg-red-500/10 hover:text-red-400" title="Delete">
+                      <button 
+                        onClick={() => handleDeleteClick(post)}
+                        className="rounded-lg p-1.5 text-[#6C7280] transition-colors hover:bg-red-500/10 hover:text-red-400" 
+                        title="Delete"
+                      >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -520,6 +564,48 @@ const MyPosts: FC = () => {
               </article>
             );
           })}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && postToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#181B22] bg-black p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
+                <Trash2 className="h-5 w-5 text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Удалить пост?</h3>
+            </div>
+            
+            <p className="text-sm text-[#6C7280] mb-6">
+              Вы уверены, что хотите удалить пост "{postToDelete.title}"? Это действие нельзя отменить.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                disabled={isDeleting}
+                className="flex-1 rounded-full border border-[#181B22] bg-black px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/5 disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="flex-1 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Удаление...
+                  </>
+                ) : (
+                  'Удалить'
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
