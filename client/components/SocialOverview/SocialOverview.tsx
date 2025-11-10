@@ -3,10 +3,11 @@ import { cn } from "@/lib/utils";
 import { CARD_VARIANTS } from "@/features/feed/styles";
 import SubscriptionsWidget from "@/features/feed/components/widgets/SubscriptionsWidget";
 import PurchasedPostsWidget from "@/features/feed/components/widgets/PurchasedPostsWidget";
-import { Eye, Heart, MessageCircle, Loader2 } from "lucide-react";
+import { Eye, Heart, MessageCircle, Loader2, Calendar } from "lucide-react";
 import { useProfileStats } from "@/hooks/useProfileStats";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
 
 const sectionCardClass = cn(
   CARD_VARIANTS.widget.default,
@@ -150,6 +151,7 @@ const formatNumber = (num: number): string => {
 };
 
 const SocialOverview: FC = () => {
+  const { user } = useAuth();
   const { stats, activity: realActivity, topPosts: realTopPosts, followerGrowth: growthData, isLoading, refetchFollowerGrowth } = useProfileStats();
   const [subscriberTimeRange, setSubscriberTimeRange] = useState<"week" | "month">("month");
 
@@ -231,6 +233,23 @@ const SocialOverview: FC = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-8 md:gap-10">
+      {/* Account Info Card */}
+      {user?.created_at && (
+        <SectionCard className="bg-gradient-to-br from-[#A06AFF]/10 to-[#482090]/10 border-[#A06AFF]/30">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#A06AFF]/30 to-[#482090]/30 border border-[#A06AFF]/40">
+              <Calendar className="h-7 w-7 text-[#A06AFF]" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className={sectionSubtitleClass}>Дата регистрации</span>
+              <span className="text-xl font-bold text-white">
+                {format(new Date(user.created_at), 'dd MMMM yyyy', { locale: ru })}
+              </span>
+            </div>
+          </div>
+        </SectionCard>
+      )}
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
         <StatCard 
