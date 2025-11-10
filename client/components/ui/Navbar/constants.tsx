@@ -18,7 +18,7 @@ export interface NavElementProps {
 }
 
 export const navElements: NavElementProps[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, title: "Dashboard", route: "/profile" },
+  { icon: <LayoutDashboard className="h-5 w-5 ml-[2px]" />, title: "Dashboard", route: "/profile" },
   {
     icon: <SocialIcon className="h-5 w-5" />,
     title: "Social Network",
