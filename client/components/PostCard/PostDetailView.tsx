@@ -34,9 +34,9 @@ const PostDetailView: FC<PostDetailViewProps> = ({ post }) => {
   const hashtags = post.hashtags ?? [];
 
   return (
-    <article className="mx-auto flex w-full sm:max-w-[680px] flex-col gap-4 sm:gap-6 rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-4 sm:p-6 text-white shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)]">
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
+    <article className="post-content mx-auto flex w-full sm:max-w-[680px] flex-col gap-4 sm:gap-6 rounded-2xl sm:rounded-3xl border border-[#181B22] bg-black p-4 sm:p-6 text-white shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)] min-w-0 overflow-x-hidden">
+      <header className="flex items-start justify-between gap-4 min-w-0">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
           <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-[#0F1319]">
             <img
               src={post.author.avatar}
@@ -44,7 +44,7 @@ const PostDetailView: FC<PostDetailViewProps> = ({ post }) => {
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="flex flex-col">
+            <div className="flex flex-col min-w-0 flex-1">
             <div className="flex items-center gap-2 text-lg font-semibold">
               {post.author.name}
               {post.author.verified && (
@@ -111,10 +111,10 @@ const PostDetailView: FC<PostDetailViewProps> = ({ post }) => {
         </div>
       </header>
 
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{post.title}</h1>
+      <div className="space-y-4 min-w-0 pr-[40px] sm:pr-[44px] md:pr-[48px]">
+        <h1 className="text-2xl font-bold post-text">{post.title}</h1>
         {post.body ? (
-          <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere text-[15px] leading-relaxed text-[#E7E9EA] max-w-full">
+          <p className="post-text whitespace-pre-wrap break-words overflow-wrap-anywhere text-[15px] leading-relaxed text-[#E7E9EA] max-w-full">
             {post.body}
           </p>
         ) : null}
@@ -128,11 +128,11 @@ const PostDetailView: FC<PostDetailViewProps> = ({ post }) => {
       </div>
 
       {post.mediaUrl ? (
-        <div className="overflow-hidden rounded-2xl border border-[#181B22]">
+        <div className="post-media overflow-hidden rounded-2xl border border-[#181B22] max-w-full mr-[40px] sm:mr-[44px] md:mr-[48px]">
           <img
             src={post.mediaUrl}
             alt={post.title}
-            className="w-full object-cover"
+            className="w-full object-cover max-w-full h-auto"
           />
         </div>
       ) : null}

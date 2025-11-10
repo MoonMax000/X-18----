@@ -52,7 +52,7 @@ export const MediaGrid: FC<MediaGridProps> = ({
     <div className="mt-3 space-y-3">
       {/* Отображаем документы отдельно в сетке */}
       {documents.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="media-grid grid grid-cols-3 gap-2 min-w-0">
           {documents.map((doc, index) => {
             const actualIndex = media.indexOf(doc);
             return (
@@ -73,7 +73,7 @@ export const MediaGrid: FC<MediaGridProps> = ({
 
       {/* Отображаем изображения и видео в сетке */}
       {nonDocuments.length > 0 && (
-        <div className={`grid gap-3 ${gridClass}`}>
+        <div className={`media-grid grid gap-3 ${gridClass} min-w-0`}>
           {nonDocuments.map((item, index) => {
             const actualIndex = media.indexOf(item);
             return (
@@ -95,7 +95,7 @@ export const MediaGrid: FC<MediaGridProps> = ({
                       }
                     : undefined
                 }
-                className={`group relative overflow-hidden rounded-2xl border backdrop-blur-[50px] transition-all ${heightClass} ${
+                className={`group relative overflow-hidden rounded-2xl border backdrop-blur-[50px] transition-all min-w-0 ${heightClass} ${
                   isInteractive ? "cursor-move" : "cursor-default"
                 } ${
                   isInteractive && draggedIndex === actualIndex
@@ -106,19 +106,21 @@ export const MediaGrid: FC<MediaGridProps> = ({
                 }`}
               >
           {item.type === "video" ? (
-            <video
-              src={item.url}
-              className="h-full w-full object-cover"
-              style={{ 
-                aspectRatio: getAspectRatio(index),
-                objectFit: media.length === 1 ? "contain" : "cover",
-              }}
-            />
+            <div className="video-wrapper w-full h-full min-w-0">
+              <video
+                src={item.url}
+                className="w-full h-auto max-w-full object-cover"
+                style={{ 
+                  aspectRatio: getAspectRatio(index),
+                  objectFit: media.length === 1 ? "contain" : "cover",
+                }}
+              />
+            </div>
           ) : (
             <img
               src={item.croppedPreviewUrl || item.url}
               alt={item.alt || `Media ${index + 1}`}
-              className="h-full w-full"
+              className="w-full h-auto max-w-full"
               style={{ 
                 aspectRatio: getAspectRatio(index),
                 objectFit: media.length === 1 ? "contain" : "cover",

@@ -52,7 +52,16 @@ const AdminUsers = lazy(() => import("./pages/admin/AdminUsers").then(m => ({ de
 const AdminReports = lazy(() => import("./pages/admin/AdminReports").then(m => ({ default: m.AdminReports })));
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 6000, refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh longer
+      gcTime: 10 * 60 * 1000, // 10 minutes - garbage collection time
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnReconnect: true, // Refetch on network reconnect
+      retry: 1, // Only retry once on failure
+      retryDelay: 1000, // Wait 1s before retry
+    },
+  },
 });
 
 

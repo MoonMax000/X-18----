@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useTrendingTickers } from "../../hooks/useWidgets";
 import { TrendingUp } from "lucide-react";
+import { TickerSkeleton } from "../skeletons/WidgetSkeleton";
 
 interface TrendingTickersWidgetProps {
   limit?: number;
@@ -22,21 +23,7 @@ const TrendingTickersWidget: FC<TrendingTickersWidgetProps> = ({
   }
 
   if (isLoading) {
-    return (
-      <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-        <header className="flex items-center justify-between gap-3">
-          <div className="h-6 w-40 animate-pulse rounded bg-gray-700" />
-        </header>
-        <ul className="mt-4 flex flex-col gap-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <li key={i} className="flex items-center justify-between p-2">
-              <div className="h-4 w-20 animate-pulse rounded bg-gray-700" />
-              <div className="h-4 w-16 animate-pulse rounded bg-gray-700" />
-            </li>
-          ))}
-        </ul>
-      </section>
-    );
+    return <TickerSkeleton count={limit} />;
   }
 
   if (tickers.length === 0) {
@@ -52,7 +39,7 @@ const TrendingTickersWidget: FC<TrendingTickersWidgetProps> = ({
   }
 
   return (
-    <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+    <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px] animate-fadeIn">
       <header className="flex items-center gap-2">
         <TrendingUp className="h-5 w-5 text-[#A06AFF]" />
         <h3 className="text-lg font-semibold text-white">Трендовые тикеры</h3>

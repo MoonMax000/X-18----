@@ -74,11 +74,18 @@ export default function AutoGrowTextarea({
         // defer, чтобы дождаться value в состоянии
         requestAnimationFrame(resize);
       }}
-      style={{ ...style, overflowY: 'auto', resize: 'none' }}
+      style={{ 
+        ...style, 
+        overflowY: 'auto', 
+        resize: 'none',
+        overflowWrap: 'anywhere',  // перенос без пробелов
+        wordBreak: 'break-word',
+        whiteSpace: 'pre-wrap'     // сохраняем форматирование с переносами
+      }}
       className={`
         w-full bg-transparent leading-relaxed
         placeholder:text-white/40 focus:outline-none
-        break-words min-w-0
+        break-words min-w-0 whitespace-pre-wrap
         ${className}
       `}
       {...rest}

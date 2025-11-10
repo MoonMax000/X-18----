@@ -96,19 +96,19 @@ const FeedPost: FC<FeedPostProps> = ({
     <article
       onClick={onOpen}
       className={cn(
-        "mx-auto flex w-full max-w-full sm:max-w-[680px] flex-col gap-3 sm:gap-4 md:gap-6 rounded-xl sm:rounded-2xl md:rounded-3xl border border-[#181B22] bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 hover:border-[#A06AFF]/60 hover:bg-[#482090]/10",
+        "post-content mx-auto flex w-full max-w-full sm:max-w-[680px] flex-col gap-3 sm:gap-4 md:gap-6 rounded-xl sm:rounded-2xl md:rounded-3xl border border-[#181B22] bg-black p-2.5 sm:p-3 md:p-6 backdrop-blur-[50px] transition-colors duration-200 hover:border-[#A06AFF]/60 hover:bg-[#482090]/10 min-w-0 overflow-x-hidden",
         onOpen && "cursor-pointer",
         className,
       )}
     >
-      <header className="flex w-full items-start justify-between gap-2 sm:gap-3 md:gap-4">
+      <header className="flex w-full items-start justify-between gap-2 sm:gap-3 md:gap-4 min-w-0">
         <UserHoverCard
           author={author}
           isFollowing={isFollowing}
           onFollowToggle={(nextState) => setIsFollowing(nextState)}
           showFollowButton={showFollowButton}
         >
-          <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3">
+          <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3 min-w-0">
             <UserAvatar
               src={author.avatar}
               alt={author.name}
@@ -270,14 +270,14 @@ const FeedPost: FC<FeedPostProps> = ({
         </div>
       </header>
 
-      <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px]">
+      <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px] min-w-0">
         {title && (
           <h2 className="hidden md:block text-xl md:text-2xl font-bold leading-snug text-white">
             {title}
           </h2>
         )}
         {displayedContent ? (
-          <p className="whitespace-pre-line text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white">
+          <p className="post-text whitespace-pre-wrap break-words overflow-wrap-anywhere text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white max-w-full">
             {displayedContent}
             {hashtags && hashtags.length > 0 ? (
               <>
@@ -303,8 +303,8 @@ const FeedPost: FC<FeedPostProps> = ({
       </section>
 
       {hasMedia ? (
-        <div className="relative w-full ml-[48px] sm:ml-[52px] md:ml-[56px] max-w-[calc(100%_-_48px)] sm:max-w-[calc(100%_-_52px)] md:max-w-[calc(100%_-_56px)] rounded-xl sm:rounded-xl md:rounded-2xl overflow-hidden border border-[#6D6D6D]/20">
-          <img src={mediaUrl ?? ""} alt="" className="w-full object-cover aspect-[16/10] sm:aspect-video md:aspect-auto" />
+        <div className="post-media relative w-full ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px] max-w-[calc(100%_-_88px)] sm:max-w-[calc(100%_-_96px)] md:max-w-[calc(100%_-_104px)] rounded-xl sm:rounded-xl md:rounded-2xl overflow-hidden border border-[#6D6D6D]/20">
+          <img src={mediaUrl ?? ""} alt="" className="w-full object-cover aspect-[16/10] sm:aspect-video md:aspect-auto max-w-full h-auto" />
           {isVideo ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white shadow-[0_12px_24px_0_rgba(0,0,0,0.48)]">

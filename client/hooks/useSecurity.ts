@@ -72,15 +72,14 @@ export function useSecuritySettings() {
       }
 
       // Handle backup contact updates
-      if (updates.backup_email !== undefined || updates.backup_phone !== undefined) {
-        const response = await authFetch.fetch('/users/backup-contact', {
+      if (updates.backup_email !== undefined) {
+        const response = await authFetch.fetch('/auth/backup-contact', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             backup_email: updates.backup_email,
-            backup_phone: updates.backup_phone,
           }),
         });
 
@@ -116,11 +115,16 @@ export function useSessions() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('📡 [SESSIONS] API response:', data);
+        console.log('📡 [SESSIONS] Sessions array:', data.sessions);
+        console.log('📡 [SESSIONS] Sessions count:', data.sessions?.length || 0);
         setSessions(data.sessions || []);
       } else {
+        console.error('❌ [SESSIONS] API error:', response.status, response.statusText);
         throw new Error('Failed to fetch sessions');
       }
     } catch (err) {
+      console.error('❌ [SESSIONS] Fetch error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);

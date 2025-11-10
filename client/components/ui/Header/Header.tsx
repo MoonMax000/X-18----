@@ -6,7 +6,7 @@ import { AvatarDropdown } from "../AvatarDropdown/AvatarDropdown";
 import { NotificationBell } from "./NotificationBell";
 import { useCustomNotifications } from "@/hooks/useCustomNotifications";
 import { useAuth } from "@/contexts/AuthContext";
-import { SearchMegaMenu } from "@/components/SearchMegaMenu/SearchMegaMenu";
+import { SearchModal } from "@/components/SearchModal/SearchModal";
 
 // Lazy load modal to reduce initial bundle size
 const LoginModal = lazy(() => import("@/components/auth/LoginModal"));
@@ -266,8 +266,8 @@ export const Header: FC<HeaderProps> = ({
         </Suspense>
       )}
 
-      {/* Search Mega Menu */}
-      <SearchMegaMenu
+      {/* Search Modal */}
+      <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
       />

@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useNews } from "../../hooks/useWidgets";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
+import { NewsSkeleton } from "../skeletons/WidgetSkeleton";
 
 interface NewsWidgetProps {
   limit?: number;
@@ -20,21 +21,7 @@ const NewsWidget: FC<NewsWidgetProps> = ({ limit = 5, category }) => {
   }
 
   if (isLoading) {
-    return (
-      <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
-        <header className="flex items-center justify-between gap-3">
-          <div className="h-6 w-32 animate-pulse rounded bg-gray-700" />
-        </header>
-        <ul className="mt-4 flex flex-col gap-3">
-          {[1, 2, 3].map((i) => (
-            <li key={i} className="rounded-[18px] bg-transparent p-3">
-              <div className="h-4 w-full animate-pulse rounded bg-gray-700" />
-              <div className="mt-2 h-3 w-24 animate-pulse rounded bg-gray-700" />
-            </li>
-          ))}
-        </ul>
-      </section>
-    );
+    return <NewsSkeleton count={limit} />;
   }
 
   if (news.length === 0) {
@@ -49,7 +36,7 @@ const NewsWidget: FC<NewsWidgetProps> = ({ limit = 5, category }) => {
   }
 
   return (
-    <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px]">
+    <section className="rounded-[24px] border border-widget-border bg-[#000000] p-5 shadow-[0_24px_48px_rgba(10,12,16,0.45)] backdrop-blur-[20px] animate-fadeIn">
       <header className="flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-white">Новости</h3>
       </header>

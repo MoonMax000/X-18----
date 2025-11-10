@@ -99,7 +99,6 @@ export default function ProfileSecuritySettings() {
   // Account States
   const [recoveryInfo, setRecoveryInfo] = useState<any>(null);
   const [backupEmail, setBackupEmail] = useState('');
-  const [backupPhone, setBackupPhone] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -109,7 +108,6 @@ export default function ProfileSecuritySettings() {
   // Auto-save states
   const [savingStatus, setSavingStatus] = useState<null | 'saving' | 'saved'>(null);
   const debouncedBackupEmail = useDebounce(backupEmail, 1000);
-  const debouncedBackupPhone = useDebounce(backupPhone, 1000);
   
   // Password change success state
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
@@ -148,8 +146,7 @@ export default function ProfileSecuritySettings() {
   const tabs = [
     { id: 'account', label: 'Account', icon: Mail },
     { id: 'sessions', label: 'Active Sessions', icon: Smartphone },
-    { id: 'twofa', label: 'Two-Factor Auth', icon: Shield },
-    { id: 'backup', label: 'Backup Contacts', icon: Mail },
+    { id: 'twofa', label: 'Authentication', icon: Shield },
     { id: 'password', label: 'Change Password', icon: Key },
     { id: 'delete', label: 'Delete Account', icon: Trash2 },
   ];
@@ -223,7 +220,7 @@ export default function ProfileSecuritySettings() {
 
   // Auto-save backup contacts
   useEffect(() => {
-    if (!debouncedBackupEmail && !debouncedBackupPhone) return;
+    if (!debouncedBackupEmail) return;
     
     const saveBackupContacts = async () => {
       setSavingStatus('saving');
@@ -231,7 +228,6 @@ export default function ProfileSecuritySettings() {
       try {
         await updateSettings({
           backup_email: debouncedBackupEmail,
-          backup_phone: debouncedBackupPhone,
         });
         
         setSavingStatus('saved');
@@ -246,7 +242,7 @@ export default function ProfileSecuritySettings() {
     };
     
     saveBackupContacts();
-  }, [debouncedBackupEmail, debouncedBackupPhone]);
+  }, [debouncedBackupEmail]);
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
@@ -510,25 +506,6 @@ export default function ProfileSecuritySettings() {
                         Change
                       </button>
                     </div>
-
-                    {/* Phone Block */}
-                    <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-                          <Phone className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-white md:text-[15px]">Phone number</p>
-                          <p className="text-xs text-gray-400">{userPhone || 'Not set'}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setIsPhoneModalOpen(true)}
-                        className="inline-flex h-8 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#482090] px-4 text-xs font-bold text-white backdrop-blur-[50px] transition-opacity hover:opacity-90 sm:text-sm"
-                      >
-                        {userPhone ? 'Change' : 'Add'}
-                      </button>
-                    </div>
                   </div>
                 )}
               </div>
@@ -617,77 +594,40 @@ export default function ProfileSecuritySettings() {
                         </p>
                       </div>
                     )}
-                  </div>
-                )}
-              </div>
-            </section>
-          </div>
-        );
 
-      case 'backup':
-        return (
-          <div className="flex w-full max-w-[1059px] flex-col gap-6">
-            <section className="w-full">
-              <div className="flex w-full flex-col gap-6 rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 sm:p-6 backdrop-blur-[50px]">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-6 h-6 text-primary" />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-white sm:text-2xl">Резервные контакты</h3>
-                        <p className="text-sm text-gray-400 mt-1">
-                          Для восстановления доступа к аккаунту
-                        </p>
+                    {/* Recovery Email Block */}
+                    <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-primary" />
+                          <p className="text-sm font-bold text-white md:text-[15px]">Recovery Email</p>
+                        </div>
+                        {savingStatus === 'saving' && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Saving...
+                          </span>
+                        )}
+                        {savingStatus === 'saved' && (
+                          <span className="text-xs text-green-400 flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            Saved ✓
+                          </span>
+                        )}
                       </div>
-                      {savingStatus === 'saving' && (
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Сохранение...
-                        </span>
-                      )}
-                      {savingStatus === 'saved' && (
-                        <span className="text-xs text-green-400 flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          Сохранено ✓
-                        </span>
-                      )}
+                      <Input
+                        type="email"
+                        value={backupEmail}
+                        onChange={(e) => setBackupEmail(e.target.value)}
+                        placeholder="backup@example.com"
+                        className="bg-black/40 border-widget-border mb-2"
+                      />
+                      <p className="text-xs text-gray-400">
+                        Used for account recovery if you lose access to your primary email
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
-                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
-                      Резервный Email
-                    </label>
-                    <Input
-                      type="email"
-                      value={backupEmail}
-                      onChange={(e) => setBackupEmail(e.target.value)}
-                      placeholder="backup@example.com"
-                      className="bg-black/40 border-widget-border"
-                    />
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-[#181B22] bg-[rgba(11,14,17,0.5)] backdrop-blur-[50px]">
-                    <label className="block text-sm font-bold text-white mb-3 md:text-[15px]">
-                      Резервный телефон
-                    </label>
-                    <Input
-                      type="tel"
-                      value={backupPhone}
-                      onChange={(e) => setBackupPhone(e.target.value)}
-                      placeholder="+1234567890"
-                      className="bg-black/40 border-widget-border"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-                  <p className="text-xs text-primary text-center">
-                    💡 Изменения сохраняются автоматически
-                  </p>
-                </div>
+                )}
               </div>
             </section>
           </div>
@@ -907,7 +847,7 @@ export default function ProfileSecuritySettings() {
   };
 
   return (
-    <div className="min-h-[600px]">
+    <div className="min-h-[600px] -mt-4">
       {/* Tabs Navigation */}
       <div className="flex justify-center mb-6">
         <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
@@ -944,8 +884,18 @@ export default function ProfileSecuritySettings() {
 
       {/* TOTP Setup Modal */}
       {isSetupTOTPOpen && totpSetupData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
-          <div className="bg-[#0C1015] rounded-lg p-6 w-full max-w-md border border-widget-border max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => {
+            setIsSetupTOTPOpen(false);
+            setTotpVerifyCode('');
+            setTotpSetupData(null);
+          }}
+        >
+          <div 
+            className="bg-black rounded-3xl p-6 w-full max-w-md border border-[#181B22] max-h-[90vh] overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-semibold text-white mb-4">
               Set Up Two-Factor Authentication
             </h3>
@@ -958,18 +908,17 @@ export default function ProfileSecuritySettings() {
                       <p className="text-sm text-gray-300">
                         1. Scan this QR code with your authenticator app:
                       </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      <button
                         onClick={handleRegenerateTOTPSetup}
                         disabled={totpLoading}
+                        className="p-2 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[50px] transition-all hover:bg-[rgba(18,22,28,0.7)] hover:scale-110 active:scale-95 disabled:opacity-50"
                       >
                         {totpLoading ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
                         ) : (
                           <QrCode className="w-3 h-3" />
                         )}
-                      </Button>
+                      </button>
                     </div>
                     <div className="flex justify-center mb-3">
                       <img 
@@ -985,13 +934,12 @@ export default function ProfileSecuritySettings() {
                       <code className="flex-1 p-2 bg-black/60 rounded text-xs text-white font-mono text-center">
                         {totpSetupData.formatted_secret}
                       </code>
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      <button
                         onClick={() => copyToClipboard(totpSetupData.secret)}
+                        className="p-2 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-[50px] transition-all hover:bg-[rgba(18,22,28,0.7)] hover:scale-110 active:scale-95"
                       >
                         <Copy className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </div>
                     <p className="text-xs text-gray-500 text-center mt-2">
                       💡 Click <QrCode className="w-3 h-3 inline" /> to generate a new QR code
@@ -1021,30 +969,29 @@ export default function ProfileSecuritySettings() {
                 </div>
 
                 <div className="flex gap-3 mt-6">
-                  <Button
-                    variant="outline"
+                  <button
                     onClick={() => {
                       setIsSetupTOTPOpen(false);
                       setTotpVerifyCode('');
                       setTotpSetupData(null);
                     }}
-                    className="flex-1"
+                    className="flex-1 py-3 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white font-bold text-sm backdrop-blur-[50px] transition-all hover:bg-[rgba(18,22,28,0.7)] hover:scale-105 active:scale-95"
                   >
                     Cancel
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={handleEnableTOTP}
-                    className="flex-1"
                     disabled={totpVerifyCode.length !== 6 || totpLoading}
+                    className="flex-1 py-3 rounded-full bg-gradient-to-r from-primary to-[#482090] text-white font-bold text-sm backdrop-blur-[50px] transition-all hover:opacity-90 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    {totpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Enable'}
-                  </Button>
+                    {totpLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Verify & Enable'}
+                  </button>
                 </div>
               </>
             ) : (
               <>
                 <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="p-4 rounded-2xl bg-green-500/10 border border-green-500/20">
                     <div className="flex items-center gap-2 mb-2">
                       <Check className="w-5 h-5 text-green-500" />
                       <p className="font-medium text-green-200">2FA Enabled Successfully!</p>
@@ -1054,54 +1001,50 @@ export default function ProfileSecuritySettings() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-lg bg-black/40 border border-widget-border">
+                  <div className="p-4 rounded-2xl bg-black/40 border border-[#181B22]">
                     <p className="text-sm text-gray-300 mb-3">Your Backup Codes:</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {totpSetupData.backup_codes.map((code, idx) => (
-                        <code key={idx} className="p-2 bg-black/60 rounded text-sm text-white font-mono text-center">
+                        <code key={idx} className="p-2 bg-black/60 rounded-xl text-sm text-white font-mono text-center">
                           {code}
                         </code>
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      <button
                         onClick={() => copyToClipboard(totpSetupData.backup_codes.join('\n'))}
-                        className="flex-1"
+                        className="flex-1 py-2 px-3 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white text-sm font-bold backdrop-blur-[50px] transition-all hover:bg-[rgba(18,22,28,0.7)] hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                       >
-                        <Copy className="w-4 h-4 mr-2" />
+                        <Copy className="w-4 h-4" />
                         Copy All
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      </button>
+                      <button
                         onClick={downloadBackupCodes}
-                        className="flex-1"
+                        className="flex-1 py-2 px-3 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white text-sm font-bold backdrop-blur-[50px] transition-all hover:bg-[rgba(18,22,28,0.7)] hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                       >
-                        <Download className="w-4 h-4 mr-2" />
+                        <Download className="w-4 h-4" />
                         Download
-                      </Button>
+                      </button>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                  <div className="p-3 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
                     <p className="text-xs text-yellow-200">
                       ⚠️ Store these codes safely. You'll need them if you lose access to your authenticator app.
                     </p>
                   </div>
                 </div>
 
-                <Button
+                <button
                   onClick={() => {
                     setIsSetupTOTPOpen(false);
                     setShowBackupCodes(false);
                     setTotpSetupData(null);
                   }}
-                  className="w-full mt-6"
+                  className="w-full py-3 mt-6 rounded-full bg-gradient-to-r from-primary to-[#482090] text-white font-bold text-sm backdrop-blur-[50px] transition-all hover:opacity-90 hover:scale-105 active:scale-95"
                 >
                   Done
-                </Button>
+                </button>
               </>
             )}
           </div>
@@ -1110,8 +1053,17 @@ export default function ProfileSecuritySettings() {
 
       {/* TOTP Disable Modal */}
       {isDisableTOTPOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
-          <div className="bg-[#0C1015] rounded-lg p-6 w-full max-w-md border border-widget-border">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => {
+            setIsDisableTOTPOpen(false);
+            setDisableTotpCode('');
+          }}
+        >
+          <div 
+            className="bg-black rounded-3xl p-6 w-full max-w-md border border-[#181B22] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-semibold text-white mb-4">Disable Two-Factor Authentication</h3>
             <p className="text-sm text-gray-400 mb-4">
               Enter your TOTP code to confirm disabling 2FA
@@ -1127,7 +1079,7 @@ export default function ProfileSecuritySettings() {
                   setDisableTotpCode(val);
                 }}
                 placeholder="000000"
-                className="bg-black/40 border-widget-border text-center text-lg font-mono"
+                className="bg-black/40 border-[#181B22] text-center text-lg font-mono text-white rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
 
               {totpError && (
@@ -1136,24 +1088,22 @@ export default function ProfileSecuritySettings() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
+              <button
                 onClick={() => {
                   setIsDisableTOTPOpen(false);
                   setDisableTotpCode('');
                 }}
-                className="flex-1"
+                className="flex-1 py-3 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white font-bold text-sm backdrop-blur-[50px] transition-all hover:bg-[rgba(18,22,28,0.7)] hover:scale-105 active:scale-95"
               >
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleDisableTOTP}
-                variant="destructive"
-                className="flex-1"
                 disabled={disableTotpCode.length !== 6 || totpLoading}
+                className="flex-1 py-3 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white font-bold text-sm backdrop-blur-[50px] transition-all hover:opacity-90 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {totpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Disable 2FA'}
-              </Button>
+                {totpLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Disable 2FA'}
+              </button>
             </div>
           </div>
         </div>

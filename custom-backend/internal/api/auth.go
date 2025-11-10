@@ -919,16 +919,26 @@ func (h *AuthHandler) GetSessions(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Printf("📡 [GET_SESSIONS] Request from user: %s", userID.(uuid.UUID))
+
 	// Get session ID from context (set by JWT middleware)
 	currentSessionID := c.Locals("sessionID")
+	log.Printf("📡 [GET_SESSIONS] Current session ID: %v", currentSessionID)
 
 	// Get all active sessions
 	sessionService := services.NewSessionService(h.db.DB, h.cache)
 	sessions, err := sessionService.GetActiveSessions(userID.(uuid.UUID))
 	if err != nil {
+		log.Printf("❌ [GET_SESSIONS] Error fetching sessions: %v", err)
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to fetch sessions",
 		})
+	}
+
+	log.Printf("📡 [GET_SESSIONS] Found %d sessions in database", len(sessions))
+	for i, s := range sessions {
+		log.Printf("📡 [GET_SESSIONS] Session %d: ID=%s, Browser=%s, OS=%s, IP=%s, ExpiresAt=%v, IsActive=%v",
+			i+1, s.ID, s.Browser, s.OS, s.IPAddress, s.ExpiresAt, s.IsActive)
 	}
 
 	// Mark current session
@@ -937,6 +947,8 @@ func (h *AuthHandler) GetSessions(c *fiber.Ctx) error {
 			sessions[i].IsCurrent = sessions[i].ID.String() == currentSessionID.(string)
 		}
 	}
+
+	log.Printf("✅ [GET_SESSIONS] Returning %d sessions to client", len(sessions))
 
 	return c.JSON(fiber.Map{
 		"sessions": sessions,
@@ -1185,13 +1197,11 @@ func (h *AuthHandler) Disable2FA(c *fiber.Ctx) error {
 	})
 }
 
-// UpdateBackupContact updates backup email or phone for recovery
+// UpdateBackupContact updates backup email for recovery
 // POST /api/auth/backup-contact
 func (h *AuthHandler) UpdateBackupContact(c *fiber.Ctx) error {
 	type UpdateBackupRequest struct {
-		BackupEmail string `json:"backup_email,omitempty"`
-		BackupPhone string `json:"backup_phone,omitempty"`
-		Password    string `json:"password" validate:"required"`
+		BackupEmail string `json:"backup_email"`
 	}
 
 	var req UpdateBackupRequest
@@ -1201,7 +1211,7 @@ func (h *AuthHandler) UpdateBackupContact(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user from context
+	// Get user from context (already authenticated via JWT)
 	userID := c.Locals("userID")
 	if userID == nil {
 		return c.Status(401).JSON(fiber.Map{
@@ -1217,34 +1227,24 @@ func (h *AuthHandler) UpdateBackupContact(c *fiber.Ctx) error {
 		})
 	}
 
-	// Verify password
-	if !utils.CheckPassword(req.Password, user.Password) {
-		return c.Status(401).JSON(fiber.Map{
-			"error": "Invalid password",
-		})
-	}
-
-	// Update backup contacts
-	updates := make(map[string]interface{})
+	// Validate and update backup email
 	if req.BackupEmail != "" {
 		if !utils.ValidateEmail(req.BackupEmail) {
 			return c.Status(400).JSON(fiber.Map{
 				"error": "Invalid email format",
 			})
 		}
-		updates["backup_email"] = req.BackupEmail
-	}
-	if req.BackupPhone != "" {
-		// TODO: Validate phone format
-		updates["backup_phone"] = req.BackupPhone
-	}
-
-	if len(updates) > 0 {
-		h.db.DB.Model(&user).Updates(updates)
+		h.db.DB.Model(&user).Update("backup_email", req.BackupEmail)
+		log.Printf("✅ [BACKUP_EMAIL] Updated backup email for user %s to: %s", user.Email, req.BackupEmail)
+	} else {
+		// Allow clearing backup email by sending empty string
+		h.db.DB.Model(&user).Update("backup_email", "")
+		log.Printf("✅ [BACKUP_EMAIL] Cleared backup email for user %s", user.Email)
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "Backup contact updated successfully",
+		"message":      "Backup contact updated successfully",
+		"backup_email": req.BackupEmail,
 	})
 }
 

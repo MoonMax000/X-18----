@@ -20,19 +20,20 @@ class AuthFetch {
       return this.performFetch(endpoint, fetchOptions);
     }
     
-    // Проверяем наличие токена
+    // Пробуем получить токен из localStorage (для обратной совместимости)
+    // Но если его нет, не выбрасываем ошибку - полагаемся на cookies
     const token = localStorage.getItem('custom_token');
+    
     if (!token) {
-      DEBUG.log('AUTH', `No token available for ${endpoint}`, { skipAuth });
-      throw new Error('No authentication token');
+      DEBUG.log('AUTH', `No localStorage token for ${endpoint}, relying on httpOnly cookies`, { skipAuth });
     }
     
-    // Первая попытка с текущим токеном
+    // Первая попытка (с токеном из localStorage если есть, или только с cookies)
     let response = await this.performFetch(endpoint, {
       ...fetchOptions,
       headers: {
         ...fetchOptions.headers,
-        'Authorization': `Bearer ${token}`
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       }
     });
     
@@ -49,13 +50,13 @@ class AuthFetch {
       this.refreshPromise = null;
       
       if (refreshed) {
-        // Повторяем запрос с новым токеном
+        // Повторяем запрос с новым токеном (если он есть)
         const newToken = localStorage.getItem('custom_token');
         response = await this.performFetch(endpoint, {
           ...fetchOptions,
           headers: {
             ...fetchOptions.headers,
-            'Authorization': `Bearer ${newToken}`
+            ...(newToken ? { 'Authorization': `Bearer ${newToken}` } : {})
           }
         });
       }

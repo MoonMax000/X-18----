@@ -102,7 +102,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
       className={`
         group relative flex items-center gap-3 p-3 
         rounded-xl border backdrop-blur-[50px] 
-        transition-all duration-200
+        transition-all duration-200 min-w-0
         ${isInteractive ? "cursor-move" : onDownload ? "cursor-pointer" : "cursor-default"}
         ${
           isInteractive && isDragging && draggedIndex === index
@@ -119,10 +119,10 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
 
       {/* Информация о файле */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-white truncate">
+        <p className="text-xs font-medium text-white filename break-words overflow-hidden">
           {document.fileName || 'Document'}
         </p>
-        <p className="text-[10px] text-[#808283]">
+        <p className="text-[10px] text-[#808283] break-words">
           {document.fileSize ? formatFileSize(document.fileSize) : 'Unknown size'}
           {onDownload && <span className="ml-1">• Нажмите для скачивания</span>}
         </p>

@@ -292,13 +292,13 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
   };
 
   return (
-    <div className="flex gap-3 w-full max-w-full min-w-0">
+    <div className="quick-composer flex gap-3 w-full max-w-full min-w-0 overflow-x-hidden">
       <Avatar className="h-12 w-12 flex-shrink-0">
         <AvatarImage src={user?.avatar_url || "https://cdn.builder.io/api/v1/image/assets%2F96d248c4e0034c7db9c7e11fff5853f9%2Fbfe82f3f6ef549f2ba8b6ec6c1b11e87"} />
         <AvatarFallback>{user?.display_name?.[0] || user?.username?.[0] || 'U'}</AvatarFallback>
       </Avatar>
 
-      <div className="flex-1 mb-[-1px] min-w-0 max-w-full overflow-hidden">
+      <div className="flex-1 mb-[-1px] min-w-0 max-w-full overflow-hidden content">
         <AutoGrowTextarea
           textareaRef={textareaRef}
           placeholder="Share your trading ideas, signals, or analysis... ($TICKER, #tags, @mentions)"
@@ -340,8 +340,8 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <pre className="px-4 py-3 text-xs text-[#D4B5FD] overflow-x-auto max-h-40 font-mono bg-[#05030A] max-w-full">
-                  <code className="break-all whitespace-pre-wrap">{cb.code}</code>
+                <pre className="px-4 py-3 text-xs text-[#D4B5FD] max-h-40 font-mono bg-[#05030A] max-w-full whitespace-pre-wrap break-words">
+                  <code className="break-words">{cb.code}</code>
                 </pre>
               </div>
             ))}

@@ -327,7 +327,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       </header>
 
       {/* Content Section */}
-      <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px] min-w-0 overflow-x-hidden">
+      <section className="flex flex-col gap-1.5 sm:gap-2 md:gap-3 ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px] min-w-0 overflow-x-hidden">
         <div>
           <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere text-[14px] sm:text-[15px] md:text-[16px] leading-[1.6] sm:leading-relaxed text-white max-w-full">
             {displayText}
@@ -364,12 +364,12 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           return (
             <div className="flex flex-col gap-3 mt-2">
               {post.codeBlocks.map((cb, idx) => (
-              <div key={idx} className="rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full max-w-full min-w-0">
+              <div key={idx} className="post-code rounded-2xl bg-gradient-to-br from-[#0A0D12] to-[#1B1A2E] border border-[#6B46C1]/20 overflow-hidden shadow-lg hover:border-[#6B46C1]/40 transition-all w-full max-w-full min-w-0">
                 <div className="flex items-center justify-between border-b border-[#6B46C1]/20 bg-gradient-to-r from-[#1B1A2E] to-[#0A0D12] px-4 py-2">
-                  <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider">{cb.language}</span>
+                  <span className="text-xs font-bold text-[#B299CC] uppercase tracking-wider truncate">{cb.language}</span>
                 </div>
-                <pre className="p-4 text-sm leading-relaxed font-mono bg-[#05030A] overflow-x-auto">
-                  <code className="text-[#D4B5FD]">{cb.code}</code>
+                <pre className="p-4 text-sm leading-relaxed font-mono bg-[#05030A] overflow-x-auto max-w-full">
+                  <code className="text-[#D4B5FD] whitespace-pre-wrap break-words">{cb.code}</code>
                 </pre>
               </div>
               ))}
@@ -380,7 +380,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
       {/* Signal-specific info */}
       {isSignal && !isLocked && (
-        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
+        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px]">
           {post.accuracy && (
             <div className="mb-3 text-[14px] sm:text-[15px] md:text-[16px] text-[#C5C9D3]">
               <span className="font-semibold text-green-400">Accuracy {post.accuracy}%</span>
@@ -409,7 +409,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
       {/* Gated/Locked Content - Only show this for locked posts */}
       {isLocked ? (
-        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
+        <section className="ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px]">
           <GatedContent
             accessLevel={post.accessLevel!}
             postId={post.id}
@@ -425,7 +425,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       ) : (
         /* Media - Only show for unlocked posts */
         ((post.media && post.media.length > 0) || post.mediaUrl) && (
-          <section className="ml-[48px] sm:ml-[52px] md:ml-[56px]">
+          <section className="ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px]">
             {post.media && post.media.length > 0 ? (
               (() => {
                 // Разделяем медиа на документы и другие типы

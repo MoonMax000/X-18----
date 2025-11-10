@@ -135,7 +135,11 @@ export const CodeBlockModal: FC<CodeBlockModalProps> = ({ isOpen, onClose, onIns
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Paste your code here..."
-              className="h-64 w-full resize-none rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 font-mono text-sm text-[#E7E9EA] placeholder:text-[#808283] outline-none backdrop-blur-[50px] transition-colors focus:border-[#A06AFF] scrollbar"
+              className="h-64 w-full resize-none rounded-2xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] p-4 font-mono text-sm text-[#E7E9EA] placeholder:text-[#808283] outline-none backdrop-blur-[50px] transition-colors focus:border-[#A06AFF] scrollbar whitespace-pre-wrap break-words"
+              style={{
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word'
+              }}
               autoFocus
             />
           </div>

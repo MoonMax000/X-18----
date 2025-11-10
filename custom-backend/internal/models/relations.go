@@ -192,6 +192,13 @@ type Session struct {
 	UserAgent    string     `gorm:"size:500" json:"user_agent,omitempty"` // Full user agent string
 	LastActiveAt *time.Time `json:"last_active_at,omitempty"`             // Last activity timestamp
 
+	// GeoIP location fields
+	Country     string `gorm:"size:100" json:"country,omitempty"`    // Country name from IP
+	CountryCode string `gorm:"size:2" json:"country_code,omitempty"` // ISO 3166-1 alpha-2 code
+	City        string `gorm:"size:100" json:"city,omitempty"`       // City name from IP
+	Region      string `gorm:"size:100" json:"region,omitempty"`     // Region/State from IP
+	Timezone    string `gorm:"size:50" json:"timezone,omitempty"`    // Timezone from IP
+
 	// Computed field (not stored in DB)
 	IsCurrent bool `gorm:"-" json:"is_current"`
 

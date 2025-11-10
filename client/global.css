@@ -4,6 +4,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Shimmer animation for skeleton loaders (Twitter-style) */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    rgba(55, 65, 81, 0.3) 0%,
+    rgba(75, 85, 101, 0.5) 50%,
+    rgba(55, 65, 81, 0.3) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none !important;
+    background: rgba(55, 65, 81, 0.3) !important;
+  }
+  
+  /* Disable all animations for users who prefer reduced motion */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 /* Ensure tooltips work properly */
 [title] {
   position: relative;
@@ -613,4 +663,151 @@ textarea::-webkit-scrollbar-track {
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-out;
   }
+}
+
+/* === Anti-overflow kit for composer & prose === */
+
+/* Ограничиваем ширину корневого контейнера компоузера и его потомков */
+.quick-composer,
+.quick-composer * {
+  max-width: 100%;
+}
+
+/* Страховка от горизонтального скролла всего блока */
+.quick-composer {
+  overflow-x: hidden;
+}
+
+/* Позволяем flex/grid-детям сжиматься (иначе они расталкивают контейнер) */
+.quick-composer .flex,
+.quick-composer .inline-flex,
+.quick-composer .grid {
+  min-width: 0;
+}
+
+/* Резиновые медиа внутри компоузера */
+.quick-composer img,
+.quick-composer video,
+.quick-composer canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Удобная обёртка под видео (если нет Tailwind aspect-video) */
+.quick-composer .video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.quick-composer .video-wrapper > * {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Глобально чиним длинные слова/URL и токены в тексте и подписях */
+.quick-composer .content,
+.quick-composer .filename,
+.quick-composer .doc-title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Typography (prose): убираем горизонтальный скролл и включаем перенос в коде */
+.prose {
+  max-width: 100%;
+}
+.prose :where(p, li, blockquote, h1, h2, h3, h4, h5, h6, table) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.prose pre {
+  white-space: pre-wrap;   /* главный фикс против "ушёл за экран" */
+  overflow-wrap: anywhere; /* перенос даже без пробелов */
+  word-break: break-word;
+  max-width: 100%;
+}
+.prose code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* === Anti-overflow kit для постов === */
+
+/* Все посты - базовая защита от переполнения */
+.post-content,
+article[class*="PostDetail"],
+article[class*="FeedPost"],
+article[class*="VideoPost"],
+[data-post-container] {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Flex/grid контейнеры в постах должны сжиматься */
+.post-content .flex,
+.post-content .inline-flex,
+.post-content .grid,
+article[class*="Post"] .flex,
+article[class*="Post"] .inline-flex,
+article[class*="Post"] .grid {
+  min-width: 0;
+}
+
+/* Текстовый контент в постах */
+.post-text,
+.post-content p,
+.post-content span,
+article[class*="Post"] p,
+article[class*="Post"] .text-content {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+}
+
+/* Блоки кода в постах */
+.post-code,
+.post-content pre,
+.post-content code,
+article[class*="Post"] pre,
+article[class*="Post"] code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Медиа контейнеры в постах */
+.post-media,
+.post-content img,
+.post-content video,
+article[class*="Post"] img,
+article[class*="Post"] video {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Документы и имена файлов */
+.post-document-name,
+.document-title,
+.file-name {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* FOUC Prevention - This rule must be at the end to override index.html's hidden state */
+/* When CSS is loaded, make html visible */
+html {
+  visibility: visible !important;
+  opacity: 1 !important;
 }

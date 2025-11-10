@@ -368,10 +368,13 @@ func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshT
 	// Get client IP
 	ipAddress := GetClientIP(c)
 
+	// Get GeoIP location data (non-blocking)
+	geoData := utils.GetGeoIPDataSafe(ipAddress)
+
 	// Get current time for last activity
 	now := time.Now()
 
-	// Create session with full device tracking info
+	// Create session with full device tracking info and GeoIP data
 	session := models.Session{
 		UserID:           userID,
 		RefreshTokenHash: refreshTokenHash,
@@ -384,6 +387,15 @@ func (ss *SessionService) CreateSession(userID uuid.UUID, c *fiber.Ctx, refreshT
 		UserAgent:        userAgent,
 		LastActiveAt:     &now,
 		IsActive:         true,
+	}
+
+	// Add GeoIP data if available
+	if geoData != nil {
+		session.Country = geoData.Country
+		session.CountryCode = geoData.CountryCode
+		session.City = geoData.City
+		session.Region = geoData.Region
+		session.Timezone = geoData.Timezone
 	}
 
 	if err := ss.db.Create(&session).Error; err != nil {
