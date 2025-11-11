@@ -18,3 +18,5 @@ warn - If this is content and not a class, replace it with `duration-&lsqb;600ms
 4:44:07 PM [vite] (client) hmr update /client/global.css
 4:49:43 PM [vite] (client) hmr update /client/global.css, /client/components/common/AvatarWithHoverCard.tsx
 4:50:19 PM [vite] (client) hmr update /client/global.css, /client/components/PostCard/UserHoverCard.tsx
+4:55:44 PM [vite] (client) hmr update /client/global.css, /client/features/feed/components/posts/LockedPostPlaceholder.tsx
+4:56:17 PM [vite] (client) hmr update /client/global.css, /client/features/feed/components/posts/LockedPostPlaceholder.tsx

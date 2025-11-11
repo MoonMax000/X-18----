@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Lock, Crown, Sparkles, Users } from "lucide-react";
+import React from "react";
+import { Lock, Crown, DollarSign, Users, Sparkles } from "lucide-react";
 import type { AccessLevel } from "../../types";
 
 interface LockedPostPlaceholderProps {
@@ -17,6 +17,8 @@ interface LockedPostPlaceholderProps {
   onUnlock?: () => void;
   onSubscribe?: () => void;
   onFollow?: () => void;
+  priceCents?: number;
+  onGetAccess?: (action?: 'purchase' | 'subscribe' | 'follow' | 'upgrade') => void;
 }
 
 export default function LockedPostPlaceholder({
@@ -34,48 +36,57 @@ export default function LockedPostPlaceholder({
   onUnlock,
   onSubscribe,
   onFollow,
+  priceCents,
+  onGetAccess,
 }: LockedPostPlaceholderProps) {
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-
   // Don't show placeholder if content is already accessible
   if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower) || isOwnPost) {
     return null;
   }
 
+  // Use priceCents if provided, otherwise use postPrice * 100
+  const actualPriceCents = priceCents || (postPrice * 100);
+  const displayPrice = actualPriceCents / 100;
+
+  // Background image URL - use preview or generate gradient
+  const backgroundImageUrl = previewImageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Cdefs%3E%3ClinearGradient id="grad" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%23A06AFF;stop-opacity:1" /%3E%3Cstop offset="100%25" style="stop-color:%23482090;stop-opacity:1" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="800" height="600" fill="url(%23grad)" /%3E%3C/svg%3E';
+
   // Prepare text and actions based on access level
   let message: string;
   let buttonLabel: string;
   let buttonAction: () => void;
+  let primaryAction: 'purchase' | 'subscribe' | 'follow' | 'upgrade' = 'purchase';
   
   switch (accessLevel) {
     case 'subscribers':
       message = `Этот пост доступен только для подписчиков. Оформите подписку на ${authorName} за $${subscriptionPrice}/мес, чтобы читать полный текст.`;
       buttonLabel = 'Подписаться';
-      buttonAction = () => onSubscribe ? onSubscribe() : setShowPaymentModal(true);
+      buttonAction = () => onGetAccess ? onGetAccess('subscribe') : onSubscribe?.();
+      primaryAction = 'subscribe';
       break;
     case 'premium':
       message = `Пост для премиум-подписчиков. Обновите свою подписку до премиум за $${subscriptionPrice + 20}/мес, чтобы получить доступ.`;
       buttonLabel = 'Получить Premium';
-      buttonAction = () => onSubscribe ? onSubscribe() : setShowPaymentModal(true);
+      buttonAction = () => onGetAccess ? onGetAccess('upgrade') : onSubscribe?.();
+      primaryAction = 'upgrade';
       break;
     case 'paid':
-      message = `Это платный пост. Приобретите разовый доступ за $${postPrice}, чтобы прочитать его полностью.`;
-      buttonLabel = `Купить за $${postPrice}`;
-      buttonAction = () => onUnlock ? onUnlock() : setShowPaymentModal(true);
+      message = `Это платный пост. Приобретите разовый доступ за $${displayPrice.toFixed(2)}, чтобы прочитать его полностью.`;
+      buttonLabel = `Купить за $${displayPrice.toFixed(2)}`;
+      buttonAction = () => onGetAccess ? onGetAccess('purchase') : onUnlock?.();
+      primaryAction = 'purchase';
       break;
     case 'followers':
       message = `Контент только для подписчиков. Подпишитесь на ${authorName}, чтобы получить доступ к эксклюзивному контенту.`;
       buttonLabel = 'Подписаться';
-      buttonAction = () => onFollow ? onFollow() : setShowPaymentModal(true);
+      buttonAction = () => onGetAccess ? onGetAccess('follow') : onFollow?.();
+      primaryAction = 'follow';
       break;
     default:
       message = 'Контент недоступен.';
       buttonLabel = 'Получить доступ';
-      buttonAction = () => setShowPaymentModal(true);
+      buttonAction = () => onGetAccess ? onGetAccess() : onUnlock?.();
   }
-
-  // Background image URL (use preview or default)
-  const backgroundImageUrl = previewImageUrl || '/images/locked-post-bg.jpg';
 
   return (
     <div className="relative bg-gray-900 rounded-2xl overflow-hidden text-center min-h-[280px] sm:min-h-[320px] md:min-h-[360px]">
@@ -160,7 +171,7 @@ export default function LockedPostPlaceholder({
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                onSubscribe ? onSubscribe() : setShowPaymentModal(true);
+                onGetAccess ? onGetAccess('subscribe') : onSubscribe?.();
               }}
               className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-[#A06AFF]/50 text-[#A06AFF] font-semibold rounded-full hover:bg-[#A06AFF]/10 hover:border-[#A06AFF] transition-all duration-300"
             >
