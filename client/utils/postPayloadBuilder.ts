@@ -65,21 +65,21 @@ export function buildPostPayload(data: {
     risk?: string;
   };
 }): any {
-  // Формируем базовый payload для бэкенда
+  // Формируем базовый payload для бэкенда (используем camelCase!)
   const payload: any = {
     content: data.text.trim(),
-    access_level: data.accessType,
-    reply_policy: data.replySetting,
+    accessLevel: data.accessType,  // ✅ camelCase
+    replyPolicy: data.replySetting,  // ✅ camelCase
   };
 
   // Добавляем медиа если есть
   if (data.mediaIds.length > 0) {
-    payload.media_ids = data.mediaIds;
+    payload.mediaIds = data.mediaIds;  // ✅ camelCase
   }
 
   // Добавляем цену для платных постов (в центах)
   if (data.accessType === "pay-per-post" && data.postPrice) {
-    payload.price_cents = Math.round(data.postPrice * 100);
+    payload.priceCents = Math.round(data.postPrice * 100);  // ✅ camelCase
   }
 
   // Формируем метаданные для бэкенда

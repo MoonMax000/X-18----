@@ -21,13 +21,16 @@ interface TrendingPost {
 
 export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "tags" | "articles">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "signal" | "news" | "education" | "analysis" | "macro" | "code" | "video" | "liked">("all");
+  const [sortFilter, setSortFilter] = useState<"hot" | "recent">("hot");
   const [trendingPosts, setTrendingPosts] = useState<TrendingPost[]>([]);
   const [isTrendingLoading, setIsTrendingLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { results, isLoading, updateFilters } = useSearch({
     query: searchQuery,
+    category: activeFilter !== 'all' && activeFilter !== 'liked' ? activeFilter : undefined,
+    sortBy: sortFilter === 'hot' ? 'relevance' : 'date',
   });
 
   // Load trending posts when modal opens
@@ -224,91 +227,54 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
             </div>
             {/* End Input */}
 
-            {/* Filter Buttons */}
-            <div className="mt-3 flex flex-wrap justify-between items-center gap-1 sm:gap-2">
-              <div className="flex flex-wrap gap-1 sm:gap-2">
+            {/* Category Filters */}
+            <div className="mt-3 flex flex-wrap gap-1 sm:gap-2">
+              {["all", "signal", "news", "education", "analysis", "macro", "code", "video", "liked"].map((filter) => (
                 <button
+                  key={filter}
                   type="button"
-                  onClick={() => setActiveFilter("all")}
-                  className={`py-1.5 px-2.5 inline-flex items-center gap-x-1.5 text-xs rounded-full focus:outline-none transition-all duration-200 ${
-                    activeFilter === "all"
+                  onClick={() => setActiveFilter(filter as any)}
+                  className={`py-1.5 px-2.5 inline-flex items-center text-xs rounded-full focus:outline-none transition-all duration-200 ${
+                    activeFilter === filter
                       ? "bg-[#A06AFF] text-white shadow-sm"
                       : "text-gray-300 bg-[#272A32] hover:text-[#A06AFF] hover:bg-[#2F3340]"
                   }`}
                 >
-                  <svg
-                    className="shrink-0 size-3.5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20 7h-3a2 2 0 0 1-2-2V2" />
-                    <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z" />
-                    <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8" />
-                  </svg>
-                  All {totalResults}
+                  {filter === "all" ? `All ${totalResults}` : filter.charAt(0).toUpperCase() + filter.slice(1)}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveFilter("tags")}
-                  className={`py-1.5 px-2.5 inline-flex items-center gap-x-1.5 text-xs rounded-full focus:outline-none transition-all duration-200 ${
-                    activeFilter === "tags"
-                      ? "bg-[#A06AFF] text-white shadow-sm"
-                      : "text-gray-300 bg-[#272A32] hover:text-[#A06AFF] hover:bg-[#2F3340]"
-                  }`}
-                >
-                  <svg
-                    className="shrink-0 size-3.5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
-                    <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
-                  </svg>
-                  Tags
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveFilter("articles")}
-                  className={`py-1.5 px-2.5 inline-flex items-center gap-x-1.5 text-xs rounded-full focus:outline-none transition-all duration-200 ${
-                    activeFilter === "articles"
-                      ? "bg-[#A06AFF] text-white shadow-sm"
-                      : "text-gray-300 bg-[#272A32] hover:text-[#A06AFF] hover:bg-[#2F3340]"
-                  }`}
-                >
-                  <svg
-                    className="shrink-0 size-3.5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-                    <path d="M18 14h-8" />
-                    <path d="M15 18h-5" />
-                    <path d="M10 6h8v4h-8V6Z" />
-                  </svg>
-                  Articles
-                </button>
-              </div>
+              ))}
+            </div>
+            {/* Sort Filters */}
+            <div className="mt-2 flex gap-2">
+              <span className="text-xs text-gray-500 flex items-center">Filters:</span>
+              <button
+                type="button"
+                onClick={() => setSortFilter("hot")}
+                className={`py-1 px-2.5 inline-flex items-center gap-x-1 text-xs rounded-full focus:outline-none transition-all duration-200 ${
+                  sortFilter === "hot"
+                    ? "bg-[#FF6B35] text-white shadow-sm"
+                    : "text-gray-400 bg-[#1F2229] hover:text-white hover:bg-[#272A32]"
+                }`}
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                </svg>
+                Hot
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortFilter("recent")}
+                className={`py-1 px-2.5 inline-flex items-center gap-x-1 text-xs rounded-full focus:outline-none transition-all duration-200 ${
+                  sortFilter === "recent"
+                    ? "bg-[#4D7CFF] text-white shadow-sm"
+                    : "text-gray-400 bg-[#1F2229] hover:text-white hover:bg-[#272A32]"
+                }`}
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Recent
+              </button>
             </div>
             {/* End Filter Buttons */}
           </div>

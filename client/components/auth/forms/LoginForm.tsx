@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { customAuth } from '@/services/auth/custom-backend-auth';
-import { AuthMethod, formatPhoneNumber, validatePhone, validateEmail } from './types';
+import { validateEmail } from './types';
 
 interface LoginFormProps {
   onSwitchToSignup: () => void;
@@ -16,26 +16,15 @@ const LoginForm: FC<LoginFormProps> = ({
   on2FARequired,
   onSuccess,
 }) => {
-  const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const [phoneError, setPhoneError] = useState('');
   const [authError, setAuthError] = useState('');
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhoneNumber(formatted);
-    const error = validatePhone(formatted);
-    setPhoneError(error || '');
-    setAuthError('');
-  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -54,21 +43,20 @@ const LoginForm: FC<LoginFormProps> = ({
     setAuthError('');
     setAttemptsRemaining(null);
 
-    const phoneValid = authMethod === 'phone' ? !validatePhone(phoneNumber) : true;
-    const emailValid = authMethod === 'email' ? !validateEmail(email) : true;
+    const emailValid = !validateEmail(email);
 
     if (!password) {
       setAuthError('Password is required');
       return;
     }
 
-    if (!phoneValid || !emailValid) return;
+    if (!emailValid) return;
 
     setIsLoading(true);
 
     try {
       const loginData = {
-        email: authMethod === 'email' ? email : `${phoneNumber}@phone.temp`,
+        email,
         password,
       };
 
@@ -124,121 +112,51 @@ const LoginForm: FC<LoginFormProps> = ({
   return (
     <div className="flex flex-col flex-1">
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold text-white text-center mb-2">Sign In</h2>
+        <h2 className="text-2xl font-bold text-white text-center">Sign In</h2>
 
-        <div className="inline-flex self-start items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-md">
-          <button
-            onClick={() => {
-              setAuthMethod('email');
-              setPhoneError('');
-              setEmailError('');
-              setAuthError('');
-            }}
-            className={cn(
-              'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-[background-color,box-shadow,color] duration-300',
-              authMethod === 'email'
-                ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-md'
-                : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-md'
-            )}
-          >
-            Email
-          </button>
-          <button
-            onClick={() => {
-              setAuthMethod('phone');
-              setPhoneError('');
-              setEmailError('');
-              setAuthError('');
-            }}
-            className={cn(
-              'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-[background-color,box-shadow,color] duration-300',
-              authMethod === 'phone'
-                ? 'bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white backdrop-blur-md'
-                : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white backdrop-blur-md'
-            )}
-          >
-            Phone
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 mt-4">
           <div className="flex flex-col gap-1">
             <div
               className={cn(
-                'flex items-center gap-2 h-11 px-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-md transition-[border-color,box-shadow] duration-300',
-                (authMethod === 'phone' && phoneError) || authError
+                'flex items-center gap-2 h-11 px-[10px] py-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-md transition-[border-color,box-shadow] duration-300',
+                emailError || authError
                   ? 'border-red-500 focus-within:border-red-500 focus-within:shadow-lg focus-within:shadow-red-500/20'
-                  : (authMethod === 'email' && emailError) || authError
-                  ? 'border-red-500 focus-within:border-red-500 focus-within:shadow-lg focus-within:shadow-red-500/20'
-                  : 'border-[#181B22] focus-within:border-primary focus-within:shadow-lg focus-within:shadow-primary/20 hover:border-primary/50'
+                  : 'border-widget-border focus-within:border-primary focus-within:shadow-lg focus-within:shadow-primary/20 hover:border-primary/50'
               )}
             >
-              {authMethod === 'phone' ? (
-                <>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M10 15.8334H10.0083"
-                      stroke={phoneError || authError ? '#EF4444' : phoneNumber ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M11.2497 1.66663H8.74967C6.78549 1.66663 5.8034 1.66663 5.1932 2.27682C4.58301 2.88702 4.58301 3.86911 4.58301 5.83329V14.1666C4.58301 16.1308 4.58301 17.1129 5.1932 17.7231C5.8034 18.3333 6.78549 18.3333 8.74967 18.3333H11.2497C13.2138 18.3333 14.1959 18.3333 14.8062 17.7231C15.4163 17.1129 15.4163 16.1308 15.4163 14.1666V5.83329C15.4163 3.86911 15.4163 2.88702 14.8062 2.27682C14.1959 1.66663 13.2138 1.66663 11.2497 1.66663Z"
-                      stroke={phoneError || authError ? '#EF4444' : phoneNumber ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={handlePhoneChange}
-                    placeholder="+1234567890"
-                    className="flex-1 bg-transparent text-[15px] text-white placeholder:text-webGray outline-none"
-                  />
-                </>
-              ) : (
-                <>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5"
-                      stroke={emailError || authError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M1.67989 11.2296C1.73436 13.7843 1.76161 15.0615 2.70421 16.0078C3.64681 16.954 4.95869 16.9869 7.58244 17.0528C9.1995 17.0935 10.8007 17.0935 12.4177 17.0528C15.0415 16.9869 16.3533 16.954 17.296 16.0078C18.2386 15.0615 18.2658 13.7843 18.3202 11.2296C18.3378 10.4082 18.3378 9.59171 18.3202 8.77029C18.2658 6.21568 18.2386 4.93837 17.296 3.99218C16.3533 3.04599 15.0415 3.01303 12.4177 2.9471C10.8007 2.90647 9.1995 2.90647 7.58243 2.94709C4.95869 3.01301 3.64681 3.04597 2.70421 3.99217C1.7616 4.93836 1.73436 6.21567 1.67988 8.77029C1.66236 9.59171 1.66237 10.4082 1.67989 11.2296Z"
-                      stroke={emailError || authError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    placeholder="Email/Subaccount"
-                    className="flex-1 bg-transparent text-[15px] text-white placeholder:text-webGray outline-none"
-                  />
-                </>
-              )}
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5"
+                  stroke={emailError || authError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M1.67989 11.2296C1.73436 13.7843 1.76161 15.0615 2.70421 16.0078C3.64681 16.954 4.95869 16.9869 7.58244 17.0528C9.1995 17.0935 10.8007 17.0935 12.4177 17.0528C15.0415 16.9869 16.3533 16.954 17.296 16.0078C18.2386 15.0615 18.2658 13.7843 18.3202 11.2296C18.3378 10.4082 18.3378 9.59171 18.3202 8.77029C18.2658 6.21568 18.2386 4.93837 17.296 3.99218C16.3533 3.04599 15.0415 3.01303 12.4177 2.9471C10.8007 2.90647 9.1995 2.90647 7.58243 2.94709C4.95869 3.01301 3.64681 3.04597 2.70421 3.99217C1.7616 4.93836 1.73436 6.21567 1.67988 8.77029C1.66236 9.59171 1.66237 10.4082 1.67989 11.2296Z"
+                  stroke={emailError || authError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="Email"
+                className="flex-1 bg-transparent text-[15px] text-white placeholder:text-webGray outline-none"
+              />
             </div>
-            {authMethod === 'phone' && phoneError && (
-              <p className="text-xs text-red-500 px-3">{phoneError}</p>
-            )}
-            {authMethod === 'email' && emailError && (
+            {emailError && (
               <p className="text-xs text-red-500 px-3">{emailError}</p>
             )}
           </div>
 
           <div
             className={cn(
-              'flex items-center justify-between gap-2 h-11 px-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-md transition-[border-color,box-shadow] duration-300',
+              'flex items-center justify-between gap-2 h-11 px-[10px] py-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-md transition-[border-color,box-shadow] duration-300',
               authError
                 ? 'border-red-500 focus-within:border-red-500 focus-within:shadow-lg focus-within:shadow-red-500/20'
-                : 'border-[#181B22] focus-within:border-primary focus-within:shadow-lg focus-within:shadow-primary/20 hover:border-primary/50'
+                : 'border-widget-border focus-within:border-primary focus-within:shadow-lg focus-within:shadow-primary/20 hover:border-primary/50'
             )}
           >
             <div className="flex items-center gap-2 flex-1">
@@ -368,18 +286,18 @@ const LoginForm: FC<LoginFormProps> = ({
                 {attemptsRemaining !== null && ` You have ${attemptsRemaining} attempts remaining.`}
               </p>
             )}
-
-            <button
-              onClick={onSwitchToForgotPassword}
-              className="text-[15px] text-primary hover:underline transition-all duration-300 hover:text-purple-400"
-            >
-              Forgot Password?
-            </button>
           </div>
         </div>
       </div>
 
       <div className="mt-auto flex flex-col items-center gap-6 pt-10">
+        <button
+          onClick={onSwitchToForgotPassword}
+          className="text-[15px] text-primary hover:underline transition-all duration-300 hover:text-purple-400"
+        >
+          Forgot Password?
+        </button>
+
         <div className="flex items-center justify-center gap-6">
           <button
             type="button"
@@ -432,20 +350,6 @@ const LoginForm: FC<LoginFormProps> = ({
                   <rect width="24" height="24" fill="white" transform="translate(0.5)" />
                 </clipPath>
               </defs>
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleOAuthLogin('twitter')}
-            disabled={isLoading}
-            className="flex items-center justify-center w-11 h-11 rounded-full border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-md hover:bg-[rgba(12,16,20,0.7)] hover:border-white hover:shadow-lg hover:shadow-white/30 hover:scale-110 active:scale-95 transition-[background-color,border-color,box-shadow,transform] duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg width="24" height="24" viewBox="0 0 25 24" fill="none">
-              <path
-                d="M18.8263 1.90381H22.1998L14.8297 10.3273L23.5 21.7898H16.7112L11.394 14.8378L5.30995 21.7898H1.93443L9.81743 12.7799L1.5 1.90381H8.46111L13.2674 8.25814L18.8263 1.90381ZM17.6423 19.7706H19.5116L7.44539 3.81694H5.43946L17.6423 19.7706Z"
-                fill="white"
-              />
             </svg>
           </button>
         </div>

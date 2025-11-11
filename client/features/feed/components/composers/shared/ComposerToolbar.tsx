@@ -205,29 +205,21 @@ export function ComposerToolbar({
         </button>
       </div>
 
-      {/* Access Type Button - Opens Modal */}
+      {/* Access Type Button - Opens Modal - Icon only */}
       <button 
         type="button" 
         onClick={onAccessTypeClick}
         className={cn(
-          "ml-2 flex h-6 items-center gap-1 rounded-full px-2 transition-all border",
+          "ml-2 flex h-6 w-6 items-center justify-center rounded-full transition-all border",
           accessType === "free"
             ? "bg-gradient-to-l from-[#A06AFF] to-[#7F57FF] border-[#A06AFF]/50 hover:opacity-80"
             : isPaid
             ? `bg-gradient-to-l ${currentConfig.bg} ${currentConfig.border} hover:opacity-80`
             : `bg-transparent ${currentConfig.border} hover:bg-[#A06AFF]/10 hover:border-[#A06AFF]`
         )}
-        title="Set post access type"
+        title={`Access: ${currentConfig.label}${accessType === "pay-per-post" ? ` ($${postPrice.toFixed(2)})` : ""} - Click to change`}
       >
-        <CurrentIcon className="h-3.5 w-3.5" style={{ color: accessType === "free" ? "white" : isPaid ? "white" : currentConfig.color }} />
-        <span className="text-xs" style={{ color: accessType === "free" ? "white" : isPaid ? "white" : currentConfig.color }}>
-          {currentConfig.label}
-        </span>
-        {accessType === "pay-per-post" && (
-          <span className="text-xs ml-0.5" style={{ color: isPaid ? "white" : currentConfig.color }}>
-            ${postPrice.toFixed(2)}
-          </span>
-        )}
+        <Lock className="h-3.5 w-3.5" style={{ color: accessType === "free" ? "white" : isPaid ? "white" : currentConfig.color }} />
       </button>
     </div>
   );

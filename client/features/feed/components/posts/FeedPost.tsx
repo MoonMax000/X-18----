@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TrendingUp, TrendingDown, DollarSign, Sparkles, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, MessageCircle } from "lucide-react";
+import { getAvatarUrl } from "@/lib/avatar-utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import { formatTimeAgo } from "@/lib/time-utils";
-import GatedContent from "./GatedContent";
+import LockedPostPlaceholder from "./LockedPostPlaceholder";
 import PostMenu from "./PostMenu";
 import VideoPlayer from "./VideoPlayer";
 import { DocumentPreview } from "@/components/CreatePostBox/DocumentPreview";
+import { PaymentModal } from "@/components/monetization/PaymentModal";
+import { FollowModal } from "@/components/monetization/FollowModal";
 import type { Post } from "../../types";
 import { customBackendAPI } from "@/services/api/custom-backend";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +45,12 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   const [isExpanded, setIsExpanded] = useState(false);
   const isSignal = post.type === "signal";
   
+  // Payment & Follow modals state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [paymentType, setPaymentType] = useState<"unlock" | "subscribe">("unlock");
+  const [localPost, setLocalPost] = useState(post);
+  
   // Use global like store
   const { getLikeState, initializeLike, toggleLike } = useLikeStore();
   const likeState = getLikeState(post.id);
@@ -62,6 +71,23 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   // Check if current user is admin
   const isAdmin = user?.role === 'admin';
 
+  // DEBUG: Log post access control info
+  React.useEffect(() => {
+    console.log('[FeedPost DEBUG] Post access control:', {
+      postId: post.id,
+      accessLevel: post.accessLevel,
+      priceCents: post.priceCents,
+      postPrice: post.postPrice,
+      isPurchased: post.isPurchased,
+      isSubscriber: post.isSubscriber,
+      isFollower: post.isFollower,
+      isOwnPost,
+      currentUserHandle,
+      authorHandle: post.author.handle,
+      subscriptionPrice: post.author.subscriptionPrice,
+    });
+  }, [post.id, post.accessLevel, post.isPurchased, post.isSubscriber, isOwnPost]);
+
   // PostMenu integration
   const { handleDelete, handlePin, handleReport, handleBlockAuthor } = usePostMenu({
     postId: post.id,
@@ -78,7 +104,56 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   });
 
   // Post is locked if: has access level restrictions AND (not purchased AND not subscribed AND not own post)
-  const isLocked = post.accessLevel && post.accessLevel !== "public" && !post.isPurchased && !post.isSubscriber && !isOwnPost;
+  const isLocked = localPost.accessLevel && localPost.accessLevel !== "public" && !localPost.isPurchased && !localPost.isSubscriber && !isOwnPost;
+  
+  // DEBUG: Log lock calculation
+  React.useEffect(() => {
+    console.log('[FeedPost DEBUG] Lock calculation:', {
+      postId: localPost.id,
+      accessLevel: localPost.accessLevel,
+      isPurchased: localPost.isPurchased,
+      isSubscriber: localPost.isSubscriber,
+      isOwnPost,
+      isLocked,
+      calculation: `${localPost.accessLevel} && ${localPost.accessLevel !== "public"} && !${localPost.isPurchased} && !${localPost.isSubscriber} && !${isOwnPost}`,
+    });
+  }, [localPost.id, localPost.accessLevel, localPost.isPurchased, localPost.isSubscriber, isOwnPost, isLocked]);
+
+  // Update local post when prop changes
+  useEffect(() => {
+    setLocalPost(post);
+  }, [post]);
+
+  // Payment handlers
+  const handleUnlock = () => {
+    setPaymentType("unlock");
+    setShowPaymentModal(true);
+  };
+
+  const handleSubscribe = () => {
+    setPaymentType("subscribe");
+    setShowPaymentModal(true);
+  };
+
+  const handleFollow = () => {
+    setShowFollowModal(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Update local post state after successful payment
+    if (paymentType === "unlock") {
+      setLocalPost({ ...localPost, isPurchased: true });
+    } else {
+      setLocalPost({ ...localPost, isSubscriber: true });
+    }
+    setShowPaymentModal(false);
+  };
+
+  const handleFollowSuccess = () => {
+    // Update follow state
+    onFollowToggle(localPost.author.handle, true);
+    setShowFollowModal(false);
+  };
 
   // Text truncation logic
   const TEXT_PREVIEW_LENGTH = 300;
@@ -134,6 +209,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   };
 
   return (
+    <>
     <article
       onClick={handlePostClick}
       className={cn(
@@ -163,7 +239,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
           <div className="flex flex-1 items-start gap-2 sm:gap-2.5 md:gap-3">
           <div onClick={handleProfileClick} className="cursor-pointer">
             <Avatar className="flex-shrink-0 h-11 w-11 sm:w-12 sm:h-12">
-              <AvatarImage src={post.author.avatar} />
+              <AvatarImage src={getAvatarUrl({ avatar_url: post.author.avatar, username: post.author.handle, display_name: post.author.name })} />
               <AvatarFallback>{post.author.name[0]}</AvatarFallback>
             </Avatar>
           </div>
@@ -410,16 +486,20 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       {/* Gated/Locked Content - Only show this for locked posts */}
       {isLocked ? (
         <section className="ml-[48px] sm:ml-[52px] md:ml-[56px] pr-[40px] sm:pr-[44px] md:pr-[48px]">
-          <GatedContent
-            accessLevel={post.accessLevel!}
-            postId={post.id}
-            authorId={post.author.handle}
-            postPrice={post.postPrice}
-            subscriptionPrice={post.author.subscriptionPrice}
-            authorName={post.author.name}
-            isPurchased={post.isPurchased}
-            isSubscriber={post.isSubscriber}
+          <LockedPostPlaceholder
+            accessLevel={localPost.accessLevel!}
+            postId={localPost.id}
+            authorId={localPost.author.handle}
+            postPrice={localPost.postPrice}
+            subscriptionPrice={localPost.author.subscriptionPrice}
+            authorName={localPost.author.name}
+            previewImageUrl={localPost.media?.[0]?.url || localPost.mediaUrl}
+            isPurchased={localPost.isPurchased}
+            isSubscriber={localPost.isSubscriber}
             isOwnPost={isOwnPost}
+            onUnlock={handleUnlock}
+            onSubscribe={handleSubscribe}
+            onFollow={handleFollow}
           />
         </section>
       ) : (
@@ -602,5 +682,31 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       </footer>
 
     </article>
+
+    {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        type={paymentType}
+        amount={paymentType === "unlock" ? (localPost.postPrice || 9) : (localPost.author.subscriptionPrice || 29)}
+        postId={paymentType === "unlock" ? localPost.id : undefined}
+        authorId={paymentType === "subscribe" ? localPost.author.handle : undefined}
+        authorName={localPost.author.name}
+        plan="monthly"
+        onSuccess={handlePaymentSuccess}
+      />
+
+      {/* Follow Modal */}
+      <FollowModal
+        isOpen={showFollowModal}
+        onClose={() => setShowFollowModal(false)}
+        authorId={localPost.author.handle}
+        authorName={localPost.author.name}
+        authorHandle={localPost.author.handle?.replace('@', '')}
+        authorAvatar={localPost.author.avatar}
+        postId={localPost.id}
+        onSuccess={handleFollowSuccess}
+      />
+    </>
   );
 }

@@ -17,6 +17,7 @@ type Config struct {
 	Redis    RedisConfig
 	JWT      JWTConfig
 	OAuth    OAuthConfig
+	Stripe   StripeConfig
 }
 
 type ServerConfig struct {
@@ -69,6 +70,14 @@ type AppleOAuthConfig struct {
 	RedirectURL    string
 }
 
+type StripeConfig struct {
+	SecretKey      string
+	PublishableKey string
+	WebhookSecret  string
+	SuccessURL     string
+	CancelURL      string
+}
+
 func LoadConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -111,6 +120,13 @@ func LoadConfig() *Config {
 				PrivateKeyPath: getEnv("APPLE_PRIVATE_KEY_PATH", ""),
 				RedirectURL:    getEnv("APPLE_REDIRECT_URL", "http://localhost:8080/api/auth/apple/callback"),
 			},
+		},
+		Stripe: StripeConfig{
+			SecretKey:      getEnv("STRIPE_SECRET_KEY", ""),
+			PublishableKey: getEnv("STRIPE_PUBLISHABLE_KEY", ""),
+			WebhookSecret:  getEnv("STRIPE_WEBHOOK_SECRET", ""),
+			SuccessURL:     getEnv("STRIPE_SUCCESS_URL", "http://localhost:3000/payment-success"),
+			CancelURL:      getEnv("STRIPE_CANCEL_URL", "http://localhost:3000/payment-cancelled"),
 		},
 	}
 }

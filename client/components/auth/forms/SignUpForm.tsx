@@ -2,9 +2,6 @@ import { FC, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { customAuth } from '@/services/auth/custom-backend-auth';
 import {
-  AuthMethod,
-  formatPhoneNumber,
-  validatePhone,
   validateEmail,
   passwordRequirements,
 } from './types';
@@ -22,25 +19,15 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
     });
   }, []);
 
-  const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhone(formatted);
-    const error = validatePhone(formatted);
-    setPhoneError(error || '');
-  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -92,8 +79,8 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
   const isPasswordValid = password.length > 0 && passwordRequirements.every((req) => req.test(password));
   const doPasswordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const isFormComplete = Boolean(
-    ((authMethod === 'email' && email && !emailError) ||
-      (authMethod === 'phone' && phone && !phoneError)) &&
+    email &&
+      !emailError &&
       isPasswordValid &&
       doPasswordsMatch &&
       !passwordError &&
@@ -102,11 +89,8 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
 
   const handleSubmit = async () => {
     if (!isFormComplete) {
-      if (authMethod === 'email' && !email) {
+      if (!email) {
         setEmailError('Email is required');
-      }
-      if (authMethod === 'phone' && !phone) {
-        setPhoneError('Phone number is required');
       }
       if (!password) {
         setPasswordError('Password does not meet all requirements');
@@ -123,20 +107,15 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
     setIsLoading(true);
 
     try {
-      const username =
-        authMethod === 'email'
-          ? email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '')
-          : `user_${phone.replace(/\D/g, '').slice(-8)}`;
-
-      const userEmail = authMethod === 'email' ? email : `${phone}@phone.temp`;
+      const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
       
       await customAuth.register({
         username,
-        email: userEmail,
+        email,
         password,
       });
 
-      onSuccess(userEmail);
+      onSuccess(email);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
 
@@ -155,106 +134,40 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-bold text-white text-center">Sign Up</h2>
 
-        <div className="inline-flex self-start items-center gap-3 p-1 rounded-[36px] border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-md shadow-lg shadow-black/20">
-          <button
-            onClick={() => {
-              setAuthMethod('email');
-              setPhoneError('');
-              setEmailError('');
-            }}
-            className={cn(
-              'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-[background-color,box-shadow,color] duration-300',
-              authMethod === 'email'
-                ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
-                : 'border border-[#181B22] bg-[rgba(12,16,20,0.5)] text-white shadow-md'
-            )}
-          >
-            Email
-          </button>
-          <button
-            onClick={() => {
-              setAuthMethod('phone');
-              setPhoneError('');
-              setEmailError('');
-            }}
-            className={cn(
-              'flex items-center justify-center min-h-[44px] md:h-8 px-4 rounded-[32px] text-[15px] font-bold transition-[background-color,box-shadow,color] duration-300',
-              authMethod === 'phone'
-                ? 'bg-gradient-to-r from-primary to-[#482090] text-white shadow-lg shadow-primary/30'
-                : 'text-white hover:text-primary'
-            )}
-          >
-            Phone
-          </button>
-        </div>
-
         <div className="flex flex-col gap-6 mt-4">
           <div className="flex flex-col gap-1">
             <div
               className={cn(
                 'flex items-center gap-2 h-11 px-[10px] py-3 rounded-xl border bg-[rgba(12,16,20,0.5)] backdrop-blur-md transition-[border-color,box-shadow] duration-300',
-                (authMethod === 'phone' && phoneError) || (authMethod === 'email' && emailError)
+                emailError
                   ? 'border-[#EF454A]'
                   : 'border-widget-border'
               )}
             >
-              {authMethod === 'phone' ? (
-                <>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M10 15.8334H10.0083"
-                      stroke={phoneError ? '#EF4444' : phone ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M11.2497 1.66663H8.74967C6.78549 1.66663 5.8034 1.66663 5.1932 2.27682C4.58301 2.88702 4.58301 3.86911 4.58301 5.83329V14.1666C4.58301 16.1308 4.58301 17.1129 5.1932 17.7231C5.8034 18.3333 6.78549 18.3333 8.74967 18.3333H11.2497C13.2138 18.3333 14.1959 18.3333 14.8062 17.7231C15.4163 17.1129 15.4163 16.1308 15.4163 14.1666V5.83329C15.4163 3.86911 15.4163 2.88702 14.8062 2.27682C14.1959 1.66663 13.2138 1.66663 11.2497 1.66663Z"
-                      stroke={phoneError ? '#EF4444' : phone ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    placeholder="+1234567890"
-                    className="flex-1 bg-transparent text-[15px] text-[#B0B0B0] placeholder:text-[#B0B0B0] outline-none"
-                  />
-                </>
-              ) : (
-                <>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5"
-                      stroke={emailError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M1.67989 11.2295C1.73436 13.7842 1.76161 15.0614 2.70421 16.0077C3.64681 16.9538 4.95869 16.9868 7.58244 17.0527C9.1995 17.0933 10.8007 17.0933 12.4177 17.0527C15.0415 16.9868 16.3533 16.9538 17.296 16.0077C18.2386 15.0614 18.2658 13.7842 18.3202 11.2295C18.3378 10.4081 18.3378 9.59159 18.3202 8.77017C18.2658 6.21555 18.2386 4.93825 17.296 3.99205C16.3533 3.04586 15.0415 3.0129 12.4177 2.94698C10.8007 2.90635 9.1995 2.90635 7.58243 2.94697C4.95869 3.01289 3.64681 3.04585 2.70421 3.99205C1.7616 4.93824 1.73436 6.21555 1.67988 8.77017C1.66236 9.59159 1.66237 10.4081 1.67989 11.2295Z"
-                      stroke={emailError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    placeholder="Email/Subaccount"
-                    className="flex-1 bg-transparent text-[15px] text-[#B0B0B0] placeholder:text-[#B0B0B0] outline-none"
-                  />
-                </>
-              )}
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M1.66675 5L7.4276 8.26414C9.55141 9.4675 10.4487 9.4675 12.5726 8.26414L18.3334 5"
+                  stroke={emailError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M1.67989 11.2295C1.73436 13.7842 1.76161 15.0614 2.70421 16.0077C3.64681 16.9538 4.95869 16.9868 7.58244 17.0527C9.1995 17.0933 10.8007 17.0933 12.4177 17.0527C15.0415 16.9868 16.3533 16.9538 17.296 16.0077C18.2386 15.0614 18.2658 13.7842 18.3202 11.2295C18.3378 10.4081 18.3378 9.59159 18.3202 8.77017C18.2658 6.21555 18.2386 4.93825 17.296 3.99205C16.3533 3.04586 15.0415 3.0129 12.4177 2.94698C10.8007 2.90635 9.1995 2.90635 7.58243 2.94697C4.95869 3.01289 3.64681 3.04585 2.70421 3.99205C1.7616 4.93824 1.73436 6.21555 1.67988 8.77017C1.66236 9.59159 1.66237 10.4081 1.67989 11.2295Z"
+                  stroke={emailError ? '#EF4444' : email ? '#FFFFFF' : '#B0B0B0'}
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="Email"
+                className="flex-1 bg-transparent text-[15px] text-[#B0B0B0] placeholder:text-[#B0B0B0] outline-none"
+              />
             </div>
             <div className="h-4 px-1">
-              {authMethod === 'phone' && phoneError && (
-                <p className="text-xs text-[#EF454A] leading-none">{phoneError}</p>
-              )}
-              {authMethod === 'email' && emailError && (
+              {emailError && (
                 <p className="text-xs text-[#EF454A] leading-none">{emailError}</p>
               )}
             </div>
@@ -328,50 +241,6 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-[#B0B0B0] text-[15px] font-bold">Your password needs to:</p>
-              <div className="flex flex-col gap-1">
-                {passwordRequirements.map((req) => {
-                  const status = getRequirementStatus(req);
-                  return (
-                    <div key={req.id} className="flex items-center gap-2">
-                      {status === 'valid' ? (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <path
-                            d="M3.3335 9.6665C3.3335 9.6665 4.3335 9.6665 5.66683 11.9998C5.66683 11.9998 9.3727 5.88872 12.6668 4.6665"
-                            stroke="#2EBD85"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      ) : status === 'invalid' ? (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <path
-                            d="M12 4L8 8M8 8L4 12M8 8L12 12M8 8L4 4"
-                            stroke="#EF454A"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      ) : (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <path
-                            d="M8.00008 11.3332C9.84103 11.3332 11.3334 9.84079 11.3334 7.99984C11.3334 6.15889 9.84103 4.6665 8.00008 4.6665C6.15913 4.6665 4.66675 6.15889 4.66675 7.99984C4.66675 9.84079 6.15913 11.3332 8.00008 11.3332Z"
-                            stroke="#B0B0B0"
-                            strokeWidth="1.5"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                      <span className="text-[#B0B0B0] text-[15px]">{req.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="flex flex-col gap-1">
               <div
                 className={cn(
@@ -436,6 +305,50 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToLogin, onSuccess }) => {
               </div>
               <div className="h-4 px-1">
                 {confirmPasswordError && <p className="text-xs text-[#EF454A] leading-none">{confirmPasswordError}</p>}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-[#B0B0B0] text-[15px] font-bold">Your password needs to:</p>
+              <div className="flex flex-col gap-1">
+                {passwordRequirements.map((req) => {
+                  const status = getRequirementStatus(req);
+                  return (
+                    <div key={req.id} className="flex items-center gap-2">
+                      {status === 'valid' ? (
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M3.3335 9.6665C3.3335 9.6665 4.3335 9.6665 5.66683 11.9998C5.66683 11.9998 9.3727 5.88872 12.6668 4.6665"
+                            stroke="#2EBD85"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : status === 'invalid' ? (
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M12 4L8 8M8 8L4 12M8 8L12 12M8 8L4 4"
+                            stroke="#EF454A"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M8.00008 11.3332C9.84103 11.3332 11.3334 9.84079 11.3334 7.99984C11.3334 6.15889 9.84103 4.6665 8.00008 4.6665C6.15913 4.6665 4.66675 6.15889 4.66675 7.99984C4.66675 9.84079 6.15913 11.3332 8.00008 11.3332Z"
+                            stroke="#B0B0B0"
+                            strokeWidth="1.5"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                      <span className="text-[#B0B0B0] text-[15px]">{req.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

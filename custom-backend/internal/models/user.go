@@ -83,6 +83,9 @@ type User struct {
 	Bookmarks     []Bookmark     `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 	Notifications []Notification `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 	Sessions      []Session      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
+
+	// Transient fields (not stored in DB, computed per-request)
+	SubscriptionPriceFormatted float64 `gorm:"-" json:"subscriptionPrice,omitempty"`
 }
 
 func (User) TableName() string {

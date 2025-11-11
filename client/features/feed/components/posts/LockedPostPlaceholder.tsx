@@ -1,0 +1,187 @@
+import React, { useState } from "react";
+import { Lock, Crown, Sparkles, Users } from "lucide-react";
+import type { AccessLevel } from "../../types";
+
+interface LockedPostPlaceholderProps {
+  accessLevel: AccessLevel;
+  postId?: string;
+  authorId?: string;
+  postPrice?: number;
+  subscriptionPrice?: number;
+  authorName: string;
+  previewImageUrl?: string;
+  isPurchased?: boolean;
+  isSubscriber?: boolean;
+  isFollower?: boolean;
+  isOwnPost?: boolean;
+  onUnlock?: () => void;
+  onSubscribe?: () => void;
+  onFollow?: () => void;
+}
+
+export default function LockedPostPlaceholder({
+  accessLevel,
+  postId,
+  authorId,
+  postPrice = 9,
+  subscriptionPrice = 29,
+  authorName,
+  previewImageUrl,
+  isPurchased = false,
+  isSubscriber = false,
+  isFollower = false,
+  isOwnPost = false,
+  onUnlock,
+  onSubscribe,
+  onFollow,
+}: LockedPostPlaceholderProps) {
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Don't show placeholder if content is already accessible
+  if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower) || isOwnPost) {
+    return null;
+  }
+
+  // Prepare text and actions based on access level
+  let message: string;
+  let buttonLabel: string;
+  let buttonAction: () => void;
+  
+  switch (accessLevel) {
+    case 'subscribers':
+      message = `Этот пост доступен только для подписчиков. Оформите подписку на ${authorName} за $${subscriptionPrice}/мес, чтобы читать полный текст.`;
+      buttonLabel = 'Подписаться';
+      buttonAction = () => onSubscribe ? onSubscribe() : setShowPaymentModal(true);
+      break;
+    case 'premium':
+      message = `Пост для премиум-подписчиков. Обновите свою подписку до премиум за $${subscriptionPrice + 20}/мес, чтобы получить доступ.`;
+      buttonLabel = 'Получить Premium';
+      buttonAction = () => onSubscribe ? onSubscribe() : setShowPaymentModal(true);
+      break;
+    case 'paid':
+      message = `Это платный пост. Приобретите разовый доступ за $${postPrice}, чтобы прочитать его полностью.`;
+      buttonLabel = `Купить за $${postPrice}`;
+      buttonAction = () => onUnlock ? onUnlock() : setShowPaymentModal(true);
+      break;
+    case 'followers':
+      message = `Контент только для подписчиков. Подпишитесь на ${authorName}, чтобы получить доступ к эксклюзивному контенту.`;
+      buttonLabel = 'Подписаться';
+      buttonAction = () => onFollow ? onFollow() : setShowPaymentModal(true);
+      break;
+    default:
+      message = 'Контент недоступен.';
+      buttonLabel = 'Получить доступ';
+      buttonAction = () => setShowPaymentModal(true);
+  }
+
+  // Background image URL (use preview or default)
+  const backgroundImageUrl = previewImageUrl || '/images/locked-post-bg.jpg';
+
+  return (
+    <div className="relative bg-gray-900 rounded-2xl overflow-hidden text-center min-h-[280px] sm:min-h-[320px] md:min-h-[360px]">
+      {/* Background image with blur effect */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center filter blur-sm scale-105 opacity-30" 
+        style={{ backgroundImage: `url(${backgroundImageUrl})` }} 
+        aria-hidden="true"
+      />
+      
+      {/* Dark gradient overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/90" />
+
+      {/* Glass morphism effect overlay */}
+      <div className="absolute inset-0 backdrop-blur-sm bg-white/[0.02]" />
+
+      {/* Content container */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full min-h-[280px] sm:min-h-[320px] md:min-h-[360px] p-6 sm:p-8">
+        {/* Animated lock icon based on access level */}
+        <div className="mb-4 sm:mb-6">
+          {accessLevel === 'premium' ? (
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500" />
+              <div className="relative p-4 rounded-full bg-gradient-to-br from-[#FFD700]/20 to-[#FFA500]/20 border border-[#FFD700]/30 group-hover:scale-110 transition-transform duration-500">
+                <Crown className="h-10 w-10 sm:h-12 sm:w-12 text-[#FFD700] animate-pulse" />
+              </div>
+            </div>
+          ) : accessLevel === 'followers' ? (
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500" />
+              <div className="relative p-4 rounded-full bg-gradient-to-br from-[#1D9BF0]/20 to-[#0EA5E9]/20 border border-[#1D9BF0]/30 group-hover:scale-110 transition-transform duration-500">
+                <Users className="h-10 w-10 sm:h-12 sm:w-12 text-[#1D9BF0] animate-pulse" />
+              </div>
+            </div>
+          ) : (
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500" />
+              <div className="relative p-4 rounded-full bg-gradient-to-br from-[#A06AFF]/20 to-[#482090]/20 border border-[#A06AFF]/30 group-hover:scale-110 transition-transform duration-500">
+                <Lock className="h-10 w-10 sm:h-12 sm:w-12 text-[#A06AFF] animate-bounce" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Title and message */}
+        <div className="max-w-md mx-auto text-center mb-6 sm:mb-8">
+          <h3 className="text-white text-lg sm:text-xl font-bold mb-2 sm:mb-3">
+            {accessLevel === 'premium' ? 'Премиум контент' : 
+             accessLevel === 'followers' ? 'Только для подписчиков' :
+             accessLevel === 'subscribers' ? 'Контент по подписке' :
+             'Платный контент'}
+          </h3>
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+            {message}
+          </p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+          {/* Primary action button */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              buttonAction();
+            }}
+            className="relative group px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white font-semibold rounded-full hover:shadow-[0_0_30px_rgba(160,106,255,0.5)] transition-all duration-300 hover:scale-105"
+          >
+            {/* Button shine effect */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <span className="relative flex items-center gap-2">
+              {accessLevel === 'premium' && <Crown className="h-4 w-4" />}
+              {accessLevel === 'followers' && <Users className="h-4 w-4" />}
+              {accessLevel === 'paid' && <Sparkles className="h-4 w-4" />}
+              {buttonLabel}
+            </span>
+          </button>
+
+          {/* Secondary action for paid posts - subscribe option */}
+          {accessLevel === 'paid' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onSubscribe ? onSubscribe() : setShowPaymentModal(true);
+              }}
+              className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-[#A06AFF]/50 text-[#A06AFF] font-semibold rounded-full hover:bg-[#A06AFF]/10 hover:border-[#A06AFF] transition-all duration-300"
+            >
+              Или подпишитесь за ${subscriptionPrice}/мес
+            </button>
+          )}
+        </div>
+
+        {/* Additional benefits text */}
+        {(accessLevel === 'paid' || accessLevel === 'subscribers') && (
+          <p className="mt-4 sm:mt-6 text-gray-400 text-xs sm:text-sm max-w-sm mx-auto text-center">
+            {accessLevel === 'paid' 
+              ? `Подписка дает доступ ко всем платным постам ${authorName}`
+              : 'Получите доступ к эксклюзивному контенту и новым публикациям'}
+          </p>
+        )}
+      </div>
+
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-[#A06AFF]/20 to-transparent rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-[#482090]/20 to-transparent rounded-full blur-3xl" />
+    </div>
+  );
+}

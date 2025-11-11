@@ -129,7 +129,7 @@ export function ComposerFooter({
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("transition-transform duration-200", canPost && !isPosting && "group-hover:translate-x-0.5 group-hover:scale-110")}>
               <path d="M5 12L4 5L20 12L4 19L5 12ZM5 12H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="hidden sm:inline">{isPosting ? "Posting..." : "Post"}</span>
+            <span className="hidden sm:inline">Post</span>
           </span>
         </button>
       </div>

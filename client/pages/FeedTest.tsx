@@ -9,6 +9,7 @@ import type { Post as CustomPost } from "@/services/api/custom-backend";
 import { getAvatarUrl } from "@/lib/avatar-utils";
 import { formatTimeAgo } from "@/lib/time-utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { BrandedLoader } from "@/components/common/BrandedLoader";
 import NewsWidget from "@/components/SocialFeedWidgets/NewsWidget";
 import TrendingNewsWidget from "@/components/SocialFeedWidgets/TrendingNewsWidget";
 import TrendingTickersWidget from "@/components/SocialFeedWidgets/TrendingTickersWidget";
@@ -168,12 +169,7 @@ export default function FeedTest() {
 
   if (isLoading && posts.length === 0) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading feed...</p>
-        </div>
-      </div>
+      <BrandedLoader delay={200} />
     );
   }
 

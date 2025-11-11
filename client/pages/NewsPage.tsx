@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNews } from '@/hooks/useWidgets';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Filter, Search, ExternalLink, ArrowRight } from 'lucide-react';
+import { Filter, Search, ExternalLink, ArrowRight, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BrandedLoader } from '@/components/common/BrandedLoader';
 import type { FC } from 'react';
 
 const NewsPage: FC = () => {
@@ -46,27 +47,28 @@ const NewsPage: FC = () => {
         {/* Filters */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="flex-1 relative group">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-tyrian transition-colors" />
             <input
               type="text"
               placeholder="Поиск новостей..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-moonlessNight border border-widget-border rounded-lg text-white placeholder-gray-500 focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors"
+              className="w-full pl-12 pr-4 py-3 bg-[#000000] border border-widget-border rounded-2xl text-white placeholder-gray-500 focus:border-tyrian focus:ring-2 focus:ring-tyrian/20 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_16px_rgba(160,106,255,0.1)]"
             />
           </div>
 
           {/* Category Filter */}
-          <div className="sm:w-64 relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+          <div className="sm:w-64 relative group">
+            <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-tyrian transition-colors" />
+            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-moonlessNight border border-widget-border rounded-lg text-white focus:border-tyrian focus:ring-1 focus:ring-tyrian transition-colors appearance-none cursor-pointer"
+              className="w-full pl-12 pr-12 py-3 bg-[#000000] border border-widget-border rounded-2xl text-white focus:border-tyrian focus:ring-2 focus:ring-tyrian/20 transition-all appearance-none cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_16px_rgba(160,106,255,0.1)]"
             >
               {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
+                <option key={cat.value} value={cat.value} className="bg-[#0A0A0A] text-white">
                   {cat.label}
                 </option>
               ))}
@@ -76,9 +78,7 @@ const NewsPage: FC = () => {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tyrian"></div>
-          </div>
+          <BrandedLoader delay={200} />
         )}
 
         {/* Error State */}

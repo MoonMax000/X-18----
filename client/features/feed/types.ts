@@ -81,7 +81,8 @@ export interface Post {
   category?: string; // Category from metadata (e.g., "crypto", "analysis", etc.)
   price?: PriceType;
   accessLevel?: AccessLevel;
-  postPrice?: number;
+  priceCents?: number; // Price in cents from backend
+  postPrice?: number; // Price in dollars (computed from priceCents)
   isPurchased?: boolean;
   isSubscriber?: boolean;
   isFollower?: boolean;

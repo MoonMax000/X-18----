@@ -48,15 +48,15 @@ type Post struct {
 	Price      float64 `gorm:"type:decimal(10,2);default:0" json:"price,omitempty"` // Legacy field
 
 	// Premium Content (Phase 2)
-	IsPremium   bool   `gorm:"default:false;index" json:"is_premium"`   // Is this premium content
-	PriceCents  int    `gorm:"default:0" json:"price_cents,omitempty"`  // Price in cents (100 = $1.00)
-	PreviewText string `gorm:"type:text" json:"preview_text,omitempty"` // Preview for non-subscribers
+	IsPremium   bool   `gorm:"default:false;index" json:"isPremium"`    // Is this premium content
+	PriceCents  int    `gorm:"default:0" json:"priceCents,omitempty"`   // Price in cents (100 = $1.00)
+	PreviewText string `gorm:"type:text" json:"previewText,omitempty"`  // Preview for non-subscribers
 	Category    string `gorm:"size:50;index" json:"category,omitempty"` // Content category
 	Tags        string `gorm:"type:text" json:"tags,omitempty"`         // Comma-separated tags
 
 	// Access Control (Phase 3)
-	AccessLevel string `gorm:"size:30;default:'free';index" json:"access_level"` // free, pay-per-post, subscribers-only, followers-only, premium
-	ReplyPolicy string `gorm:"size:30;default:'everyone'" json:"reply_policy"`   // everyone, following, verified, mentioned
+	AccessLevel string `gorm:"size:30;default:'free';index" json:"accessLevel"` // free, pay-per-post, subscribers-only, followers-only, premium
+	ReplyPolicy string `gorm:"size:30;default:'everyone'" json:"replyPolicy"`   // everyone, following, verified, mentioned
 
 	// Thread/Reply
 	ReplyToID  *uuid.UUID `gorm:"type:uuid;index:idx_replies" json:"reply_to_id,omitempty"`
@@ -83,9 +83,13 @@ type Post struct {
 	Bookmark []Bookmark `gorm:"foreignKey:PostID;constraint:OnDelete:CASCADE" json:"-"`
 
 	// Transient fields (not stored in DB, computed per-request)
-	IsLiked      bool `gorm:"-" json:"is_liked,omitempty"`
-	IsRetweeted  bool `gorm:"-" json:"is_retweeted,omitempty"`
-	IsBookmarked bool `gorm:"-" json:"is_bookmarked,omitempty"`
+	IsLiked      bool    `gorm:"-" json:"isLiked,omitempty"`
+	IsRetweeted  bool    `gorm:"-" json:"isRetweeted,omitempty"`
+	IsBookmarked bool    `gorm:"-" json:"isBookmarked,omitempty"`
+	IsPurchased  bool    `gorm:"-" json:"isPurchased,omitempty"`
+	IsSubscriber bool    `gorm:"-" json:"isSubscriber,omitempty"`
+	IsFollower   bool    `gorm:"-" json:"isFollower,omitempty"`
+	PostPrice    float64 `gorm:"-" json:"postPrice,omitempty"`
 }
 
 func (Post) TableName() string {

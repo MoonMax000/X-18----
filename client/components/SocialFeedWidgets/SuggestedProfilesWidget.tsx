@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FollowButton from "../PostCard/FollowButton";
 import VerifiedBadge from "../PostCard/VerifiedBadge";
 import AvatarWithHoverCard from "../common/AvatarWithHoverCard";
+import { getAvatarUrl } from "@/lib/avatar-utils";
 
 export interface SuggestedProfile {
   id: string;
@@ -57,9 +58,7 @@ const SuggestedProfilesWidget: FC<SuggestedProfilesWidgetProps> = ({
                   aria-label={`Open profile ${profile.name}`}
                 >
                   <Avatar className="h-11 w-11 bg-[rgba(25,27,34,0.9)]">
-                    {profile.avatar ? (
-                      <AvatarImage src={profile.avatar} alt={profile.name} />
-                    ) : null}
+                    <AvatarImage src={getAvatarUrl({ avatar_url: profile.avatar, username: profile.handle, display_name: profile.name })} alt={profile.name} />
                     <AvatarFallback className="text-sm font-semibold text-white">
                       {profile.name
                         .split(" ")

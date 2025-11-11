@@ -291,6 +291,54 @@ func (h *UsersHandler) GetUserPosts(c *fiber.Ctx) error {
 		})
 	}
 
+	// DEBUG: Log what we got from DB
+	for i := range posts {
+		log.Printf("[GetUserPosts] Post %s: AccessLevel=%s, PriceCents=%d",
+			posts[i].ID, posts[i].AccessLevel, posts[i].PriceCents)
+	}
+
+	// Добавляем информацию о лайках, покупках и подписках текущего пользователя (если авторизован)
+	if currentUserID, ok := c.Locals("userID").(uuid.UUID); ok {
+		for i := range posts {
+			var like models.Like
+			err := h.db.DB.Where("user_id = ? AND post_id = ?", currentUserID, posts[i].ID).First(&like).Error
+			posts[i].IsLiked = (err == nil)
+
+			var retweet models.Retweet
+			err = h.db.DB.Where("user_id = ? AND post_id = ?", currentUserID, posts[i].ID).First(&retweet).Error
+			posts[i].IsRetweeted = (err == nil)
+
+			var bookmark models.Bookmark
+			err = h.db.DB.Where("user_id = ? AND post_id = ?", currentUserID, posts[i].ID).First(&bookmark).Error
+			posts[i].IsBookmarked = (err == nil)
+
+			// Проверяем покупку поста
+			var purchase models.PostPurchase
+			err = h.db.DB.Where("user_id = ? AND post_id = ?", currentUserID, posts[i].ID).First(&purchase).Error
+			posts[i].IsPurchased = (err == nil)
+
+			// Проверяем подписку на автора
+			var subscription models.Subscription
+			err = h.db.DB.Where("user_id = ? AND creator_id = ? AND status = ?", currentUserID, posts[i].UserID, "active").First(&subscription).Error
+			posts[i].IsSubscriber = (err == nil)
+
+			// Проверяем подписку (follow) на автора для followers-only контента
+			var follow models.Follow
+			err = h.db.DB.Where("follower_id = ? AND following_id = ?", currentUserID, posts[i].UserID).First(&follow).Error
+			posts[i].IsFollower = (err == nil)
+
+			// Добавляем цену поста если это платный пост
+			if posts[i].PriceCents > 0 {
+				posts[i].PostPrice = float64(posts[i].PriceCents) / 100
+			}
+
+			// Добавляем цену подписки автора
+			if posts[i].User.SubscriptionPrice > 0 {
+				posts[i].User.SubscriptionPriceFormatted = posts[i].User.SubscriptionPrice
+			}
+		}
+	}
+
 	return c.JSON(posts)
 }
 

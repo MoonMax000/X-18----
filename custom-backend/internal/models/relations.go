@@ -216,31 +216,6 @@ func (s *Session) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-// Subscription represents a paid subscription to an author
-type Subscription struct {
-	ID                   uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	SubscriberID         uuid.UUID  `gorm:"type:uuid;not null;index:idx_subscriber;uniqueIndex:idx_subscription_unique" json:"subscriber_id"`
-	AuthorID             uuid.UUID  `gorm:"type:uuid;not null;index:idx_author;uniqueIndex:idx_subscription_unique" json:"author_id"`
-	StripeSubscriptionID string     `gorm:"size:100" json:"stripe_subscription_id,omitempty"`
-	Status               string     `gorm:"size:20;default:'active';index:idx_active_subs" json:"status"` // active, canceled, expired
-	StartedAt            time.Time  `json:"started_at"`
-	ExpiresAt            *time.Time `json:"expires_at,omitempty"`
-
-	Subscriber User `gorm:"foreignKey:SubscriberID;constraint:OnDelete:CASCADE" json:"-"`
-	Author     User `gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE" json:"-"`
-}
-
-func (Subscription) TableName() string {
-	return "subscriptions"
-}
-
-func (s *Subscription) BeforeCreate(tx *gorm.DB) error {
-	if s.ID == uuid.Nil {
-		s.ID = uuid.New()
-	}
-	return nil
-}
-
 // Purchase represents a one-time purchase of a post
 type Purchase struct {
 	ID              uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`

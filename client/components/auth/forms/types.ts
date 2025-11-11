@@ -1,5 +1,3 @@
-export type AuthMethod = 'email' | 'phone';
-
 export interface PasswordRequirement {
   id: string;
   label: string;
@@ -28,34 +26,6 @@ export const passwordRequirements: PasswordRequirement[] = [
     test: (pwd: string) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd),
   },
 ];
-
-export const formatPhoneNumber = (value: string): string => {
-  let cleaned = value.replace(/[^+\d]/g, '');
-  if (!cleaned.startsWith('+')) {
-    cleaned = '+' + cleaned;
-  }
-  if (cleaned.length > 16) {
-    cleaned = cleaned.substring(0, 16);
-  }
-  return cleaned;
-};
-
-export const validatePhone = (value: string): string | null => {
-  if (value.length === 0) {
-    return null;
-  }
-  if (!value.startsWith('+')) {
-    return 'Phone number must start with + and country code';
-  }
-  const digits = value.replace(/\D/g, '');
-  if (digits.length < 10) {
-    return 'Phone number is too short';
-  }
-  if (digits.length > 15) {
-    return 'Phone number is too long';
-  }
-  return null;
-};
 
 export const validateEmail = (value: string): string | null => {
   if (value.length === 0) {

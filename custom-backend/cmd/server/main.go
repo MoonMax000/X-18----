@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
+	"github.com/stripe/stripe-go/v74"
 
 	"custom-backend/configs"
 	"custom-backend/internal/api"
@@ -194,7 +195,7 @@ func main() {
 	profileStatsHandler := api.NewProfileStatsHandler(db)
 	newsletterHandler := api.NewNewsletterHandler(db.DB)
 
-	// Stripe webhook handler
+	// Stripe handlers
 	stripeWebhookSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
 	stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
 	if stripeWebhookSecret == "" {
@@ -202,8 +203,13 @@ func main() {
 	}
 	if stripeSecretKey == "" {
 		log.Println("⚠️  Warning: STRIPE_SECRET_KEY not set")
+	} else {
+		log.Println("✅ Stripe configured")
+		// Set Stripe API key globally
+		stripe.Key = stripeSecretKey
 	}
 	stripeWebhookHandler := api.NewStripeWebhookHandler(db, stripeWebhookSecret, stripeSecretKey)
+	// stripeHandler := api.NewStripeHandler(db, redisCache, cfg) // TODO: implement this handler
 
 	// Create security service for TOTP middleware
 	securityService := services.NewSecurityService(db.DB, redisCache)
@@ -424,6 +430,13 @@ func main() {
 	setup := apiGroup.Group("/setup")
 	setup.Post("/admin", adminSetupHandler.CreateAdminUser)
 	setup.Post("/db-agent", adminSetupHandler.CreateDBAgent)
+
+	// Stripe routes (protected)
+	// TODO: Add these routes when stripeHandler is implemented
+	// stripe := apiGroup.Group("/stripe")
+	// stripe.Post("/payment-intent", middleware.JWTMiddleware(cfg), stripeHandler.CreatePaymentIntent)
+	// stripe.Get("/posts/:id/access", middleware.JWTMiddleware(cfg), stripeHandler.CheckPostAccess)
+	// stripe.Get("/purchases", middleware.JWTMiddleware(cfg), stripeHandler.GetUserPurchases)
 
 	// Stripe webhooks (public endpoint - no auth, Stripe verifies with signature)
 	webhooks := apiGroup.Group("/webhooks")

@@ -1,219 +1,181 @@
-import React, { useState, useEffect } from "react";
-import { X, UserPlus, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { useModalScrollLock } from "@/hooks/useModalScrollLock";
-import Portal from "@/components/ui/Portal";
+import React, { useState } from 'react';
+import { X, UserPlus, Check } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { customBackendAPI } from '../../services/api/custom-backend';
 
 interface FollowModalProps {
   isOpen: boolean;
   onClose: () => void;
   authorId: string;
   authorName: string;
-  authorAvatar: string;
-  authorBio?: string;
-  followersCount?: number;
+  authorHandle?: string;
+  authorAvatar?: string;
+  postId: string;
+  onSuccess?: () => void;
 }
 
-export default function FollowModal({
+export const FollowModal: React.FC<FollowModalProps> = ({
   isOpen,
   onClose,
   authorId,
   authorName,
+  authorHandle,
   authorAvatar,
-  authorBio,
-  followersCount,
-}: FollowModalProps) {
-  const [status, setStatus] = useState<"idle" | "processing" | "success" | "failed">("idle");
+  onSuccess
+}) => {
+  const { user } = useAuth();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Lock body scroll when modal is open
-  useModalScrollLock(isOpen);
-
-  // Block clicks on elements behind modal (but allow backdrop clicks to close)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const blockClicks = (e: MouseEvent) => {
-      const modalContent = document.querySelector('[data-modal-content="follow"]');
-      const backdrop = document.querySelector('[data-modal-backdrop="follow"]');
-      const target = e.target as Node;
-
-      // Allow clicks on modal content
-      if (modalContent && modalContent.contains(target)) {
-        return;
-      }
-
-      // For backdrop: only prevent default, let onClick handler run
-      if (backdrop && target === backdrop) {
-        e.preventDefault();
-        return;
-      }
-
-      // Block all other clicks (elements behind modal)
-      e.stopPropagation();
-      e.preventDefault();
-    };
-
-    document.addEventListener('click', blockClicks, { capture: true });
-    return () => document.removeEventListener('click', blockClicks, { capture: true });
-  }, [isOpen]);
+  const [success, setSuccess] = useState(false);
 
   if (!isOpen) return null;
 
   const handleFollow = async () => {
-    setStatus("processing");
+    if (!user) {
+      setError('Пожалуйста, войдите в систему');
+      return;
+    }
+
+    setIsLoading(true);
     setError(null);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // TODO: Replace with actual API call
-      // await api.followUser(authorId);
-      
-      setStatus("success");
-      
-      // Close modal after success and reload to show unlocked content
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (err) {
-      setStatus("failed");
-      setError("Failed to follow user. Please try again.");
-    }
-  };
+      // Используем API метод с cookie-based authentication
+      await customBackendAPI.followUser(authorId);
 
-  const handleClose = () => {
-    if (status !== "processing") {
-      setStatus("idle");
-      setError(null);
-      onClose();
+      setIsFollowing(true);
+      setSuccess(true);
+      
+      // Успешная подписка - вызываем колбэк и закрываем через 2 секунды
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Произошла ошибка');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div
-      data-modal-backdrop="follow"
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={(e) => {
-        e.stopPropagation(); // Prevent click from reaching posts behind modal
-        handleClose();
-      }}
-    >
-      <div
-        data-modal-content="follow"
-        className="relative w-full max-w-md rounded-2xl border border-[#2F2F31] bg-[#0B0E13] p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Подписаться для ра��блокировки</h2>
-          <button
-            onClick={handleClose}
-            disabled={status === "processing"}
-            className="rounded-full p-1.5 text-gray-400 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
-          >
-            <X className="h-5 w-5" />
-          </button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 relative">
+        {/* Кнопка закрытия */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+        >
+          <X className="h-6 w-6" />
+        </button>
+
+        {/* Заголовок */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Контент только для подписчиков
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Подпишитесь на автора, чтобы увидеть этот пост
+          </p>
         </div>
 
-        {/* Status Messages */}
-        {status === "success" && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-green-400">
-            <CheckCircle2 className="h-5 w-5" />
-            <div>
-              <p className="font-semibold">Successfully followed! ✓</p>
-              <p className="text-sm">You now have access to followers-only content.</p>
-            </div>
-          </div>
-        )}
-
-        {status === "failed" && error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-400">
-            <AlertCircle className="h-5 w-5" />
-            <div>
-              <p className="font-semibold">Error</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Author Profile Card */}
-        <div className="mb-6 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent p-6">
-          <div className="flex items-start gap-4">
-            <img 
-              src={authorAvatar} 
-              alt={authorName} 
-              className="h-16 w-16 rounded-full ring-2 ring-[#A06AFF]/30" 
-            />
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-white">{authorName}</h3>
-              {authorBio && (
-                <p className="mt-1 text-sm text-gray-400 line-clamp-2">{authorBio}</p>
-              )}
-              {followersCount !== undefined && (
-                <p className="mt-2 text-xs text-gray-500">
-                  {followersCount.toLocaleString()} followers
-                </p>
-              )}
-            </div>
+        {/* Информация об авторе */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="text-center">
+            {authorAvatar && (
+              <img
+                src={authorAvatar}
+                alt={authorName}
+                className="w-20 h-20 rounded-full mx-auto mb-3 border-4 border-purple-100 dark:border-purple-900"
+              />
+            )}
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {authorName}
+            </h3>
+            {authorHandle && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                @{authorHandle}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Benefits */}
-        <div className="mb-6 space-y-3">
-          <p className="text-sm font-semibold text-white">What you'll get:</p>
-          <ul className="space-y-2">
-            <li className="flex items-start gap-2 text-sm text-gray-300">
-              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-400" />
-              <span>Access to all followers-only posts</span>
+        {/* Преимущества подписки */}
+        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-purple-900 dark:text-purple-300 mb-2">
+            Что вы получите:
+          </h4>
+          <ul className="space-y-2 text-sm text-purple-800 dark:text-purple-400">
+            <li className="flex items-start">
+              <Check className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Доступ к эксклюзивному контенту</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-300">
-              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-400" />
-              <span>Exclusive insights and content</span>
+            <li className="flex items-start">
+              <Check className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Обновления и новые посты первыми</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-300">
-              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-400" />
-              <span>Updates about new publications</span>
+            <li className="flex items-start">
+              <Check className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Прямое взаимодействие с автором</span>
             </li>
           </ul>
         </div>
 
-        {/* Note */}
-        <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-3 text-xs text-blue-300">
-          <p className="font-semibold">100% Free</p>
-          <p className="mt-1">Following is completely free. No payment required.</p>
-        </div>
+        {/* Сообщения об ошибках и успехе */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg mb-4 text-sm">
+            {error}
+          </div>
+        )}
 
-        {/* Actions */}
+        {success && (
+          <div className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 p-3 rounded-lg mb-4 text-sm">
+            Вы успешно подписались! Перенаправление...
+          </div>
+        )}
+
+        {/* Кнопки действий */}
         <div className="flex gap-3">
           <button
-            onClick={handleClose}
-            disabled={status === "processing"}
-            className="flex-1 rounded-xl border border-[#2F2F31] bg-gradient-to-br from-white/[0.02] to-transparent px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-[#A06AFF]/40 disabled:opacity-50"
+            onClick={onClose}
+            disabled={isLoading || success}
+            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             Отмена
           </button>
           <button
             onClick={handleFollow}
-            disabled={status === "processing" || status === "success"}
-            className="group flex-1 rounded-xl bg-gradient-to-r from-[#1D9BF0] to-[#0EA5E9] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-20px_rgba(29,155,240,0.75)] transition-all hover:shadow-[0_16px_40px_-12px_rgba(29,155,240,1)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
+            disabled={isLoading || isFollowing || success}
+            className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {status === "processing" ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Подписка...
-              </span>
-            ) : status === "success" ? (
-              "Подписаны ✓"
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Подписка...</span>
+              </>
+            ) : success ? (
+              <>
+                <Check className="h-5 w-5" />
+                <span>Подписаны</span>
+              </>
             ) : (
-              <span className="flex items-center justify-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Подписаться
-              </span>
+              <>
+                <UserPlus className="h-5 w-5" />
+                <span>Подписаться</span>
+              </>
             )}
           </button>
         </div>
+
+        {/* Дополнительная информация */}
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+          Подписка бесплатна. Вы можете отписаться в любое время.
+        </p>
       </div>
     </div>
   );
-}
+};

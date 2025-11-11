@@ -3,6 +3,7 @@ import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
+import { useTopAuthors, useNews } from "@/hooks/useWidgets";
 
 import SuggestedProfilesWidget, {
   type SuggestedProfile,
@@ -116,71 +117,6 @@ const featuredStories: ExploreStory[] = [
   },
 ];
 
-const recommendedProfiles: SuggestedProfile[] = [
-  {
-    id: "market-maria",
-    name: "Мария Власова",
-    handle: "@optionsmaria",
-    avatar: "https://i.pravatar.cc/120?img=18",
-    verified: true,
-  },
-  {
-    id: "crypto-scout",
-    name: "Crypto Scout",
-    handle: "@scout_io",
-    avatar: "https://i.pravatar.cc/120?img=33",
-  },
-  {
-    id: "macro-sensei",
-    name: "Macro Sensei",
-    handle: "@macroSensei",
-    avatar: "https://i.pravatar.cc/120?img=41",
-    verified: true,
-  },
-];
-
-const exploreNews: NewsItem[] = [
-  {
-    id: "eth-staking",
-    category: "Криптовалюты",
-    title: "ETH staking",
-    publishedAgo: "сейчас",
-    engagement: "212K постов",
-    commentCount: 540,
-  },
-  {
-    id: "ai-traders",
-    category: "AI",
-    title: "AI traders",
-    publishedAgo: "12 мин назад",
-    engagement: "176K постов",
-    commentCount: 312,
-  },
-  {
-    id: "usd-jpy",
-    category: "Рынки",
-    title: "USD/JPY",
-    publishedAgo: "25 мин назад",
-    engagement: "41K постов",
-    commentCount: 118,
-  },
-  {
-    id: "oil-range",
-    category: "Фьючерсы",
-    title: "Brent 95$",
-    publishedAgo: "38 мин назад",
-    engagement: "28K постов",
-    commentCount: 0,
-  },
-  {
-    id: "ipo-watch",
-    category: "IPO",
-    title: "Stripe S-1",
-    publishedAgo: "1 час назад",
-    engagement: "64K постов",
-    commentCount: 86,
-  },
-];
 
 const DEFAULT_CATEGORY = categories[0];
 
@@ -190,6 +126,10 @@ const SocialExplore: FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [followingTopics, setFollowingTopics] = useState<Set<string>>(new Set());
+
+  // Fetch real data using hooks
+  const { authors: recommendedProfiles, isLoading: profilesLoading } = useTopAuthors({ limit: 3, timeframe: '7d' });
+  const { news: exploreNews, isLoading: newsLoading } = useNews({ limit: 5 });
 
   const filteredCollections = useMemo(() => {
     let collections = exploreCollections;
@@ -238,7 +178,18 @@ const SocialExplore: FC = () => {
   }, [activeCategory, debouncedSearch]);
 
   const highlightedNews = useMemo(() => {
-    let news = exploreNews;
+    // Transform API data to NewsWidget format
+    let news: NewsItem[] = exploreNews.map(item => ({
+      id: item.id,
+      category: item.category || 'Общее',
+      title: item.title,
+      publishedAgo: new Date(item.published_at).toLocaleString('ru', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      engagement: '', // API doesn't provide this
+      commentCount: 0, // API doesn't provide this
+    }));
 
     // Filter by category
     if (activeCategory !== DEFAULT_CATEGORY) {
@@ -256,7 +207,7 @@ const SocialExplore: FC = () => {
     }
 
     return news;
-  }, [activeCategory, debouncedSearch]);
+  }, [exploreNews, activeCategory, debouncedSearch]);
 
   const handleFollowTopic = useCallback((topicId: string) => {
     setFollowingTopics(prev => {
@@ -403,8 +354,26 @@ const SocialExplore: FC = () => {
         </section>
 
         <aside className="hidden w-full max-w-[320px] flex-col gap-5 lg:flex">
-          <SuggestedProfilesWidget profiles={recommendedProfiles} title="Кого читать" />
-          <NewsWidget items={highlightedNews} title="Актуальные темы" />
+          {profilesLoading ? (
+            <div className="rounded-[24px] border border-widget-border bg-[#000000] p-5">
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-700" />
+            </div>
+          ) : recommendedProfiles.length > 0 ? (
+            <SuggestedProfilesWidget 
+              profiles={recommendedProfiles.map(author => ({
+                id: author.user_id.toString(),
+                name: author.display_name,
+                handle: `@${author.username}`,
+                avatar: author.avatar_url || undefined,
+                verified: false, // TODO: Add verified field to API
+              }))} 
+              title="Кого читать" 
+            />
+          ) : null}
+          
+          {!newsLoading && highlightedNews.length > 0 && (
+            <NewsWidget items={highlightedNews} title="Актуальные темы" />
+          )}
           <div className="rounded-3xl border border-[#181B22] bg-[rgba(12,16,20,0.6)] p-5">
             <h3 className="text-lg font-semibold text-white">Профессиональные списки</h3>
             <p className="mt-2 text-sm text-[#B0B0B0]">
