@@ -2,8 +2,8 @@
 # Stage 1: Build the application
 FROM golang:1.24-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache git make gcc musl-dev
+# Install build dependencies including libwebp for go-webp library
+RUN apk add --no-cache git make gcc musl-dev libwebp-dev
 
 # Set working directory
 WORKDIR /app
@@ -31,8 +31,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 # Stage 2: Runtime image
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates tzdata
+# Install ca-certificates for HTTPS and libwebp for runtime
+RUN apk --no-cache add ca-certificates tzdata libwebp
 
 # Set timezone to UTC
 ENV TZ=UTC
