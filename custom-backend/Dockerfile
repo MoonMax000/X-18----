@@ -21,10 +21,9 @@ COPY . .
 # Build the application with caching
 # CGO_ENABLED=1 required for go-webp library
 # -ldflags for smaller binary size
-# GOARCH=amd64 for AWS Fargate compatibility
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -a \
+    CGO_ENABLED=1 GOOS=linux go build \
     -ldflags="-w -s" \
     -o /app/server \
     ./cmd/server
