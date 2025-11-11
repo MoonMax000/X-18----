@@ -660,13 +660,15 @@ export interface Media {
   id: string;
   user_id: string;
   post_id?: string;
-  type: 'image' | 'video' | 'gif';
+  type: 'image' | 'video' | 'gif' | 'document';
   url: string;
   thumbnail_url?: string;
   alt_text?: string;
   width?: number;
   height?: number;
   size_bytes?: number;
+  file_name?: string;
+  file_extension?: string;
   created_at: string;
 }
 
@@ -675,6 +677,7 @@ export interface Post {
   user_id: string;
   user?: User;
   content: string;
+  content_html?: string;
   media?: Media[];
   media_urls?: string[]; // Deprecated: for backwards compatibility
   metadata?: Record<string, any>; // Changed from Record<string, string> to support complex data like code_blocks
@@ -685,6 +688,37 @@ export interface Post {
   is_retweeted?: boolean;
   is_bookmarked?: boolean;
   visibility: 'public' | 'followers' | 'private';
+  
+  // Access Control (Phase 3) - ДОБАВЛЕНЫ НОВЫЕ ПОЛЯ
+  access_level?: 'free' | 'pay-per-post' | 'subscribers-only' | 'followers-only' | 'premium';
+  accessLevel?: 'free' | 'pay-per-post' | 'subscribers-only' | 'followers-only' | 'premium'; // camelCase от бэкенда
+  reply_policy?: 'everyone' | 'following' | 'verified' | 'mentioned';
+  replyPolicy?: 'everyone' | 'following' | 'verified' | 'mentioned'; // camelCase от бэкенда
+  price_cents?: number;
+  priceCents?: number; // camelCase от бэкенда
+  
+  // Computed fields
+  is_purchased?: boolean;
+  isPurchased?: boolean; // camelCase от бэкенда
+  is_subscriber?: boolean;
+  isSubscriber?: boolean; // camelCase от бэкенда
+  is_follower?: boolean;
+  isFollower?: boolean; // camelCase от бэкенда
+  post_price?: number;
+  postPrice?: number; // camelCase от бэкенда
+  
+  // Preview text for paid posts (visible to all)
+  preview_text?: string;
+  previewText?: string; // camelCase от бэкенда
+  
+  // Metadata extracted fields (from backend DTO)
+  ticker?: string; // Symbol/ticker badge (extracted from metadata)
+  symbol?: string; // Alternative name for ticker
+  market?: string; // Market type (Stocks, Crypto, etc.)
+  category?: string; // Post category (Signal, News, Education, etc.)
+  timeframe?: string; // Timeframe (15m, 1h, 4h, 1d, 1w)
+  risk?: string; // Risk level (low, medium, high)
+  
   created_at: string;
   updated_at?: string;
 }
@@ -700,6 +734,7 @@ export interface MediaCropTransform {
 
 export interface CreatePostData {
   content: string;
+  previewText?: string; // Preview for paid posts (visible to all)
   media_ids?: string[];
   media_transforms?: Record<string, MediaCropTransform>; // mediaID -> crop rect
   metadata?: Record<string, any>; // Changed from Record<string, string> to support complex data like code_blocks
@@ -708,8 +743,11 @@ export interface CreatePostData {
   
   // Access Control (Phase 3)
   access_level?: 'free' | 'pay-per-post' | 'subscribers-only' | 'followers-only' | 'premium';
+  accessLevel?: 'free' | 'pay-per-post' | 'subscribers-only' | 'followers-only' | 'premium'; // Alternative
   reply_policy?: 'everyone' | 'following' | 'verified' | 'mentioned';
+  replyPolicy?: 'everyone' | 'following' | 'verified' | 'mentioned'; // Alternative
   price_cents?: number; // For pay-per-post
+  priceCents?: number; // Alternative
 }
 
 export interface ReplyPost extends Post {

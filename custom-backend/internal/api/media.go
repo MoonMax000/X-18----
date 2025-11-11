@@ -606,11 +606,13 @@ func (h *MediaHandler) StreamMedia(c *fiber.Ctx) error {
 		}
 	}
 
-	// Устанавливаем заголовки для безопасности
+	// Устанавливаем заголовки для безопасности и агрессивного кэширования
 	c.Set("Content-Type", contentType)
 	c.Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", filename))
 	c.Set("X-Content-Type-Options", "nosniff")
-	c.Set("Cache-Control", "private, max-age=3600")
+	// Агрессивное кэширование для изображений (1 год + immutable)
+	c.Set("Cache-Control", "public, max-age=31536000, immutable")
+	c.Set("ETag", fmt.Sprintf(`"%s"`, media.ID.String()))
 
 	// Отправляем файл
 	return c.SendFile(filePath)

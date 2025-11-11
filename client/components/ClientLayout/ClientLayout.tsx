@@ -1,5 +1,7 @@
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode, useState, useEffect } from "react";
 import { useLocation, Outlet } from "react-router-dom";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { toast } from "sonner";
 import { AppBackground } from "../ui/AppBackground/AppBackground";
 import { Header } from "../ui/Header/Header";
 import ContentWrapper from "../ui/ContentWrapper/ContentWrapper";
@@ -33,6 +35,36 @@ export const ClientLayout: FC<Props> = ({
   contentWrapperClassname,
 }) => {
   const location = useLocation();
+  const { isConnected, lastMessage } = useWebSocket();
+  
+  // Handle incoming WebSocket messages
+  useEffect(() => {
+    if (!lastMessage) return;
+    
+    switch (lastMessage.type) {
+      case 'notification':
+        toast.success('Новое уведомление', {
+          description: lastMessage.payload?.message || 'У вас новое уведомление',
+        });
+        break;
+      case 'like':
+        toast('💜 Новый лайк', {
+          description: 'Кому-то понравился ваш пост',
+        });
+        break;
+      case 'comment':
+        toast('💬 Новый комментарий', {
+          description: 'Кто-то прокомментировал ваш пост',
+        });
+        break;
+      case 'follow':
+        toast('👤 Новый подписчик', {
+          description: `${lastMessage.payload?.username || 'Кто-то'} подписался на вас`,
+        });
+        break;
+    }
+  }, [lastMessage]);
+  
   const segments = location.pathname.split("/").filter(Boolean);
   const currentPage = segments[segments.length - 1] || "";
   const layoutVariant: LayoutVariant = PagesBg.secondary.includes(currentPage)

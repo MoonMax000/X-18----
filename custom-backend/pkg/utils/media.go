@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kolesa-team/go-webp/encoder"
+	"github.com/kolesa-team/go-webp/webp"
 	"golang.org/x/image/draw"
 )
 
@@ -274,6 +276,86 @@ func CompareImages(path1, path2 string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GenerateWebP создаёт WebP версию изображения
+func GenerateWebP(inputPath string, outputPath string, quality float32) error {
+	// Открываем исходное изображение
+	inputFile, err := os.Open(inputPath)
+	if err != nil {
+		return fmt.Errorf("failed to open image: %w", err)
+	}
+	defer inputFile.Close()
+
+	// Декодируем изображение
+	img, _, err := image.Decode(inputFile)
+	if err != nil {
+		return fmt.Errorf("failed to decode image: %w", err)
+	}
+
+	// Создаём выходной файл
+	outputFile, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed to create output file: %w", err)
+	}
+	defer outputFile.Close()
+
+	// Настройки WebP encoder
+	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
+	if err != nil {
+		return fmt.Errorf("failed to create WebP options: %w", err)
+	}
+
+	// Кодируем в WebP
+	if err := webp.Encode(outputFile, img, options); err != nil {
+		return fmt.Errorf("failed to encode WebP: %w", err)
+	}
+
+	return nil
+}
+
+// GenerateImageVariants создаёт несколько размеров изображения + WebP версии
+func GenerateImageVariants(inputPath string, outputDir string, basename string) (map[string]string, error) {
+	variants := make(map[string]string)
+
+	// Размеры для генерации
+	sizes := []struct {
+		name   string
+		width  int
+		height int
+	}{
+		{"tiny", 24, 24},
+		{"small", 48, 48},
+		{"medium", 96, 96},
+		{"large", 200, 200},
+		{"xlarge", 400, 400},
+	}
+
+	// Создаём директорию для вариантов если не существует
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create variants directory: %w", err)
+	}
+
+	for _, size := range sizes {
+		// JPEG версия
+		jpegPath := filepath.Join(outputDir, fmt.Sprintf("%s_%s.jpg", basename, size.name))
+		if err := ReencodeImage(inputPath, jpegPath, size.width, size.height); err != nil {
+			fmt.Printf("Warning: Failed to generate %s JPEG: %v\n", size.name, err)
+			continue
+		}
+		variants[size.name] = jpegPath
+
+		// WebP версия
+		webpPath := filepath.Join(outputDir, fmt.Sprintf("%s_%s.webp", basename, size.name))
+		if err := GenerateWebP(jpegPath, webpPath, 85); err != nil {
+			fmt.Printf("Warning: Failed to generate %s WebP: %v\n", size.name, err)
+			// Не критично, продолжаем
+		} else {
+			variants[size.name+"_webp"] = webpPath
+		}
+	}
+
+	return variants, nil
 }
 
 // CalculateImageHash вычисляет хеш изображения для обнаружения дубликатов

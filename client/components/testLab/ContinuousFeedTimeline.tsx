@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, FC } from "react";
 import FeedPost from "@/features/feed/components/posts/FeedPost";
+import { PostSkeleton } from "@/components/skeletons/PostSkeleton";
 import type { Post } from "@/features/feed/types";
 
 interface ContinuousFeedTimelineProps {
@@ -33,7 +34,7 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading && hasMore !== false) {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
           onLoadMore();
         }
       },
@@ -77,19 +78,13 @@ const ContinuousFeedTimeline: FC<ContinuousFeedTimelineProps> = ({
       })}
 
       {/* Infinite scroll trigger */}
-      {onLoadMore && hasMore !== false && (
-        <div ref={loadMoreRef} className="flex w-full justify-center py-8">
-          {isLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <span>Loading more...</span>
-            </div>
-          ) : (
-            <div className="h-4" />
-          )}
+      {onLoadMore && hasMore && (
+        <div ref={loadMoreRef} className="w-full">
+          {isLoading && <PostSkeleton count={2} />}
+          {!isLoading && <div className="h-4" />}
         </div>
       )}
-      {hasMore === false && posts.length > 0 && (
+      {!hasMore && posts.length > 0 && (
         <div className="flex w-full justify-center py-8 text-sm text-muted-foreground">
           No more posts
         </div>

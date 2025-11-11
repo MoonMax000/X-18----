@@ -8,6 +8,8 @@ import { useProfileStats } from "@/hooks/useProfileStats";
 import { formatDistanceToNow, format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
+import { FollowersGrowthChart } from "@/components/charts/FollowersGrowthChart";
+import { EarningsChart } from "@/components/charts/EarningsChart";
 
 const sectionCardClass = cn(
   CARD_VARIANTS.widget.default,
@@ -278,7 +280,7 @@ const SocialOverview: FC = () => {
         />
       </div>
 
-      {/* Follower Growth Chart */}
+      {/* Follower Growth Chart - Professional Chart.js */}
       <SectionCard>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <h3 className={sectionTitleClass}>Рост подписчиков</h3>
@@ -309,28 +311,33 @@ const SocialOverview: FC = () => {
             </button>
           </div>
         </div>
-        <div className="relative mt-6 h-48 flex items-end gap-2">
-          {growthPercentages.length > 0 ? (
-            growthPercentages.map((height, index) => (
-              <div key={index} className="group flex flex-1 flex-col items-center gap-2">
-                <div className="relative w-full">
-                  <div
-                    className="w-full rounded-t-lg bg-gradient-to-t from-[#A06AFF] to-[#482090] transition-all hover:opacity-80 cursor-pointer"
-                    style={{ height: `${height}%` }}
-                    title={`${growthData?.[index]?.count || 0} подписчиков`}
-                  />
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/90 border border-[#A06AFF] rounded px-2 py-1 text-xs font-bold text-white whitespace-nowrap z-10">
-                    {growthData?.[index]?.count || 0}
-                  </div>
-                </div>
-                <span className="text-xs text-[#B0B0B0]">{growthData?.[index]?.date || index + 1}</span>
-              </div>
-            ))
+        <div className="mt-6">
+          {growthData && growthData.length > 0 ? (
+            <FollowersGrowthChart 
+              data={growthData.map(d => ({ date: d.date, followers: d.count }))} 
+              period={subscriberTimeRange === 'week' ? '7d' : '30d'} 
+            />
           ) : (
-            <div className="flex items-center justify-center w-full h-full text-gray-400">
-              Нет данных
+            <div className="flex items-center justify-center h-[300px] text-gray-400">
+              Нет данных для отображения
             </div>
           )}
+        </div>
+      </SectionCard>
+
+      {/* Earnings Chart - New Section */}
+      <SectionCard>
+        <h3 className={sectionTitleClass}>Динамика заработков</h3>
+        <div className="mt-6">
+          {/* Mock data - замените на реальные данные из API */}
+          <EarningsChart 
+            data={[
+              { date: '2025-11-01', earnings: 45, subscriptions: 30, postSales: 15 },
+              { date: '2025-11-05', earnings: 67, subscriptions: 45, postSales: 22 },
+              { date: '2025-11-10', earnings: 89, subscriptions: 60, postSales: 29 },
+            ]} 
+            period="30d" 
+          />
         </div>
       </SectionCard>
 

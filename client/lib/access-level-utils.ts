@@ -57,6 +57,7 @@ export function normalizeAccessLevel(level?: string | null): AccessLevelClient {
 
 /**
  * Проверяет, является ли пост заблокированным для текущего пользователя
+ * Автор видит пост как заблокированный, чтобы понимать как он выглядит для других
  */
 export function isPostLocked(params: {
   accessLevel?: string | null;
@@ -65,10 +66,7 @@ export function isPostLocked(params: {
   isFollower?: boolean;
   isOwnPost: boolean;
 }): boolean {
-  const { accessLevel, isPurchased, isSubscriber, isFollower, isOwnPost } = params;
-  
-  // Свои посты всегда открыты
-  if (isOwnPost) return false;
+  const { accessLevel, isPurchased, isSubscriber, isFollower } = params;
   
   // Нормализуем access level
   const normalized = normalizeAccessLevel(accessLevel);
@@ -76,7 +74,7 @@ export function isPostLocked(params: {
   // Публичные посты всегда открыты
   if (normalized === 'public') return false;
   
-  // Проверяем доступ в зависимости от типа
+  // Проверяем доступ в зависимости от типа (автор тоже видит как заблокированный)
   switch (normalized) {
     case 'paid':
       return !isPurchased;

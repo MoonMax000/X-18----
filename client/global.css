@@ -805,6 +805,50 @@ article[class*="Post"] video {
   max-width: 100%;
 }
 
+/* === Lock Animation for Paid Posts === */
+/* Анимация замка при наведении на него самого или на кнопки */
+
+/* При hover на контейнер замка или на кнопки действий */
+.lock-icon-container:hover .lock-icon,
+.action-button:hover ~ * .lock-icon,
+.lock-icon-container:has(~ * .action-button:hover) .lock-icon {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 12px rgba(160, 106, 255, 0.6));
+}
+
+/* Все части замка меняют цвет при hover */
+.lock-icon-container:hover .lock-part,
+.action-button:hover ~ * .lock-part,
+.lock-icon-container:has(~ * .action-button:hover) .lock-part {
+  stroke: #A06AFF;
+}
+
+/* Дужка замка поднимается и поворачивается */
+.lock-icon-container:hover .lock-shackle,
+.action-button:hover ~ * .lock-shackle,
+.lock-icon-container:has(~ * .action-button:hover) .lock-shackle {
+  stroke: #A06AFF;
+  transform: translateY(-4px) rotate(-8deg);
+}
+
+/* Альтернативный подход через CSS переменную и parent selector */
+.lock-icon-container,
+.action-button {
+  --lock-hover: 0;
+}
+
+.lock-icon-container:hover,
+.action-button:hover {
+  --lock-hover: 1;
+}
+
+/* Применяем анимацию через переменную */
+@supports (selector(:has(*))) {
+  .action-button:hover {
+    --trigger-lock-animation: true;
+  }
+}
+
 /* FOUC Prevention - This rule must be at the end to override index.html's hidden state */
 /* When CSS is loaded, make html visible */
 html {

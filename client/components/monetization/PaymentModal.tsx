@@ -34,35 +34,12 @@ function PaymentForm({
   plan,
   onSuccess,
   onClose,
-}: Omit<PaymentModalProps, "isOpen" | "authorName">) {
+  clientSecret,
+}: Omit<PaymentModalProps, "isOpen" | "authorName"> & { clientSecret: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-
-  // Create PaymentIntent on mount
-  useEffect(() => {
-    const createPaymentIntent = async () => {
-      try {
-        const endpoint = type === "unlock" 
-          ? "/api/payments/create-post-payment-intent"
-          : "/api/payments/create-subscription-intent";
-        
-        const payload = type === "unlock"
-          ? { postId, amount }
-          : { authorId, amount, plan };
-        
-        const response = await customBackendAPI.post(endpoint, payload);
-        setClientSecret(response.data.clientSecret);
-      } catch (error) {
-        console.error("Failed to create payment intent:", error);
-        setErrorMessage("Failed to initialize payment. Please try again.");
-      }
-    };
-
-    createPaymentIntent();
-  }, [type, amount, postId, authorId, plan]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,14 +81,6 @@ function PaymentForm({
       }, 1000);
     }
   };
-
-  if (!clientSecret) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-[#A06AFF]" />
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -211,6 +180,8 @@ export function PaymentModal({
   onSuccess,
 }: PaymentModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -227,6 +198,49 @@ export function PaymentModal({
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Create PaymentIntent when modal opens
+  useEffect(() => {
+    if (!isOpen) {
+      setClientSecret(null);
+      setError(null);
+      return;
+    }
+
+    const createPaymentIntent = async () => {
+      try {
+        const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8080') + '/api';
+        const endpoint = type === "unlock" 
+          ? "/payments/create-post-payment-intent"
+          : "/payments/create-subscription-intent";
+        
+        const payload = type === "unlock"
+          ? { postId, amount }
+          : { authorId, amount, plan };
+        
+        const response = await fetch(`${baseUrl}${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create payment intent');
+        }
+
+        const data = await response.json();
+        setClientSecret(data.clientSecret);
+      } catch (error) {
+        console.error("Failed to create payment intent:", error);
+        setError("Failed to initialize payment. Please try again.");
+      }
+    };
+
+    createPaymentIntent();
+  }, [isOpen, type, amount, postId, authorId, plan]);
 
   if (!mounted || !isOpen) return null;
 
@@ -261,25 +275,42 @@ export function PaymentModal({
 
         {/* Content with Stripe Elements provider */}
         <div className="p-5">
-          <Elements 
-            stripe={stripePromise}
-            options={{
-              clientSecret: "temp", // Will be replaced by PaymentForm
-              appearance: {
-                theme: "night",
-              },
-            }}
-          >
-            <PaymentForm
-              type={type}
-              amount={amount}
-              postId={postId}
-              authorId={authorId}
-              plan={plan}
-              onSuccess={onSuccess}
-              onClose={onClose}
-            />
-          </Elements>
+          {error ? (
+            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+              <p className="text-sm text-red-400">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  setClientSecret(null);
+                }}
+                className="mt-3 text-sm text-red-400 hover:text-red-300 underline"
+              >
+                Try again
+              </button>
+            </div>
+          ) : !clientSecret ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#A06AFF]" />
+            </div>
+          ) : (
+            <Elements 
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+              }}
+            >
+              <PaymentForm
+                type={type}
+                amount={amount}
+                postId={postId}
+                authorId={authorId}
+                plan={plan}
+                onSuccess={onSuccess}
+                onClose={onClose}
+                clientSecret={clientSecret}
+              />
+            </Elements>
+          )}
         </div>
 
         {/* Benefits section */}

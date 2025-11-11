@@ -547,3 +547,37 @@ func (h *UsersHandler) UnfollowUser(c *fiber.Ctx) error {
 		"message": "Successfully unfollowed user",
 	})
 }
+
+// SearchUsers searches for users by username or display name
+// GET /api/search/users?q=query&limit=10
+func (h *UsersHandler) SearchUsers(c *fiber.Ctx) error {
+	query := c.Query("q", "")
+	if query == "" {
+		return c.JSON([]models.PublicUser{})
+	}
+
+	limit := c.QueryInt("limit", 10)
+	if limit > 50 {
+		limit = 50
+	}
+
+	var users []models.User
+	searchPattern := "%" + query + "%"
+
+	if err := h.db.DB.Where("LOWER(username) LIKE LOWER(?) OR LOWER(display_name) LIKE LOWER(?)",
+		searchPattern, searchPattern).
+		Limit(limit).
+		Find(&users).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to search users",
+		})
+	}
+
+	// Convert to public users
+	publicUsers := make([]models.PublicUser, len(users))
+	for i, user := range users {
+		publicUsers[i] = user.ToPublic()
+	}
+
+	return c.JSON(publicUsers)
+}

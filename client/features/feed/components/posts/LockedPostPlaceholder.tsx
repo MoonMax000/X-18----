@@ -1,6 +1,7 @@
 import React from "react";
-import { Lock, Crown, DollarSign, Users, Sparkles } from "lucide-react";
+import { Crown, Users, Sparkles, Eye } from "lucide-react";
 import type { AccessLevel } from "../../types";
+import { normalizeAccessLevel } from "@/lib/access-level-utils";
 
 interface LockedPostPlaceholderProps {
   accessLevel: AccessLevel;
@@ -14,6 +15,8 @@ interface LockedPostPlaceholderProps {
   isSubscriber?: boolean;
   isFollower?: boolean;
   isOwnPost?: boolean;
+  isAuthorPreviewMode?: boolean;
+  onToggleAuthorPreview?: () => void;
   onUnlock?: () => void;
   onSubscribe?: () => void;
   onFollow?: () => void;
@@ -33,14 +36,20 @@ export default function LockedPostPlaceholder({
   isSubscriber = false,
   isFollower = false,
   isOwnPost = false,
+  isAuthorPreviewMode = false,
+  onToggleAuthorPreview,
   onUnlock,
   onSubscribe,
   onFollow,
   priceCents,
   onGetAccess,
 }: LockedPostPlaceholderProps) {
+  // Normalize accessLevel for comparison
+  const normalizedAccessLevel = normalizeAccessLevel(accessLevel);
+
   // Don't show placeholder if content is already accessible
-  if (isPurchased || isSubscriber || accessLevel === "public" || (accessLevel === "followers" && isFollower) || isOwnPost) {
+  // But show it for author with preview option
+  if (isPurchased || isSubscriber || normalizedAccessLevel === "public" || (normalizedAccessLevel === "followers" && isFollower)) {
     return null;
   }
 
@@ -48,8 +57,8 @@ export default function LockedPostPlaceholder({
   const actualPriceCents = priceCents || (postPrice * 100);
   const displayPrice = actualPriceCents / 100;
 
-  // Background image URL - use preview or generate gradient
-  const backgroundImageUrl = previewImageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Cdefs%3E%3ClinearGradient id="grad" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%23A06AFF;stop-opacity:1" /%3E%3Cstop offset="100%25" style="stop-color:%23482090;stop-opacity:1" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="800" height="600" fill="url(%23grad)" /%3E%3C/svg%3E';
+  // Background image URL - use custom locked post background
+  const backgroundImageUrl = previewImageUrl || '/locked-post-bg.png';
 
   // Prepare text and actions based on access level
   let message: string;
@@ -57,7 +66,19 @@ export default function LockedPostPlaceholder({
   let buttonAction: () => void;
   let primaryAction: 'purchase' | 'subscribe' | 'follow' | 'upgrade' = 'purchase';
   
-  switch (accessLevel) {
+  // Special handling for author's own post
+  if (isOwnPost) {
+    if (isAuthorPreviewMode) {
+      message = `Вы сейчас видите пост как обычный пользователь. Нажмите кнопку, чтобы увидеть полный контент.`;
+      buttonLabel = 'Показать полный контент';
+      buttonAction = () => onToggleAuthorPreview?.();
+    } else {
+      message = `Предпросмотр для автора: нажмите "Скрыть контент", чтобы увидеть как видят пост другие пользователи.`;
+      buttonLabel = 'Скрыть контент (предпросмотр)';
+      buttonAction = () => onToggleAuthorPreview?.();
+    }
+  } else {
+    switch (normalizedAccessLevel) {
     case 'subscribers':
       message = `Этот пост доступен только для подписчиков. Оформите подписку на ${authorName} за $${subscriptionPrice}/мес, чтобы читать полный текст.`;
       buttonLabel = 'Подписаться';
@@ -82,10 +103,11 @@ export default function LockedPostPlaceholder({
       buttonAction = () => onGetAccess ? onGetAccess('follow') : onFollow?.();
       primaryAction = 'follow';
       break;
-    default:
-      message = 'Контент недоступен.';
-      buttonLabel = 'Получить доступ';
-      buttonAction = () => onGetAccess ? onGetAccess() : onUnlock?.();
+      default:
+        message = 'Контент недоступен.';
+        buttonLabel = 'Получить доступ';
+        buttonAction = () => onGetAccess ? onGetAccess() : onUnlock?.();
+    }
   }
 
   return (
@@ -106,37 +128,56 @@ export default function LockedPostPlaceholder({
       {/* Content container */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full min-h-[280px] sm:min-h-[320px] md:min-h-[360px] p-6 sm:p-8">
         {/* Animated lock icon based on access level */}
-        <div className="mb-4 sm:mb-6">
-          {accessLevel === 'premium' ? (
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500" />
-              <div className="relative p-4 rounded-full bg-gradient-to-br from-[#FFD700]/20 to-[#FFA500]/20 border border-[#FFD700]/30 group-hover:scale-110 transition-transform duration-500">
-                <Crown className="h-10 w-10 sm:h-12 sm:w-12 text-[#FFD700] animate-pulse" />
-              </div>
-            </div>
-          ) : accessLevel === 'followers' ? (
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500" />
-              <div className="relative p-4 rounded-full bg-gradient-to-br from-[#1D9BF0]/20 to-[#0EA5E9]/20 border border-[#1D9BF0]/30 group-hover:scale-110 transition-transform duration-500">
-                <Users className="h-10 w-10 sm:h-12 sm:w-12 text-[#1D9BF0] animate-pulse" />
-              </div>
-            </div>
+        <div className="mb-4 sm:mb-6 lock-icon-container">
+          {normalizedAccessLevel === 'premium' ? (
+            <Crown className="h-12 w-12 sm:h-14 sm:w-14 text-[#FFD700]" />
+          ) : normalizedAccessLevel === 'followers' ? (
+            <Users className="h-12 w-12 sm:h-14 sm:w-14 text-[#1D9BF0]" />
           ) : (
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500" />
-              <div className="relative p-4 rounded-full bg-gradient-to-br from-[#A06AFF]/20 to-[#482090]/20 border border-[#A06AFF]/30 group-hover:scale-110 transition-transform duration-500">
-                <Lock className="h-10 w-10 sm:h-12 sm:w-12 text-[#A06AFF] animate-bounce" />
-              </div>
-            </div>
+            /* Анимированный замок */
+            <svg
+              className="lock-icon w-12 h-12 sm:h-14 sm:w-14 transition-all duration-500"
+              viewBox="0 0 41 41"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Замочная скважина (вертикальная линия) */}
+              <path
+                className="lock-part transition-all duration-500"
+                d="M20.5 28.0003V24.667"
+                stroke="#B0B0B0"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              
+              {/* Тело замка (основной корпус) */}
+              <path
+                className="lock-part transition-all duration-500"
+                d="M7.61298 31.9078C7.98778 34.6917 10.2935 36.8725 13.0994 37.0015C15.4604 37.11 17.8588 37.1667 20.5 37.1667C23.1411 37.1667 25.5395 37.11 27.9005 37.0015C30.7065 36.8725 33.0121 34.6917 33.387 31.9078C33.6315 30.0912 33.8333 28.2293 33.8333 26.3333C33.8333 24.4373 33.6315 22.5755 33.387 20.7588C33.0121 17.975 30.7065 15.7941 27.9005 15.6651C25.5395 15.5566 23.1411 15.5 20.5 15.5C17.8588 15.5 15.4604 15.5566 13.0994 15.6651C10.2935 15.7941 7.98778 17.975 7.61298 20.7588C7.36838 22.5755 7.16663 24.4373 7.16663 26.3333C7.16663 28.2293 7.36838 30.0912 7.61298 31.9078Z"
+                stroke="#B0B0B0"
+                strokeWidth="1.5"
+              />
+              
+              {/* Дужка замка (верхняя U-образная часть) - АНИМИРОВАННАЯ */}
+              <path
+                className="lock-shackle transition-all duration-500 origin-bottom"
+                d="M13 15.4997V11.333C13 7.19087 16.3579 3.83301 20.5 3.83301C24.6422 3.83301 28 7.19087 28 11.333V15.4997"
+                stroke="#B0B0B0"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           )}
         </div>
 
         {/* Title and message */}
         <div className="max-w-md mx-auto text-center mb-6 sm:mb-8">
           <h3 className="text-white text-lg sm:text-xl font-bold mb-2 sm:mb-3">
-            {accessLevel === 'premium' ? 'Премиум контент' : 
-             accessLevel === 'followers' ? 'Только для подписчиков' :
-             accessLevel === 'subscribers' ? 'Контент по подписке' :
+            {isOwnPost ? 'Предпросмотр для автора' :
+             normalizedAccessLevel === 'premium' ? 'Премиум контент' : 
+             normalizedAccessLevel === 'followers' ? 'Только для подписчиков' :
+             normalizedAccessLevel === 'subscribers' ? 'Контент по подписке' :
              'Платный контент'}
           </h3>
           <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
@@ -145,7 +186,7 @@ export default function LockedPostPlaceholder({
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
           {/* Primary action button */}
           <button 
             onClick={(e) => {
@@ -153,37 +194,44 @@ export default function LockedPostPlaceholder({
               e.preventDefault();
               buttonAction();
             }}
-            className="relative group px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#A06AFF] to-[#482090] text-white font-semibold rounded-full hover:shadow-[0_0_30px_rgba(160,106,255,0.5)] transition-all duration-300 hover:scale-105"
+            className={`action-button relative group px-4 sm:px-5 py-1.5 sm:py-2 text-white text-sm font-semibold rounded-full transition-all duration-300 ${
+              isOwnPost 
+                ? (isAuthorPreviewMode 
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:scale-105 cursor-pointer' 
+                    : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:shadow-[0_0_30px_rgba(160,106,255,0.5)] hover:scale-105 cursor-pointer')
+                : 'bg-gradient-to-r from-[#A06AFF] to-[#482090] hover:shadow-[0_0_30px_rgba(160,106,255,0.5)] hover:scale-105'
+            }`}
           >
             {/* Button shine effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            <span className="relative flex items-center gap-2">
-              {accessLevel === 'premium' && <Crown className="h-4 w-4" />}
-              {accessLevel === 'followers' && <Users className="h-4 w-4" />}
-              {accessLevel === 'paid' && <Sparkles className="h-4 w-4" />}
+            <span className="relative flex items-center gap-1.5">
+              {isOwnPost ? <Eye className="h-3.5 w-3.5" /> :
+               normalizedAccessLevel === 'premium' ? <Crown className="h-3.5 w-3.5" /> :
+               normalizedAccessLevel === 'followers' ? <Users className="h-3.5 w-3.5" /> :
+               normalizedAccessLevel === 'paid' ? <Sparkles className="h-3.5 w-3.5" /> : null}
               {buttonLabel}
             </span>
           </button>
 
-          {/* Secondary action for paid posts - subscribe option */}
-          {accessLevel === 'paid' && (
+          {/* Secondary action for paid posts - subscribe option (not shown for author) */}
+          {normalizedAccessLevel === 'paid' && !isOwnPost && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 onGetAccess ? onGetAccess('subscribe') : onSubscribe?.();
               }}
-              className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-[#A06AFF]/50 text-[#A06AFF] font-semibold rounded-full hover:bg-[#A06AFF]/10 hover:border-[#A06AFF] transition-all duration-300"
+              className="action-button px-4 sm:px-5 py-1.5 sm:py-2 border border-[#A06AFF]/50 text-[#A06AFF] text-sm font-medium rounded-full hover:bg-[#A06AFF]/10 hover:border-[#A06AFF] transition-all duration-300"
             >
-              Или подпишитесь за ${subscriptionPrice}/мес
+              Или подписка ${subscriptionPrice}/мес
             </button>
           )}
         </div>
 
-        {/* Additional benefits text */}
-        {(accessLevel === 'paid' || accessLevel === 'subscribers') && (
+        {/* Additional benefits text (not shown for author) */}
+        {(normalizedAccessLevel === 'paid' || normalizedAccessLevel === 'subscribers') && !isOwnPost && (
           <p className="mt-4 sm:mt-6 text-gray-400 text-xs sm:text-sm max-w-sm mx-auto text-center">
-            {accessLevel === 'paid' 
+            {normalizedAccessLevel === 'paid'
               ? `Подписка дает доступ ко всем платным постам ${authorName}`
               : 'Получите доступ к эксклюзивному контенту и новым публикациям'}
           </p>

@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"custom-backend/internal/database"
@@ -120,8 +122,11 @@ func (h *TimelineHandler) GetHomeTimeline(c *fiber.Ctx) error {
 		}
 	}
 
+	// Конвертируем в DTO
+	dtos := toPostDTOList(posts)
+
 	return c.JSON(fiber.Map{
-		"posts":  posts,
+		"posts":  dtos,
 		"total":  total,
 		"limit":  limit,
 		"offset": offset,
@@ -199,6 +204,7 @@ func (h *TimelineHandler) GetExploreTimeline(c *fiber.Ctx) error {
 
 	// Добавляем информацию о лайках текущего пользователя (если авторизован)
 	if userID, ok := c.Locals("userID").(uuid.UUID); ok {
+		fmt.Printf("\n[GetExploreTimeline] Processing %d posts for user %s\n", len(posts), userID)
 		for i := range posts {
 			var like models.Like
 			err := h.db.DB.Where("user_id = ? AND post_id = ?", userID, posts[i].ID).First(&like).Error
@@ -239,7 +245,22 @@ func (h *TimelineHandler) GetExploreTimeline(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(posts)
+	// Конвертируем в DTO
+	dtos := toPostDTOList(posts)
+
+	// DEBUG: Логируем первый пост детально
+	if len(dtos) > 0 {
+		fmt.Printf("\n========== [GetExploreTimeline] ПЕРВЫЙ ПОСТ (DTO) ==========\n")
+		fmt.Printf("Post ID: %s\n", dtos[0].ID)
+		fmt.Printf("DTO.AccessLevel: %s\n", dtos[0].AccessLevel)
+		fmt.Printf("DTO.PriceCents: %d\n", dtos[0].PriceCents)
+		fmt.Printf("DTO.ReplyPolicy: %s\n", dtos[0].ReplyPolicy)
+		jsonBytes, _ := json.Marshal(dtos[0])
+		fmt.Printf("\nDTO JSON для первого поста:\n%s\n", string(jsonBytes))
+		fmt.Printf("=============================================================\n\n")
+	}
+
+	return c.JSON(dtos)
 }
 
 // GetTrendingPosts возвращает трендовые посты (по лайкам и ретвитам за последние 24ч)
@@ -411,9 +432,12 @@ func (h *TimelineHandler) GetUserTimeline(c *fiber.Ctx) error {
 		}
 	}
 
+	// Конвертируем в DTO
+	dtos := toPostDTOList(posts)
+
 	return c.JSON(fiber.Map{
 		"user":   user.ToPublic(),
-		"posts":  posts,
+		"posts":  dtos,
 		"total":  total,
 		"limit":  limit,
 		"offset": offset,

@@ -4,6 +4,7 @@ import CreatePostModal from "@/components/CreatePostBox/CreatePostModal";
 import { useFeedFilters } from "@/features/feed/hooks/useFeedFilters";
 import type { ComposerData } from "@/features/feed/types";
 import { QuickComposer, FeedTabs, FeedFilters, NewPostsBanner } from "@/features/feed/components";
+import SimplePaidPostComposer from "@/features/feed/components/composers/SimplePaidPostComposer";
 import { useCustomTimeline } from "@/hooks/useCustomTimeline";
 import type { Post as CustomPost } from "@/services/api/custom-backend";
 import { getAvatarUrl } from "@/lib/avatar-utils";
@@ -16,6 +17,7 @@ import TrendingTickersWidget from "@/components/SocialFeedWidgets/TrendingTicker
 import TopAuthorsWidget from "@/components/SocialFeedWidgets/TopAuthorsWidget";
 import MyEarningsWidget from "@/components/SocialFeedWidgets/MyEarningsWidget";
 import MyActivityWidget from "@/components/SocialFeedWidgets/MyActivityWidget";
+import { TrendingSearchesWidget } from "@/components/SocialFeedWidgets/TrendingSearchesWidget";
 
 // Convert Custom Backend post to feed post format
 function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
@@ -72,16 +74,25 @@ function customPostToFeedPost(post: CustomPost, currentUsername?: string): any {
       height: mediaItem.height,
     })) || [],
     codeBlocks: post.metadata?.code_blocks || [],
-    ticker: post.metadata?.ticker,
+    // Prefer top-level fields from backend DTO, fallback to metadata
+    ticker: post.ticker || post.symbol || post.metadata?.ticker || post.metadata?.symbol,
     sentiment: post.metadata?.sentiment,
     direction: post.metadata?.direction,
-    timeframe: post.metadata?.timeframe,
-    risk: post.metadata?.risk,
+    timeframe: post.timeframe || post.metadata?.timeframe,
+    risk: post.risk || post.metadata?.risk,
     entry: post.metadata?.entry,
     stopLoss: post.metadata?.stop_loss,
     takeProfit: post.metadata?.take_profit,
-    market: post.metadata?.market,
-    category: post.metadata?.category,
+    market: post.market || post.metadata?.market,
+    category: post.category || post.metadata?.category,
+    // Monetization & Access Control (Phase 3)
+    accessLevel: post.accessLevel || post.access_level,
+    priceCents: post.priceCents ?? post.price_cents,
+    postPrice: post.postPrice ?? post.post_price,
+    isPurchased: post.isPurchased ?? post.is_purchased ?? false,
+    isSubscriber: post.isSubscriber ?? post.is_subscriber ?? false,
+    isFollower: post.isFollower ?? post.is_follower ?? false,
+    previewText: post.previewText || post.preview_text, // Preview для платных постов
   };
   
   // Debug log final converted post
@@ -205,6 +216,9 @@ export default function FeedTest() {
       <div className="flex-1 max-w-[720px] min-w-0">
         {user && (
           <>
+            {/* SimplePaidPostComposer - для тестирования */}
+            <SimplePaidPostComposer onPostCreated={refresh} />
+
             {/* Desktop: Full QuickComposer */}
             <div className="hidden md:block mb-4 rounded-2xl border border-widget-border bg-[#000000] p-4">
               <QuickComposer 
@@ -261,6 +275,7 @@ export default function FeedTest() {
       {/* Right Sidebar with Widgets */}
       <div className="hidden lg:block w-[340px]">
         <div className="sticky top-20 space-y-4">
+          <TrendingSearchesWidget />
           <NewsWidget limit={5} />
           <TrendingNewsWidget title="Актуальное" limit={5} showAvatars={true} />
           <TrendingTickersWidget limit={10} timeframe="24h" />

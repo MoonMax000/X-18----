@@ -126,7 +126,14 @@ const ProfileCover: FC<ProfileCoverProps> = ({
         {/* Cover Image */}
         <img
           src={finalCoverUrl}
+          srcSet={`
+            ${finalCoverUrl}?w=640&h=213&fit=cover 640w,
+            ${finalCoverUrl}?w=1280&h=427&fit=cover 1280w,
+            ${finalCoverUrl}?w=1920&h=640&fit=cover 1920w
+          `}
+          sizes="100vw"
           alt="Profile cover"
+          loading="lazy"
           className={cn('w-full object-cover', sizeClasses[size])}
         />
 

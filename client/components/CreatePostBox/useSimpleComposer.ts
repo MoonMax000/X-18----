@@ -36,6 +36,7 @@ export const useSimpleComposer = (
   const charLimit = options.charLimit ?? CHAR_LIMIT;
 
   const [text, setText] = useState<string>("");
+  const [previewText, setPreviewText] = useState<string>("");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [codeBlocks, setCodeBlocks] = useState<Array<{ id: string; code: string; language: string }>>([]);
   const [replySetting, setReplySetting] = useState<ReplyPolicy>(DEFAULT_REPLY_POLICY);
@@ -83,6 +84,7 @@ export const useSimpleComposer = (
   const initialize = useCallback(
     (
       initialText?: string,
+      initialPreviewText?: string,
       initialMedia?: MediaItem[],
       initialCodeBlocks?: Array<{ id: string; code: string; language: string }>,
       initialReplySetting?: ReplyPolicy,
@@ -108,6 +110,7 @@ export const useSimpleComposer = (
       cleanupObjectUrls();
       
       setText(initialText || "");
+      setPreviewText(initialPreviewText || "");
       setMedia(initialMedia ? cloneMedia(initialMedia) : []);
       setCodeBlocks(initialCodeBlocks || []);
       setReplySetting(initialReplySetting ?? DEFAULT_REPLY_POLICY);
@@ -257,8 +260,17 @@ export const useSimpleComposer = (
   const isOverLimit = useMemo(() => remainingChars < 0, [remainingChars]);
   const canPost = useMemo(() => text.trim().length > 0 && !isOverLimit, [text, isOverLimit]);
 
+  const updatePreviewText = useCallback(
+    (newText: string) => {
+      const nextText = newText.length > charLimit ? newText.slice(0, charLimit) : newText;
+      setPreviewText(nextText);
+    },
+    [charLimit],
+  );
+
   return {
     text,
+    previewText,
     media,
     codeBlocks,
     replySetting,
@@ -276,6 +288,7 @@ export const useSimpleComposer = (
     isOverLimit,
     canPost,
     updateText,
+    updatePreviewText,
     addMedia,
     removeMedia,
     replaceMedia,

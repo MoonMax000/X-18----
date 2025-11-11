@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -55,10 +56,15 @@ type SearchPostsResponse struct {
 func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
 	var req SearchPostsRequest
 	if err := c.QueryParser(&req); err != nil {
+		log.Printf("[SEARCH DEBUG] Failed to parse query: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid query parameters",
 		})
 	}
+
+	// DEBUG: Log all incoming parameters
+	log.Printf("[SEARCH DEBUG] Incoming request - Query: '%s', Author: '%s', Category: '%s', Symbol: '%s', SortBy: '%s', Page: %d, Limit: %d",
+		req.Query, req.Author, req.Category, req.Symbol, req.SortBy, req.Page, req.Limit)
 
 	// Set defaults
 	if req.Page < 1 {
@@ -97,20 +103,14 @@ func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
 		query = query.Where("visibility = ?", "public")
 	} else {
 		// Show public posts or posts from users the current user follows
-		query = query.Where(
-			h.db.DB.Where("visibility = ?", "public").
-				Or(h.db.DB.Where("user_id IN (?)",
-					h.db.DB.Model(&models.Follow{}).
-						Select("following_id").
-						Where("follower_id = ?", currentUserID),
-				)),
-		)
+		query = query.Where("visibility = ? OR user_id IN (SELECT following_id FROM follows WHERE follower_id = ?)", "public", currentUserID)
 	}
 
-	// Text search (full-text search on content)
+	// Text search (full-text search on content) - теперь опциональный
 	if req.Query != "" {
 		searchTerm := "%" + strings.ToLower(req.Query) + "%"
 		query = query.Where("LOWER(content) LIKE ? OR LOWER(content_html) LIKE ?", searchTerm, searchTerm)
+		log.Printf("[SEARCH DEBUG] Applying text search filter: %s", searchTerm)
 	}
 
 	// Author filter
@@ -184,10 +184,12 @@ func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
 	// Count total results
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
+		log.Printf("[SEARCH DEBUG] Failed to count posts: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to count posts",
 		})
 	}
+	log.Printf("[SEARCH DEBUG] Found %d total results", total)
 
 	// Apply sorting
 	switch req.SortBy {
@@ -215,10 +217,12 @@ func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
 	// Execute query
 	var posts []models.Post
 	if err := query.Find(&posts).Error; err != nil {
+		log.Printf("[SEARCH DEBUG] Failed to fetch posts: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch posts",
 		})
 	}
+	log.Printf("[SEARCH DEBUG] Fetched %d posts from database", len(posts))
 
 	// Convert to response format and check user interactions
 	postResponses := make([]models.PostResponse, 0, len(posts))
@@ -276,6 +280,9 @@ func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
 	if int(total)%req.Limit > 0 {
 		totalPages++
 	}
+
+	log.Printf("[SEARCH DEBUG] Returning response - Posts: %d, Total: %d, Page: %d, TotalPages: %d",
+		len(postResponses), total, req.Page, totalPages)
 
 	return c.JSON(SearchPostsResponse{
 		Posts:      postResponses,

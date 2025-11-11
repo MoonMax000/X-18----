@@ -370,7 +370,7 @@ export default function ProfileContentClassic({
             />
           </div>
         </div>
-        <ProfileTweetsClassic posts={sortedPosts} />
+        <ProfileTweetsClassic userId={externalProfile?.id || ''} />
       </main>
     </div>
   );

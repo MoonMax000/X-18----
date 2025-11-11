@@ -56,6 +56,7 @@ export interface MediaUploadPayload {
 function mapAccessLevel(clientValue: string): string {
   const mapping: Record<string, string> = {
     'free': 'free',                         // Бэкенд принимает 'free'
+    'paid': 'pay-per-post',                 // UI использует 'paid', бэкенд ожидает 'pay-per-post'
     'pay-per-post': 'pay-per-post',         // Бэкенд принимает 'pay-per-post'
     'subscribers-only': 'subscribers-only',
     'followers-only': 'followers-only',
@@ -66,11 +67,12 @@ function mapAccessLevel(clientValue: string): string {
 
 export function buildPostPayload(data: {
   text: string;
+  previewText?: string;
   mediaIds: string[];
   codeBlocks: Array<{ code: string; language: string }>;
   replySetting: "everyone" | "following" | "verified" | "mentioned";
   sentiment?: "bullish" | "bearish" | "neutral";
-  accessType: "free" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium";
+  accessType: "free" | "paid" | "pay-per-post" | "subscribers-only" | "followers-only" | "premium";
   postPrice?: number;
   metadata?: {
     market?: string;
@@ -94,6 +96,12 @@ export function buildPostPayload(data: {
     replyPolicy: data.replySetting,  // ✅ camelCase
   };
 
+  // Добавляем previewText для платных постов
+  if (data.previewText && data.previewText.trim()) {
+    payload.previewText = data.previewText.trim();
+    console.log('[buildPostPayload] Добавили previewText:', payload.previewText.substring(0, 50));
+  }
+
   // Добавляем медиа если есть
   if (data.mediaIds.length > 0) {
     payload.mediaIds = data.mediaIds;  // ✅ camelCase
@@ -101,11 +109,16 @@ export function buildPostPayload(data: {
 
   // Добавляем цену для платных постов (в центах)
   console.log('[buildPostPayload] Проверка цены - accessType:', data.accessType, 'postPrice:', data.postPrice);
-  if (data.accessType === "pay-per-post" && data.postPrice) {
+  
+  // Добавляем цену для ВСЕХ платных типов (paid, pay-per-post, premium)
+  const paidAccessTypes = ["paid", "pay-per-post", "premium"];
+  if (paidAccessTypes.includes(data.accessType) && data.postPrice) {
     payload.priceCents = Math.round(data.postPrice * 100);  // ✅ camelCase
-    console.log('[buildPostPayload] Добавили priceCents:', payload.priceCents);
+    console.log('[buildPostPayload] Добавили priceCents для', data.accessType, ':', payload.priceCents);
+  } else if (paidAccessTypes.includes(data.accessType) && !data.postPrice) {
+    console.log('[buildPostPayload] ВНИМАНИЕ: платный тип без цены - accessType:', data.accessType);
   } else {
-    console.log('[buildPostPayload] НЕ добавили priceCents, условие не выполнено');
+    console.log('[buildPostPayload] Не добавляем цену - бесплатный тип или подписка:', data.accessType);
   }
 
   // Формируем метаданные для бэкенда

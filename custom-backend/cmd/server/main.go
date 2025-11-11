@@ -315,6 +315,7 @@ func main() {
 	// Posts routes
 	posts := apiGroup.Group("/posts")
 	posts.Post("/", middleware.JWTMiddleware(cfg), postsHandler.CreatePost)
+	posts.Get("/search", searchHandler.SearchPosts) // MUST be before /:id to avoid conflict
 	posts.Get("/:id", postsHandler.GetPost)
 	posts.Get("/:id/replies", postsHandler.GetPostReplies)
 	posts.Delete("/:id", middleware.JWTMiddleware(cfg), postsHandler.DeletePost)
@@ -367,7 +368,10 @@ func main() {
 	media.Get("/user/:id", mediaHandler.GetUserMedia)
 
 	// Search routes (optional auth - works for both authenticated and anonymous users)
-	posts.Get("/search", searchHandler.SearchPosts)
+	search := apiGroup.Group("/search")
+	search.Get("/", searchHandler.SearchPosts) // General search (defaults to posts)
+	search.Get("/posts", searchHandler.SearchPosts)
+	search.Get("/users", usersHandler.SearchUsers)
 
 	// Widgets routes (public)
 	widgets := apiGroup.Group("/widgets")

@@ -110,9 +110,23 @@ const ProfileAvatar: FC<ProfileAvatarProps> = ({
           isEditable && "cursor-pointer"
         )}>
           <img 
-            src={finalAvatarUrl} 
+            src={finalAvatarUrl}
+            srcSet={`
+              ${finalAvatarUrl}?w=24&h=24&fit=cover 24w,
+              ${finalAvatarUrl}?w=48&h=48&fit=cover 48w,
+              ${finalAvatarUrl}?w=96&h=96&fit=cover 96w,
+              ${finalAvatarUrl}?w=200&h=200&fit=cover 200w,
+              ${finalAvatarUrl}?w=400&h=400&fit=cover 400w
+            `}
+            sizes={
+              size === 'small' ? '96px' :
+              size === 'medium' ? '128px' :
+              size === 'large' ? '160px' :
+              '(max-width: 640px) 80px, (max-width: 768px) 112px, 132px'
+            }
             alt="Avatar"
             draggable={false}
+            loading="lazy"
             className="absolute inset-0 block !w-full !h-full object-cover object-center" 
           />
 

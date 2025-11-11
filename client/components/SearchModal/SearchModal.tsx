@@ -38,17 +38,20 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
     query: searchQuery,
     setQuery: setSearchQuery,
     suggestions,
-    isLoading,
+    isLoading: isAutocompleteLoading,
     searchHistory,
     addToHistory,
+    clearHistory,
   } = useSearchAutocomplete();
 
-  const { results, updateFilters } = useSearch({
+  const { results, isLoading: isSearchLoading, updateFilters } = useSearch({
     query: searchQuery,
     category: activeFilter !== 'all' && activeFilter !== 'liked' ? activeFilter : undefined,
     symbol: symbolParam || undefined,
     sortBy: sortFilter === 'hot' ? 'relevance' : 'date',
   });
+
+  const isLoading = isAutocompleteLoading || isSearchLoading;
 
   // Установить symbol из URL в поле поиска при открытии
   useEffect(() => {
@@ -91,8 +94,23 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
 
   // Update filters when search query changes
   useEffect(() => {
-    updateFilters({ query: searchQuery });
+    if (searchQuery && searchQuery.trim().length > 0) {
+      updateFilters({ query: searchQuery });
+      // Add to history when user searches
+      addToHistory(searchQuery);
+    }
   }, [searchQuery, updateFilters]);
+
+  // Update filters when category or sort changes
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim().length > 0) {
+      updateFilters({
+        query: searchQuery,
+        category: activeFilter !== 'all' && activeFilter !== 'liked' ? activeFilter : undefined,
+        sortBy: sortFilter === 'hot' ? 'relevance' : 'date',
+      });
+    }
+  }, [activeFilter, sortFilter, searchQuery, updateFilters]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -124,6 +142,16 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const clearSearch = () => {
     setSearchQuery("");
     inputRef.current?.focus();
+  };
+
+  const handleHistoryClick = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleClearHistory = () => {
+    if (confirm('Очистить всю историю поиска?')) {
+      clearHistory();
+    }
   };
 
   // Get access level badge
@@ -161,8 +189,8 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
       />
 
       {/* Modal */}
-      <div className="flex items-center justify-center min-h-screen p-3 sm:p-6">
-        <div className="relative w-full max-w-2xl h-auto max-h-[calc(100vh-48px)] flex flex-col bg-black rounded-3xl pointer-events-auto shadow-[0_10px_40px_10px_rgba(0,0,0,0.8)] border border-[#2F2F31]/50">
+      <div className="flex items-start justify-center min-h-screen p-3 sm:p-6 pt-[10vh]">
+        <div className="relative w-full max-w-2xl h-auto max-h-[calc(90vh-48px)] flex flex-col bg-black rounded-3xl pointer-events-auto shadow-[0_10px_40px_10px_rgba(0,0,0,0.8)] border border-[#2F2F31]/50">
           {/* Header */}
           <div className="p-4 border-b border-[#2F2F31]">
             {/* Input */}
@@ -312,144 +340,70 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
               </div>
             ) : searchQuery.length === 0 ? (
               <div className="space-y-4 py-2">
-                {/* Demo Search Results */}
-                <div>
-                  <h4 className="mb-2 text-[11px] uppercase text-gray-500 font-semibold">
-                    Recent Searches
-                  </h4>
+                {/* Recent Searches - реальная история */}
+                {searchHistory.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-[11px] uppercase text-gray-500 font-semibold">
+                        Недавние поиски
+                      </h4>
+                      <button
+                        onClick={handleClearHistory}
+                        className="text-[10px] text-gray-500 hover:text-[#A06AFF] transition-colors"
+                      >
+                        Очистить
+                      </button>
+                    </div>
 
-                  <ul className="-mx-2.5 space-y-0.5">
-                    <li>
-                      <a
-                        className="py-2 px-3 flex items-center gap-x-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
-                        href="#"
-                      >
-                        <svg
-                          className="shrink-0 size-4 text-gray-500"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.3-4.3" />
-                        </svg>
-                        <div className="grow">
-                          <span className="text-[13px] text-gray-200 group-hover:text-white line-clamp-1 transition-colors duration-150">
-                            Cryptocurrency
-                          </span>
-                        </div>
-                        <div className="ml-auto">
-                          <svg
-                            className="shrink-0 size-3.5 text-gray-500 group-hover:text-[#A06AFF] transition-colors duration-150"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                    <ul className="-mx-2.5 space-y-0.5">
+                      {searchHistory.slice(0, 5).map((historyQuery, index) => (
+                        <li key={index}>
+                          <button
+                            onClick={() => handleHistoryClick(historyQuery)}
+                            className="w-full py-2 px-3 flex items-center gap-x-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
                           >
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </div>
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="py-2 px-3 flex items-center gap-x-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
-                        href="#"
-                      >
-                        <svg
-                          className="shrink-0 size-4 text-gray-500"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.3-4.3" />
-                        </svg>
-                        <div className="grow">
-                          <span className="text-[13px] text-gray-200 group-hover:text-white line-clamp-1 transition-colors duration-150">
-                            Trading Strategies
-                          </span>
-                        </div>
-                        <div className="ml-auto">
-                          <svg
-                            className="shrink-0 size-3.5 text-gray-500 group-hover:text-[#A06AFF] transition-colors duration-150"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </div>
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="py-2 px-3 flex items-center gap-x-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
-                        href="#"
-                      >
-                        <svg
-                          className="shrink-0 size-4 text-gray-500"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.3-4.3" />
-                        </svg>
-                        <div className="grow">
-                          <span className="text-[13px] text-gray-200 group-hover:text-white line-clamp-1 transition-colors duration-150">
-                            Market Analysis
-                          </span>
-                        </div>
-                        <div className="ml-auto">
-                          <svg
-                            className="shrink-0 size-3.5 text-gray-500 group-hover:text-[#A06AFF] transition-colors duration-150"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </div>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+                            <svg
+                              className="shrink-0 size-4 text-gray-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            <div className="grow text-left">
+                              <span className="text-[13px] text-gray-200 group-hover:text-white line-clamp-1 transition-colors duration-150">
+                                {historyQuery}
+                              </span>
+                            </div>
+                            <div className="ml-auto">
+                              <svg
+                                className="shrink-0 size-3.5 text-gray-500 group-hover:text-[#A06AFF] transition-colors duration-150"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="m9 18 6-6-6-6" />
+                              </svg>
+                            </div>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 {/* Demo Featured Posts */}
                 {/* Trending Posts */}
@@ -599,7 +553,7 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
                   )}
                 </div>
               </div>
-            ) : posts.length === 0 ? (
+            ) : !results || posts.length === 0 ? (
               <div className="text-center py-12">
                 <svg
                   className="mx-auto h-12 w-12 text-gray-600"
@@ -612,142 +566,45 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 12h.01M12 12h.01M12 12h.01"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-400">No results found</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-400">Ничего не найдено</h3>
                 <p className="mt-1 text-xs text-gray-500">
-                  Try adjusting your search query
+                  Попробуйте изменить запрос
                 </p>
               </div>
             ) : (
               <div className="space-y-4 py-2">
-                {/* Search Results */}
+                {/* Posts with Details */}
                 <div>
                   <h4 className="mb-2 text-[11px] uppercase text-gray-500 font-semibold">
-                    Search Results
+                    Результаты поиска ({totalResults})
                   </h4>
 
-                  <ul className="-mx-2.5 space-y-0.5">
-                    {posts.slice(0, 3).map((post) => (
-                      <li key={post.id}>
-                        <a
-                          className="py-2 px-3 flex items-center gap-x-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
-                          href={`/posts/${post.id}`}
-                        >
-                          <svg
-                            className="shrink-0 size-4 text-gray-500"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.3-4.3" />
-                          </svg>
-                          <div className="grow">
-                            <span className="text-[13px] text-gray-200 group-hover:text-white line-clamp-1 transition-colors duration-150">
-                              {post.title || post.content?.substring(0, 60)}
-                            </span>
-                          </div>
-                          <div className="ml-auto">
-                            <svg
-                              className="shrink-0 size-3.5 text-gray-500 group-hover:text-[#A06AFF] transition-colors duration-150"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                  {posts.length > 0 ? (
+                    <>
+                      <ul className="-mx-2.5 space-y-0.5">
+                        {posts.map((post) => (
+                          <li key={post.id}>
+                            <a
+                              className="block p-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
+                              href={`/home/post/${post.id}`}
                             >
-                              <path d="m9 18 6-6-6-6" />
-                            </svg>
-                          </div>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                              <div className="flex items-center gap-x-4">
+                                <div className="grow truncate">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h5 className="truncate text-sm text-gray-200 group-hover:text-white font-medium transition-colors duration-150">
+                                      {post.content.substring(0, 80)}{post.content.length > 80 ? '...' : ''}
+                                    </h5>
+                                    {getAccessBadge(post.access_level || post.accessLevel)}
+                                  </div>
 
-                  {posts.length > 3 && (
-                    <p className="mt-1 -ml-1.5">
-                      <a
-                        className="py-1 px-2 inline-flex items-center gap-x-1 text-xs text-[#A06AFF] hover:text-[#B084FF] decoration-2 hover:underline focus:outline-none focus:underline cursor-pointer transition-colors duration-150"
-                        href="#"
-                      >
-                        {posts.length - 3} more results
-                        <svg
-                          className="shrink-0 size-3.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="m9 18 6-6-6-6" />
-                        </svg>
-                      </a>
-                    </p>
-                  )}
-                </div>
-
-                {/* Posts with Details */}
-                {posts.length > 0 && (
-                  <div>
-                    <h4 className="mb-2 text-[11px] uppercase text-gray-500 font-semibold">
-                      Posts
-                    </h4>
-
-                    <ul className="-mx-2.5 space-y-0.5">
-                      {posts.slice(0, 3).map((post) => (
-                        <li key={`featured-${post.id}`}>
-                          <a
-                            className="block p-3 hover:bg-[#1F2229] rounded-2xl focus:outline-none focus:bg-[#1F2229] transition-all duration-150 cursor-pointer group"
-                            href={`/posts/${post.id}`}
-                          >
-                            <div className="flex items-center gap-x-4">
-                              <div className="grow truncate">
-                                <h5 className="truncate text-sm text-gray-200 group-hover:text-white font-medium transition-colors duration-150">
-                                  {post.title || "Untitled Post"}
-                                </h5>
-
-                                <ol className="mt-1.5 flex flex-wrap items-center">
-                                  <li className="relative pe-5 text-xs last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-2 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2">
-                                    <span className="inline-flex items-center gap-x-1 text-xs text-gray-500">
-                                      <svg
-                                        className="shrink-0 size-3"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                      >
-                                        <rect width="7" height="7" x="14" y="3" rx="1" />
-                                        <path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3" />
-                                      </svg>
-                                      Post
-                                    </span>
-                                  </li>
-                                  {post.author_username && (
+                                  <ol className="mt-1.5 flex flex-wrap items-center">
                                     <li className="relative pe-5 text-xs last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-2 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2">
                                       <span className="inline-flex items-center gap-x-1 text-xs text-gray-500">
                                         <svg
                                           className="shrink-0 size-3"
-                                          xmlns="http://www.w3.org/2000/svg"
                                           width="24"
                                           height="24"
                                           viewBox="0 0 24 24"
@@ -757,54 +614,95 @@ export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
                                           strokeLinecap="round"
                                           strokeLinejoin="round"
                                         >
-                                          <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+                                          <rect width="7" height="7" x="14" y="3" rx="1" />
+                                          <path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3" />
                                         </svg>
-                                        @{post.author_username}
+                                        Пост
                                       </span>
                                     </li>
-                                  )}
-                                </ol>
-                              </div>
+                                    {post.user?.username && (
+                                      <li className="relative pe-5 text-xs last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-2 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2">
+                                        <span className="inline-flex items-center gap-x-1 text-xs text-gray-500">
+                                          @{post.user.username}
+                                        </span>
+                                      </li>
+                                    )}
+                                    {post.likes_count > 0 && (
+                                      <li className="relative pe-5 text-xs last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-2 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2">
+                                        <span className="inline-flex items-center gap-x-1 text-xs text-gray-500">
+                                          <svg
+                                            className="shrink-0 size-3"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                                          </svg>
+                                          {post.likes_count}
+                                        </span>
+                                      </li>
+                                    )}
+                                  </ol>
+                                </div>
 
-                              {post.media_urls && post.media_urls.length > 0 ? (
-                                <div className="shrink-0">
-                                  <img
-                                    className="w-20 h-14 object-cover bg-[#272A32] rounded-2xl group-hover:ring-2 group-hover:ring-[#A06AFF]/30 transition-all duration-150"
-                                    src={post.media_urls[0]}
-                                    alt="Post thumbnail"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="shrink-0">
-                                  <span className="flex justify-center items-center w-20 h-14 bg-[#272A32] text-gray-600 rounded-2xl">
-                                    <svg
-                                      className="shrink-0 size-5"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="24"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-                                      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                                      <path d="M10 9H8" />
-                                      <path d="M16 13H8" />
-                                      <path d="M16 17H8" />
-                                    </svg>
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                                {post.media && post.media.length > 0 && post.media[0].type === 'image' ? (
+                                  <div className="shrink-0">
+                                    <img
+                                      className="w-20 h-14 object-cover bg-[#272A32] rounded-2xl group-hover:ring-2 group-hover:ring-[#A06AFF]/30 transition-all duration-150"
+                                      src={post.media[0].url}
+                                      alt="Post thumbnail"
+                                    />
+                                  </div>
+                                ) : post.media_urls && post.media_urls.length > 0 ? (
+                                  <div className="shrink-0">
+                                    <img
+                                      className="w-20 h-14 object-cover bg-[#272A32] rounded-2xl group-hover:ring-2 group-hover:ring-[#A06AFF]/30 transition-all duration-150"
+                                      src={post.media_urls[0]}
+                                      alt="Post thumbnail"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="shrink-0">
+                                    <span className="flex justify-center items-center w-20 h-14 bg-[#272A32] text-gray-600 rounded-2xl">
+                                      <svg
+                                        className="shrink-0 size-5"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      >
+                                        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                                        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                        <path d="M10 9H8" />
+                                        <path d="M16 13H8" />
+                                        <path d="M16 17H8" />
+                                      </svg>
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="text-center py-4 text-sm text-gray-500">
+                      Нет результатов
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>

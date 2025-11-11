@@ -46,6 +46,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
 
   const {
     text,
+    previewText,
     media,
     codeBlocks,
     sentiment,
@@ -63,6 +64,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
     isOverLimit,
     canPost,
     updateText,
+    updatePreviewText,
     addMedia,
     removeMedia,
     replaceMedia,
@@ -255,6 +257,7 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
       
       const payload = buildPostPayload({
         text,
+        previewText: accessType !== "free" ? previewText : undefined,
         mediaIds,
         codeBlocks: codeBlocks.map(cb => ({
           code: cb.code,
@@ -308,14 +311,38 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
       </Avatar>
 
       <div className="flex-1 mb-[-1px] min-w-0 max-w-full overflow-hidden content">
+        {/* Preview Text для платных постов - бесплатная часть */}
+        {accessType !== "free" && (
+          <div className="mb-2 px-3 py-2 bg-[#1A1A1A] rounded-lg border border-[#A06AFF]/20">
+            <label className="text-xs font-medium text-[#A06AFF] mb-1 block">
+              🔓 Бесплатный preview (видят все)
+            </label>
+            <AutoGrowTextarea
+              placeholder="Напишите краткое описание для привлечения читателей..."
+              value={previewText}
+              onChange={e => updatePreviewText(e.target.value)}
+              className="!min-h-[48px] !resize-none !border-none !bg-transparent !text-[14px] !text-white !placeholder:text-[#6C7280]/60 !focus-visible:ring-0 !px-0 !py-0 w-full max-w-full"
+              disabled={isPosting}
+              minRows={2}
+              maxRows={5}
+            />
+          </div>
+        )}
+
+        {/* Main Content - платная часть для платных постов, весь контент для бесплатных */}
+        {accessType !== "free" && (
+          <label className="text-xs font-medium text-[#FF6B9D] mb-1 block px-3">
+            🔒 Платный контент (только после покупки)
+          </label>
+        )}
         <AutoGrowTextarea
           textareaRef={textareaRef}
-          placeholder="Share your trading ideas, signals, or analysis... ($TICKER, #tags, @mentions)"
+          placeholder={accessType !== "free" ? "Напишите полный платный контент..." : "Share your trading ideas, signals, or analysis... ($TICKER, #tags, @mentions)"}
           value={text}
           onChange={e => updateText(e.target.value)}
           className="!min-h-[24px] !resize-none !border-none !bg-[#000000] !text-[15px] !text-white !placeholder:text-[#6C7280] !focus-visible:ring-0 !px-3 !py-2 w-full max-w-full"
           disabled={isPosting}
-          minRows={1}
+          minRows={accessType !== "free" ? 3 : 1}
           maxRows={10}
         />
 

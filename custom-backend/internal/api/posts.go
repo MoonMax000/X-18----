@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	"image/draw"
@@ -109,6 +110,12 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 			accessLevel = req.AccessLevel
 		}
 
+		// Преобразуем "paid" в "pay-per-post" для совместимости с БД
+		// ВАЖНО: Делаем это ДО создания структуры post
+		if accessLevel == "paid" || accessLevel == "pay-per-view" {
+			accessLevel = "pay-per-post"
+		}
+
 		// Определяем reply_policy (по умолчанию everyone)
 		replyPolicy := "everyone"
 		if req.ReplyPolicy != "" {
@@ -134,7 +141,7 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 			UpdatedAt:   time.Now(),
 		}
 
-		// Валидация access_level
+		// Валидация access_level ПОСЛЕ преобразования
 		validAccessLevels := map[string]bool{
 			"free":             true,
 			"pay-per-post":     true,
@@ -142,8 +149,9 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 			"followers-only":   true,
 			"premium":          true,
 		}
+
 		if !validAccessLevels[post.AccessLevel] {
-			return fmt.Errorf("invalid access_level: %s", post.AccessLevel)
+			return fmt.Errorf("invalid access_level: %s (original: %s)", post.AccessLevel, accessLevel)
 		}
 
 		// Валидация reply_policy
@@ -280,7 +288,22 @@ func (h *PostsHandler) CreatePost(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fullPost)
+	// Конвертируем в DTO для чистой JSON сериализации
+	dto := toPostDTO(fullPost)
+
+	// 🔍 ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ ПЕРЕД ОТПРАВКОЙ ОТВЕТА
+	fmt.Printf("\n========== [CreatePost] ФИНАЛЬНЫЙ ОТВЕТ (DTO) ==========\n")
+	fmt.Printf("Post ID: %s\n", dto.ID)
+	fmt.Printf("DTO.AccessLevel: %s\n", dto.AccessLevel)
+	fmt.Printf("DTO.PriceCents: %d\n", dto.PriceCents)
+	fmt.Printf("DTO.ReplyPolicy: %s\n", dto.ReplyPolicy)
+
+	// Сериализуем DTO в JSON чтобы увидеть что отправится клиенту
+	jsonBytes, _ := json.Marshal(dto)
+	fmt.Printf("\nDTO JSON который будет отправлен клиенту:\n%s\n", string(jsonBytes))
+	fmt.Printf("========================================================\n\n")
+
+	return c.Status(fiber.StatusCreated).JSON(dto)
 }
 
 // GetPost получает пост по ID
@@ -322,7 +345,9 @@ func (h *PostsHandler) GetPost(c *fiber.Ctx) error {
 		post.IsBookmarked = (err == nil)
 	}
 
-	return c.JSON(post)
+	// Конвертируем в DTO
+	dto := toPostDTO(post)
+	return c.JSON(dto)
 }
 
 // DeletePost удаляет пост
@@ -797,7 +822,9 @@ func (h *PostsHandler) GetPostReplies(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(allReplies)
+	// Конвертируем в DTO
+	dtos := toPostDTOList(allReplies)
+	return c.JSON(dtos)
 }
 
 // applyCropToMedia применяет crop к изображению на сервере
