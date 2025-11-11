@@ -1,5 +1,9 @@
 import { FC, useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useSearchAutocomplete } from "@/hooks/useSearchAutocomplete";
 import { useSearch } from "@/hooks/useSearch";
+import { formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -20,18 +24,38 @@ interface TrendingPost {
 }
 
 export const SearchModal: FC<SearchModalProps> = ({ isOpen, onClose }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const symbolParam = searchParams.get('symbol');
+  
   const [activeFilter, setActiveFilter] = useState<"all" | "signal" | "news" | "education" | "analysis" | "macro" | "code" | "video" | "liked">("all");
   const [sortFilter, setSortFilter] = useState<"hot" | "recent">("hot");
   const [trendingPosts, setTrendingPosts] = useState<TrendingPost[]>([]);
   const [isTrendingLoading, setIsTrendingLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { results, isLoading, updateFilters } = useSearch({
+  // Use autocomplete hook instead of regular search
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    suggestions,
+    isLoading,
+    searchHistory,
+    addToHistory,
+  } = useSearchAutocomplete();
+
+  const { results, updateFilters } = useSearch({
     query: searchQuery,
     category: activeFilter !== 'all' && activeFilter !== 'liked' ? activeFilter : undefined,
+    symbol: symbolParam || undefined,
     sortBy: sortFilter === 'hot' ? 'relevance' : 'date',
   });
+
+  // Установить symbol из URL в поле поиска при открытии
+  useEffect(() => {
+    if (isOpen && symbolParam) {
+      setSearchQuery(symbolParam);
+    }
+  }, [isOpen, symbolParam]);
 
   // Load trending posts when modal opens
   useEffect(() => {

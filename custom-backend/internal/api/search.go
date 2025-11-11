@@ -27,6 +27,7 @@ type SearchPostsRequest struct {
 	Query       string `query:"q"`            // Text search query
 	Author      string `query:"author"`       // Author username
 	Category    string `query:"category"`     // Post category
+	Symbol      string `query:"symbol"`       // Trading symbol (BTC, ETH, etc.)
 	Tags        string `query:"tags"`         // Comma-separated tags
 	DateFrom    string `query:"date_from"`    // ISO 8601 date
 	DateTo      string `query:"date_to"`      // ISO 8601 date
@@ -121,6 +122,11 @@ func (h *SearchHandler) SearchPosts(c *fiber.Ctx) error {
 	// Category filter
 	if req.Category != "" {
 		query = query.Where("category = ?", req.Category)
+	}
+
+	// Symbol filter (search in metadata JSONB)
+	if req.Symbol != "" {
+		query = query.Where("metadata->>'symbol' = ?", strings.ToUpper(req.Symbol))
 	}
 
 	// Tags filter (search in comma-separated tags string)

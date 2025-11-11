@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TrendingUp, TrendingDown, DollarSign, Sparkles, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, MessageCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Sparkles, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, MessageCircle, Eye } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatar-utils";
 import { isPostLocked, normalizeAccessLevel } from "@/lib/access-level-utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
@@ -72,10 +72,21 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   // Check if current user is admin
   const isAdmin = user?.role === 'admin';
 
+  // Author preview mode state - when true, author sees post as locked (like other users)
+  // По умолчанию TRUE для платных постов автора - показываем замок
+  const [isAuthorPreviewMode, setIsAuthorPreviewMode] = useState(
+    isOwnPost && post.accessLevel && post.accessLevel !== 'public'
+  );
+
   // DEBUG: Log post access control info
   React.useEffect(() => {
-    console.log('[FeedPost DEBUG] Post access control:', {
+    console.log('[FeedPost DEBUG] Post data:', {
       postId: post.id,
+      ticker: post.ticker,
+      market: post.market,
+      category: post.category,
+      timeframe: post.timeframe,
+      risk: post.risk,
       accessLevel: post.accessLevel,
       priceCents: post.priceCents,
       postPrice: post.postPrice,
@@ -87,7 +98,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
       authorHandle: post.author.handle,
       subscriptionPrice: post.author.subscriptionPrice,
     });
-  }, [post.id, post.accessLevel, post.isPurchased, post.isSubscriber, isOwnPost]);
+  }, [post.id, post.ticker, post.market, post.category, post.accessLevel, post.isPurchased, post.isSubscriber, isOwnPost]);
 
   // PostMenu integration
   const { handleDelete, handlePin, handleReport, handleBlockAuthor } = usePostMenu({
@@ -105,13 +116,18 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
   });
 
   // Используем утилиту для определения блокировки с нормализацией значений
-  const isLocked = isPostLocked({
-    accessLevel: localPost.accessLevel,
-    isPurchased: localPost.isPurchased,
-    isSubscriber: localPost.isSubscriber,
-    isFollower: localPost.isFollower,
-    isOwnPost
-  });
+  // Для автора: 
+  // - если isAuthorPreviewMode === true, показываем как заблокированный (замок виден)
+  // - если isAuthorPreviewMode === false, НЕ показываем замок (контент открыт)
+  const isLocked = isOwnPost 
+    ? isAuthorPreviewMode // Для автора: locked только когда в preview режиме
+    : isPostLocked({
+        accessLevel: localPost.accessLevel,
+        isPurchased: localPost.isPurchased,
+        isSubscriber: localPost.isSubscriber,
+        isFollower: localPost.isFollower,
+        isOwnPost: false // Для не-автора используем стандартную проверку
+      });
   
   // DEBUG: Log lock calculation
   React.useEffect(() => {
@@ -166,10 +182,22 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
   // Text truncation logic
   const TEXT_PREVIEW_LENGTH = 300;
-  const shouldTruncate = post.text.length > TEXT_PREVIEW_LENGTH;
+  
+  // Определяем какой текст показывать:
+  // 1. Для автора в обычном режиме (не preview): всегда показываем previewText + text (оба)
+  // 2. Для автора в preview режиме: работает как для обычных пользователей
+  // 3. Если пост куплен (не заблокирован) и есть previewText - показываем previewText + text (оба)
+  // 4. Если пост заблокирован и есть previewText - показываем только previewText
+  // 5. Иначе показываем text
+  const isPurchasedWithPreview = (!isLocked || (isOwnPost && !isAuthorPreviewMode)) && post.previewText && post.text;
+  const textToShow = isPurchasedWithPreview 
+    ? `${post.previewText}\n\n${post.text}` // Для автора (не в preview) и купленных: оба текста через 2 переноса строки
+    : (isLocked && post.previewText ? post.previewText : post.text); // Для остальных: только preview или text
+  
+  const shouldTruncate = textToShow.length > TEXT_PREVIEW_LENGTH;
   const displayText = !isExpanded && shouldTruncate
-    ? post.text.slice(0, TEXT_PREVIEW_LENGTH) + "..."
-    : post.text;
+    ? textToShow.slice(0, TEXT_PREVIEW_LENGTH) + "..."
+    : textToShow;
 
   const handlePostClick = () => {
     navigate(`/home/post/${post.id}`, { state: post });
@@ -283,10 +311,15 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
               )}
 
               {/* Symbol Badge */}
-              {'ticker' in post && post.ticker && (
+              {post.ticker && (
                 <span 
-                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/?symbol=${post.ticker}`);
+                  }}
+                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs cursor-pointer transition-all hover:ring-2 hover:ring-green-400/50 hover:scale-105"
                   style={{ backgroundColor: "rgb(16, 185, 129)" }}
+                  title={`Поиск постов с ${post.ticker}`}
                 >
                   {post.ticker}
                 </span>
@@ -397,6 +430,21 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
               {isExpanded ? "Show less" : "Show more"}
             </button>
           )}
+          
+          {/* Кнопка для возврата к preview режиму - показывается только для автора платного поста когда контент открыт */}
+          {isOwnPost && post.accessLevel && post.accessLevel !== 'public' && !isAuthorPreviewMode && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setIsAuthorPreviewMode(true);
+              }}
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#A06AFF] bg-[#A06AFF]/10 border border-[#A06AFF]/30 rounded-full transition-all duration-200 hover:bg-[#A06AFF]/20 hover:border-[#A06AFF]/50 hover:text-white"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Скрыть контент (предпросмотр)
+            </button>
+          )}
         </div>
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
@@ -468,15 +516,27 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             postId={localPost.id}
             authorId={localPost.author.handle}
             postPrice={localPost.postPrice}
+            priceCents={localPost.priceCents}
             subscriptionPrice={localPost.author.subscriptionPrice}
             authorName={localPost.author.name}
             previewImageUrl={localPost.media?.[0]?.url || localPost.mediaUrl}
             isPurchased={localPost.isPurchased}
             isSubscriber={localPost.isSubscriber}
             isOwnPost={isOwnPost}
+            isAuthorPreviewMode={isAuthorPreviewMode}
+            onToggleAuthorPreview={isOwnPost ? () => setIsAuthorPreviewMode(!isAuthorPreviewMode) : undefined}
             onUnlock={handleUnlock}
             onSubscribe={handleSubscribe}
             onFollow={handleFollow}
+            onGetAccess={(action) => {
+              if (action === 'purchase') {
+                handleUnlock();
+              } else if (action === 'subscribe' || action === 'upgrade') {
+                handleSubscribe();
+              } else if (action === 'follow') {
+                handleFollow();
+              }
+            }}
           />
         </section>
       ) : (
@@ -554,11 +614,18 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
             ) : post.mediaUrl ? (
               /* Legacy single media URL */
               <div className="overflow-hidden rounded-2xl border border-[#181B22]">
-                <img
-                  src={post.mediaUrl}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
+            <img
+              src={post.author.avatar}
+              srcSet={`
+                ${post.author.avatar}?w=24&h=24&fit=cover 24w,
+                ${post.author.avatar}?w=48&h=48&fit=cover 48w,
+                ${post.author.avatar}?w=96&h=96&fit=cover 96w
+              `}
+              sizes="48px"
+              alt={post.author.name}
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
               </div>
             ) : null}
           </section>

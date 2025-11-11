@@ -5,6 +5,7 @@ export interface SearchFilters {
   query: string;
   author?: string;
   category?: string;
+  symbol?: string;
   tags?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -53,6 +54,7 @@ export function useSearch(initialFilters: SearchFilters = { query: '' }) {
       if (searchFilters.query) params.append('q', searchFilters.query);
       if (searchFilters.author) params.append('author', searchFilters.author);
       if (searchFilters.category) params.append('category', searchFilters.category);
+      if (searchFilters.symbol) params.append('symbol', searchFilters.symbol);
       if (searchFilters.tags) params.append('tags', searchFilters.tags);
       if (searchFilters.dateFrom) params.append('date_from', searchFilters.dateFrom);
       if (searchFilters.dateTo) params.append('date_to', searchFilters.dateTo);
