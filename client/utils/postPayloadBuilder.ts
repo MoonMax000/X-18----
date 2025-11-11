@@ -49,6 +49,21 @@ export interface MediaUploadPayload {
  * Преобразует данные композера в payload для API бэкенда
  * Маппинг: frontend PostPayload → backend CreatePostData
  */
+/**
+ * Маппинг значений accessLevel: frontend → backend
+ * Frontend и Backend используют одинаковые значения после миграции 028
+ */
+function mapAccessLevel(clientValue: string): string {
+  const mapping: Record<string, string> = {
+    'free': 'free',                         // Бэкенд принимает 'free'
+    'pay-per-post': 'pay-per-post',         // Бэкенд принимает 'pay-per-post'
+    'subscribers-only': 'subscribers-only',
+    'followers-only': 'followers-only',
+    'premium': 'premium'
+  };
+  return mapping[clientValue] || clientValue;
+}
+
 export function buildPostPayload(data: {
   text: string;
   mediaIds: string[];
@@ -65,10 +80,17 @@ export function buildPostPayload(data: {
     risk?: string;
   };
 }): any {
+  console.log('[buildPostPayload] ВХОД - Получили данные:', {
+    accessType: data.accessType,
+    postPrice: data.postPrice,
+    replySetting: data.replySetting,
+    text: data.text.substring(0, 50) + (data.text.length > 50 ? '...' : ''),
+  });
+
   // Формируем базовый payload для бэкенда (используем camelCase!)
   const payload: any = {
     content: data.text.trim(),
-    accessLevel: data.accessType,  // ✅ camelCase
+    accessLevel: mapAccessLevel(data.accessType),  // ✅ camelCase + маппинг значений
     replyPolicy: data.replySetting,  // ✅ camelCase
   };
 
@@ -78,8 +100,12 @@ export function buildPostPayload(data: {
   }
 
   // Добавляем цену для платных постов (в центах)
+  console.log('[buildPostPayload] Проверка цены - accessType:', data.accessType, 'postPrice:', data.postPrice);
   if (data.accessType === "pay-per-post" && data.postPrice) {
     payload.priceCents = Math.round(data.postPrice * 100);  // ✅ camelCase
+    console.log('[buildPostPayload] Добавили priceCents:', payload.priceCents);
+  } else {
+    console.log('[buildPostPayload] НЕ добавили priceCents, условие не выполнено');
   }
 
   // Формируем метаданные для бэкенда
@@ -113,6 +139,7 @@ export function buildPostPayload(data: {
     payload.metadata = metadata;
   }
 
+  console.log('[buildPostPayload] ВЫХОД - Итоговый payload:', JSON.stringify(payload, null, 2));
   return payload;
 }
 

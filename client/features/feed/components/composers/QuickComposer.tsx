@@ -246,6 +246,13 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
       }
 
       // 2. Строим payload
+      console.log('[QuickComposer] handlePost - ПЕРЕД buildPostPayload, текущие значения из стейта:', {
+        accessType,
+        postPrice,
+        replySetting,
+        text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      });
+      
       const payload = buildPostPayload({
         text,
         mediaIds,
@@ -265,6 +272,8 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           risk: postRisk,
         },
       });
+
+      console.log('[QuickComposer] handlePost - ПОСЛЕ buildPostPayload, сгенерированный payload:', payload);
 
       // 3. Создаем пост
       const createdPost = await customBackendAPI.createPost(payload);
@@ -418,9 +427,19 @@ export default function QuickComposer({ onExpand, onPostCreated }: Props) {
           currentPrice={postPrice}
           currentReplyPolicy={replySetting}
           onSave={(newAccessType, newPrice, newReplyPolicy) => {
+            console.log('[QuickComposer] onSave callback - Получили из модала:', {
+              newAccessType,
+              newPrice,
+              newReplyPolicy,
+            });
             setAccessType(newAccessType);
             setPostPrice(newPrice);
             setReplySetting(newReplyPolicy);
+            console.log('[QuickComposer] onSave callback - Вызвали setters, теперь текущие значения:', {
+              accessType,
+              postPrice,
+              replySetting,
+            });
           }}
         />
 

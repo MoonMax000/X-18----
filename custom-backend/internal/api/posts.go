@@ -45,23 +45,23 @@ type CropRectReq struct {
 type CreatePostRequest struct {
 	Content    string                 `json:"content" validate:"required,min=1,max=5000"`
 	Metadata   map[string]interface{} `json:"metadata"`
-	MediaIDs   []string               `json:"media_ids"`
-	ReplyToID  *string                `json:"reply_to_id"` // ID поста, на который отвечаем
-	Visibility string                 `json:"visibility"`  // public, followers, private
+	MediaIDs   []string               `json:"mediaIds"`
+	ReplyToID  *string                `json:"replyToId"`  // ID поста, на который отвечаем
+	Visibility string                 `json:"visibility"` // public, followers, private
 
 	// Premium Content (Phase 2)
-	IsPremium   bool   `json:"is_premium"`   // Is this premium content
-	PriceCents  int    `json:"price_cents"`  // Price in cents
-	PreviewText string `json:"preview_text"` // Preview for non-subscribers
-	Category    string `json:"category"`     // Content category
-	Tags        string `json:"tags"`         // Comma-separated tags
+	IsPremium   bool   `json:"isPremium"`   // Is this premium content
+	PriceCents  int    `json:"priceCents"`  // Price in cents
+	PreviewText string `json:"previewText"` // Preview for non-subscribers
+	Category    string `json:"category"`    // Content category
+	Tags        string `json:"tags"`        // Comma-separated tags
 
 	// Access Control (Phase 3)
-	AccessLevel string `json:"access_level"` // free, pay-per-post, subscribers-only, followers-only, premium
-	ReplyPolicy string `json:"reply_policy"` // everyone, following, verified, mentioned
+	AccessLevel string `json:"accessLevel"` // free, pay-per-post, subscribers-only, followers-only, premium
+	ReplyPolicy string `json:"replyPolicy"` // everyone, following, verified, mentioned
 
 	// Media Transforms (Phase 2: Edit functionality)
-	MediaTransforms map[string]CropRectReq `json:"media_transforms"` // mediaID -> crop rect
+	MediaTransforms map[string]CropRectReq `json:"mediaTransforms"` // mediaID -> crop rect
 }
 
 // CreatePost создает новый пост с санитизацией контента и транзакциями

@@ -349,7 +349,7 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
               )}
               {!post.accessLevel || post.accessLevel === "public" ? (
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40">
-                  <Sparkles className="h-3 w-3" />
+                  <DollarSign className="h-3 w-3" />
                   FREE
                 </span>
               ) : null}

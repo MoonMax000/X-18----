@@ -1,6 +1,7 @@
 import { type FC, type ReactNode } from "react";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import { DEBUG } from "@/lib/debug";
+import { getAvatarUrl } from "@/lib/avatar-utils";
 
 interface AvatarWithHoverCardProps {
   author: {
@@ -62,7 +63,11 @@ const AvatarWithHoverCard: FC<AvatarWithHoverCardProps> = ({
     <UserHoverCard
       author={{
         ...author,
-        avatar: author.avatar || '/default-avatar.png', // Provide default avatar
+        avatar: getAvatarUrl({
+          avatar_url: author.avatar,
+          username: author.handle?.replace('@', ''),
+          display_name: author.name
+        }),
         followers: author.followers ?? 0,
         following: author.following ?? 0,
       }}

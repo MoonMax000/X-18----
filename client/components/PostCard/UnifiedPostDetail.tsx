@@ -321,17 +321,6 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
 
             {/* Metadata Badges */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-              {/* Sentiment Badge */}
-              {'sentiment' in post && post.sentiment && (
-                <span
-                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
-                  style={{ backgroundColor: post.sentiment === "bullish" ? "rgb(16, 185, 129)" : "rgb(244, 63, 94)" }}
-                >
-                  {post.sentiment === "bullish" ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                  {post.sentiment === "bullish" ? "Bullish" : "Bearish"}
-                </span>
-              )}
-
               {/* Market Badge */}
               {'market' in post && post.market && (
                 <span 
@@ -386,7 +375,7 @@ const UnifiedPostDetail: FC<UnifiedPostDetailProps> = ({ post }) => {
                 </span>
               ) : (!('accessLevel' in post) || !post.accessLevel || post.accessLevel === "public") ? (
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] bg-[#14243A] text-[#6CA8FF] border border-[#3B82F6]/40">
-                  <Sparkles className="h-3 w-3" />
+                  <DollarSign className="h-3 w-3" />
                   FREE
                 </span>
               ) : null}

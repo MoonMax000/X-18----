@@ -132,6 +132,11 @@ export function AccessTypeModal({
   }, [isOpen, currentAccessType, currentPrice, currentReplyPolicy]);
 
   const handleSave = () => {
+    console.log('[AccessTypeModal] handleSave - Передаём значения:', {
+      selectedType,
+      price,
+      selectedReplyPolicy,
+    });
     onSave(selectedType, price, selectedReplyPolicy);
     onClose();
   };

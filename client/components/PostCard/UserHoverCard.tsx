@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { customBackendAPI } from "@/services/api/custom-backend";
 import { DEBUG } from "@/lib/debug";
+import { getAvatarUrl } from "@/lib/avatar-utils";
 
 import FollowButton from "./FollowButton";
 import type { FeedPostProps } from "./VideoPost";
@@ -60,10 +61,28 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
   const followers = followersCount;
   const followingCount = followingCountState;
 
-  // Load fresh author data when hover card opens
+  // Load fresh author data when hover card opens (only if user is authorized)
   useEffect(() => {
     const loadAuthorData = async () => {
       try {
+        // Check if user is authorized
+        const currentUser = JSON.parse(localStorage.getItem('custom_user') || '{}');
+        const isAuthorized = currentUser && currentUser.id;
+        
+        // If not authorized, just use the data from props with proper avatar fallback
+        if (!isAuthorized) {
+          DEBUG.log('HOVER_CARDS', 'User not authorized, using props data only', { author });
+          setAuthorData({
+            ...author,
+            avatar: getAvatarUrl({
+              avatar_url: author.avatar,
+              username: author.handle?.replace('@', ''),
+              display_name: author.name
+            }),
+          });
+          return;
+        }
+        
         const username = author.handle?.replace('@', '') || author.name.replace(/\s+/g, '-').toLowerCase();
         DEBUG.log('HOVER_CARDS', `Loading fresh data for user: ${username}`, { author });
         
@@ -72,10 +91,14 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
         
         DEBUG.log('HOVER_CARDS', `Loaded user data:`, userData);
         
-        // Update author data with fresh API data
+        // Update author data with fresh API data, ensuring proper avatar fallback
         setAuthorData({
           ...author,
-          avatar: userData.avatar_url || author.avatar,
+          avatar: getAvatarUrl({
+            avatar_url: userData.avatar_url || author.avatar,
+            username: userData.username || author.handle?.replace('@', ''),
+            display_name: userData.display_name || author.name
+          }),
           bio: userData.bio || author.bio,
           followers: userData.followers_count ?? author.followers ?? 0,
           following: userData.following_count ?? author.following ?? 0,
@@ -86,9 +109,8 @@ const UserHoverCard: FC<UserHoverCardProps> = ({
         setFollowersCount(userData.followers_count ?? 0);
         setFollowingCountState(userData.following_count ?? 0);
         
-        // Check follow status
-        const currentUser = JSON.parse(localStorage.getItem('custom_user') || '{}');
-        if (currentUser?.id && userData.id && currentUser.id !== userData.id) {
+        // Check follow status (currentUser already checked above)
+        if (currentUser.id !== userData.id) {
           try {
             const followingList = await customBackendAPI.getFollowing(currentUser.id, { limit: 1000 });
             const isFollowingUser = followingList.some(u => u.id === userData.id);
