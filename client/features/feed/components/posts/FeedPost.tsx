@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TrendingUp, TrendingDown, DollarSign, Sparkles, Newspaper, GraduationCap, BarChart3, Brain, Code2, Video, MessageCircle } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatar-utils";
+import { isPostLocked, normalizeAccessLevel } from "@/lib/access-level-utils";
 import VerifiedBadge from "@/components/PostCard/VerifiedBadge";
 import UserHoverCard from "@/components/PostCard/UserHoverCard";
 import { formatTimeAgo } from "@/lib/time-utils";
@@ -103,21 +104,29 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
     },
   });
 
-  // Post is locked if: has access level restrictions AND (not purchased AND not subscribed AND not own post)
-  const isLocked = localPost.accessLevel && localPost.accessLevel !== "public" && !localPost.isPurchased && !localPost.isSubscriber && !isOwnPost;
+  // Используем утилиту для определения блокировки с нормализацией значений
+  const isLocked = isPostLocked({
+    accessLevel: localPost.accessLevel,
+    isPurchased: localPost.isPurchased,
+    isSubscriber: localPost.isSubscriber,
+    isFollower: localPost.isFollower,
+    isOwnPost
+  });
   
   // DEBUG: Log lock calculation
   React.useEffect(() => {
-    console.log('[FeedPost DEBUG] Lock calculation:', {
+    const normalized = normalizeAccessLevel(localPost.accessLevel);
+    console.log('[FeedPost DEBUG] Lock calculation (with normalization):', {
       postId: localPost.id,
       accessLevel: localPost.accessLevel,
+      normalizedAccessLevel: normalized,
       isPurchased: localPost.isPurchased,
       isSubscriber: localPost.isSubscriber,
+      isFollower: localPost.isFollower,
       isOwnPost,
       isLocked,
-      calculation: `${localPost.accessLevel} && ${localPost.accessLevel !== "public"} && !${localPost.isPurchased} && !${localPost.isSubscriber} && !${isOwnPost}`,
     });
-  }, [localPost.id, localPost.accessLevel, localPost.isPurchased, localPost.isSubscriber, isOwnPost, isLocked]);
+  }, [localPost.id, localPost.accessLevel, localPost.isPurchased, localPost.isSubscriber, localPost.isFollower, isOwnPost, isLocked]);
 
   // Update local post when prop changes
   useEffect(() => {
@@ -263,17 +272,6 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
 
             {/* Category Badges */}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
-              {/* Sentiment Badge */}
-              {post.sentiment && (
-                <span
-                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-white font-bold text-xs"
-                  style={{ backgroundColor: post.sentiment === "bullish" ? "rgb(16, 185, 129)" : "rgb(244, 63, 94)" }}
-                >
-                  {post.sentiment === "bullish" ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                  {post.sentiment === "bullish" ? "Bullish" : "Bearish"}
-                </span>
-              )}
-
               {/* Market Badge */}
               {post.market && (
                 <span 
@@ -333,27 +331,6 @@ export default function FeedPost({ post, isFollowing, onFollowToggle, showTopBor
                   }}
                 >
                   Risk: {post.risk}
-                </span>
-              )}
-
-              {/* Ticker */}
-              {isSignal && post.ticker && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#482090] to-[#A06AFF] px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] text-white shadow-[0_12px_28px_-20px_rgba(160,106,255,0.75)]">
-                  {post.ticker}
-                </span>
-              )}
-
-              {/* Direction */}
-              {isSignal && post.direction && (
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] uppercase tracking-[0.12em] text-white",
-                    post.direction === "long"
-                      ? "bg-gradient-to-r from-emerald-500 to-green-400 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.8)]"
-                      : "bg-gradient-to-r from-rose-500 to-red-400 shadow-[0_8px_20px_-8px_rgba(244,63,94,0.8)]"
-                  )}
-                >
-                  {post.direction}
                 </span>
               )}
 
