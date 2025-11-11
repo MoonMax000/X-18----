@@ -49,14 +49,14 @@ type Post struct {
 
 	// Premium Content (Phase 2)
 	IsPremium   bool   `gorm:"default:false;index" json:"isPremium"`    // Is this premium content
-	PriceCents  int    `gorm:"default:0" json:"priceCents,omitempty"`   // Price in cents (100 = $1.00)
+	PriceCents  int    `gorm:"default:0" json:"price_cents"`            // Price in cents (100 = $1.00)
 	PreviewText string `gorm:"type:text" json:"previewText,omitempty"`  // Preview for non-subscribers
 	Category    string `gorm:"size:50;index" json:"category,omitempty"` // Content category
 	Tags        string `gorm:"type:text" json:"tags,omitempty"`         // Comma-separated tags
 
 	// Access Control (Phase 3)
-	AccessLevel string `gorm:"size:30;default:'free';index" json:"accessLevel"` // free, pay-per-post, subscribers-only, followers-only, premium
-	ReplyPolicy string `gorm:"size:30;default:'everyone'" json:"replyPolicy"`   // everyone, following, verified, mentioned
+	AccessLevel string `gorm:"size:30;default:'free';index" json:"access_level"` // free, pay-per-post, subscribers-only, followers-only, premium
+	ReplyPolicy string `gorm:"size:30;default:'everyone'" json:"reply_policy"`   // everyone, following, verified, mentioned
 
 	// Thread/Reply
 	ReplyToID  *uuid.UUID `gorm:"type:uuid;index:idx_replies" json:"reply_to_id,omitempty"`
