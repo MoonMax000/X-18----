@@ -91,6 +91,7 @@ const ProfileOverview: FC = () => {
   const [role, setRole] = useState(currentUser.role || "");
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [bio, setBio] = useState(currentUser.bio);
+  const [isProfilePrivate, setIsProfilePrivate] = useState(false);
 
   // Field statuses
   const [fieldStatus, setFieldStatus] = useState<Record<string, FieldStatus>>({
@@ -101,8 +102,9 @@ const ProfileOverview: FC = () => {
     website: 'idle',
     role: 'idle',
     sectors: 'idle',
-    bio: 'idle',
-  });
+                bio: 'idle',
+            privateProfile: 'idle',
+          });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // UI state
@@ -144,6 +146,7 @@ const ProfileOverview: FC = () => {
         setWebsite(response.website || "");
         setRole(response.role || "");
         setBio(response.bio || "");
+        setIsProfilePrivate(response.is_profile_private || false);
         
         // Parse sectors from JSON string
         if (response.sectors) {
@@ -168,6 +171,7 @@ const ProfileOverview: FC = () => {
           role: 'idle',
           sectors: 'idle',
           bio: 'idle',
+          privateProfile: 'idle',
         });
         
         // Update Redux store with real data
@@ -269,6 +273,9 @@ const ProfileOverview: FC = () => {
           break;
         case 'bio':
           if (value?.trim()) updateData.bio = value.trim();
+          break;
+        case 'privateProfile':
+          updateData.is_profile_private = value;
           break;
       }
 
@@ -408,6 +415,12 @@ const ProfileOverview: FC = () => {
       debouncedSave('bio', bio);
     }
   }, [bio]);
+
+  useEffect(() => {
+    if (isProfilePrivate !== (currentUser.is_profile_private || false)) {
+      debouncedSave('privateProfile', isProfilePrivate, 500);
+    }
+  }, [isProfilePrivate]);
 
   const toggleSector = (sectorId: string) => {
     setSelectedSectors((prev) =>
@@ -693,6 +706,52 @@ const ProfileOverview: FC = () => {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Private Profile Toggle */}
+      <div className="flex flex-col gap-4 p-4 rounded-xl border border-[#181B22] bg-[rgba(12,16,20,0.5)] backdrop-blur-[50px]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-base font-bold text-white" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                🔒 Private Profile
+              </h3>
+              {isProfilePrivate && (
+                <span className="px-2 py-0.5 rounded-full bg-[#A06AFF]/20 text-[10px] font-bold text-[#A06AFF] uppercase" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                  Active
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-[#B0B0B0]" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+              {isProfilePrivate 
+                ? "Your profile is private. Only subscribers can see your posts."
+                : "Your profile is public. Anyone can see your posts."}
+            </p>
+            {isProfilePrivate && (
+              <div className="mt-3 p-3 rounded-lg bg-[#2E2744] border border-[#A06AFF]/30">
+                <p className="text-xs text-[#A06AFF] font-medium" style={{ fontFamily: 'Nunito Sans, -apple-system, Roboto, Helvetica, sans-serif' }}>
+                  💡 Tip: Set your subscription price in the Monetization tab to start earning!
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <FieldStatusIndicator status={fieldStatus.privateProfile} error={fieldErrors.privateProfile} />
+            <button
+              type="button"
+              onClick={() => setIsProfilePrivate(!isProfilePrivate)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#A06AFF] focus:ring-offset-2 focus:ring-offset-black ${
+                isProfilePrivate ? 'bg-[#A06AFF]' : 'bg-[#2F3336]'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isProfilePrivate ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
         </div>
       </div>

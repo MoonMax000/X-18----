@@ -7,10 +7,10 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { X, Lock, CreditCard, Loader2 } from "lucide-react";
-import { customBackendAPI } from "@/services/api/custom-backend";
+import { X, Lock, CreditCard, Loader2, ChevronDown, Plus } from "lucide-react";
+import { usePaymentMethods, PaymentMethod } from "@/hooks/usePaymentMethods";
 
-// Initialize Stripe (you'll need to add your publishable key to env)
+// Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder");
 
 interface PaymentModalProps {
@@ -86,50 +86,7 @@ function PaymentForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Payment Element - Stripe's universal payment UI */}
       <div className="rounded-xl border border-[#2F3336] bg-[#0A0D12] p-4">
-        <PaymentElement 
-          options={{
-            layout: "tabs",
-            defaultValues: {
-              billingDetails: {
-                // Pre-fill if you have user data
-              }
-            },
-            appearance: {
-              theme: "night",
-              variables: {
-                colorPrimary: "#A06AFF",
-                colorBackground: "#0A0D12",
-                colorSurface: "#1B1F27",
-                colorText: "#FFFFFF",
-                colorDanger: "#FF6B6B",
-                fontFamily: "system-ui, -apple-system, sans-serif",
-                spacingUnit: "4px",
-                borderRadius: "12px",
-              },
-              rules: {
-                ".Tab": {
-                  borderRadius: "10px",
-                  border: "1px solid #2F3336",
-                },
-                ".Tab:hover": {
-                  border: "1px solid #A06AFF",
-                },
-                ".Tab--selected": {
-                  borderColor: "#A06AFF",
-                  backgroundColor: "#A06AFF10",
-                },
-                ".Input": {
-                  borderRadius: "8px",
-                  border: "1px solid #2F3336",
-                },
-                ".Input:focus": {
-                  borderColor: "#A06AFF",
-                  boxShadow: "0 0 0 1px #A06AFF",
-                },
-              },
-            },
-          }}
-        />
+        <PaymentElement />
       </div>
 
       {/* Error message */}
@@ -182,6 +139,13 @@ export function PaymentModal({
   const [mounted, setMounted] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Payment methods management
+  const { paymentMethods, loading: loadingMethods } = usePaymentMethods();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<"select-card" | "add-card">("select-card");
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -199,11 +163,33 @@ export function PaymentModal({
     };
   }, [isOpen]);
 
-  // Create PaymentIntent when modal opens
+  // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setClientSecret(null);
       setError(null);
+      setSelectedPaymentMethod(null);
+      setPaymentMode("select-card");
+      setProcessing(false);
+      return;
+    }
+
+    // Determine initial mode based on saved cards
+    if (paymentMethods.length > 0) {
+      setPaymentMode("select-card");
+      // Auto-select default card if exists
+      const defaultCard = paymentMethods.find(pm => pm.isDefault);
+      if (defaultCard) {
+        setSelectedPaymentMethod(defaultCard.id);
+      }
+    } else {
+      setPaymentMode("add-card");
+    }
+  }, [isOpen, paymentMethods]);
+
+  // Create PaymentIntent only when adding new card
+  useEffect(() => {
+    if (!isOpen || paymentMode !== "add-card") {
       return;
     }
 
@@ -214,11 +200,14 @@ export function PaymentModal({
           ? "/payments/create-post-payment-intent"
           : "/payments/create-subscription-intent";
         
-        const payload = type === "unlock"
-          ? { postId, amount }
-          : { authorId, amount, plan };
+        const fullUrl = `${baseUrl}${endpoint}`;
         
-        const response = await fetch(`${baseUrl}${endpoint}`, {
+        const payload = {
+          post_id: postId,
+          type: type === "unlock" ? "unlock" : "subscribe"
+        };
+        
+        const response = await fetch(fullUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -232,15 +221,74 @@ export function PaymentModal({
         }
 
         const data = await response.json();
-        setClientSecret(data.clientSecret);
+        const clientSecretValue = data.client_secret || data.clientSecret;
+        
+        if (clientSecretValue) {
+          setClientSecret(clientSecretValue);
+        } else {
+          throw new Error('No client secret in response');
+        }
       } catch (error) {
-        console.error("Failed to create payment intent:", error);
+        console.error("[PaymentModal] Failed to create payment intent:", error);
         setError("Failed to initialize payment. Please try again.");
       }
     };
 
     createPaymentIntent();
-  }, [isOpen, type, amount, postId, authorId, plan]);
+  }, [isOpen, paymentMode, type, postId]);
+
+  // Handle payment with saved card
+  const handlePayWithSavedCard = async () => {
+    if (!selectedPaymentMethod || !postId) return;
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8080') + '/api';
+      const response = await fetch(`${baseUrl}/payments/charge-saved-card`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          payment_method_id: selectedPaymentMethod,
+          post_id: postId,
+          type: type === "unlock" ? "unlock" : "subscribe"
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Payment failed');
+      }
+
+      // Check payment status
+      if (data.status === "succeeded") {
+        // Payment succeeded
+        if (onSuccess) {
+          onSuccess();
+        }
+        setTimeout(() => {
+          onClose();
+        }, 1000);
+      } else if (data.status === "requires_action") {
+        // 3D Secure or other authentication required
+        setError("Payment requires additional authentication. Please use a different card or add it as a new payment method.");
+      } else {
+        throw new Error("Payment failed");
+      }
+    } catch (err: any) {
+      console.error("Payment with saved card error:", err);
+      setError(err.message || "Payment failed. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const selectedCard = paymentMethods.find(pm => pm.id === selectedPaymentMethod);
 
   if (!mounted || !isOpen) return null;
 
@@ -273,43 +321,197 @@ export function PaymentModal({
           </button>
         </div>
 
-        {/* Content with Stripe Elements provider */}
+        {/* Content */}
         <div className="p-5">
-          {error ? (
-            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-              <p className="text-sm text-red-400">{error}</p>
-              <button
-                onClick={() => {
-                  setError(null);
-                  setClientSecret(null);
-                }}
-                className="mt-3 text-sm text-red-400 hover:text-red-300 underline"
-              >
-                Try again
-              </button>
-            </div>
-          ) : !clientSecret ? (
+          {loadingMethods ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#A06AFF]" />
             </div>
+          ) : paymentMode === "select-card" && paymentMethods.length > 0 ? (
+            /* Saved Card Selection Mode */
+            <div className="space-y-4">
+              {/* Payment method selector */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Payment Method
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="w-full rounded-xl border border-[#2F3336] bg-[#0A0D12] px-4 py-3 text-left flex items-center justify-between hover:border-[#A06AFF] transition-colors"
+                  >
+                    {selectedCard && selectedCard.cardBrand && selectedCard.cardLast4 ? (
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="h-5 w-5 text-[#A06AFF]" />
+                        <div>
+                          <div className="text-sm font-medium text-white">
+                            {(selectedCard.cardBrand || 'CARD').toUpperCase()} •••• {selectedCard.cardLast4}
+                          </div>
+                          <div className="text-xs text-[#808283]">
+                            Expires {selectedCard.cardExpMonth}/{selectedCard.cardExpYear}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[#808283]">Select payment method</span>
+                    )}
+                    <ChevronDown className={`h-4 w-4 text-[#808283] transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown */}
+                  {showDropdown && (
+                    <div className="absolute z-10 w-full mt-2 rounded-xl border border-[#2F3336] bg-[#0A0D12] shadow-2xl overflow-hidden">
+                      {paymentMethods.map((pm) => (
+                        <button
+                          key={pm.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPaymentMethod(pm.id);
+                            setShowDropdown(false);
+                          }}
+                          className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-[#1B1F27] transition-colors border-b border-[#2F3336] last:border-b-0"
+                        >
+                          <CreditCard className="h-5 w-5 text-[#A06AFF]" />
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-white">
+                              {(pm.cardBrand || 'CARD').toUpperCase()} •••• {pm.cardLast4}
+                              {pm.isDefault && (
+                                <span className="ml-2 text-xs text-[#2EBD85]">(Default)</span>
+                              )}
+                            </div>
+                            <div className="text-xs text-[#808283]">
+                              Expires {pm.cardExpMonth}/{pm.cardExpYear}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentMode("add-card");
+                          setShowDropdown(false);
+                        }}
+                        className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-[#1B1F27] transition-colors text-[#A06AFF]"
+                      >
+                        <Plus className="h-5 w-5" />
+                        <span className="text-sm font-medium">Add New Card</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Confirmation message */}
+              <div className="rounded-lg bg-[#A06AFF]/10 border border-[#A06AFF]/20 p-4">
+                <p className="text-sm text-white text-center">
+                  С вас будет списано <span className="font-semibold">${amount}</span>
+                </p>
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+                  <p className="text-sm text-red-400">{error}</p>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 rounded-xl border border-[#2F3336] py-3 text-sm font-semibold text-white hover:bg-[#2F3336] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePayWithSavedCard}
+                  disabled={!selectedPaymentMethod || processing}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-[#A06AFF] to-[#482090] py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(160,106,255,0.5)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      Pay
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Security notice */}
+              <div className="flex items-center gap-2 justify-center text-xs text-[#808283]">
+                <Lock className="h-3 w-3" />
+                <span>Secured by Stripe</span>
+              </div>
+            </div>
           ) : (
-            <Elements 
-              stripe={stripePromise}
-              options={{
-                clientSecret,
-              }}
-            >
-              <PaymentForm
-                type={type}
-                amount={amount}
-                postId={postId}
-                authorId={authorId}
-                plan={plan}
-                onSuccess={onSuccess}
-                onClose={onClose}
-                clientSecret={clientSecret}
-              />
-            </Elements>
+            /* Add New Card Mode */
+            <>
+              {paymentMethods.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setPaymentMode("select-card")}
+                  className="mb-4 text-sm text-[#A06AFF] hover:text-[#B17FFF] flex items-center gap-2"
+                >
+                  ← Back to saved cards
+                </button>
+              )}
+              {error ? (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+                  <p className="text-sm text-red-400">{error}</p>
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      setClientSecret(null);
+                    }}
+                    className="mt-3 text-sm text-red-400 hover:text-red-300 underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : !clientSecret ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#A06AFF]" />
+                </div>
+              ) : (
+                <Elements 
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret,
+                    appearance: {
+                      theme: "night",
+                      variables: {
+                        colorPrimary: "#A06AFF",
+                        colorBackground: "#0A0D12",
+                        colorText: "#FFFFFF",
+                        colorDanger: "#FF6B6B",
+                        fontFamily: "system-ui, -apple-system, sans-serif",
+                        spacingUnit: "4px",
+                        borderRadius: "12px",
+                      },
+                    },
+                  }}
+                >
+                  <PaymentForm
+                    type={type}
+                    amount={amount}
+                    postId={postId}
+                    authorId={authorId}
+                    plan={plan}
+                    onSuccess={onSuccess}
+                    onClose={onClose}
+                    clientSecret={clientSecret}
+                  />
+                </Elements>
+              )}
+            </>
           )}
         </div>
 
@@ -343,7 +545,7 @@ export function PaymentModal({
   );
 }
 
-// Export both the modal and a hook to use it
+// Export hook to use the modal
 export function usePaymentModal() {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
