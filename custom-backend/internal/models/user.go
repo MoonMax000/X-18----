@@ -59,7 +59,8 @@ type User struct {
 	// Monetization
 	Verified          bool    `gorm:"default:false" json:"verified"`
 	SubscriptionPrice float64 `gorm:"type:decimal(10,2);default:0" json:"subscription_price"`
-	StripeAccountID   string  `gorm:"size:100" json:"stripe_account_id,omitempty"`
+	StripeAccountID   string  `gorm:"size:255" json:"stripe_account_id,omitempty"`  // For Connect (receiving payments as creator)
+	StripeCustomerID  *string `gorm:"size:255" json:"stripe_customer_id,omitempty"` // For Customer (making purchases)
 
 	// Stats (denormalized for performance)
 	FollowersCount int `gorm:"default:0" json:"followers_count"`
@@ -69,6 +70,12 @@ type User struct {
 	// Settings
 	PrivateAccount bool `gorm:"default:false" json:"private_account"`
 	AllowComments  bool `gorm:"default:true" json:"allow_comments"`
+
+	// Paywall fields (OnlyFans-style private profiles)
+	IsProfilePrivate               bool `gorm:"default:false" json:"is_profile_private"`
+	SubscriptionDiscountPrice      int  `gorm:"default:300" json:"subscription_discount_price"` // $3 in cents
+	SubscriptionDiscountPercentage int  `gorm:"default:90" json:"subscription_discount_percentage"`
+	SubscriptionDiscountDays       int  `gorm:"default:30" json:"subscription_discount_days"`
 
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`

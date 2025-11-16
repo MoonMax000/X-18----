@@ -82,6 +82,12 @@ func (h *UsersHandler) GetUserByUsername(c *fiber.Ctx) error {
 
 	log.Printf("[GetUserByUsername] Looking up user: %s", username)
 
+	// Get current user ID (if authenticated)
+	var currentUserID *uuid.UUID
+	if userID, err := middleware.GetUserID(c); err == nil {
+		currentUserID = &userID
+	}
+
 	var user models.User
 	if err := h.db.DB.Where("username = ?", username).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -97,14 +103,93 @@ func (h *UsersHandler) GetUserByUsername(c *fiber.Ctx) error {
 	}
 
 	log.Printf("[GetUserByUsername] Found user %s (ID: %s)", username, user.ID)
-	log.Printf("[GetUserByUsername] avatar_url from DB: %s", user.AvatarURL)
-	log.Printf("[GetUserByUsername] header_url from DB: %s", user.HeaderURL)
 
-	publicUser := user.ToPublic()
-	log.Printf("[GetUserByUsername] After ToPublic() - avatar_url: %s", publicUser.AvatarURL)
-	log.Printf("[GetUserByUsername] After ToPublic() - header_url: %s", publicUser.HeaderURL)
+	// ⭐ Check if current user is subscribed to this profile
+	isSubscribed := false
+	if currentUserID != nil && *currentUserID != user.ID {
+		var count int64
+		err := h.db.DB.Model(&models.Subscription{}).
+			Where("subscriber_id = ? AND creator_id = ? AND status = ? AND current_period_end > ?",
+				currentUserID, user.ID, "active", time.Now()).
+			Count(&count).Error
 
-	return c.JSON(publicUser)
+		if err == nil {
+			isSubscribed = count > 0
+		}
+		log.Printf("[GetUserByUsername] Subscription check: is_subscribed=%v", isSubscribed)
+	}
+
+	// ⭐ Calculate content stats
+	photosCount := h.calculatePhotosCount(user.ID)
+	videosCount := h.calculateVideosCount(user.ID)
+	premiumPostsCount := h.calculatePremiumPostsCount(user.ID)
+
+	// Build response with paywall fields
+	response := fiber.Map{
+		"id":                 user.ID,
+		"username":           user.Username,
+		"display_name":       user.DisplayName,
+		"first_name":         user.FirstName,
+		"last_name":          user.LastName,
+		"bio":                user.Bio,
+		"location":           user.Location,
+		"website":            user.Website,
+		"role":               user.Role,
+		"sectors":            user.Sectors,
+		"avatar_url":         user.AvatarURL,
+		"header_url":         user.HeaderURL,
+		"verified":           user.Verified,
+		"subscription_price": user.SubscriptionPrice,
+		"followers_count":    user.FollowersCount,
+		"following_count":    user.FollowingCount,
+		"posts_count":        user.PostsCount,
+		"private_account":    user.PrivateAccount,
+		// ⭐ Paywall fields
+		"is_profile_private":               user.IsProfilePrivate,
+		"is_subscribed":                    isSubscribed,
+		"subscription_discount_price":      user.SubscriptionDiscountPrice,
+		"subscription_discount_percentage": user.SubscriptionDiscountPercentage,
+		"subscription_discount_days":       user.SubscriptionDiscountDays,
+		"photos_count":                     photosCount,
+		"videos_count":                     videosCount,
+		"premium_posts_count":              premiumPostsCount,
+		"created_at":                       user.CreatedAt,
+	}
+
+	if user.LastActiveAt != nil {
+		response["last_active_at"] = user.LastActiveAt
+	}
+
+	return c.JSON(response)
+}
+
+// Helper: Calculate photos count
+func (h *UsersHandler) calculatePhotosCount(userID uuid.UUID) int {
+	var count int64
+	h.db.DB.Table("posts").
+		Joins("JOIN media ON media.post_id = posts.id").
+		Where("posts.user_id = ? AND media.type = ?", userID, "image").
+		Count(&count)
+	return int(count)
+}
+
+// Helper: Calculate videos count
+func (h *UsersHandler) calculateVideosCount(userID uuid.UUID) int {
+	var count int64
+	h.db.DB.Table("posts").
+		Joins("JOIN media ON media.post_id = posts.id").
+		Where("posts.user_id = ? AND media.type = ?", userID, "video").
+		Count(&count)
+	return int(count)
+}
+
+// Helper: Calculate premium posts count
+func (h *UsersHandler) calculatePremiumPostsCount(userID uuid.UUID) int {
+	var count int64
+	h.db.DB.Model(&models.Post{}).
+		Where("user_id = ? AND price_cents > ?", userID, 0).
+		Count(&count)
+	return int(count)
 }
 
 // UpdateProfile updates current user's profile
@@ -130,6 +215,7 @@ func (h *UsersHandler) UpdateProfile(c *fiber.Ctx) error {
 		SubscriptionPrice *float64 `json:"subscription_price"`
 		PrivateAccount    *bool    `json:"private_account"`
 		AllowComments     *bool    `json:"allow_comments"`
+		IsProfilePrivate  *bool    `json:"is_profile_private"` // ⭐ Paywall field
 	}
 
 	var req UpdateRequest
@@ -230,6 +316,11 @@ func (h *UsersHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 	if req.AllowComments != nil {
 		updates["allow_comments"] = *req.AllowComments
+	}
+	// ⭐ Handle private profile toggle
+	if req.IsProfilePrivate != nil {
+		log.Printf("[UpdateProfile] Updating is_profile_private for user %s: %v", userID, *req.IsProfilePrivate)
+		updates["is_profile_private"] = *req.IsProfilePrivate
 	}
 
 	if len(updates) > 0 {
