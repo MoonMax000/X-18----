@@ -53,6 +53,15 @@ export default function OtherProfilePage() {
   }
 
   return (
-    <ProfilePageLayout isOwnProfile={isOwnProfile} profile={profile} posts={posts} initialFollowingState={isFollowing} />
+    <ProfilePageLayout 
+      isOwnProfile={isOwnProfile} 
+      profile={profile} 
+      posts={posts} 
+      initialFollowingState={isFollowing}
+      onRefresh={() => {
+        // Refetch profile after subscription
+        window.location.reload(); // Temp solution, ideally use refetch from hook
+      }}
+    />
   );
 }

@@ -16,6 +16,7 @@ interface ProfilePaywallProps {
   photosCount: number;
   videosCount: number;
   premiumPostsCount: number;
+  onSuccess?: () => void; // Callback after successful subscription
 }
 
 export const ProfilePaywall: FC<ProfilePaywallProps> = ({
@@ -30,6 +31,7 @@ export const ProfilePaywall: FC<ProfilePaywallProps> = ({
   photosCount,
   videosCount,
   premiumPostsCount,
+  onSuccess,
 }) => {
   const navigate = useNavigate();
   const { paymentMethods, isLoading: loadingCards } = usePaymentMethods();
@@ -58,8 +60,14 @@ export const ProfilePaywall: FC<ProfilePaywallProps> = ({
       });
 
       if (result.success) {
-        // Reload profile to show unlocked content
-        window.location.reload();
+        // Call onSuccess callback to refetch profile data
+        // This will update is_subscribed flag and hide paywall
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Fallback to reload if no callback provided
+          window.location.reload();
+        }
       }
     } catch (error) {
       console.error('Subscription error:', error);

@@ -656,6 +656,7 @@ export interface User {
   posts_count: number;
   private_account: boolean;
   is_profile_private?: boolean; // If true, profile requires subscription to view posts
+  is_subscribed?: boolean; // If true, current user is subscribed to this profile
   subscription_discount_price?: number; // Discounted subscription price (e.g. $3)
   subscription_discount_percentage?: number; // Discount % (e.g. 90)
   subscription_discount_days?: number; // Duration of discount (e.g. 30 days)

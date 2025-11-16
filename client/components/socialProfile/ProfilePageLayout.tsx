@@ -18,9 +18,10 @@ interface ProfilePageLayoutProps {
   profile: User | null;
   posts?: Post[];
   initialFollowingState?: boolean;
+  onRefresh?: () => void; // Callback to refetch profile data
 }
 
-export default function ProfilePageLayout({ isOwnProfile, profile, posts, initialFollowingState = false }: ProfilePageLayoutProps) {
+export default function ProfilePageLayout({ isOwnProfile, profile, posts, initialFollowingState = false, onRefresh }: ProfilePageLayoutProps) {
   const { user: currentUser } = useAuth();
 
   // Initialize follow state with the actual following status from backend
@@ -51,7 +52,15 @@ export default function ProfilePageLayout({ isOwnProfile, profile, posts, initia
   };
 
   // Check if profile is private and user is not subscribed
-  const isProfileLocked = !isOwnProfile && profile?.is_profile_private && !isFollowingUser(profile.id);
+  // Use backend's is_subscribed field instead of follow status
+  const isProfileLocked = !isOwnProfile && profile?.is_profile_private && !profile?.is_subscribed;
+  
+  console.log('[ProfilePageLayout] Paywall check:', {
+    isOwnProfile,
+    is_profile_private: profile?.is_profile_private,
+    is_subscribed: profile?.is_subscribed,
+    isProfileLocked
+  });
 
   return (
     <div className="flex w-full gap-2 sm:gap-4 md:gap-8">
@@ -70,6 +79,7 @@ export default function ProfilePageLayout({ isOwnProfile, profile, posts, initia
             photosCount={profile.photos_count || 0}
             videosCount={profile.videos_count || 0}
             premiumPostsCount={profile.premium_posts_count || 0}
+            onSuccess={onRefresh}  // Refetch after subscription
           />
         ) : (
           // Show normal profile content
