@@ -392,6 +392,15 @@ class CustomBackendAPI {
     return this.request<TrendingHashtag[]>(`/search/trending-hashtags${queryString ? `?${queryString}` : ''}`);
   }
 
+  async getTrendingSearches(params?: { limit?: number; hours?: number }): Promise<TrendingSearchesResponse> {
+    const query = new URLSearchParams();
+    if (params?.limit) query.append('limit', params.limit.toString());
+    if (params?.hours) query.append('hours', params.hours.toString());
+    
+    const queryString = query.toString();
+    return this.request<TrendingSearchesResponse>(`/search/trending${queryString ? `?${queryString}` : ''}`);
+  }
+
   // ============================================================================
   // WIDGETS API
   // ============================================================================
@@ -646,6 +655,13 @@ export interface User {
   following_count: number;
   posts_count: number;
   private_account: boolean;
+  is_profile_private?: boolean; // If true, profile requires subscription to view posts
+  subscription_discount_price?: number; // Discounted subscription price (e.g. $3)
+  subscription_discount_percentage?: number; // Discount % (e.g. 90)
+  subscription_discount_days?: number; // Duration of discount (e.g. 30 days)
+  photos_count?: number; // Count of photo posts
+  videos_count?: number; // Count of video posts
+  premium_posts_count?: number; // Count of premium/paid posts
   role?: string;
   first_name?: string;
   last_name?: string;
@@ -788,6 +804,17 @@ export interface SearchResults {
 export interface TrendingHashtag {
   tag: string;
   count: number;
+}
+
+export interface TrendingSearch {
+  query: string;
+  count: number;
+  trend: number;
+}
+
+export interface TrendingSearchesResponse {
+  searches: TrendingSearch[];
+  period: string;
 }
 
 export interface TimelineParams {
